@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { useContext, useRef, useState } from "react";
+import { useCallback, useContext, useRef, useState } from "react";
 import { DimensionsInput } from "../components/Editor/PanelControl/DimensionsInput";
 import { Editor } from "../components/Editor";
 import { PanelUpperButtons } from "../components/Editor/PanelControl/PanelUpperButtons";
@@ -23,26 +23,23 @@ import { Canvas } from "../components/Editor/Canvas";
 import { ColorPicker } from "../components/Editor/Toolbar/ColorPicker";
 import { ColorGroups } from "../components/Editor/Toolbar/ColorGroups";
 import { ColorWindow } from "../components/Editor/ColorWindow";
-import { useSelector, useDispatch } from "react-redux";
+import * as mouseDragActions from "../store/modules/mouseEvent";
+import useMouseEvent from "../store/modules/mouseEventHook";
 
 const Home: NextPage = () => {
   const defaultHeight: number = 32;
   const defaultWidth: number = 32;
+  const { isLeftClicked, mouseDown, mouseUp } = useMouseEvent();
   const [hideOptions, setHideOptions] = useState<boolean>(false);
   const [hideDrawingPanel, setHideDrawingPanel] = useState<boolean>(true);
-  const [additionalPanel, setAdditionalPanel] = useState<any>();
   const [selectedGroup, setSelectedGroup] = useState<colorGroup>();
   const [buttonText, setButonText] = useState<"start drawing" | "reset">(
     "start drawing"
   );
   const [openChangePanel, setOpenChangePanel] = useState<boolean>(false);
   const [openChangePanelKey, setOpenChangePanelKey] = useState<string>("");
-  const groupsRef = useRef<any>(null);
   const panelRef = useRef<any>(null);
-  const colorRef = useRef<any>(null);
 
-  const { enableMouseDragDraw, disableMouseDragDraw } =
-    useContext(MouseDragContext);
   const { color, changeColor } = useContext(ColorContext);
 
   const { dataArray, setDataArray, setHistory, setHistoryIndex } =
@@ -73,39 +70,39 @@ const Home: NextPage = () => {
 
   const [colorData, setColorData] = useState<rowColumnColor[]>([]);
 
-  const initializeDrawingPanel = () => {
+  const initializeDrawingPanel = useCallback(() => {
     setHideOptions(!hideOptions);
     setHideDrawingPanel(!hideDrawingPanel);
 
     buttonText === "start drawing"
       ? setButonText("reset")
       : setButonText("start drawing");
-  };
+  }, [hideOptions, hideDrawingPanel]);
 
-  const resetOrStartPanel = () => {
+  const resetOrStartPanel = useCallback(() => {
     initializeDrawingPanel();
     setDataArray([]);
     setHistory([]);
     setHistoryIndex(0);
-  };
+  }, []);
 
-  const downloadImage = () => {
+  const downloadImage = useCallback(() => {
     const pixelRef = document.getElementById("pixels");
     downloadImageRef(pixelRef);
-  };
+  }, []);
 
-  const saveProject = () => {
+  const saveProject = useCallback(() => {
     setKeyData(JSON.parse(JSON.stringify(currentKeys)));
     setColorData(JSON.parse(JSON.stringify(dataArray)));
-  };
+  }, [currentKeys, dataArray]);
 
-  const resetDataKeyState = (
-    colorDataArray: rowColumnColor[],
-    keyDataArray: PanelKeys
-  ) => {
-    setColorArray(JSON.parse(JSON.stringify(colorDataArray)));
-    setResetKeys(JSON.parse(JSON.stringify(keyDataArray)));
-  };
+  const resetDataKeyState = useCallback(
+    (colorDataArray: rowColumnColor[], keyDataArray: PanelKeys) => {
+      setColorArray(JSON.parse(JSON.stringify(colorDataArray)));
+      setResetKeys(JSON.parse(JSON.stringify(keyDataArray)));
+    },
+    []
+  );
 
   const bringSavedProject = () => {
     resetDataKeyState(colorData, keyData);
@@ -125,12 +122,12 @@ const Home: NextPage = () => {
         />
       )}
       <Canvas
-        onMouseDown={enableMouseDragDraw}
-        onMouseUp={disableMouseDragDraw}
-        onMouseLeave={disableMouseDragDraw}
-        // onMouseDown={() => {}}
-        // onMouseUp={() => {}}
-        // onMouseLeave={() => {}}
+        // onMouseDown={enableMouseDragDraw}
+        // onMouseUp={disableMouseDragDraw}
+        // onMouseLeave={disableMouseDragDraw}
+        onMouseDown={mouseDown}
+        onMouseUp={mouseUp}
+        onMouseLeave={() => {}}
       >
         <h1>Pixel Create Character</h1>
         {hideDrawingPanel && (

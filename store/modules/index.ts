@@ -1,12 +1,8 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import { HYDRATE } from "next-redux-wrapper";
-import mouseDrag from "./mouseDrag";
+import mouseEvent from "./mouseEvent";
 
-const reducer = (state: any, action: any) => {
-  if (action.type === HYDRATE) {
-    return { ...state, ...action.payload };
-  }
-  return combineReducers({ mouseDrag })(state, action);
-};
+const rootReducer = combineReducers({ mouseEvent });
 
-export default reducer;
+export default rootReducer;
+
+export type RootState = ReturnType<typeof rootReducer>;

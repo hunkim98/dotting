@@ -1,10 +1,11 @@
-import { useContext, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { dataArrayElement } from "../../../../const/CommonDTO";
 import { ColorContext } from "../../../../context/ColorContext";
 import { DataContext } from "../../../../context/DataContext";
 import { MouseDragContext } from "../../../../context/MouseDragContext";
 import * as S from "./styles";
 import * as PixelStyle from "../pixelStyles";
+import useMouseEvent from "../../../../store/modules/mouseEventHook";
 
 interface Props {
   rowIndex: number;
@@ -17,14 +18,16 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor }) => {
 
   const [pixelColor, setPixelColor] = useState<string | undefined>(dataColor);
   const [oldColor, setOldColor] = useState(pixelColor);
-  const [canChangeColor, setChangeColor] = useState(true);
+  const [canChangeColor, setCanChangeColor] = useState(true);
 
-  const { mouseDrag } = useContext(MouseDragContext);
+  const { isLeftClicked } = useMouseEvent();
+
+  // const { mouseDrag } = useContext(MouseDragContext);
   const { color } = useContext(ColorContext);
 
-  function applyColor(): void {
+  const applyColor = useCallback(() => {
     setPixelColor(color);
-    setChangeColor(false);
+    setCanChangeColor(false);
     const existingPixel = dataArray.find((item: dataArrayElement) => {
       return item.rowIndex === rowIndex && item.columnIndex === columnIndex;
     }); //this checks if the index already exists
@@ -51,24 +54,25 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor }) => {
         { rowIndex, columnIndex, color, name: color },
       ]);
     }
-  }
-  function changeColorOnHover(): void {
+  }, [dataArray, color, rowIndex, columnIndex]);
+
+  const changeColorOnHover = useCallback(() => {
     setOldColor(pixelColor);
     setPixelColor(color);
-  }
+  }, [pixelColor, color]);
 
-  function reset(): void {
+  const reset = useCallback(() => {
     if (canChangeColor) {
       setPixelColor(oldColor);
     }
-    setChangeColor(true);
-  }
+    setCanChangeColor(true);
+  }, [oldColor, canChangeColor]);
 
   return (
     <PixelStyle.Container
       draggable="false"
       onMouseDown={applyColor}
-      onMouseOver={mouseDrag ? applyColor : changeColorOnHover}
+      onMouseOver={isLeftClicked ? applyColor : changeColorOnHover}
       onMouseLeave={reset}
       style={{ backgroundColor: pixelColor }}
     ></PixelStyle.Container>

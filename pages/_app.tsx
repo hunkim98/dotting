@@ -5,7 +5,7 @@ import { MouseDragContextProvider } from "../context/MouseDragContext";
 import { DataContextProvider } from "../context/DataContext";
 import { ColorContextProvider } from "../context/ColorContext";
 import { DraggableContextProvider } from "../context/DraggableContext";
-import { wrapper } from "../store";
+import wrapper from "../store/configureStore";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
