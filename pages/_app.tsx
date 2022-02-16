@@ -5,6 +5,7 @@ import { MouseDragContextProvider } from "../context/MouseDragContext";
 import { DataContextProvider } from "../context/DataContext";
 import { ColorContextProvider } from "../context/ColorContext";
 import { DraggableContextProvider } from "../context/DraggableContext";
+import { wrapper } from "../store";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -22,4 +23,4 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default MyApp;
+export default wrapper.withRedux(MyApp);
