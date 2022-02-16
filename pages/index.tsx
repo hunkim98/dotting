@@ -124,12 +124,12 @@ const Home: NextPage = () => {
         />
       )}
       <Canvas
-        // onMouseDown={enableMouseDragDraw}
-        // onMouseUp={disableMouseDragDraw}
-        // onMouseLeave={disableMouseDragDraw}
-        onMouseDown={() => {}}
-        onMouseUp={() => {}}
-        onMouseLeave={() => {}}
+        onMouseDown={enableMouseDragDraw}
+        onMouseUp={disableMouseDragDraw}
+        onMouseLeave={disableMouseDragDraw}
+        // onMouseDown={() => {}}
+        // onMouseUp={() => {}}
+        // onMouseLeave={() => {}}
       >
         <h1>Pixel Create Character</h1>
         {hideDrawingPanel && (
