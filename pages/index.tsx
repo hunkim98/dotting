@@ -23,6 +23,7 @@ import { Canvas } from "../components/Editor/Canvas";
 import { ColorPicker } from "../components/Editor/Toolbar/ColorPicker";
 import { ColorGroups } from "../components/Editor/Toolbar/ColorGroups";
 import { ColorWindow } from "../components/Editor/ColorWindow";
+import { useSelector, useDispatch } from "react-redux";
 
 const Home: NextPage = () => {
   const defaultHeight: number = 32;
