@@ -73,27 +73,27 @@ const Panel: React.FC<Props> = ({
     });
   }, [resetKeys]);
 
-  useEffect(() => {
-    setRandomKey(Math.random()); //this allows pixel remapping
-    setPanelColor(dataArray);
-    if (historyIndex === history.length) {
-      if (history.length === 0) {
-        //initialize
-        setHistory([{ colorHistory: dataArray, keyHistory: currentKeys }]);
-      } else if (history.length > 0) {
-        if (
-          JSON.stringify(dataArray) !==
-            JSON.stringify(history[history.length - 1].colorHistory) ||
-          JSON.stringify(currentKeys) !==
-            JSON.stringify(history[history.length - 1].keyHistory)
-        ) {
-          console.log("history set");
-          //do not save duplicate histories with the same values
-          addToHistory(dataArray, currentKeys);
-        }
-      }
-    }
-  }, [dataArray]);
+  // useEffect(() => {
+  //   setRandomKey(Math.random()); //this allows pixel remapping
+  //   setPanelColor(dataArray);
+  //   if (historyIndex === history.length) {
+  //     if (history.length === 0) {
+  //       //initialize
+  //       setHistory([{ colorHistory: dataArray, keyHistory: currentKeys }]);
+  //     } else if (history.length > 0) {
+  //       if (
+  //         JSON.stringify(dataArray) !==
+  //           JSON.stringify(history[history.length - 1].colorHistory) ||
+  //         JSON.stringify(currentKeys) !==
+  //           JSON.stringify(history[history.length - 1].keyHistory)
+  //       ) {
+  //         console.log("history set");
+  //         //do not save duplicate histories with the same values
+  //         addToHistory(dataArray, currentKeys);
+  //       }
+  //     }
+  //   }
+  // }, [dataArray]);
 
   useEffect(() => {
     if (!isHistoryBranchCreated) {
