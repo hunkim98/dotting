@@ -25,6 +25,7 @@ import { ColorGroups } from "../components/Editor/Toolbar/ColorGroups";
 import { ColorWindow } from "../components/Editor/ColorWindow";
 import * as mouseDragActions from "../store/modules/mouseEvent";
 import useMouseEvent from "../store/modules/mouseEventHook";
+import { useDispatch } from "react-redux";
 
 const Home: NextPage = () => {
   const defaultHeight: number = 32;
@@ -108,16 +109,8 @@ const Home: NextPage = () => {
     resetDataKeyState(colorData, keyData);
   };
 
-  useEffect(() => {
-    document.addEventListener("mousedown", () => {
-      mouseDown();
-    });
-    document.addEventListener("mouseup", () => {
-      mouseUp();
-    });
-    // document.addEventListener("mousedown", on);
-  }, []);
-  const { mouseDown, mouseUp } = useMouseEvent();
+  const dispatch = useDispatch();
+  // const { mouseDown, mouseUp } = useMouseEvent();
   console.log("index");
 
   return (
@@ -138,10 +131,12 @@ const Home: NextPage = () => {
         // onMouseDown={enableMouseDragDraw}
         // onMouseUp={disableMouseDragDraw}
         // onMouseLeave={disableMouseDragDraw}
-        onMouseDown={mouseDown}
-        onMouseUp={mouseUp}
-        // onMouseDown={() => {}}
-        // onMouseUp={() => {}}
+        onMouseDown={() => {
+          dispatch(mouseDragActions.mouseClickOn());
+        }}
+        onMouseUp={() => {
+          dispatch(mouseDragActions.mouseClickOff());
+        }}
         onMouseLeave={() => {}}
       >
         <h1>Pixel Create Character</h1>

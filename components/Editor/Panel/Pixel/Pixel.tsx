@@ -26,40 +26,40 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor }) => {
   // const { mouseDrag } = useContext(MouseDragContext);
   const { color } = useContext(ColorContext);
 
-  const applyColor = () => {
-    setColorString(color);
-  };
+  // const applyColor = () => {
+  //   setColorString(color);
+  // };
 
-  // const applyColor = useCallback(() => {
-  //   setPixelColor(color);
-  //   setCanChangeColor(false);
-  //   const existingPixel = dataArray.find((item: dataArrayElement) => {
-  //     return item.rowIndex === rowIndex && item.columnIndex === columnIndex;
-  //   }); //this checks if the index already exists
-  //   if (existingPixel) {
-  //     if (existingPixel.color !== color) {
-  //       //save only when the color is not the previous one
-  //       const newData = dataArray.map((item: dataArrayElement) => {
-  //         if (item.rowIndex === rowIndex && item.columnIndex === columnIndex) {
-  //           return {
-  //             rowIndex: rowIndex,
-  //             columnIndex: columnIndex,
-  //             color: color,
-  //             name: color,
-  //           };
-  //         } else {
-  //           return item;
-  //         }
-  //       });
-  //       setDataArray(newData);
-  //     }
-  //   } else {
-  //     setDataArray([
-  //       ...dataArray,
-  //       { rowIndex, columnIndex, color, name: color },
-  //     ]);
-  //   }
-  // }, [dataArray, color, rowIndex, columnIndex]);
+  const applyColor = useCallback(() => {
+    setPixelColor(color);
+    setCanChangeColor(false);
+    const existingPixel = dataArray.find((item: dataArrayElement) => {
+      return item.rowIndex === rowIndex && item.columnIndex === columnIndex;
+    }); //this checks if the index already exists
+    if (existingPixel) {
+      if (existingPixel.color !== color) {
+        //save only when the color is not the previous one
+        const newData = dataArray.map((item: dataArrayElement) => {
+          if (item.rowIndex === rowIndex && item.columnIndex === columnIndex) {
+            return {
+              rowIndex: rowIndex,
+              columnIndex: columnIndex,
+              color: color,
+              name: color,
+            };
+          } else {
+            return item;
+          }
+        });
+        setDataArray(newData);
+      }
+    } else {
+      setDataArray([
+        ...dataArray,
+        { rowIndex, columnIndex, color, name: color },
+      ]);
+    }
+  }, [dataArray, color, rowIndex, columnIndex]);
 
   const changeColorOnHover = useCallback(() => {
     setOldColor(pixelColor);
