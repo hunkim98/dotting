@@ -24,10 +24,11 @@ import { ColorPicker } from "../components/Editor/Toolbar/ColorPicker";
 import { ColorGroups } from "../components/Editor/Toolbar/ColorGroups";
 import { ColorWindow } from "../components/Editor/ColorWindow";
 import * as mouseDragActions from "../store/modules/mouseEvent";
-import useMouseEvent from "../store/modules/mouseEventHook";
 import { useDispatch } from "react-redux";
+import { initialize, pixelDataElement } from "../store/modules/pixelData";
 
 const Home: NextPage = () => {
+  const dispatch = useDispatch();
   const defaultHeight: number = 32;
   const defaultWidth: number = 32;
 
@@ -45,6 +46,14 @@ const Home: NextPage = () => {
 
   // const { dataArray, setDataArray, setHistory, setHistoryIndex } =
   //   useContext(DataContext);
+
+  const [canvasSize, setCanvasSize] = useState<{
+    width: number;
+    height: number;
+  }>({
+    width: defaultWidth,
+    height: defaultHeight,
+  });
 
   const [keyData, setKeyData] = useState<PanelKeys>({
     L_key: 0,
@@ -82,6 +91,19 @@ const Home: NextPage = () => {
 
   const resetOrStartPanel = useCallback(() => {
     initializeDrawingPanel();
+    const temp: pixelDataElement[][] = [];
+    for (let i = 0; i < canvasSize.height; i++) {
+      temp.push([]);
+      for (let j = 0; j < canvasSize.width; j++) {
+        temp[i].push({
+          rowIndex: i,
+          columnIndex: j,
+          color: undefined,
+          name: undefined,
+        });
+      }
+    }
+    dispatch(initialize({ initialData: temp }));
     // setDataArray([]);
     // setHistory([]);
     // setHistoryIndex(0);
@@ -109,7 +131,6 @@ const Home: NextPage = () => {
     resetDataKeyState(colorData, keyData);
   };
 
-  const dispatch = useDispatch();
   // const { mouseDown, mouseUp } = useMouseEvent();
   console.log("index");
 

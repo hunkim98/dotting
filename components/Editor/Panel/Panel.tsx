@@ -7,9 +7,7 @@ import {
 } from "../../../const/CommonDTO";
 import { range } from "../../../const/CommonFunctions";
 import { DataContext } from "../../../context/DataContext";
-import useMouseEvent from "../../../store/modules/mouseEventHook";
-import { Pixel } from "./Pixel";
-import { PixelBorder } from "./PixelBorder";
+
 import { PixelBordersContainer } from "./PixelBordersContainer";
 import { PixelsContainer } from "./PixelsContainer";
 import * as S from "./styles";

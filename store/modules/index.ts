@@ -1,7 +1,8 @@
 import { combineReducers } from "@reduxjs/toolkit";
 import mouseEvent from "./mouseEvent";
+import pixelData from "./pixelData";
 
-const rootReducer = combineReducers({ mouseEvent });
+const rootReducer = combineReducers({ mouseEvent, pixelData });
 
 export default rootReducer;
 
