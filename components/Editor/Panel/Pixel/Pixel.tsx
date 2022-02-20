@@ -23,7 +23,7 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor }) => {
   const [canChangeColor, setCanChangeColor] = useState(true);
 
   const { isLeftClicked } = useSelector((state: RootState) => state.mouseEvent);
-  const { data } = useSelector((state: RootState) => state.pixelData);
+  // const { data } = useSelector((state: RootState) => state.pixelData);
 
   const { color } = useContext(ColorContext);
 
@@ -89,7 +89,7 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor }) => {
       onMouseDown={applyColor}
       onMouseOver={isLeftClicked ? applyColor : changeColorOnHover}
       onMouseLeave={reset}
-      style={{ backgroundColor: data[rowIndex][columnIndex].color }}
+      // style={{ backgroundColor: data[rowIndex][columnIndex].color }}
     ></S.Container>
   );
 };
