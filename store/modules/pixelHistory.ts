@@ -3,12 +3,14 @@ import { undoable } from "../helper/undoable";
 import { pixelDataElement } from "./pixelData";
 
 type pixelHistory = {
+  record: pixelDataElement[][];
   present: pixelDataElement[][];
   past: Array<any>;
   future: Array<any>;
 };
 
 const initialState: pixelHistory = {
+  record: [],
   present: [],
   past: [],
   future: [],
@@ -31,6 +33,7 @@ const pixelHistorySlice = createSlice({
         const newPast = state.past.slice(0, state.past.length - 1);
         state.past = newPast;
         state.present = previous;
+        state.record = previous;
         state.future = [state.present, ...state.future];
       }
     },
@@ -40,6 +43,7 @@ const pixelHistorySlice = createSlice({
         const newFuture = state.future.slice(1);
         state.past = [...state.past, state.present];
         state.present = next;
+        state.record = next;
         state.future = newFuture;
       }
     },

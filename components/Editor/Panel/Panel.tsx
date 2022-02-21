@@ -11,8 +11,10 @@ import { DataContext } from "../../../context/DataContext";
 import { PixelBordersContainer } from "./PixelBordersContainer";
 import { PixelsContainer } from "./PixelsContainer";
 import * as S from "./styles";
-import { useDispatch } from "react-redux";
-import { mouseClickOff, mouseClickOn } from "../../../store/modules/mouseEvent";
+import { useDispatch, useSelector } from "react-redux";
+import * as mouseEvent from "../../../store/modules/mouseEvent";
+import * as pixelHistory from "../../../store/modules/pixelHistory";
+import { RootState } from "../../../store/modules";
 
 interface Props {
   resetKeys: PanelKeys;
@@ -37,6 +39,10 @@ const Panel: React.FC<Props> = ({
   const [finalRows, setFinalRows] = useState<PixelDTO[][]>([]); //this is a 2d array
   const [randomKey, setRandomKey] = useState<number>(Math.random());
   const [panelColor, setPanelColor] = useState<dataArrayElement[]>([]);
+
+  const { record } = useSelector((state: RootState) => state.pixelHistory);
+
+  useEffect(() => {}, [record]);
 
   const {
     dataArray,
@@ -133,14 +139,13 @@ const Panel: React.FC<Props> = ({
   return (
     <S.Container
       onMouseDown={() => {
-        dispatch(mouseClickOn());
+        dispatch(mouseEvent.mouseClickOn());
       }}
       onMouseUp={() => {
-        // add data array to here
-        dispatch(mouseClickOff());
+        dispatch(mouseEvent.mouseClickOff());
       }}
       onMouseLeave={() => {
-        dispatch(mouseClickOff());
+        dispatch(mouseEvent.mouseClickOff());
       }}
     >
       <div>

@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { dataArrayElement } from "../../../../const/CommonDTO";
 import { ColorContext } from "../../../../context/ColorContext";
 import { DataContext } from "../../../../context/DataContext";

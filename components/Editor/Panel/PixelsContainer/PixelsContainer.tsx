@@ -10,7 +10,7 @@ import * as S from "./styles";
 
 interface Props {
   panelRef: any;
-  setIsHistoryBranchCreated: React.Dispatch<React.SetStateAction<boolean>>;
+  // setIsHistoryBranchCreated: React.Dispatch<React.SetStateAction<boolean>>;
   finalRows: PixelDTO[][];
   randomKey: number;
   currentKeys: PanelKeys;
@@ -19,7 +19,7 @@ interface Props {
 
 const PixelsContainer: React.FC<Props> = ({
   panelRef,
-  setIsHistoryBranchCreated,
+  // setIsHistoryBranchCreated,
   finalRows,
   randomKey,
   currentKeys,
@@ -31,7 +31,7 @@ const PixelsContainer: React.FC<Props> = ({
       ref={panelRef}
       onMouseDown={() => {
         //user committed an action while looking through histories
-        setIsHistoryBranchCreated(false);
+        // setIsHistoryBranchCreated(false);
       }}
     >
       {finalRows.map((X: PixelDTO[], Xindex: number) => {
