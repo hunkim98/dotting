@@ -103,7 +103,7 @@ const Home: NextPage = () => {
         });
       }
     }
-    dispatch(initialize(temp));
+    dispatch(initialize({ data: temp }));
     // setDataArray([]);
     // setHistory([]);
     // setHistoryIndex(0);

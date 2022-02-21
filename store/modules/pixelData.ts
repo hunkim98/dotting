@@ -19,9 +19,12 @@ const pixelDataSlice = createSlice({
   name: "pixelData",
   initialState,
   reducers: {
-    initialize: (state, actions: PayloadAction<pixelDataElement[][]>) => {
-      console.log(actions.payload);
-      state.data = actions.payload;
+    initialize: (
+      state,
+      actions: PayloadAction<{ data: pixelDataElement[][] }>
+    ) => {
+      console.log(actions.payload.data);
+      state.data = actions.payload.data;
     },
     update: (
       state,
