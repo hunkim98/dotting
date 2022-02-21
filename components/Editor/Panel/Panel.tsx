@@ -11,6 +11,8 @@ import { DataContext } from "../../../context/DataContext";
 import { PixelBordersContainer } from "./PixelBordersContainer";
 import { PixelsContainer } from "./PixelsContainer";
 import * as S from "./styles";
+import { useDispatch } from "react-redux";
+import { mouseClickOff, mouseClickOn } from "../../../store/modules/mouseEvent";
 
 interface Props {
   resetKeys: PanelKeys;
@@ -31,6 +33,7 @@ const Panel: React.FC<Props> = ({
   colorArray,
   setColorArray,
 }) => {
+  const dispatch = useDispatch();
   const [finalRows, setFinalRows] = useState<PixelDTO[][]>([]); //this is a 2d array
   const [randomKey, setRandomKey] = useState<number>(Math.random());
   const [panelColor, setPanelColor] = useState<dataArrayElement[]>([]);
@@ -128,7 +131,18 @@ const Panel: React.FC<Props> = ({
     }
   }, [historyIndex]);
   return (
-    <S.Container>
+    <S.Container
+      onMouseDown={() => {
+        dispatch(mouseClickOn());
+      }}
+      onMouseUp={() => {
+        // add data array to here
+        dispatch(mouseClickOff());
+      }}
+      onMouseLeave={() => {
+        dispatch(mouseClickOff());
+      }}
+    >
       <div>
         <button
           onClick={() => {

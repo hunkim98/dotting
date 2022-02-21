@@ -1,20 +1,10 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface pixelDataElement {
   rowIndex: number;
   columnIndex: number;
   color: string | undefined;
   name: string | undefined;
-}
-
-interface updateActions {
-  type: string;
-  payload: { color: string; rowIndex: number; columnIndex: number };
-}
-
-interface initializeActions {
-  type: string;
-  payload: { initialData: pixelDataElement[][] };
 }
 
 export type pixelData = {
@@ -29,11 +19,19 @@ const pixelDataSlice = createSlice({
   name: "pixelData",
   initialState,
   reducers: {
-    initialize: (state, actions: initializeActions) => {
-      console.log(actions.payload.initialData);
-      state.data = actions.payload.initialData;
+    initialize: (state, actions: PayloadAction<pixelDataElement[][]>) => {
+      console.log(actions.payload);
+      state.data = actions.payload;
     },
-    update: (state, actions: updateActions) => {
+    update: (
+      state,
+      actions: PayloadAction<{
+        color: string;
+        rowIndex: number;
+        columnIndex: number;
+      }>
+    ) => {
+      console.log(actions.payload);
       state.data[actions.payload.rowIndex][actions.payload.columnIndex].color =
         actions.payload.color;
     },

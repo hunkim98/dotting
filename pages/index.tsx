@@ -103,7 +103,7 @@ const Home: NextPage = () => {
         });
       }
     }
-    dispatch(initialize({ initialData: temp }));
+    dispatch(initialize(temp));
     // setDataArray([]);
     // setHistory([]);
     // setHistoryIndex(0);
@@ -153,10 +153,10 @@ const Home: NextPage = () => {
         // onMouseUp={disableMouseDragDraw}
         // onMouseLeave={disableMouseDragDraw}
         onMouseDown={() => {
-          dispatch(mouseDragActions.mouseClickOn());
+          // dispatch(mouseDragActions.mouseClickOn());
         }}
         onMouseUp={() => {
-          dispatch(mouseDragActions.mouseClickOff());
+          // dispatch(mouseDragActions.mouseClickOff());
         }}
         onMouseLeave={() => {}}
       >
