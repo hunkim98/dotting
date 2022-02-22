@@ -15,7 +15,7 @@ interface Props {
 
 const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor }) => {
   const dispatch = useDispatch();
-  const dispatch2 = useDispatch<{ type: "UNDO" }>();
+
   const [colorString, setColorString] = useState<string | undefined>(dataColor);
 
   const [pixelColor, setPixelColor] = useState<string | undefined>(dataColor);

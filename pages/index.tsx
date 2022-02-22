@@ -107,7 +107,7 @@ const Home: NextPage = () => {
     // setDataArray([]);
     // setHistory([]);
     // setHistoryIndex(0);
-  }, []);
+  }, [canvasSize]);
 
   const downloadImage = useCallback(() => {
     const pixelRef = document.getElementById("pixels");
@@ -163,6 +163,7 @@ const Home: NextPage = () => {
         <h1>Pixel Create Character</h1>
         {hideDrawingPanel && (
           <DimensionsInput
+            setCanvasSize={setCanvasSize}
             defaultHeight={defaultHeight}
             defaultWidth={defaultWidth}
             resetKeys={resetKeys}

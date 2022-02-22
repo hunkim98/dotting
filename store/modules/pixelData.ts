@@ -8,11 +8,17 @@ export interface pixelDataElement {
 }
 
 export type pixelData = {
-  data: pixelDataElement[][];
+  record: pixelDataElement[][];
+  present: pixelDataElement[][];
+  past: Array<any>;
+  future: Array<any>;
 };
 
 const initialState: pixelData = {
-  data: [],
+  record: [],
+  present: [],
+  past: [],
+  future: [],
 };
 
 const pixelDataSlice = createSlice({
@@ -24,7 +30,9 @@ const pixelDataSlice = createSlice({
       actions: PayloadAction<{ data: pixelDataElement[][] }>
     ) => {
       console.log(actions.payload.data);
-      state.data = actions.payload.data;
+      state.present = actions.payload.data;
+      state.record = actions.payload.data;
+      state.past = [actions.payload.data];
     },
     update: (
       state,
@@ -34,13 +42,41 @@ const pixelDataSlice = createSlice({
         columnIndex: number;
       }>
     ) => {
-      console.log(actions.payload);
-      state.data[actions.payload.rowIndex][actions.payload.columnIndex].color =
-        actions.payload.color;
+      state.present[actions.payload.rowIndex][
+        actions.payload.columnIndex
+      ].color = actions.payload.color;
+      if (state.future.length !== 0) {
+        state.future = [];
+      }
+    },
+    addToHistory: (state) => {
+      // add past history
+      console.log("addedToHistory!");
+      state.past = [...state.past, state.present];
+    },
+    undo: (state) => {
+      if (state.past.length > 0) {
+        const previous = state.past[state.past.length - 1];
+        const newPast = state.past.slice(0, state.past.length - 1);
+        state.past = newPast;
+        state.present = previous;
+        state.record = previous;
+        state.future = [state.present, ...state.future];
+      }
+    },
+    redo: (state) => {
+      if (state.future.length > 0) {
+        const next = state.future[0];
+        const newFuture = state.future.slice(1);
+        state.past = [...state.past, state.present];
+        state.present = next;
+        state.record = next;
+        state.future = newFuture;
+      }
     },
   },
 });
 
 const { reducer, actions } = pixelDataSlice;
-export const { update, initialize } = actions;
+export const { addToHistory, initialize, undo, redo, update } = actions;
 export default reducer;

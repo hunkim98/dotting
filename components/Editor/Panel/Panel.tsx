@@ -12,8 +12,7 @@ import { PixelBordersContainer } from "./PixelBordersContainer";
 import { PixelsContainer } from "./PixelsContainer";
 import * as S from "./styles";
 import { useDispatch, useSelector } from "react-redux";
-import * as mouseEvent from "../../../store/modules/mouseEvent";
-import * as pixelHistory from "../../../store/modules/pixelHistory";
+import * as pixelData from "../../../store/modules/pixelData";
 import { RootState } from "../../../store/modules";
 
 interface Props {
@@ -39,10 +38,7 @@ const Panel: React.FC<Props> = ({
   const [finalRows, setFinalRows] = useState<PixelDTO[][]>([]); //this is a 2d array
   const [randomKey, setRandomKey] = useState<number>(Math.random());
   const [panelColor, setPanelColor] = useState<dataArrayElement[]>([]);
-
-  const { record } = useSelector((state: RootState) => state.pixelHistory);
-
-  useEffect(() => {}, [record]);
+  console.log("panel renderd");
 
   const {
     dataArray,
@@ -137,47 +133,39 @@ const Panel: React.FC<Props> = ({
     }
   }, [historyIndex]);
   return (
-    <S.Container
-      onMouseDown={() => {
-        dispatch(mouseEvent.mouseClickOn());
-      }}
-      onMouseUp={() => {
-        dispatch(mouseEvent.mouseClickOff());
-      }}
-      onMouseLeave={() => {
-        dispatch(mouseEvent.mouseClickOff());
-      }}
-    >
+    <S.Container>
       <div>
         <button
           onClick={() => {
-            if (historyIndex > 0) {
-              console.log("this is index", historyIndex);
-              setHistoryIndex((X: number) => X - 1);
-              setIsHistoryBranchCreated(true);
-            }
+            // if (historyIndex > 0) {
+            //   console.log("this is index", historyIndex);
+            //   setHistoryIndex((X: number) => X - 1);
+            //   setIsHistoryBranchCreated(true);
+            // }
+            dispatch(pixelData.undo());
           }}
         >
           back
         </button>
         <button
           onClick={() => {
-            if (historyIndex < history.length) {
-              console.log("length", history.length);
-              console.log("forward index", historyIndex);
-              if (historyIndex + 1 === history.length) {
-                //going back to original
-                setColorArray(
-                  JSON.parse(JSON.stringify(history[historyIndex].colorHistory))
-                );
-                setResetKeys(
-                  JSON.parse(JSON.stringify(history[historyIndex].keyHistory))
-                );
-                console.log("setttt");
-                // setCreateNewHistory(false);
-              }
-              setHistoryIndex((X: number) => X + 1);
-            }
+            dispatch(pixelData.redo());
+            //   if (historyIndex < history.length) {
+            //     console.log("length", history.length);
+            //     console.log("forward index", historyIndex);
+            //     if (historyIndex + 1 === history.length) {
+            //       //going back to original
+            //       setColorArray(
+            //         JSON.parse(JSON.stringify(history[historyIndex].colorHistory))
+            //       );
+            //       setResetKeys(
+            //         JSON.parse(JSON.stringify(history[historyIndex].keyHistory))
+            //       );
+            //       console.log("setttt");
+            //       // setCreateNewHistory(false);
+            //     }
+            //     setHistoryIndex((X: number) => X + 1);
+            //   }
           }}
         >
           forward
@@ -270,17 +258,13 @@ const Panel: React.FC<Props> = ({
         </S.WidthControlContainer>
         <PixelsContainer
           panelRef={panelRef}
-          setIsHistoryBranchCreated={setIsHistoryBranchCreated}
-          finalRows={finalRows}
-          randomKey={randomKey}
-          currentKeys={currentKeys}
-          panelColor={panelColor}
+          // setIsHistoryBranchCreated={setIsHistoryBranchCreated}
+          // finalRows={finalRows}
+          // randomKey={randomKey}
+          // currentKeys={currentKeys}
+          // panelColor={panelColor}
         />
-        <PixelBordersContainer
-          finalRows={finalRows}
-          randomKey={randomKey}
-          currentKeys={currentKeys}
-        />
+        <PixelBordersContainer />
 
         <S.WidthControlContainer location="right">
           <button

@@ -7,12 +7,14 @@ interface Props {
   defaultHeight: number;
   resetKeys: PanelKeys;
   setResetKeys: Dispatch<SetStateAction<PanelKeys>>;
+  setCanvasSize: Dispatch<SetStateAction<{ width: number; height: number }>>;
 }
 const DimensionsInput: React.FC<Props> = ({
   defaultWidth,
   defaultHeight,
   resetKeys,
   setResetKeys,
+  setCanvasSize,
 }) => {
   return (
     <>
@@ -23,6 +25,9 @@ const DimensionsInput: React.FC<Props> = ({
             type="number"
             defaultValue={defaultWidth}
             onChange={(e) => {
+              setCanvasSize((size) => {
+                return { ...size, width: Number(e.target.value) };
+              });
               setResetKeys({
                 ...resetKeys,
                 R_key: Number(e.target.value) - 1,
@@ -36,6 +41,9 @@ const DimensionsInput: React.FC<Props> = ({
             type="number"
             defaultValue={defaultHeight}
             onChange={(e) => {
+              setCanvasSize((size) => {
+                return { ...size, height: Number(e.target.value) };
+              });
               setResetKeys({
                 ...resetKeys,
                 B_key: Number(e.target.value) - 1,
