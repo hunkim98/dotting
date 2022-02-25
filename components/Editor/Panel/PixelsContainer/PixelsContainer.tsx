@@ -53,11 +53,11 @@ const PixelsContainer: React.FC<Props> = ({
       }}
       onMouseUp={() => {
         dispatch(mouseEvent.mouseClickOff());
-        dispatch(pixelDataRedux.addToHistory());
+        // dispatch(pixelDataRedux.addToHistory());
       }}
       onMouseLeave={() => {
         dispatch(mouseEvent.mouseClickOff());
-        dispatch(pixelDataRedux.addToHistory());
+        // dispatch(pixelDataRedux.addToHistory());
       }}
     >
       {pixelData.map((row, rowIndex) => {
@@ -66,6 +66,7 @@ const PixelsContainer: React.FC<Props> = ({
             {row.map((column, columnIndex) => {
               return (
                 <Pixel
+                  id={`row${rowIndex}column${columnIndex}`}
                   key={columnIndex}
                   rowIndex={rowIndex}
                   columnIndex={columnIndex}

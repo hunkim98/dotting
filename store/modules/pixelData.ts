@@ -45,15 +45,29 @@ const pixelDataSlice = createSlice({
       state.present[actions.payload.rowIndex][
         actions.payload.columnIndex
       ].color = actions.payload.color;
+
+      console.log("updated!");
+
+      const pastLength = state.past.length;
+      console.log(pastLength);
+      if (pastLength > 30) {
+        state.past = state.past.slice(1);
+      }
+      state.past = [...state.past, state.present];
       if (state.future.length !== 0) {
         state.future = [];
       }
     },
-    addToHistory: (state) => {
-      // add past history
-      console.log("addedToHistory!");
-      state.past = [...state.past, state.present];
-    },
+    // addToHistory: (state) => {
+    //   // add past history
+    //   console.log("addedToHistory!");
+    //   const pastLength = state.past.length;
+    //   console.log(pastLength);
+    //   if (pastLength > 30) {
+    //     state.past = state.past.slice(1);
+    //   }
+    //   state.past = [...state.past, state.present];
+    // },
     undo: (state) => {
       if (state.past.length > 0) {
         const previous = state.past[state.past.length - 1];
@@ -78,5 +92,5 @@ const pixelDataSlice = createSlice({
 });
 
 const { reducer, actions } = pixelDataSlice;
-export const { addToHistory, initialize, undo, redo, update } = actions;
+export const { initialize, undo, redo, update } = actions;
 export default reducer;

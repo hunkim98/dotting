@@ -5,15 +5,17 @@ import { DataContext } from "../../../../context/DataContext";
 import * as S from "./styles";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store/modules";
-import * as pixelDataApi from "../../../../store/modules/pixelData";
+import * as pixelDataRedux from "../../../../store/modules/pixelData";
+import { modifyPixelById } from "../../../../const/PixelFunctions";
 
 interface Props {
+  id: string;
   rowIndex: number;
   columnIndex: number;
   dataColor?: string;
 }
 
-const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor }) => {
+const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
   const dispatch = useDispatch();
 
   const [colorString, setColorString] = useState<string | undefined>(dataColor);
@@ -28,15 +30,22 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor }) => {
   const { color } = useContext(ColorContext);
 
   const applyColor = () => {
+    // dispatch(
+    //   pixelDataApi.update({
+    //     rowIndex: rowIndex,
+    //     columnIndex: columnIndex,
+    //     color,
+    //   })
+    // );
+    // setColorString(color);
+    modifyPixelById(rowIndex, columnIndex, color, color);
     dispatch(
-      pixelDataApi.update({
+      pixelDataRedux.update({
         rowIndex: rowIndex,
         columnIndex: columnIndex,
         color,
       })
     );
-
-    setColorString(color);
   };
 
   // const applyColor = useCallback(() => {
@@ -84,7 +93,8 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor }) => {
 
   return (
     <S.Container
-      color={colorString}
+      id={id}
+      color={pixelColor}
       draggable="false"
       onMouseDown={applyColor}
       onMouseOver={isLeftClicked ? applyColor : changeColorOnHover}
