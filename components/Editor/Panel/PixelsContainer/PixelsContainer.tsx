@@ -37,32 +37,31 @@ const PixelsContainer: React.FC<Props> = ({
   const [randomKey, setRandomKey] = useState<number>(Math.random());
   useEffect(() => {
     console.log("hiy");
-    console.log(record);
+    // console.log(record);
     setPixelData(record);
     setRandomKey(Math.random());
   }, [record]);
-  useEffect(() => {
-    console.log("thithihihis", pixelData);
-  }, [pixelData]);
   return (
     <div
-      id="pixels"
+      id="pixelsContainer"
       ref={panelRef}
       onMouseDown={() => {
         dispatch(mouseEvent.mouseClickOn());
       }}
       onMouseUp={() => {
         dispatch(mouseEvent.mouseClickOff());
-        // dispatch(pixelDataRedux.addToHistory());
       }}
       onMouseLeave={() => {
         dispatch(mouseEvent.mouseClickOff());
-        // dispatch(pixelDataRedux.addToHistory());
       }}
     >
       {pixelData.map((row, rowIndex) => {
         return (
-          <S.Row key={rowIndex + randomKey} className="row">
+          <S.Row
+            id={`row${rowIndex}`}
+            key={rowIndex + randomKey}
+            className="row"
+          >
             {row.map((column, columnIndex) => {
               return (
                 <Pixel

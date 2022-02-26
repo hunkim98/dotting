@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   dataArrayElement,
   PanelKeys,
@@ -11,13 +11,16 @@ import { DataContext } from "../../../context/DataContext";
 import { PixelBordersContainer } from "./PixelBordersContainer";
 import { PixelsContainer } from "./PixelsContainer";
 import * as S from "./styles";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, Provider } from "react-redux";
 import * as pixelData from "../../../store/modules/pixelData";
+import ReactDOM from "react-dom";
 import { RootState } from "../../../store/modules";
+import { Pixel } from "./Pixel";
+import { store } from "../../../store/configureStore";
 
 interface Props {
   resetKeys: PanelKeys;
-  panelRef: any;
+  panelRef: HTMLDivElement;
   setResetKeys: React.Dispatch<React.SetStateAction<PanelKeys>>;
   currentKeys: PanelKeys;
   setCurrentKeys: React.Dispatch<React.SetStateAction<PanelKeys>>;
@@ -173,19 +176,40 @@ const Panel: React.FC<Props> = ({
       </div>
       <S.HeightControlContainer>
         <button
-          onMouseDown={() => {
-            //user committed an action while looking through histories
-            setIsHistoryBranchCreated(false);
-          }}
           onClick={() => {
-            const tempRow: PixelDTO[] = [];
-            for (let i = currentKeys.L_key; i <= currentKeys.R_key; i++) {
-              tempRow.push({ rowIndex: currentKeys.T_key - 1, columnIndex: i });
+            const rows = document.getElementsByClassName("row");
+            const pixels = document.getElementsByClassName("pixel");
+            const pixelsContainer = document.getElementById("pixelsContainer");
+            console.log(rows.length);
+            const columnLength = pixels.length / rows.length;
+            // const element = <h1>hi</h1>;
+            // ReactDOM.render(element, pixels);
+            const rowIndex = Math.random();
+            const rowElement = document.createElement("div");
+            rowElement.id = `row${rowIndex}`;
+            rowElement.style.display = "flex";
+            pixelsContainer?.insertBefore(rowElement, rows[0]);
+            console.log("hey");
+            console.log(columnLength);
+            const columns: JSX.Element[] = [];
+            for (let i = 0; i < columnLength; i++) {
+              columns.push(
+                <Pixel
+                  key={`row${rowIndex}columns${i}`}
+                  id={`row${rowIndex}columns${i}`}
+                  rowIndex={rowIndex}
+                  columnIndex={i}
+                />
+              );
             }
-            setFinalRows((X: PixelDTO[][]) => {
-              return [tempRow, ...X];
-            });
-            setCurrentKeys({ ...currentKeys, T_key: currentKeys.T_key - 1 });
+            ReactDOM.render(
+              <Provider store={store()}>{columns}</Provider>,
+              document.getElementById(`row${rowIndex}`)
+            );
+
+            console.log("renderERROR");
+
+            // panelRef.insertBefore(element, rows[0]);
           }}
         >
           +
@@ -211,50 +235,8 @@ const Panel: React.FC<Props> = ({
       </S.HeightControlContainer>
       <S.PixelsCanvasContainer>
         <S.WidthControlContainer location="left">
-          <button
-            onMouseDown={() => {
-              //user committed an action while looking through histories
-              setIsHistoryBranchCreated(false);
-            }}
-            onClick={() => {
-              const tempColumnIndex = currentKeys.L_key - 1;
-              setFinalRows(
-                finalRows.map((X: PixelDTO[], index: number) => {
-                  const tempRow: PixelDTO[] = [
-                    {
-                      rowIndex: currentKeys.T_key + index,
-                      columnIndex: tempColumnIndex,
-                    },
-                    ...X,
-                  ];
-                  return tempRow;
-                })
-              );
-              setCurrentKeys({ ...currentKeys, L_key: currentKeys.L_key - 1 });
-            }}
-          >
-            +
-          </button>
-          <button
-            onMouseDown={() => {
-              //user committed an action while looking through histories
-              setIsHistoryBranchCreated(false);
-            }}
-            onClick={() => {
-              if (currentKeys.R_key - currentKeys.L_key > 1) {
-                setFinalRows(
-                  finalRows.map((X: PixelDTO[]) => {
-                    return X.filter((Y, index) => {
-                      return index !== 0;
-                    });
-                  })
-                );
-              }
-              setCurrentKeys({ ...currentKeys, L_key: currentKeys.L_key + 1 });
-            }}
-          >
-            -
-          </button>
+          <button onClick={() => {}}>+</button>
+          <button onClick={() => {}}>-</button>
         </S.WidthControlContainer>
         <PixelsContainer
           panelRef={panelRef}

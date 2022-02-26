@@ -3,10 +3,12 @@ import { dataArrayElement } from "../../../../const/CommonDTO";
 import { ColorContext } from "../../../../context/ColorContext";
 import { DataContext } from "../../../../context/DataContext";
 import * as S from "./styles";
-import { useDispatch, useSelector } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store/modules";
 import * as pixelDataRedux from "../../../../store/modules/pixelData";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
+import React from "react";
+import { store } from "../../../../store/configureStore";
 
 interface Props {
   id: string;
@@ -15,38 +17,46 @@ interface Props {
   dataColor?: string;
 }
 
+// const memoComparison = (prevProps: Props, nextProps: Props) => {
+//   console.log(prevProps.dataColor === nextProps.dataColor);
+//   return (
+//     prevProps.dataColor === nextProps.dataColor &&
+//     prevProps.columnIndex === nextProps.columnIndex &&
+//     prevProps.rowIndex === nextProps.rowIndex
+//   );
+// };
+
 const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
+  if (rowIndex === 0 && columnIndex === 0) {
+    console.log("pixel rendered");
+  }
+
   const dispatch = useDispatch();
-
-  const [colorString, setColorString] = useState<string | undefined>(dataColor);
-
   const [pixelColor, setPixelColor] = useState<string | undefined>(dataColor);
   const [oldColor, setOldColor] = useState(pixelColor);
   const [canChangeColor, setCanChangeColor] = useState(true);
 
-  const { isLeftClicked } = useSelector((state: RootState) => state.mouseEvent);
+  const isLeftClicked = useSelector(
+    (state: RootState) => state.mouseEvent.isLeftClicked
+  );
   // const { data } = useSelector((state: RootState) => state.pixelData);
 
   const { color } = useContext(ColorContext);
 
-  const applyColor = () => {
-    // dispatch(
-    //   pixelDataApi.update({
-    //     rowIndex: rowIndex,
-    //     columnIndex: columnIndex,
-    //     color,
-    //   })
-    // );
-    // setColorString(color);
-    modifyPixelById(rowIndex, columnIndex, color, color);
-    dispatch(
-      pixelDataRedux.update({
-        rowIndex: rowIndex,
-        columnIndex: columnIndex,
-        color,
-      })
-    );
-  };
+  const applyColor =
+    // useCallback(
+    () => {
+      console.log(rowIndex, columnIndex);
+      modifyPixelById(rowIndex, columnIndex, color, color);
+      dispatch(
+        pixelDataRedux.update({
+          rowIndex: rowIndex,
+          columnIndex: columnIndex,
+          color,
+        })
+      );
+    };
+  // , [rowIndex, columnIndex, color]);
 
   // const applyColor = useCallback(() => {
   //   setPixelColor(color);
@@ -94,6 +104,7 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
   return (
     <S.Container
       id={id}
+      className="pixel"
       color={pixelColor}
       draggable="false"
       onMouseDown={applyColor}
@@ -103,5 +114,4 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
     ></S.Container>
   );
 };
-
 export default Pixel;
