@@ -7,11 +7,45 @@ export interface pixelDataElement {
   name: string | undefined;
 }
 
+export interface pixelIndexes {
+  topRowIndex: number;
+  bottomRowIndex: number;
+  leftColumnIndex: number;
+  rightColumnIndex: number;
+}
+
+export enum pixelChangeActionType {
+  PIXEL_CHANGE,
+  ROW_CHANGE,
+}
+
+export interface pixelChange {
+  action: pixelChangeActionType.PIXEL_CHANGE;
+  before: pixelDataElement[];
+  after: pixelDataElement[];
+}
+
+export interface rowChange {
+  action: pixelChangeActionType.ROW_CHANGE;
+  before: pixelDataElement;
+  after: undefined;
+}
+
+export interface pixelRecord {
+  actions: number;
+  indexes: pixelIndexes;
+}
+
 export type pixelData = {
   record: pixelDataElement[][];
   present: pixelDataElement[][];
   past: Array<any>;
   future: Array<any>;
+  topRowIndex: number;
+  bottomRowIndex: number;
+  leftColumnIndex: number;
+  rightColumnIndex: number;
+  actionHistory: (pixelChange | rowChange)[];
 };
 
 const initialState: pixelData = {
@@ -19,6 +53,11 @@ const initialState: pixelData = {
   present: [],
   past: [],
   future: [],
+  topRowIndex: 0,
+  bottomRowIndex: 0,
+  leftColumnIndex: 0,
+  rightColumnIndex: 0,
+  actionHistory: [],
 };
 
 const pixelDataSlice = createSlice({
@@ -30,10 +69,15 @@ const pixelDataSlice = createSlice({
       actions: PayloadAction<{ data: pixelDataElement[][] }>
     ) => {
       console.log(actions.payload.data);
+      state.topRowIndex = 0;
+      state.bottomRowIndex = actions.payload.data.length;
+      state.leftColumnIndex = 0;
+      state.rightColumnIndex = actions.payload.data[0].length;
       state.present = actions.payload.data;
       state.record = actions.payload.data;
       state.past = [actions.payload.data];
     },
+    update1: (state, action: PayloadAction<pixelChange | rowChange>) => {},
     update: (
       state,
       actions: PayloadAction<{
