@@ -31,6 +31,7 @@ const Home: NextPage = () => {
   const dispatch = useDispatch();
   const defaultHeight: number = 32;
   const defaultWidth: number = 32;
+  const [initialData, setInitialData] = useState<pixelDataElement[][]>([]);
 
   const [hideOptions, setHideOptions] = useState<boolean>(false);
   const [hideDrawingPanel, setHideDrawingPanel] = useState<boolean>(true);
@@ -40,12 +41,7 @@ const Home: NextPage = () => {
   );
   const [openChangePanel, setOpenChangePanel] = useState<boolean>(false);
   const [openChangePanelKey, setOpenChangePanelKey] = useState<string>("");
-  const panelRef = useRef<any>(null);
-
-  // const { color, changeColor } = useContext(ColorContext);
-
-  // const { dataArray, setDataArray, setHistory, setHistoryIndex } =
-  //   useContext(DataContext);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const [canvasSize, setCanvasSize] = useState<{
     width: number;
@@ -55,26 +51,26 @@ const Home: NextPage = () => {
     height: defaultHeight,
   });
 
-  const [keyData, setKeyData] = useState<PanelKeys>({
-    L_key: 0,
-    R_key: defaultWidth - 1,
-    T_key: 0,
-    B_key: defaultWidth - 1,
-  });
+  // const [keyData, setKeyData] = useState<PanelKeys>({
+  //   L_key: 0,
+  //   R_key: defaultWidth - 1,
+  //   T_key: 0,
+  //   B_key: defaultWidth - 1,
+  // });
 
-  const [resetKeys, setResetKeys] = useState<PanelKeys>({
-    L_key: 0,
-    R_key: defaultWidth - 1,
-    T_key: 0,
-    B_key: defaultWidth - 1,
-  });
+  // const [resetKeys, setResetKeys] = useState<PanelKeys>({
+  //   L_key: 0,
+  //   R_key: defaultWidth - 1,
+  //   T_key: 0,
+  //   B_key: defaultWidth - 1,
+  // });
 
-  const [currentKeys, setCurrentKeys] = useState<PanelKeys>({
-    L_key: 0,
-    R_key: defaultWidth - 1,
-    T_key: 0,
-    B_key: defaultWidth - 1,
-  });
+  // const [currentKeys, setCurrentKeys] = useState<PanelKeys>({
+  //   L_key: 0,
+  //   R_key: defaultWidth - 1,
+  //   T_key: 0,
+  //   B_key: defaultWidth - 1,
+  // });
 
   const [colorArray, setColorArray] = useState<dataArrayElement[]>([]);
 
@@ -103,6 +99,7 @@ const Home: NextPage = () => {
         });
       }
     }
+    setInitialData(temp);
     dispatch(initialize({ data: temp }));
     // setDataArray([]);
     // setHistory([]);
@@ -110,8 +107,9 @@ const Home: NextPage = () => {
   }, [canvasSize]);
 
   const downloadImage = useCallback(() => {
-    const pixelRef = document.getElementById("pixels");
-    downloadImageRef(pixelRef);
+    // const pixelRef = document.getElementById("pixelsContainer");
+    console.log(panelRef);
+    downloadImageRef(panelRef.current);
   }, []);
 
   // const saveProject = useCallback(() => {
@@ -119,16 +117,16 @@ const Home: NextPage = () => {
   //   setColorData(JSON.parse(JSON.stringify(dataArray)));
   // }, [currentKeys, dataArray]);
 
-  const resetDataKeyState = useCallback(
-    (colorDataArray: rowColumnColor[], keyDataArray: PanelKeys) => {
-      setColorArray(JSON.parse(JSON.stringify(colorDataArray)));
-      setResetKeys(JSON.parse(JSON.stringify(keyDataArray)));
-    },
-    []
-  );
+  // const resetDataKeyState = useCallback(
+  //   (colorDataArray: rowColumnColor[], keyDataArray: PanelKeys) => {
+  //     setColorArray(JSON.parse(JSON.stringify(colorDataArray)));
+  //     setResetKeys(JSON.parse(JSON.stringify(keyDataArray)));
+  //   },
+  //   []
+  // );
 
   const bringSavedProject = () => {
-    resetDataKeyState(colorData, keyData);
+    // resetDataKeyState(colorData, keyData);
   };
 
   // const { mouseDown, mouseUp } = useMouseEvent();
@@ -166,8 +164,8 @@ const Home: NextPage = () => {
             setCanvasSize={setCanvasSize}
             defaultHeight={defaultHeight}
             defaultWidth={defaultWidth}
-            resetKeys={resetKeys}
-            setResetKeys={setResetKeys}
+            // resetKeys={resetKeys}
+            // setResetKeys={setResetKeys}
           />
         )}
         <PanelUpperButtons
@@ -177,12 +175,13 @@ const Home: NextPage = () => {
         {hideOptions && (
           <>
             <Panel
+              initialData={initialData}
               panelRef={panelRef}
-              resetKeys={resetKeys}
-              currentKeys={currentKeys}
-              setCurrentKeys={setCurrentKeys}
+              // resetKeys={resetKeys}
+              // currentKeys={currentKeys}
+              // setCurrentKeys={setCurrentKeys}
               colorArray={colorArray}
-              setResetKeys={setResetKeys}
+              // setResetKeys={setResetKeys}
               setColorArray={setColorArray}
             />
           </>

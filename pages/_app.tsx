@@ -11,18 +11,20 @@ import { store } from "../store/configureStore";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <MouseDragContextProvider>
-      <DataContextProvider>
-        <ColorContextProvider>
-          <DraggableContextProvider>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </DraggableContextProvider>
-        </ColorContextProvider>
-      </DataContextProvider>
-    </MouseDragContextProvider>
+    <Provider store={store()}>
+      <MouseDragContextProvider>
+        <DataContextProvider>
+          <ColorContextProvider>
+            <DraggableContextProvider>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </DraggableContextProvider>
+          </ColorContextProvider>
+        </DataContextProvider>
+      </MouseDragContextProvider>
+    </Provider>
   );
 }
 
-export default wrapper.withRedux(MyApp);
+export default MyApp;

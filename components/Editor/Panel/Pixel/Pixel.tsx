@@ -3,42 +3,33 @@ import { dataArrayElement } from "../../../../const/CommonDTO";
 import { ColorContext } from "../../../../context/ColorContext";
 import { DataContext } from "../../../../context/DataContext";
 import * as S from "./styles";
-import { Provider, useDispatch, useSelector } from "react-redux";
+import { connect, Provider, useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store/modules";
 import * as pixelDataRedux from "../../../../store/modules/pixelData";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
-import React from "react";
-import { store } from "../../../../store/configureStore";
+import React, { MouseEvent } from "react";
 
-interface Props {
+type OwnProps = {
   id: string;
   rowIndex: number;
   columnIndex: number;
   dataColor?: string;
-}
+};
 
-// const memoComparison = (prevProps: Props, nextProps: Props) => {
-//   console.log(prevProps.dataColor === nextProps.dataColor);
-//   return (
-//     prevProps.dataColor === nextProps.dataColor &&
-//     prevProps.columnIndex === nextProps.columnIndex &&
-//     prevProps.rowIndex === nextProps.rowIndex
-//   );
-// };
+type Props = OwnProps; //OwnProps & OtherProps
 
 const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
-  if (rowIndex === 0 && columnIndex === 0) {
-    console.log("pixel rendered");
+  const isLeftClicked = useSelector(
+    (state: RootState) => state.mouseEvent.isLeftClicked
+  );
+  if (rowIndex === -1 && columnIndex === 0) {
+    console.log("pixel rendered", isLeftClicked);
   }
 
-  const dispatch = useDispatch();
   const [pixelColor, setPixelColor] = useState<string | undefined>(dataColor);
   const [oldColor, setOldColor] = useState(pixelColor);
   const [canChangeColor, setCanChangeColor] = useState(true);
 
-  const isLeftClicked = useSelector(
-    (state: RootState) => state.mouseEvent.isLeftClicked
-  );
   // const { data } = useSelector((state: RootState) => state.pixelData);
 
   const { color } = useContext(ColorContext);
@@ -46,16 +37,34 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
   const applyColor =
     // useCallback(
     () => {
-      console.log(rowIndex, columnIndex);
+      console.log(rowIndex, columnIndex, isLeftClicked);
       modifyPixelById(rowIndex, columnIndex, color, color);
-      dispatch(
-        pixelDataRedux.update({
-          rowIndex: rowIndex,
-          columnIndex: columnIndex,
-          color,
-        })
-      );
+      // dispatch(
+      //   pixelDataRedux.update({
+      //     rowIndex: rowIndex,
+      //     columnIndex: columnIndex,
+      //     color,
+      //   })
+      // );
     };
+  const onMouseDownHandler: React.MouseEventHandler<HTMLDivElement> = (
+    event: MouseEvent
+  ) => {
+    if (event.buttons === 1) {
+      applyColor();
+    }
+  };
+
+  const onMouseOverHandler: React.MouseEventHandler<HTMLDivElement> = (
+    event: MouseEvent
+  ) => {
+    console.log(event);
+    if (event.buttons === 1) {
+      applyColor();
+    } else {
+      changeColorOnHover();
+    }
+  };
   // , [rowIndex, columnIndex, color]);
 
   // const applyColor = useCallback(() => {
@@ -88,17 +97,25 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
   //     ]);
   //   }
   // }, [dataArray, color, rowIndex, columnIndex]);
+  useEffect(() => {
+    if (rowIndex === -1) {
+      console.log("leftCLICKEKD");
+    }
+  }, [isLeftClicked]);
 
-  const changeColorOnHover = useCallback(() => {
+  const changeColorOnHover = () => {
     setOldColor(pixelColor);
     setPixelColor(color);
-  }, [pixelColor, color]);
+  };
 
   const reset = useCallback(() => {
-    if (canChangeColor) {
+    if (!isLeftClicked) {
       setPixelColor(oldColor);
     }
-    setCanChangeColor(true);
+    // if (canChangeColor) {
+    //   setPixelColor(oldColor);
+    // }
+    // setCanChangeColor(true);
   }, [oldColor, canChangeColor]);
 
   return (
@@ -107,11 +124,18 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
       className="pixel"
       color={pixelColor}
       draggable="false"
-      onMouseDown={applyColor}
-      onMouseOver={isLeftClicked ? applyColor : changeColorOnHover}
+      onMouseDown={onMouseDownHandler}
+      onMouseOver={onMouseOverHandler}
       onMouseLeave={reset}
       // style={{ backgroundColor: data[rowIndex][columnIndex].color }}
     ></S.Container>
   );
 };
+
+// function mapStateToProps(state: RootState) {
+//   return {
+//     isLeftClicked: state.mouseEvent.isLeftClicked,
+//   };
+// }
+
 export default Pixel;

@@ -17,23 +17,27 @@ import ReactDOM from "react-dom";
 import { RootState } from "../../../store/modules";
 import { Pixel } from "./Pixel";
 import { store } from "../../../store/configureStore";
+import { ThemeProvider } from "styled-components";
+import * as mouseEvent from "../../../store/modules/mouseEvent";
 
 interface Props {
-  resetKeys: PanelKeys;
-  panelRef: HTMLDivElement;
-  setResetKeys: React.Dispatch<React.SetStateAction<PanelKeys>>;
-  currentKeys: PanelKeys;
-  setCurrentKeys: React.Dispatch<React.SetStateAction<PanelKeys>>;
+  // resetKeys: PanelKeys;
+  initialData: pixelData.pixelDataElement[][];
+  panelRef: React.RefObject<HTMLDivElement>;
+  // setResetKeys: React.Dispatch<React.SetStateAction<PanelKeys>>;
+  // currentKeys: PanelKeys;
+  // setCurrentKeys: React.Dispatch<React.SetStateAction<PanelKeys>>;
   colorArray: dataArrayElement[];
   setColorArray: React.Dispatch<React.SetStateAction<dataArrayElement[]>>;
 }
 
 const Panel: React.FC<Props> = ({
+  initialData,
   panelRef,
-  resetKeys,
-  setResetKeys,
-  currentKeys,
-  setCurrentKeys,
+  // resetKeys,
+  // setResetKeys,
+  // currentKeys,
+  // setCurrentKeys,
   colorArray,
   setColorArray,
 }) => {
@@ -43,100 +47,97 @@ const Panel: React.FC<Props> = ({
   const [panelColor, setPanelColor] = useState<dataArrayElement[]>([]);
   console.log("panel renderd");
 
-  const {
-    dataArray,
-    setDataArray,
-    history,
-    setHistory,
-    historyIndex,
-    setHistoryIndex,
-    createNewBranchHistory,
-    setIsHistoryBranchCreated,
-    isHistoryBranchCreated,
-    addToHistory,
-  } = useContext(DataContext);
-  //*** remember that map function does not rerender when the index is the same ***
-
   useEffect(() => {
+    for (let i = 0; i < initialData.length; i++) {
+      for (let j = 0; j < initialData[0].length; j++) {}
+    }
     //this is always called at first
-    const tempFinalRows: PixelDTO[][] = [];
+    // const tempFinalRows: PixelDTO[][] = [];
+    // setPanelColor(colorArray);
+    // setDataArray(colorArray); //we must initialize data array with the given colorArray
+    // for (let j = resetKeys.T_key; j <= resetKeys.B_key; j++) {
+    //   const tempRow: PixelDTO[] = [];
+    //   for (let i = resetKeys.L_key; i <= resetKeys.R_key; i++) {
+    //     tempRow.push({ rowIndex: j, columnIndex: i });
+    //   }
+    //   tempFinalRows.push(tempRow);
+    // }
+    // setFinalRows(tempFinalRows);
+    // setCurrentKeys({
+    //   L_key: resetKeys.L_key,
+    //   R_key: resetKeys.R_key,
+    //   T_key: resetKeys.T_key,
+    //   B_key: resetKeys.B_key,
+    // });
+  }, [initialData]);
 
-    setPanelColor(colorArray);
-    setDataArray(colorArray); //we must initialize data array with the given colorArray
-    for (let j = resetKeys.T_key; j <= resetKeys.B_key; j++) {
-      const tempRow: PixelDTO[] = [];
-      for (let i = resetKeys.L_key; i <= resetKeys.R_key; i++) {
-        tempRow.push({ rowIndex: j, columnIndex: i });
-      }
-      tempFinalRows.push(tempRow);
-    }
-    setFinalRows(tempFinalRows);
+  // useEffect(() => {
+  //   // setRandomKey(Math.random()); //this allows pixel remapping
+  //   setPanelColor(dataArray);
+  //   if (historyIndex === history.length) {
+  //     if (history.length === 0) {
+  //       //initialize
+  //       setHistory([{ colorHistory: dataArray, keyHistory: currentKeys }]);
+  //     } else if (history.length > 0) {
+  //       if (
+  //         JSON.stringify(dataArray) !==
+  //           JSON.stringify(history[history.length - 1].colorHistory) ||
+  //         JSON.stringify(currentKeys) !==
+  //           JSON.stringify(history[history.length - 1].keyHistory)
+  //       ) {
+  //         console.log("history set");
+  //         //do not save duplicate histories with the same values
+  //         addToHistory(dataArray, currentKeys);
+  //       }
+  //     }
+  //   }
+  // }, [dataArray]);
 
-    setCurrentKeys({
-      L_key: resetKeys.L_key,
-      R_key: resetKeys.R_key,
-      T_key: resetKeys.T_key,
-      B_key: resetKeys.B_key,
-    });
-  }, [resetKeys]);
+  // useEffect(() => {
+  //   if (!isHistoryBranchCreated) {
+  //     console.log("user created new history");
+  //     createNewBranchHistory(dataArray, currentKeys);
+  //   }
+  // }, [isHistoryBranchCreated]);
 
-  useEffect(() => {
-    // setRandomKey(Math.random()); //this allows pixel remapping
-    setPanelColor(dataArray);
-    if (historyIndex === history.length) {
-      if (history.length === 0) {
-        //initialize
-        setHistory([{ colorHistory: dataArray, keyHistory: currentKeys }]);
-      } else if (history.length > 0) {
-        if (
-          JSON.stringify(dataArray) !==
-            JSON.stringify(history[history.length - 1].colorHistory) ||
-          JSON.stringify(currentKeys) !==
-            JSON.stringify(history[history.length - 1].keyHistory)
-        ) {
-          console.log("history set");
-          //do not save duplicate histories with the same values
-          addToHistory(dataArray, currentKeys);
-        }
-      }
-    }
-  }, [dataArray]);
+  // useEffect(() => {
+  //   setRandomKey(Math.random()); //to rerender mapped JSX components we needto change the keys
+  //   console.log("currentKeys changed");
+  //   const existingRowIndex = range(currentKeys.T_key, currentKeys.B_key);
+  //   const existingColumnIndex = range(currentKeys.L_key, currentKeys.R_key);
+  //   setDataArray(
+  //     //because the currentkey change also changes data array, we can set history in useEffect dataArray
+  //     dataArray.filter(
+  //       (i) =>
+  //         existingRowIndex.includes(i.rowIndex) &&
+  //         existingColumnIndex.includes(i.columnIndex)
+  //     )
+  //   ); // this deletes data of pixels that are out of boundary
+  // }, [currentKeys]);
 
-  useEffect(() => {
-    if (!isHistoryBranchCreated) {
-      console.log("user created new history");
-      createNewBranchHistory(dataArray, currentKeys);
-    }
-  }, [isHistoryBranchCreated]);
-
-  useEffect(() => {
-    setRandomKey(Math.random()); //to rerender mapped JSX components we needto change the keys
-    console.log("currentKeys changed");
-    const existingRowIndex = range(currentKeys.T_key, currentKeys.B_key);
-    const existingColumnIndex = range(currentKeys.L_key, currentKeys.R_key);
-    setDataArray(
-      //because the currentkey change also changes data array, we can set history in useEffect dataArray
-      dataArray.filter(
-        (i) =>
-          existingRowIndex.includes(i.rowIndex) &&
-          existingColumnIndex.includes(i.columnIndex)
-      )
-    ); // this deletes data of pixels that are out of boundary
-  }, [currentKeys]);
-
-  useEffect(() => {
-    //this is for going back to previous history
-    if (historyIndex < history.length && historyIndex > 0) {
-      setColorArray(
-        JSON.parse(JSON.stringify(history[historyIndex - 1].colorHistory))
-      );
-      setResetKeys(
-        JSON.parse(JSON.stringify(history[historyIndex - 1].keyHistory))
-      );
-    }
-  }, [historyIndex]);
+  // useEffect(() => {
+  //   //this is for going back to previous history
+  //   if (historyIndex < history.length && historyIndex > 0) {
+  //     setColorArray(
+  //       JSON.parse(JSON.stringify(history[historyIndex - 1].colorHistory))
+  //     );
+  //     setResetKeys(
+  //       JSON.parse(JSON.stringify(history[historyIndex - 1].keyHistory))
+  //     );
+  //   }
+  // }, [historyIndex]);
   return (
-    <S.Container>
+    <S.Container
+    // onMouseDown={() => {
+    //   dispatch(mouseEvent.mouseClickOn());
+    // }}
+    // onMouseUp={() => {
+    //   dispatch(mouseEvent.mouseClickOff());
+    // }}
+    // onMouseLeave={() => {
+    //   dispatch(mouseEvent.mouseClickOff());
+    // }}
+    >
       <div>
         <button
           onClick={() => {
@@ -178,28 +179,31 @@ const Panel: React.FC<Props> = ({
         <button
           onClick={() => {
             const rows = document.getElementsByClassName("row");
-            const pixels = document.getElementsByClassName("pixel");
+            const columnCount = rows[0].children.length;
             const pixelsContainer = document.getElementById("pixelsContainer");
             console.log(rows.length);
-            const columnLength = pixels.length / rows.length;
+            const columnLength = columnCount;
             // const element = <h1>hi</h1>;
             // ReactDOM.render(element, pixels);
-            const rowIndex = Math.random();
+            const rowIndex = Number(rows[0].id.replace("row", "")) - 1;
+            console.log(rowIndex);
             const rowElement = document.createElement("div");
             rowElement.id = `row${rowIndex}`;
             rowElement.style.display = "flex";
-            pixelsContainer?.insertBefore(rowElement, rows[0]);
-            console.log("hey");
-            console.log(columnLength);
+            rowElement.className = "row";
+            if (pixelsContainer)
+              pixelsContainer.insertBefore(rowElement, rows[0]);
             const columns: JSX.Element[] = [];
             for (let i = 0; i < columnLength; i++) {
               columns.push(
+                // <Provider store={store()}>
                 <Pixel
-                  key={`row${rowIndex}columns${i}`}
-                  id={`row${rowIndex}columns${i}`}
+                  key={`row${rowIndex}column${i}`}
+                  id={`row${rowIndex}column${i}`}
                   rowIndex={rowIndex}
                   columnIndex={i}
                 />
+                // </Provider>
               );
             }
             ReactDOM.render(
@@ -217,17 +221,16 @@ const Panel: React.FC<Props> = ({
         <button
           onMouseDown={() => {
             //user committed an action while looking through histories
-            setIsHistoryBranchCreated(false);
           }}
           onClick={() => {
-            if (currentKeys.B_key - currentKeys.T_key > 1) {
-              setFinalRows(
-                finalRows.filter((i, index) => {
-                  return index !== 0;
-                })
-              );
-              setCurrentKeys({ ...currentKeys, T_key: currentKeys.T_key + 1 });
-            }
+            // if (currentKeys.B_key - currentKeys.T_key > 1) {
+            //   setFinalRows(
+            //     finalRows.filter((i, index) => {
+            //       return index !== 0;
+            //     })
+            //   );
+            //   setCurrentKeys({ ...currentKeys, T_key: currentKeys.T_key + 1 });
+            // }
           }}
         >
           -
@@ -240,35 +243,35 @@ const Panel: React.FC<Props> = ({
         </S.WidthControlContainer>
         <PixelsContainer
           panelRef={panelRef}
+          initialData={initialData}
           // setIsHistoryBranchCreated={setIsHistoryBranchCreated}
           // finalRows={finalRows}
           // randomKey={randomKey}
           // currentKeys={currentKeys}
           // panelColor={panelColor}
         />
-        <PixelBordersContainer />
+        <PixelBordersContainer initialData={initialData} />
 
         <S.WidthControlContainer location="right">
           <button
             onMouseDown={() => {
               //user committed an action while looking through histories
-              setIsHistoryBranchCreated(false);
             }}
             onClick={() => {
-              const tempColumnIndex = currentKeys.R_key - 1;
-              setFinalRows(
-                finalRows.map((X: PixelDTO[], index: number) => {
-                  const tempRow: PixelDTO[] = [
-                    ...X,
-                    {
-                      rowIndex: currentKeys.T_key + index,
-                      columnIndex: tempColumnIndex,
-                    },
-                  ];
-                  return tempRow;
-                })
-              );
-              setCurrentKeys({ ...currentKeys, R_key: currentKeys.R_key + 1 });
+              // const tempColumnIndex = currentKeys.R_key - 1;
+              // setFinalRows(
+              //   finalRows.map((X: PixelDTO[], index: number) => {
+              //     const tempRow: PixelDTO[] = [
+              //       ...X,
+              //       {
+              //         rowIndex: currentKeys.T_key + index,
+              //         columnIndex: tempColumnIndex,
+              //       },
+              //     ];
+              //     return tempRow;
+              //   })
+              // );
+              // setCurrentKeys({ ...currentKeys, R_key: currentKeys.R_key + 1 });
             }}
           >
             +
@@ -276,20 +279,19 @@ const Panel: React.FC<Props> = ({
           <button
             onMouseDown={() => {
               //user committed an action while looking through histories
-              setIsHistoryBranchCreated(false);
             }}
             onClick={() => {
-              if (currentKeys.R_key - currentKeys.L_key > 1) {
-                console.log("working minus");
-                setFinalRows(
-                  finalRows.map((X) => {
-                    return X.filter((Y, index) => {
-                      return index !== X.length - 1;
-                    });
-                  })
-                );
-              }
-              setCurrentKeys({ ...currentKeys, R_key: currentKeys.R_key - 1 });
+              // if (currentKeys.R_key - currentKeys.L_key > 1) {
+              //   console.log("working minus");
+              //   setFinalRows(
+              //     finalRows.map((X) => {
+              //       return X.filter((Y, index) => {
+              //         return index !== X.length - 1;
+              //       });
+              //     })
+              //   );
+              // }
+              // setCurrentKeys({ ...currentKeys, R_key: currentKeys.R_key - 1 });
             }}
           >
             -
@@ -300,17 +302,16 @@ const Panel: React.FC<Props> = ({
         <button
           onMouseDown={() => {
             //user committed an action while looking through histories
-            setIsHistoryBranchCreated(false);
           }}
           onClick={() => {
-            const tempRow: PixelDTO[] = [];
-            for (let i = currentKeys.L_key; i <= currentKeys.R_key; i++) {
-              tempRow.push({ rowIndex: currentKeys.B_key + 1, columnIndex: i });
-            }
-            setFinalRows((X: PixelDTO[][]) => {
-              return [...X, tempRow];
-            });
-            setCurrentKeys({ ...currentKeys, B_key: currentKeys.B_key + 1 });
+            // const tempRow: PixelDTO[] = [];
+            // for (let i = currentKeys.L_key; i <= currentKeys.R_key; i++) {
+            //   tempRow.push({ rowIndex: currentKeys.B_key + 1, columnIndex: i });
+            // }
+            // setFinalRows((X: PixelDTO[][]) => {
+            //   return [...X, tempRow];
+            // });
+            // setCurrentKeys({ ...currentKeys, B_key: currentKeys.B_key + 1 });
           }}
         >
           +
@@ -318,17 +319,16 @@ const Panel: React.FC<Props> = ({
         <button
           onMouseDown={() => {
             //user committed an action while looking through histories
-            setIsHistoryBranchCreated(false);
           }}
           onClick={() => {
-            if (currentKeys.B_key - currentKeys.T_key > 1) {
-              setFinalRows(
-                finalRows.filter((i, index) => {
-                  return index !== finalRows.length - 1;
-                })
-              );
-              setCurrentKeys({ ...currentKeys, B_key: currentKeys.B_key - 1 });
-            }
+            // if (currentKeys.B_key - currentKeys.T_key > 1) {
+            //   setFinalRows(
+            //     finalRows.filter((i, index) => {
+            //       return index !== finalRows.length - 1;
+            //     })
+            //   );
+            //   setCurrentKeys({ ...currentKeys, B_key: currentKeys.B_key - 1 });
+            // }
           }}
         >
           -

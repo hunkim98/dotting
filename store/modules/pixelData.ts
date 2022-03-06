@@ -16,18 +16,28 @@ export interface pixelIndexes {
 
 export enum pixelChangeActionType {
   PIXEL_CHANGE,
-  ROW_CHANGE,
+}
+
+export enum laneChangeActionType {
+  ADD_TOP_LANE,
+  REMOVE_TOP_LANE,
+  ADD_LEFT_LANE,
+  REMOVE_LEFT_LANE,
+  ADD_RIGHT_LANE,
+  REMOVE_RIGHT_LANE,
+  ADD_BOTTOM_LANE,
+  REMOVE_BOTTOM_LANE,
 }
 
 export interface pixelChange {
-  action: pixelChangeActionType.PIXEL_CHANGE;
+  action: pixelChangeActionType;
   before: pixelDataElement[];
   after: pixelDataElement[];
 }
 
-export interface rowChange {
-  action: pixelChangeActionType.ROW_CHANGE;
-  before: pixelDataElement;
+export interface laneChange {
+  action: laneChangeActionType;
+  before: pixelDataElement[];
   after: undefined;
 }
 
@@ -41,11 +51,7 @@ export type pixelData = {
   present: pixelDataElement[][];
   past: Array<any>;
   future: Array<any>;
-  topRowIndex: number;
-  bottomRowIndex: number;
-  leftColumnIndex: number;
-  rightColumnIndex: number;
-  actionHistory: (pixelChange | rowChange)[];
+  actionHistory: (pixelChange | laneChange)[];
 };
 
 const initialState: pixelData = {
@@ -53,10 +59,6 @@ const initialState: pixelData = {
   present: [],
   past: [],
   future: [],
-  topRowIndex: 0,
-  bottomRowIndex: 0,
-  leftColumnIndex: 0,
-  rightColumnIndex: 0,
   actionHistory: [],
 };
 
@@ -69,55 +71,23 @@ const pixelDataSlice = createSlice({
       actions: PayloadAction<{ data: pixelDataElement[][] }>
     ) => {
       console.log(actions.payload.data);
-      state.topRowIndex = 0;
-      state.bottomRowIndex = actions.payload.data.length;
-      state.leftColumnIndex = 0;
-      state.rightColumnIndex = actions.payload.data[0].length;
-      state.present = actions.payload.data;
-      state.record = actions.payload.data;
-      state.past = [actions.payload.data];
+      // state.topRowIndex = 0;
+      // state.bottomRowIndex = actions.payload.data.length;
+      // state.leftColumnIndex = 0;
+      // state.rightColumnIndex = actions.payload.data[0].length;
+      // state.past = [actions.payload.data];
     },
-    update1: (state, action: PayloadAction<pixelChange | rowChange>) => {},
-    update: (
-      state,
-      actions: PayloadAction<{
-        color: string;
-        rowIndex: number;
-        columnIndex: number;
-      }>
-    ) => {
-      state.present[actions.payload.rowIndex][
-        actions.payload.columnIndex
-      ].color = actions.payload.color;
-
-      console.log("updated!");
-
-      const pastLength = state.past.length;
-      console.log(pastLength);
-      if (pastLength > 30) {
-        state.past = state.past.slice(1);
-      }
-      state.past = [...state.past, state.present];
+    update: (state, action: PayloadAction<pixelChange | laneChange>) => {
+      state.past = [...state.past, action];
       if (state.future.length !== 0) {
         state.future = [];
       }
     },
-    // addToHistory: (state) => {
-    //   // add past history
-    //   console.log("addedToHistory!");
-    //   const pastLength = state.past.length;
-    //   console.log(pastLength);
-    //   if (pastLength > 30) {
-    //     state.past = state.past.slice(1);
-    //   }
-    //   state.past = [...state.past, state.present];
-    // },
     undo: (state) => {
       if (state.past.length > 0) {
         const previous = state.past[state.past.length - 1];
         const newPast = state.past.slice(0, state.past.length - 1);
         state.past = newPast;
-        state.present = previous;
         state.record = previous;
         state.future = [state.present, ...state.future];
       }
@@ -127,7 +97,6 @@ const pixelDataSlice = createSlice({
         const next = state.future[0];
         const newFuture = state.future.slice(1);
         state.past = [...state.past, state.present];
-        state.present = next;
         state.record = next;
         state.future = newFuture;
       }

@@ -14,7 +14,8 @@ import { RootState } from "../../../../store/modules";
 import { pixelDataElement } from "../../../../store/modules/pixelData";
 
 interface Props {
-  panelRef: any;
+  panelRef: React.RefObject<HTMLDivElement>;
+  initialData: pixelDataElement[][];
   // setIsHistoryBranchCreated: React.Dispatch<React.SetStateAction<boolean>>;
   // finalRows: PixelDTO[][];
   // randomKey: number;
@@ -24,6 +25,7 @@ interface Props {
 
 const PixelsContainer: React.FC<Props> = ({
   panelRef,
+  initialData,
   // setIsHistoryBranchCreated,
   // finalRows,
   // randomKey,
@@ -41,21 +43,48 @@ const PixelsContainer: React.FC<Props> = ({
     setPixelData(record);
     setRandomKey(Math.random());
   }, [record]);
+
+  // useEffect(() => {
+  //   if (panelRef && panelRef.current) {
+  //     panelRef.current.addEventListener("mousedown", () =>
+  //       dispatch(mouseEvent.mouseClickOn())
+  //     );
+  //     panelRef.current.addEventListener("mouseup", () => {
+  //       dispatch(mouseEvent.mouseClickOff());
+  //     });
+  //     panelRef.current.addEventListener("mouseleave", () => {
+  //       dispatch(mouseEvent.mouseClickOff());
+  //     });
+  //   }
+  //   return () => {
+  //     if (panelRef && panelRef.current) {
+  //       panelRef.current.removeEventListener("mousedown", () =>
+  //         dispatch(mouseEvent.mouseClickOn())
+  //       );
+  //       panelRef.current.removeEventListener("mouseup", () => {
+  //         dispatch(mouseEvent.mouseClickOff());
+  //       });
+  //       panelRef.current.removeEventListener("mouseleave", () => {
+  //         dispatch(mouseEvent.mouseClickOff());
+  //       });
+  //     }
+  //   };
+  // }, [panelRef]);
   return (
     <div
       id="pixelsContainer"
       ref={panelRef}
-      onMouseDown={() => {
-        dispatch(mouseEvent.mouseClickOn());
-      }}
-      onMouseUp={() => {
-        dispatch(mouseEvent.mouseClickOff());
-      }}
-      onMouseLeave={() => {
-        dispatch(mouseEvent.mouseClickOff());
-      }}
+      // onMouseDown={() => {
+      //   dispatch(mouseEvent.mouseClickOn());
+      // }}
+      // onMouseUp={() => {
+      //   dispatch(mouseEvent.mouseClickOff());
+      // }}
+      // onMouseLeave={() => {
+      //   dispatch(mouseEvent.mouseClickOff());
+      // }}
     >
-      {pixelData.map((row, rowIndex) => {
+      {initialData.map((row, rowIndex) => {
         return (
           <S.Row
             id={`row${rowIndex}`}
@@ -69,7 +98,7 @@ const PixelsContainer: React.FC<Props> = ({
                   key={columnIndex}
                   rowIndex={rowIndex}
                   columnIndex={columnIndex}
-                  dataColor={pixelData[rowIndex][columnIndex].color}
+                  dataColor={initialData[rowIndex][columnIndex].color}
                 />
               );
             })}

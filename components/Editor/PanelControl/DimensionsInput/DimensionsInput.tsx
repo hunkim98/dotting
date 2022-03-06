@@ -5,15 +5,15 @@ import * as S from "./styles";
 interface Props {
   defaultWidth: number;
   defaultHeight: number;
-  resetKeys: PanelKeys;
-  setResetKeys: Dispatch<SetStateAction<PanelKeys>>;
+  // resetKeys: PanelKeys;
+  // setResetKeys: Dispatch<SetStateAction<PanelKeys>>;
   setCanvasSize: Dispatch<SetStateAction<{ width: number; height: number }>>;
 }
 const DimensionsInput: React.FC<Props> = ({
   defaultWidth,
   defaultHeight,
-  resetKeys,
-  setResetKeys,
+  // resetKeys,
+  // setResetKeys,
   setCanvasSize,
 }) => {
   return (
@@ -28,10 +28,10 @@ const DimensionsInput: React.FC<Props> = ({
               setCanvasSize((size) => {
                 return { ...size, width: Number(e.target.value) };
               });
-              setResetKeys({
-                ...resetKeys,
-                R_key: Number(e.target.value) - 1,
-              });
+              // setResetKeys({
+              //   ...resetKeys,
+              //   R_key: Number(e.target.value) - 1,
+              // });
             }}
           />
           <span>Width</span>
@@ -44,10 +44,10 @@ const DimensionsInput: React.FC<Props> = ({
               setCanvasSize((size) => {
                 return { ...size, height: Number(e.target.value) };
               });
-              setResetKeys({
-                ...resetKeys,
-                B_key: Number(e.target.value) - 1,
-              });
+              // setResetKeys({
+              //   ...resetKeys,
+              //   B_key: Number(e.target.value) - 1,
+              // });
             }}
           />
           <span>Height</span>
