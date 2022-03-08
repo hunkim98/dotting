@@ -9,7 +9,7 @@ import rootReducer from "./modules";
 export const store = () => {
   const store = configureStore({
     reducer: rootReducer,
-    // middleware: [...getDefaultMiddleware()],
+    middleware: [...getDefaultMiddleware()],
   });
   return store;
 };

@@ -42,34 +42,63 @@ const Panel: React.FC<Props> = ({
   setColorArray,
 }) => {
   const dispatch = useDispatch();
+  const [pixel2dArray, setPixel2dArray] = useState<
+    { id: string; columns: JSX.Element[] }[]
+  >([]);
   const [finalRows, setFinalRows] = useState<PixelDTO[][]>([]); //this is a 2d array
   const [randomKey, setRandomKey] = useState<number>(Math.random());
   const [panelColor, setPanelColor] = useState<dataArrayElement[]>([]);
+
   console.log("panel renderd");
 
   useEffect(() => {
-    for (let i = 0; i < initialData.length; i++) {
-      for (let j = 0; j < initialData[0].length; j++) {}
-    }
-    //this is always called at first
-    // const tempFinalRows: PixelDTO[][] = [];
-    // setPanelColor(colorArray);
-    // setDataArray(colorArray); //we must initialize data array with the given colorArray
-    // for (let j = resetKeys.T_key; j <= resetKeys.B_key; j++) {
-    //   const tempRow: PixelDTO[] = [];
-    //   for (let i = resetKeys.L_key; i <= resetKeys.R_key; i++) {
-    //     tempRow.push({ rowIndex: j, columnIndex: i });
-    //   }
-    //   tempFinalRows.push(tempRow);
-    // }
-    // setFinalRows(tempFinalRows);
-    // setCurrentKeys({
-    //   L_key: resetKeys.L_key,
-    //   R_key: resetKeys.R_key,
-    //   T_key: resetKeys.T_key,
-    //   B_key: resetKeys.B_key,
-    // });
+    const tempPixel2dArray: { id: string; columns: JSX.Element[] }[] = [];
+    initialData.map((row, rowIndex) => {
+      const tempPixel2dArrayRow: JSX.Element[] = [];
+      row.map((pixel, columnIndex) => {
+        tempPixel2dArrayRow.push(
+          <Pixel
+            id={`row${rowIndex}column${columnIndex}`}
+            rowIndex={rowIndex}
+            columnIndex={columnIndex}
+            dataColor={pixel.color}
+          ></Pixel>
+        );
+      });
+      tempPixel2dArray.push({
+        id: `row${rowIndex}`,
+        columns: tempPixel2dArrayRow,
+      });
+    });
+    setPixel2dArray(tempPixel2dArray);
   }, [initialData]);
+
+  // useEffect(() => {
+  //   if (panelRef && panelRef.current) {
+  //     for (let i = 0; i < initialData.length; i++) {
+  //       const tempRow = document.createElement("div");
+  //       tempRow.id = `row${i}`;
+  //       tempRow.className = "row";
+  //       panelRef.current.append(tempRow);
+  //       const tempRowElements: JSX.Element[] = [];
+  //       for (let j = 0; j < initialData[0].length; j++) {
+  //         const rowRef = document.getElementById(`row${i}`);
+  //         const tempColumn = document.createElement("div");
+  //         const containerId = `row${i}column${j}container`;
+  //         tempColumn.id = containerId;
+  //         rowRef?.append();
+  //         tempRowElements.push(
+  //           // <Provider store={store()}>
+  //           <div id={`row${i}column${j}container`}>
+  //             <Pixel id={`row${i}column${j}`} rowIndex={i} columnIndex={j} />
+  //           </div>
+  //           // </Provider>
+  //         );
+  //       }
+  //       // const tempRow = <Provider store={store()}>{tempRowElements}</Provider>;
+  //     }
+  //   }
+  // }, [initialData, panelRef]);
 
   // useEffect(() => {
   //   // setRandomKey(Math.random()); //this allows pixel remapping
@@ -128,6 +157,7 @@ const Panel: React.FC<Props> = ({
   // }, [historyIndex]);
   return (
     <S.Container
+
     // onMouseDown={() => {
     //   dispatch(mouseEvent.mouseClickOn());
     // }}
@@ -154,6 +184,11 @@ const Panel: React.FC<Props> = ({
         <button
           onClick={() => {
             dispatch(pixelData.redo());
+            console.log("hihihihihi");
+            ReactDOM.createPortal(
+              <Pixel id="2" columnIndex={-99} rowIndex={22} />,
+              document.body
+            );
             //   if (historyIndex < history.length) {
             //     console.log("length", history.length);
             //     console.log("forward index", historyIndex);
@@ -180,40 +215,65 @@ const Panel: React.FC<Props> = ({
           onClick={() => {
             const rows = document.getElementsByClassName("row");
             const columnCount = rows[0].children.length;
-            const pixelsContainer = document.getElementById("pixelsContainer");
-            console.log(rows.length);
-            const columnLength = columnCount;
-            // const element = <h1>hi</h1>;
-            // ReactDOM.render(element, pixels);
-            const rowIndex = Number(rows[0].id.replace("row", "")) - 1;
-            console.log(rowIndex);
-            const rowElement = document.createElement("div");
-            rowElement.id = `row${rowIndex}`;
-            rowElement.style.display = "flex";
-            rowElement.className = "row";
-            if (pixelsContainer)
-              pixelsContainer.insertBefore(rowElement, rows[0]);
+            const topRowIndex = Number(rows[0].id.replace("row", "")) - 1;
             const columns: JSX.Element[] = [];
-            for (let i = 0; i < columnLength; i++) {
+            for (let i = 0; i < columnCount; i++) {
+              console.log(i, "kkk");
               columns.push(
-                // <Provider store={store()}>
                 <Pixel
-                  key={`row${rowIndex}column${i}`}
-                  id={`row${rowIndex}column${i}`}
-                  rowIndex={rowIndex}
+                  key={`row${topRowIndex}column${i}`}
+                  id={`row${topRowIndex}column${i}`}
+                  rowIndex={topRowIndex}
                   columnIndex={i}
                 />
-                // </Provider>
               );
             }
-            ReactDOM.render(
-              <Provider store={store()}>{columns}</Provider>,
-              document.getElementById(`row${rowIndex}`)
-            );
-
-            console.log("renderERROR");
-
-            // panelRef.insertBefore(element, rows[0]);
+            setPixel2dArray([
+              { id: `row${topRowIndex}`, columns: columns },
+              ...pixel2dArray,
+            ]);
+            // if (panelRef && panelRef.current) {
+            //   console.log("inserted", panelRef);
+            // }
+            // const columnCount = rows[0].children.length;
+            // console.log(columnCount);
+            // const pixelsContainer = document.getElementById("pixelsContainer");
+            // console.log(rows.length);
+            // // const element = <h1>hi</h1>;
+            // // ReactDOM.render(element, pixels);
+            // const rowIndex = Number(rows[0].id.replace("row", "")) - 1;
+            // console.log(rowIndex);
+            // const rowElement = document.createElement("div");
+            // rowElement.id = `row${rowIndex}`;
+            // rowElement.style.display = "flex";
+            // rowElement.className = "row";
+            // if (panelRef && panelRef.current) {
+            //   console.log("inserted", panelRef);
+            //   panelRef.current.insertBefore(rowElement, rows[0]);
+            // }
+            // const columns: JSX.Element[] = [];
+            // for (let i = 0; i < columnCount; i++) {
+            //   console.log(i, "kkk");
+            //   columns.push(
+            //     <Pixel
+            //       key={`row${rowIndex}column${i}`}
+            //       id={`row${rowIndex}column${i}`}
+            //       rowIndex={rowIndex}
+            //       columnIndex={i}
+            //     />
+            //   );
+            // }
+            // const newRowAppended = document.getElementById(`row${rowIndex}`);
+            // if (newRowAppended) {
+            //   ReactDOM.render(
+            //     // <div>hihih</div>,
+            //     <Provider store={store()}>{columns}</Provider>,
+            //     // document.getElementById(`row${rowIndex}`)
+            //     newRowAppended
+            //   );
+            //   console.log("appended", newRowAppended);
+            // }
+            // console.log("renderERROR");
           }}
         >
           +
@@ -241,7 +301,16 @@ const Panel: React.FC<Props> = ({
           <button onClick={() => {}}>+</button>
           <button onClick={() => {}}>-</button>
         </S.WidthControlContainer>
-        <PixelsContainer
+        <div id="pixelsContainer" ref={panelRef}>
+          {pixel2dArray.map((row, rowIndex) => {
+            return (
+              <div key={row.id} id={row.id} className="row">
+                {row.columns}
+              </div>
+            );
+          })}
+        </div>
+        {/* <PixelsContainer
           panelRef={panelRef}
           initialData={initialData}
           // setIsHistoryBranchCreated={setIsHistoryBranchCreated}
@@ -249,7 +318,7 @@ const Panel: React.FC<Props> = ({
           // randomKey={randomKey}
           // currentKeys={currentKeys}
           // panelColor={panelColor}
-        />
+        /> */}
         <PixelBordersContainer initialData={initialData} />
 
         <S.WidthControlContainer location="right">

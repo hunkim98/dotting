@@ -12,6 +12,7 @@ import * as pixelDataRedux from "../../../../store/modules/pixelData";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store/modules";
 import { pixelDataElement } from "../../../../store/modules/pixelData";
+import ReactDOM, { render } from "react-dom";
 
 interface Props {
   panelRef: React.RefObject<HTMLDivElement>;
@@ -93,13 +94,14 @@ const PixelsContainer: React.FC<Props> = ({
           >
             {row.map((column, columnIndex) => {
               return (
-                <Pixel
-                  id={`row${rowIndex}column${columnIndex}`}
-                  key={columnIndex}
-                  rowIndex={rowIndex}
-                  columnIndex={columnIndex}
-                  dataColor={initialData[rowIndex][columnIndex].color}
-                />
+                <div key={columnIndex}>
+                  <Pixel
+                    id={`row${rowIndex}column${columnIndex}`}
+                    rowIndex={rowIndex}
+                    columnIndex={columnIndex}
+                    dataColor={initialData[rowIndex][columnIndex].color}
+                  />
+                </div>
               );
             })}
           </S.Row>

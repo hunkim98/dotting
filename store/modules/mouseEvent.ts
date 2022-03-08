@@ -12,6 +12,7 @@ const mouseEventSlice = createSlice({
   reducers: {
     mouseClickOn: (state) => {
       state.isLeftClicked = true;
+      console.log("ononon");
     },
     mouseClickOff: (state) => {
       state.isLeftClicked = false;
