@@ -58,6 +58,7 @@ const Panel: React.FC<Props> = ({
       row.map((pixel, columnIndex) => {
         tempPixel2dArrayRow.push(
           <Pixel
+            key={`row${rowIndex}column${columnIndex}`}
             id={`row${rowIndex}column${columnIndex}`}
             rowIndex={rowIndex}
             columnIndex={columnIndex}
@@ -299,7 +300,17 @@ const Panel: React.FC<Props> = ({
       <S.PixelsCanvasContainer>
         <S.WidthControlContainer location="left">
           <button onClick={() => {}}>+</button>
-          <button onClick={() => {}}>-</button>
+          <button
+            onClick={() => {
+              console.log("hihi");
+              const tempPixel2dArray = pixel2dArray.map((row) => {
+                return { id: row.id, columns: row.columns.slice(1) };
+              });
+              setPixel2dArray(tempPixel2dArray);
+            }}
+          >
+            -
+          </button>
         </S.WidthControlContainer>
         <div id="pixelsContainer" ref={panelRef}>
           {pixel2dArray.map((row, rowIndex) => {
