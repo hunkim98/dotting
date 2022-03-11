@@ -19,164 +19,67 @@ import { Pixel } from "./Pixel";
 import { store } from "../../../store/configureStore";
 import { ThemeProvider } from "styled-components";
 import * as mouseEvent from "../../../store/modules/mouseEvent";
+import { PixelBorder } from "./PixelBorder";
 
 interface Props {
-  // resetKeys: PanelKeys;
   initialData: pixelData.pixelDataElement[][];
   panelRef: React.RefObject<HTMLDivElement>;
-  // setResetKeys: React.Dispatch<React.SetStateAction<PanelKeys>>;
-  // currentKeys: PanelKeys;
-  // setCurrentKeys: React.Dispatch<React.SetStateAction<PanelKeys>>;
   colorArray: dataArrayElement[];
   setColorArray: React.Dispatch<React.SetStateAction<dataArrayElement[]>>;
+}
+
+interface Pixel2dRow {
+  rowIndex: number;
+  columns: Pixel2dPixel[];
+}
+
+interface Pixel2dPixel {
+  columnIndex: number;
+  pixel: JSX.Element;
 }
 
 const Panel: React.FC<Props> = ({
   initialData,
   panelRef,
-  // resetKeys,
-  // setResetKeys,
-  // currentKeys,
-  // setCurrentKeys,
   colorArray,
   setColorArray,
 }) => {
   const dispatch = useDispatch();
-  const [pixel2dArray, setPixel2dArray] = useState<
-    { id: string; columns: JSX.Element[] }[]
-  >([]);
-  const [finalRows, setFinalRows] = useState<PixelDTO[][]>([]); //this is a 2d array
-  const [randomKey, setRandomKey] = useState<number>(Math.random());
-  const [panelColor, setPanelColor] = useState<dataArrayElement[]>([]);
+  const [pixel2dArray, setPixel2dArray] = useState<Pixel2dRow[]>([]);
 
   console.log("panel renderd");
 
   useEffect(() => {
-    const tempPixel2dArray: { id: string; columns: JSX.Element[] }[] = [];
+    const tempPixel2dArray: Pixel2dRow[] = [];
     initialData.map((row, rowIndex) => {
-      const tempPixel2dArrayRow: JSX.Element[] = [];
+      const tempPixel2dArrayRow: Pixel2dPixel[] = [];
       row.map((pixel, columnIndex) => {
-        tempPixel2dArrayRow.push(
-          <Pixel
-            key={`row${rowIndex}column${columnIndex}`}
-            id={`row${rowIndex}column${columnIndex}`}
-            rowIndex={rowIndex}
-            columnIndex={columnIndex}
-            dataColor={pixel.color}
-          ></Pixel>
-        );
+        tempPixel2dArrayRow.push({
+          columnIndex: columnIndex,
+          pixel: (
+            <Pixel
+              key={`row${rowIndex}column${columnIndex}`}
+              id={`row${rowIndex}column${columnIndex}`}
+              rowIndex={rowIndex}
+              columnIndex={columnIndex}
+              dataColor={pixel.color}
+            ></Pixel>
+          ),
+        });
       });
       tempPixel2dArray.push({
-        id: `row${rowIndex}`,
+        rowIndex: rowIndex,
         columns: tempPixel2dArrayRow,
       });
     });
     setPixel2dArray(tempPixel2dArray);
   }, [initialData]);
 
-  // useEffect(() => {
-  //   if (panelRef && panelRef.current) {
-  //     for (let i = 0; i < initialData.length; i++) {
-  //       const tempRow = document.createElement("div");
-  //       tempRow.id = `row${i}`;
-  //       tempRow.className = "row";
-  //       panelRef.current.append(tempRow);
-  //       const tempRowElements: JSX.Element[] = [];
-  //       for (let j = 0; j < initialData[0].length; j++) {
-  //         const rowRef = document.getElementById(`row${i}`);
-  //         const tempColumn = document.createElement("div");
-  //         const containerId = `row${i}column${j}container`;
-  //         tempColumn.id = containerId;
-  //         rowRef?.append();
-  //         tempRowElements.push(
-  //           // <Provider store={store()}>
-  //           <div id={`row${i}column${j}container`}>
-  //             <Pixel id={`row${i}column${j}`} rowIndex={i} columnIndex={j} />
-  //           </div>
-  //           // </Provider>
-  //         );
-  //       }
-  //       // const tempRow = <Provider store={store()}>{tempRowElements}</Provider>;
-  //     }
-  //   }
-  // }, [initialData, panelRef]);
-
-  // useEffect(() => {
-  //   // setRandomKey(Math.random()); //this allows pixel remapping
-  //   setPanelColor(dataArray);
-  //   if (historyIndex === history.length) {
-  //     if (history.length === 0) {
-  //       //initialize
-  //       setHistory([{ colorHistory: dataArray, keyHistory: currentKeys }]);
-  //     } else if (history.length > 0) {
-  //       if (
-  //         JSON.stringify(dataArray) !==
-  //           JSON.stringify(history[history.length - 1].colorHistory) ||
-  //         JSON.stringify(currentKeys) !==
-  //           JSON.stringify(history[history.length - 1].keyHistory)
-  //       ) {
-  //         console.log("history set");
-  //         //do not save duplicate histories with the same values
-  //         addToHistory(dataArray, currentKeys);
-  //       }
-  //     }
-  //   }
-  // }, [dataArray]);
-
-  // useEffect(() => {
-  //   if (!isHistoryBranchCreated) {
-  //     console.log("user created new history");
-  //     createNewBranchHistory(dataArray, currentKeys);
-  //   }
-  // }, [isHistoryBranchCreated]);
-
-  // useEffect(() => {
-  //   setRandomKey(Math.random()); //to rerender mapped JSX components we needto change the keys
-  //   console.log("currentKeys changed");
-  //   const existingRowIndex = range(currentKeys.T_key, currentKeys.B_key);
-  //   const existingColumnIndex = range(currentKeys.L_key, currentKeys.R_key);
-  //   setDataArray(
-  //     //because the currentkey change also changes data array, we can set history in useEffect dataArray
-  //     dataArray.filter(
-  //       (i) =>
-  //         existingRowIndex.includes(i.rowIndex) &&
-  //         existingColumnIndex.includes(i.columnIndex)
-  //     )
-  //   ); // this deletes data of pixels that are out of boundary
-  // }, [currentKeys]);
-
-  // useEffect(() => {
-  //   //this is for going back to previous history
-  //   if (historyIndex < history.length && historyIndex > 0) {
-  //     setColorArray(
-  //       JSON.parse(JSON.stringify(history[historyIndex - 1].colorHistory))
-  //     );
-  //     setResetKeys(
-  //       JSON.parse(JSON.stringify(history[historyIndex - 1].keyHistory))
-  //     );
-  //   }
-  // }, [historyIndex]);
   return (
-    <S.Container
-
-    // onMouseDown={() => {
-    //   dispatch(mouseEvent.mouseClickOn());
-    // }}
-    // onMouseUp={() => {
-    //   dispatch(mouseEvent.mouseClickOff());
-    // }}
-    // onMouseLeave={() => {
-    //   dispatch(mouseEvent.mouseClickOff());
-    // }}
-    >
+    <S.Container>
       <div>
         <button
           onClick={() => {
-            // if (historyIndex > 0) {
-            //   console.log("this is index", historyIndex);
-            //   setHistoryIndex((X: number) => X - 1);
-            //   setIsHistoryBranchCreated(true);
-            // }
             dispatch(pixelData.undo());
           }}
         >
@@ -185,27 +88,6 @@ const Panel: React.FC<Props> = ({
         <button
           onClick={() => {
             dispatch(pixelData.redo());
-            console.log("hihihihihi");
-            ReactDOM.createPortal(
-              <Pixel id="2" columnIndex={-99} rowIndex={22} />,
-              document.body
-            );
-            //   if (historyIndex < history.length) {
-            //     console.log("length", history.length);
-            //     console.log("forward index", historyIndex);
-            //     if (historyIndex + 1 === history.length) {
-            //       //going back to original
-            //       setColorArray(
-            //         JSON.parse(JSON.stringify(history[historyIndex].colorHistory))
-            //       );
-            //       setResetKeys(
-            //         JSON.parse(JSON.stringify(history[historyIndex].keyHistory))
-            //       );
-            //       console.log("setttt");
-            //       // setCreateNewHistory(false);
-            //     }
-            //     setHistoryIndex((X: number) => X + 1);
-            //   }
           }}
         >
           forward
@@ -214,84 +96,36 @@ const Panel: React.FC<Props> = ({
       <S.HeightControlContainer>
         <button
           onClick={() => {
-            const rows = document.getElementsByClassName("row");
-            const columnCount = rows[0].children.length;
-            const topRowIndex = Number(rows[0].id.replace("row", "")) - 1;
-            const columns: JSX.Element[] = [];
+            const topRowIndex = pixel2dArray[0].rowIndex - 1;
+            const columnCount = pixel2dArray[0].columns.length;
+            const columns: Pixel2dPixel[] = [];
             for (let i = 0; i < columnCount; i++) {
-              console.log(i, "kkk");
-              columns.push(
-                <Pixel
-                  key={`row${topRowIndex}column${i}`}
-                  id={`row${topRowIndex}column${i}`}
-                  rowIndex={topRowIndex}
-                  columnIndex={i}
-                />
-              );
+              columns.push({
+                columnIndex: i,
+                pixel: (
+                  <Pixel
+                    key={`row${topRowIndex}column${i}`}
+                    id={`row${topRowIndex}column${i}`}
+                    rowIndex={topRowIndex}
+                    columnIndex={i}
+                  />
+                ),
+              });
             }
             setPixel2dArray([
-              { id: `row${topRowIndex}`, columns: columns },
+              { rowIndex: topRowIndex, columns: columns },
               ...pixel2dArray,
             ]);
-            // if (panelRef && panelRef.current) {
-            //   console.log("inserted", panelRef);
-            // }
-            // const columnCount = rows[0].children.length;
-            // console.log(columnCount);
-            // const pixelsContainer = document.getElementById("pixelsContainer");
-            // console.log(rows.length);
-            // // const element = <h1>hi</h1>;
-            // // ReactDOM.render(element, pixels);
-            // const rowIndex = Number(rows[0].id.replace("row", "")) - 1;
-            // console.log(rowIndex);
-            // const rowElement = document.createElement("div");
-            // rowElement.id = `row${rowIndex}`;
-            // rowElement.style.display = "flex";
-            // rowElement.className = "row";
-            // if (panelRef && panelRef.current) {
-            //   console.log("inserted", panelRef);
-            //   panelRef.current.insertBefore(rowElement, rows[0]);
-            // }
-            // const columns: JSX.Element[] = [];
-            // for (let i = 0; i < columnCount; i++) {
-            //   console.log(i, "kkk");
-            //   columns.push(
-            //     <Pixel
-            //       key={`row${rowIndex}column${i}`}
-            //       id={`row${rowIndex}column${i}`}
-            //       rowIndex={rowIndex}
-            //       columnIndex={i}
-            //     />
-            //   );
-            // }
-            // const newRowAppended = document.getElementById(`row${rowIndex}`);
-            // if (newRowAppended) {
-            //   ReactDOM.render(
-            //     // <div>hihih</div>,
-            //     <Provider store={store()}>{columns}</Provider>,
-            //     // document.getElementById(`row${rowIndex}`)
-            //     newRowAppended
-            //   );
-            //   console.log("appended", newRowAppended);
-            // }
-            // console.log("renderERROR");
           }}
         >
           +
         </button>
         <button
-          onMouseDown={() => {
-            //user committed an action while looking through histories
-          }}
           onClick={() => {
-            // if (currentKeys.B_key - currentKeys.T_key > 1) {
-            //   setFinalRows(
-            //     finalRows.filter((i, index) => {
-            //       return index !== 0;
-            //     })
-            //   );
-            //   setCurrentKeys({ ...currentKeys, T_key: currentKeys.T_key + 1 });
-            // }
+            const tempPixel2dArray = pixel2dArray.filter((row, rowIndex) => {
+              return rowIndex !== 0;
+            });
+            setPixel2dArray(tempPixel2dArray);
           }}
         >
           -
@@ -299,12 +133,43 @@ const Panel: React.FC<Props> = ({
       </S.HeightControlContainer>
       <S.PixelsCanvasContainer>
         <S.WidthControlContainer location="left">
-          <button onClick={() => {}}>+</button>
           <button
             onClick={() => {
-              console.log("hihi");
+              const leftColumnIndex =
+                pixel2dArray[0].columns[0].columnIndex - 1;
+              console.log(leftColumnIndex);
               const tempPixel2dArray = pixel2dArray.map((row) => {
-                return { id: row.id, columns: row.columns.slice(1) };
+                const key = `row${row.rowIndex}column${leftColumnIndex}`;
+                return {
+                  rowIndex: row.rowIndex,
+                  columns: [
+                    {
+                      columnIndex: leftColumnIndex,
+                      pixel: (
+                        <Pixel
+                          key={key}
+                          id={key}
+                          rowIndex={row.rowIndex}
+                          columnIndex={leftColumnIndex}
+                        ></Pixel>
+                      ),
+                    },
+                    ...row.columns,
+                  ],
+                };
+              });
+              setPixel2dArray(tempPixel2dArray);
+            }}
+          >
+            +
+          </button>
+          <button
+            onClick={() => {
+              const tempPixel2dArray = pixel2dArray.map((row) => {
+                return {
+                  rowIndex: row.rowIndex,
+                  columns: row.columns.slice(1),
+                };
               });
               setPixel2dArray(tempPixel2dArray);
             }}
@@ -313,10 +178,16 @@ const Panel: React.FC<Props> = ({
           </button>
         </S.WidthControlContainer>
         <div id="pixelsContainer" ref={panelRef}>
-          {pixel2dArray.map((row, rowIndex) => {
+          {pixel2dArray.map((row) => {
             return (
-              <div key={row.id} id={row.id} className="row">
-                {row.columns}
+              <div
+                key={`row${row.rowIndex}`}
+                id={`row${row.rowIndex}`}
+                className="row"
+              >
+                {row.columns.map((element) => {
+                  return element.pixel;
+                })}
               </div>
             );
           })}
@@ -330,48 +201,58 @@ const Panel: React.FC<Props> = ({
           // currentKeys={currentKeys}
           // panelColor={panelColor}
         /> */}
-        <PixelBordersContainer initialData={initialData} />
-
+        <div style={{ position: "absolute", pointerEvents: "none" }}>
+          {pixel2dArray.map((row) => {
+            return (
+              <div style={{ display: "flex" }} key={`row${row.rowIndex}`}>
+                {row.columns.map((element) => {
+                  return <PixelBorder />;
+                })}
+              </div>
+            );
+          })}
+        </div>
         <S.WidthControlContainer location="right">
           <button
-            onMouseDown={() => {
-              //user committed an action while looking through histories
-            }}
             onClick={() => {
-              // const tempColumnIndex = currentKeys.R_key - 1;
-              // setFinalRows(
-              //   finalRows.map((X: PixelDTO[], index: number) => {
-              //     const tempRow: PixelDTO[] = [
-              //       ...X,
-              //       {
-              //         rowIndex: currentKeys.T_key + index,
-              //         columnIndex: tempColumnIndex,
-              //       },
-              //     ];
-              //     return tempRow;
-              //   })
-              // );
-              // setCurrentKeys({ ...currentKeys, R_key: currentKeys.R_key + 1 });
+              const rightColumnIndex =
+                pixel2dArray[0].columns[pixel2dArray[0].columns.length - 1]
+                  .columnIndex + 1;
+              console.log(rightColumnIndex);
+              const tempPixel2dArray = pixel2dArray.map((row) => {
+                const key = `row${row.rowIndex}column${rightColumnIndex}`;
+                return {
+                  rowIndex: row.rowIndex,
+                  columns: [
+                    ...row.columns,
+                    {
+                      columnIndex: rightColumnIndex,
+                      pixel: (
+                        <Pixel
+                          key={key}
+                          id={key}
+                          rowIndex={row.rowIndex}
+                          columnIndex={rightColumnIndex}
+                        ></Pixel>
+                      ),
+                    },
+                  ],
+                };
+              });
+              setPixel2dArray(tempPixel2dArray);
             }}
           >
             +
           </button>
           <button
-            onMouseDown={() => {
-              //user committed an action while looking through histories
-            }}
             onClick={() => {
-              // if (currentKeys.R_key - currentKeys.L_key > 1) {
-              //   console.log("working minus");
-              //   setFinalRows(
-              //     finalRows.map((X) => {
-              //       return X.filter((Y, index) => {
-              //         return index !== X.length - 1;
-              //       });
-              //     })
-              //   );
-              // }
-              // setCurrentKeys({ ...currentKeys, R_key: currentKeys.R_key - 1 });
+              const tempPixel2dArray = pixel2dArray.map((row) => {
+                return {
+                  rowIndex: row.rowIndex,
+                  columns: row.columns.slice(0, -1),
+                };
+              });
+              setPixel2dArray(tempPixel2dArray);
             }}
           >
             -
@@ -380,35 +261,38 @@ const Panel: React.FC<Props> = ({
       </S.PixelsCanvasContainer>
       <S.HeightControlContainer>
         <button
-          onMouseDown={() => {
-            //user committed an action while looking through histories
-          }}
           onClick={() => {
-            // const tempRow: PixelDTO[] = [];
-            // for (let i = currentKeys.L_key; i <= currentKeys.R_key; i++) {
-            //   tempRow.push({ rowIndex: currentKeys.B_key + 1, columnIndex: i });
-            // }
-            // setFinalRows((X: PixelDTO[][]) => {
-            //   return [...X, tempRow];
-            // });
-            // setCurrentKeys({ ...currentKeys, B_key: currentKeys.B_key + 1 });
+            const bottomRowIndex =
+              pixel2dArray[pixel2dArray.length - 1].rowIndex + 1;
+            const columnCount = pixel2dArray[0].columns.length;
+            const columns: Pixel2dPixel[] = [];
+            for (let i = 0; i < columnCount; i++) {
+              columns.push({
+                columnIndex: i,
+                pixel: (
+                  <Pixel
+                    key={`row${bottomRowIndex}column${i}`}
+                    id={`row${bottomRowIndex}column${i}`}
+                    rowIndex={bottomRowIndex}
+                    columnIndex={i}
+                  />
+                ),
+              });
+            }
+            setPixel2dArray([
+              ...pixel2dArray,
+              { rowIndex: bottomRowIndex, columns: columns },
+            ]);
           }}
         >
           +
         </button>
         <button
-          onMouseDown={() => {
-            //user committed an action while looking through histories
-          }}
           onClick={() => {
-            // if (currentKeys.B_key - currentKeys.T_key > 1) {
-            //   setFinalRows(
-            //     finalRows.filter((i, index) => {
-            //       return index !== finalRows.length - 1;
-            //     })
-            //   );
-            //   setCurrentKeys({ ...currentKeys, B_key: currentKeys.B_key - 1 });
-            // }
+            const tempPixel2dArray = pixel2dArray.filter((row, rowIndex) => {
+              return rowIndex !== pixel2dArray.length - 1;
+            });
+            setPixel2dArray(tempPixel2dArray);
           }}
         >
           -
