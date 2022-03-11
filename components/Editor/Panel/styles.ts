@@ -8,7 +8,12 @@ export const Container = styled.div`
   margin-right: 40px;
 `;
 
-export const HeightControlContainer = styled.div`
+export const HeightControlContainer = styled.div<{
+  location: "top" | "bottom";
+}>`
+  position: absolute;
+  top: ${({ location }) => location === "top" && "-40px"};
+  bottom: ${({ location }) => location === "bottom" && "-40px"};
   display: flex;
 `;
 
@@ -24,6 +29,7 @@ export const PixelsCanvasContainer = styled.div`
   flex-direction: column;
   align-items: center;
   position: relative;
+  margin: 60px;
 `;
 
 export const WidthControlContainer = styled.div<{

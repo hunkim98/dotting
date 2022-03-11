@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
 import {
   dataArrayElement,
-  PanelKeys,
   PixelDTO,
   rowColumnColor,
+  PanelKeys,
 } from "../../../const/CommonDTO";
 import { range } from "../../../const/CommonFunctions";
 import { DataContext } from "../../../context/DataContext";
@@ -38,16 +38,128 @@ interface Pixel2dPixel {
   pixel: JSX.Element;
 }
 
+enum Position {
+  LEFT,
+  RIGHT,
+  TOP,
+  BOTTOM,
+}
+
 const Panel: React.FC<Props> = ({
   initialData,
   panelRef,
   colorArray,
   setColorArray,
 }) => {
+  console.log("panel rendered");
   const dispatch = useDispatch();
   const [pixel2dArray, setPixel2dArray] = useState<Pixel2dRow[]>([]);
+  function appendBehind<Type>(element: Type, array: Type[]): Type[] {
+    return [...array, element];
+  }
 
-  console.log("panel renderd");
+  function appendBefore<Type>(element: Type, array: Type[]): Type[] {
+    return [element, ...array];
+  }
+
+  const addColumn = ({
+    position,
+    data,
+  }: {
+    position: Position.LEFT | Position.RIGHT;
+    data: Pixel2dPixel[];
+  }) => {
+    const newColumnIndex =
+      position === Position.LEFT
+        ? pixel2dArray[0].columns[0].columnIndex - 1
+        : pixel2dArray[0].columns[pixel2dArray[0].columns.length - 1]
+            .columnIndex + 1;
+    const tempPixel2dArray = pixel2dArray.map((row) => {
+      const key = `row${row.rowIndex}column${newColumnIndex}`;
+      const newColumn: Pixel2dPixel = {
+        columnIndex: newColumnIndex,
+        pixel: (
+          <Pixel
+            key={key}
+            id={key}
+            rowIndex={row.rowIndex}
+            columnIndex={newColumnIndex}
+          ></Pixel>
+        ),
+      };
+      return {
+        rowIndex: row.rowIndex,
+        columns:
+          position === Position.LEFT
+            ? appendBefore(newColumn, row.columns)
+            : appendBehind(newColumn, row.columns),
+      };
+    });
+    setPixel2dArray(tempPixel2dArray);
+  };
+
+  const addRow = ({
+    position,
+    data,
+  }: {
+    position: Position.TOP | Position.BOTTOM;
+    data: Pixel2dPixel[];
+  }) => {
+    const newRowIndex =
+      position === Position.TOP
+        ? pixel2dArray[0].rowIndex - 1
+        : pixel2dArray[pixel2dArray.length - 1].rowIndex + 1;
+    const columnCount = pixel2dArray[0].columns.length;
+    const columns: Pixel2dPixel[] = [];
+    for (let i = 0; i < columnCount; i++) {
+      columns.push({
+        columnIndex: i,
+        pixel: (
+          <Pixel
+            key={`row${newRowIndex}column${i}`}
+            id={`row${newRowIndex}column${i}`}
+            rowIndex={newRowIndex}
+            columnIndex={i}
+          />
+        ),
+      });
+    }
+    const newRow: Pixel2dRow = { rowIndex: newRowIndex, columns: columns };
+    const tempPixel2dArray =
+      position === Position.TOP
+        ? appendBefore(newRow, pixel2dArray)
+        : appendBehind(newRow, pixel2dArray);
+    setPixel2dArray(tempPixel2dArray);
+  };
+
+  const deleteColumn = ({
+    position,
+  }: {
+    position: Position.LEFT | Position.RIGHT;
+  }) => {
+    const sliceStartIndex = position === Position.LEFT ? 1 : 0;
+    const sliceEndIndex = position === Position.LEFT ? undefined : -1;
+    const tempPixel2dArray = pixel2dArray.map((row) => {
+      return {
+        rowIndex: row.rowIndex,
+        columns: row.columns.slice(sliceStartIndex, sliceEndIndex),
+      };
+    });
+    setPixel2dArray(tempPixel2dArray);
+  };
+
+  const deleteRow = ({
+    position,
+  }: {
+    position: Position.TOP | Position.BOTTOM;
+  }) => {
+    const rowIndexToDelete =
+      position === Position.TOP ? 0 : pixel2dArray.length - 1;
+    const tempPixel2dArray = pixel2dArray.filter((row, rowIndex) => {
+      return rowIndex !== rowIndexToDelete;
+    });
+    setPixel2dArray(tempPixel2dArray);
+  };
 
   useEffect(() => {
     const tempPixel2dArray: Pixel2dRow[] = [];
@@ -93,85 +205,35 @@ const Panel: React.FC<Props> = ({
           forward
         </button>
       </div>
-      <S.HeightControlContainer>
-        <button
-          onClick={() => {
-            const topRowIndex = pixel2dArray[0].rowIndex - 1;
-            const columnCount = pixel2dArray[0].columns.length;
-            const columns: Pixel2dPixel[] = [];
-            for (let i = 0; i < columnCount; i++) {
-              columns.push({
-                columnIndex: i,
-                pixel: (
-                  <Pixel
-                    key={`row${topRowIndex}column${i}`}
-                    id={`row${topRowIndex}column${i}`}
-                    rowIndex={topRowIndex}
-                    columnIndex={i}
-                  />
-                ),
-              });
-            }
-            setPixel2dArray([
-              { rowIndex: topRowIndex, columns: columns },
-              ...pixel2dArray,
-            ]);
-          }}
-        >
-          +
-        </button>
-        <button
-          onClick={() => {
-            const tempPixel2dArray = pixel2dArray.filter((row, rowIndex) => {
-              return rowIndex !== 0;
-            });
-            setPixel2dArray(tempPixel2dArray);
-          }}
-        >
-          -
-        </button>
-      </S.HeightControlContainer>
       <S.PixelsCanvasContainer>
-        <S.WidthControlContainer location="left">
+        <S.HeightControlContainer location="top">
           <button
             onClick={() => {
-              const leftColumnIndex =
-                pixel2dArray[0].columns[0].columnIndex - 1;
-              console.log(leftColumnIndex);
-              const tempPixel2dArray = pixel2dArray.map((row) => {
-                const key = `row${row.rowIndex}column${leftColumnIndex}`;
-                return {
-                  rowIndex: row.rowIndex,
-                  columns: [
-                    {
-                      columnIndex: leftColumnIndex,
-                      pixel: (
-                        <Pixel
-                          key={key}
-                          id={key}
-                          rowIndex={row.rowIndex}
-                          columnIndex={leftColumnIndex}
-                        ></Pixel>
-                      ),
-                    },
-                    ...row.columns,
-                  ],
-                };
-              });
-              setPixel2dArray(tempPixel2dArray);
+              addRow({ position: Position.TOP, data: [] });
             }}
           >
             +
           </button>
           <button
             onClick={() => {
-              const tempPixel2dArray = pixel2dArray.map((row) => {
-                return {
-                  rowIndex: row.rowIndex,
-                  columns: row.columns.slice(1),
-                };
-              });
-              setPixel2dArray(tempPixel2dArray);
+              deleteRow({ position: Position.TOP });
+            }}
+          >
+            -
+          </button>
+        </S.HeightControlContainer>
+
+        <S.WidthControlContainer location="left">
+          <button
+            onClick={() => {
+              addColumn({ position: Position.LEFT, data: [] });
+            }}
+          >
+            +
+          </button>
+          <button
+            onClick={() => {
+              deleteColumn({ position: Position.LEFT });
             }}
           >
             -
@@ -215,89 +277,36 @@ const Panel: React.FC<Props> = ({
         <S.WidthControlContainer location="right">
           <button
             onClick={() => {
-              const rightColumnIndex =
-                pixel2dArray[0].columns[pixel2dArray[0].columns.length - 1]
-                  .columnIndex + 1;
-              console.log(rightColumnIndex);
-              const tempPixel2dArray = pixel2dArray.map((row) => {
-                const key = `row${row.rowIndex}column${rightColumnIndex}`;
-                return {
-                  rowIndex: row.rowIndex,
-                  columns: [
-                    ...row.columns,
-                    {
-                      columnIndex: rightColumnIndex,
-                      pixel: (
-                        <Pixel
-                          key={key}
-                          id={key}
-                          rowIndex={row.rowIndex}
-                          columnIndex={rightColumnIndex}
-                        ></Pixel>
-                      ),
-                    },
-                  ],
-                };
-              });
-              setPixel2dArray(tempPixel2dArray);
+              addColumn({ position: Position.RIGHT, data: [] });
             }}
           >
             +
           </button>
           <button
             onClick={() => {
-              const tempPixel2dArray = pixel2dArray.map((row) => {
-                return {
-                  rowIndex: row.rowIndex,
-                  columns: row.columns.slice(0, -1),
-                };
-              });
-              setPixel2dArray(tempPixel2dArray);
+              deleteColumn({ position: Position.RIGHT });
             }}
           >
             -
           </button>
         </S.WidthControlContainer>
+        <S.HeightControlContainer location="bottom">
+          <button
+            onClick={() => {
+              addRow({ position: Position.BOTTOM, data: [] });
+            }}
+          >
+            +
+          </button>
+          <button
+            onClick={() => {
+              deleteRow({ position: Position.BOTTOM });
+            }}
+          >
+            -
+          </button>
+        </S.HeightControlContainer>
       </S.PixelsCanvasContainer>
-      <S.HeightControlContainer>
-        <button
-          onClick={() => {
-            const bottomRowIndex =
-              pixel2dArray[pixel2dArray.length - 1].rowIndex + 1;
-            const columnCount = pixel2dArray[0].columns.length;
-            const columns: Pixel2dPixel[] = [];
-            for (let i = 0; i < columnCount; i++) {
-              columns.push({
-                columnIndex: i,
-                pixel: (
-                  <Pixel
-                    key={`row${bottomRowIndex}column${i}`}
-                    id={`row${bottomRowIndex}column${i}`}
-                    rowIndex={bottomRowIndex}
-                    columnIndex={i}
-                  />
-                ),
-              });
-            }
-            setPixel2dArray([
-              ...pixel2dArray,
-              { rowIndex: bottomRowIndex, columns: columns },
-            ]);
-          }}
-        >
-          +
-        </button>
-        <button
-          onClick={() => {
-            const tempPixel2dArray = pixel2dArray.filter((row, rowIndex) => {
-              return rowIndex !== pixel2dArray.length - 1;
-            });
-            setPixel2dArray(tempPixel2dArray);
-          }}
-        >
-          -
-        </button>
-      </S.HeightControlContainer>
     </S.Container>
   );
 };
