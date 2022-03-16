@@ -19,7 +19,7 @@ export enum pixelChangeActionType {
 }
 
 export enum laneChangeActionType {
-  ADD_TOP_LANE,
+  ADD_TOP_LANE = 1,
   REMOVE_TOP_LANE,
   ADD_LEFT_LANE,
   REMOVE_LEFT_LANE,
@@ -29,16 +29,10 @@ export enum laneChangeActionType {
   REMOVE_BOTTOM_LANE,
 }
 
-export interface pixelChange {
-  action: pixelChangeActionType;
+export interface pixelAction {
+  type: pixelChangeActionType | laneChangeActionType;
   before: pixelDataElement[];
   after: pixelDataElement[];
-}
-
-export interface laneChange {
-  action: laneChangeActionType;
-  before: pixelDataElement[];
-  after: undefined;
 }
 
 export interface pixelRecord {
@@ -51,7 +45,7 @@ export type pixelData = {
   present: pixelDataElement[][];
   past: Array<any>;
   future: Array<any>;
-  actionHistory: (pixelChange | laneChange)[];
+  actionRecord: pixelAction | undefined;
 };
 
 const initialState: pixelData = {
@@ -59,7 +53,7 @@ const initialState: pixelData = {
   present: [],
   past: [],
   future: [],
-  actionHistory: [],
+  actionRecord: undefined,
 };
 
 const pixelDataSlice = createSlice({
@@ -77,8 +71,9 @@ const pixelDataSlice = createSlice({
       // state.rightColumnIndex = actions.payload.data[0].length;
       // state.past = [actions.payload.data];
     },
-    update: (state, action: PayloadAction<pixelChange | laneChange>) => {
-      state.past = [...state.past, action];
+    update: (state, data: PayloadAction<{ action: pixelAction }>) => {
+      state.past = [...state.past, data.payload.action];
+      console.log(data.payload.action);
       if (state.future.length !== 0) {
         state.future = [];
       }
@@ -88,7 +83,7 @@ const pixelDataSlice = createSlice({
         const previous = state.past[state.past.length - 1];
         const newPast = state.past.slice(0, state.past.length - 1);
         state.past = newPast;
-        state.record = previous;
+        state.actionRecord = previous;
         state.future = [state.present, ...state.future];
       }
     },

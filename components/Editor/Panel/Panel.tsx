@@ -13,10 +13,7 @@ import { PixelsContainer } from "./PixelsContainer";
 import * as S from "./styles";
 import { useDispatch, useSelector, Provider } from "react-redux";
 import * as pixelData from "../../../store/modules/pixelData";
-import ReactDOM from "react-dom";
-import { RootState } from "../../../store/modules";
 import { Pixel } from "./Pixel";
-import { store } from "../../../store/configureStore";
 import { ThemeProvider } from "styled-components";
 import * as mouseEvent from "../../../store/modules/mouseEvent";
 import { PixelBorder } from "./PixelBorder";
@@ -218,21 +215,14 @@ const Panel: React.FC<Props> = ({
           deleteRow={deleteRow}
           deleteColumn={deleteColumn}
         >
-          <div id="pixelsContainer" ref={panelRef}>
-            {pixel2dArray.map((row) => {
-              return (
-                <div
-                  key={`row${row.rowIndex}`}
-                  id={`row${row.rowIndex}`}
-                  className="row"
-                >
-                  {row.columns.map((element) => {
-                    return element.pixel;
-                  })}
-                </div>
-              );
-            })}
-          </div>
+          <PixelsContainer
+            panelRef={panelRef}
+            pixel2dArray={pixel2dArray}
+            addColumn={addColumn}
+            addRow={addRow}
+            deleteColumn={deleteColumn}
+            deleteRow={deleteRow}
+          />
           <div style={{ position: "absolute", pointerEvents: "none" }}>
             {pixel2dArray.map((row) => {
               return (

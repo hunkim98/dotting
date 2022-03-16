@@ -1,11 +1,21 @@
-export const modifyPixelById = (
-  rowIndex: number,
-  columnIndex: number,
-  color: string,
-  name: string
-) => {
+interface Props {
+  rowIndex: number;
+  columnIndex: number;
+  color: string | undefined;
+  name: string | undefined;
+}
+
+export const modifyPixelById = ({
+  rowIndex,
+  columnIndex,
+  color,
+  name,
+}: Props) => {
   const pixel = document.getElementById(`row${rowIndex}column${columnIndex}`);
+  let previousColor = undefined;
   if (pixel) {
-    pixel.style.backgroundColor = color;
+    previousColor = pixel.style.backgroundColor;
+    pixel.style.backgroundColor = color ? color : "";
   }
+  return { previousColor };
 };

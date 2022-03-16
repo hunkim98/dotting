@@ -13,116 +13,69 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store/modules";
 import { pixelDataElement } from "../../../../store/modules/pixelData";
 import ReactDOM, { render } from "react-dom";
+import { Pixel2dRow } from "../Panel";
+import { SizeControlProps } from "../SizeControl/SizeControlProps";
+import { modifyPixelById } from "../../../../const/PixelFunctions";
 
-interface Props {
+interface Props extends SizeControlProps {
   panelRef: React.RefObject<HTMLDivElement>;
-  initialData: pixelDataElement[][];
-  // setIsHistoryBranchCreated: React.Dispatch<React.SetStateAction<boolean>>;
-  // finalRows: PixelDTO[][];
-  // randomKey: number;
-  // currentKeys: PanelKeys;
-  // panelColor: dataArrayElement[];
+  pixel2dArray: Pixel2dRow[];
 }
 
 const PixelsContainer: React.FC<Props> = ({
   panelRef,
-  initialData,
-  // setIsHistoryBranchCreated,
-  // finalRows,
-  // randomKey,
-  // currentKeys,
-  // panelColor,
+  pixel2dArray,
+  addRow,
+  addColumn,
+  deleteColumn,
+  deleteRow,
 }) => {
   const dispatch = useDispatch();
-  const [pixelData, setPixelData] = useState<pixelDataElement[][]>([]);
-  console.log("pixelContainer rendere");
-  const record = useSelector((state: RootState) => state.pixelData.record);
-  const [randomKey, setRandomKey] = useState<number>(Math.random());
-  useEffect(() => {
-    console.log("hiy");
-    // console.log(record);
-    setPixelData(record);
-    setRandomKey(Math.random());
-  }, [record]);
 
-  // useEffect(() => {
-  //   if (panelRef && panelRef.current) {
-  //     panelRef.current.addEventListener("mousedown", () =>
-  //       dispatch(mouseEvent.mouseClickOn())
-  //     );
-  //     panelRef.current.addEventListener("mouseup", () => {
-  //       dispatch(mouseEvent.mouseClickOff());
-  //     });
-  //     panelRef.current.addEventListener("mouseleave", () => {
-  //       dispatch(mouseEvent.mouseClickOff());
-  //     });
-  //   }
-  //   return () => {
-  //     if (panelRef && panelRef.current) {
-  //       panelRef.current.removeEventListener("mousedown", () =>
-  //         dispatch(mouseEvent.mouseClickOn())
-  //       );
-  //       panelRef.current.removeEventListener("mouseup", () => {
-  //         dispatch(mouseEvent.mouseClickOff());
-  //       });
-  //       panelRef.current.removeEventListener("mouseleave", () => {
-  //         dispatch(mouseEvent.mouseClickOff());
-  //       });
-  //     }
-  //   };
-  // }, [panelRef]);
+  console.log("pixelContainer rendered");
+
+  const actionRecord = useSelector(
+    (state: RootState) => state.pixelData.actionRecord
+  );
+
+  useEffect(() => {
+    console.log("record changed");
+    if (actionRecord) {
+      console.log(actionRecord.type in pixelDataRedux.pixelChangeActionType);
+      if (actionRecord.type in pixelDataRedux.pixelChangeActionType) {
+        if (
+          actionRecord.type ===
+          pixelDataRedux.pixelChangeActionType.PIXEL_CHANGE
+        ) {
+          const data = actionRecord.before;
+          for (let i = 0; i < data.length; i++) {
+            modifyPixelById({
+              rowIndex: data[i].rowIndex,
+              columnIndex: data[i].columnIndex,
+              color: data[i].color,
+              name: data[i].name,
+            });
+          }
+          // modifyPixelById();
+        }
+      }
+    }
+    // if(typeof actionRecord === pixelDataRedux.laneChangeActionType)
+  }, [actionRecord]);
+
   return (
-    <div
-      id="pixelsContainer"
-      ref={panelRef}
-      // onMouseDown={() => {
-      //   dispatch(mouseEvent.mouseClickOn());
-      // }}
-      // onMouseUp={() => {
-      //   dispatch(mouseEvent.mouseClickOff());
-      // }}
-      // onMouseLeave={() => {
-      //   dispatch(mouseEvent.mouseClickOff());
-      // }}
-    >
-      {initialData.map((row, rowIndex) => {
+    <div id="pixelsContainer" ref={panelRef}>
+      {pixel2dArray.map((row) => {
         return (
-          <S.Row
-            id={`row${rowIndex}`}
-            key={rowIndex + randomKey}
+          <div
+            key={`row${row.rowIndex}`}
+            id={`row${row.rowIndex}`}
             className="row"
           >
-            {row.map((column, columnIndex) => {
-              return (
-                <div key={columnIndex}>
-                  <Pixel
-                    id={`row${rowIndex}column${columnIndex}`}
-                    rowIndex={rowIndex}
-                    columnIndex={columnIndex}
-                    dataColor={initialData[rowIndex][columnIndex].color}
-                  />
-                </div>
-              );
+            {row.columns.map((element) => {
+              return element.pixel;
             })}
-          </S.Row>
-          // <S.Row key={randomKey + currentKeys.T_key + Xindex} className="row">
-          //   {X.map((Y: PixelDTO, Yindex: number) => {
-          //     const color = panelColor.find((item: rowColumnColor) => {
-          //       return (
-          //         item.rowIndex === currentKeys.T_key + Xindex &&
-          //         item.columnIndex === currentKeys.L_key + Yindex
-          //       );
-          //     }); //this checks if the index already exists
-          //     return (
-          //       <Pixel
-          //         key={randomKey + currentKeys.L_key + Yindex}
-          //         rowIndex={currentKeys.T_key + Xindex}
-          //         columnIndex={currentKeys.L_key + Yindex}
-          //         dataColor={color?.color}
-          //       />
-          //     );
-          //   })}
-          // </S.Row>
+          </div>
         );
       })}
     </div>

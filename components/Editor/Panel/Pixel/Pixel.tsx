@@ -37,14 +37,35 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
     // useCallback(
     () => {
       console.log(rowIndex, columnIndex);
-      modifyPixelById(rowIndex, columnIndex, color, color);
-      // dispatch(
-      //   pixelDataRedux.update({
-      //     rowIndex: rowIndex,
-      //     columnIndex: columnIndex,
-      //     color,
-      //   })
-      // );
+      const { previousColor } = modifyPixelById({
+        rowIndex: rowIndex,
+        columnIndex: columnIndex,
+        color: color,
+        name: color,
+      });
+      dispatch(
+        pixelDataRedux.update({
+          action: {
+            type: pixelDataRedux.pixelChangeActionType.PIXEL_CHANGE,
+            before: [
+              {
+                rowIndex: rowIndex,
+                columnIndex: columnIndex,
+                color: previousColor,
+                name: previousColor,
+              },
+            ],
+            after: [
+              {
+                rowIndex: rowIndex,
+                columnIndex: columnIndex,
+                color: color,
+                name: color,
+              },
+            ],
+          },
+        })
+      );
     };
   const onMouseDownHandler: React.MouseEventHandler<HTMLDivElement> = (
     event: MouseEvent

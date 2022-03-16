@@ -1,7 +1,14 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { DimensionsInput } from "../components/Editor/PanelControl/DimensionsInput";
 import { Editor } from "../components/Editor";
 import { PanelUpperButtons } from "../components/Editor/PanelControl/PanelUpperButtons";
@@ -29,8 +36,8 @@ import { initialize, pixelDataElement } from "../store/modules/pixelData";
 
 const Home: NextPage = () => {
   const dispatch = useDispatch();
-  const defaultHeight: number = 32;
-  const defaultWidth: number = 32;
+  const defaultHeight: number = useMemo(() => 32, []);
+  const defaultWidth: number = useMemo(() => 32, []);
   const [initialData, setInitialData] = useState<pixelDataElement[][]>([]);
 
   const [hideOptions, setHideOptions] = useState<boolean>(false);
@@ -146,18 +153,7 @@ const Home: NextPage = () => {
           initialColor={color}
         />
       )} */}
-      <Canvas
-        // onMouseDown={enableMouseDragDraw}
-        // onMouseUp={disableMouseDragDraw}
-        // onMouseLeave={disableMouseDragDraw}
-        onMouseDown={() => {
-          // dispatch(mouseDragActions.mouseClickOn());
-        }}
-        onMouseUp={() => {
-          // dispatch(mouseDragActions.mouseClickOff());
-        }}
-        onMouseLeave={() => {}}
-      >
+      <Canvas>
         <h1>Pixel Create Character</h1>
         {hideDrawingPanel && (
           <DimensionsInput

@@ -1,36 +1,10 @@
 import { SetStateAction } from "react";
 import { Pixel2dPixel, Pixel2dRow, Position } from "../Panel";
 import { Pixel } from "../Pixel";
+import { SizeControlProps } from "./SizeControlProps";
 import * as S from "./styles";
 
-interface Props {
-  addColumn: ({
-    position,
-    data,
-  }: {
-    position: Position.LEFT | Position.RIGHT;
-    data: Pixel2dPixel[];
-  }) => void;
-  addRow: ({
-    position,
-    data,
-  }: {
-    position: Position.TOP | Position.BOTTOM;
-    data: Pixel2dPixel[];
-  }) => void;
-  deleteColumn: ({
-    position,
-  }: {
-    position: Position.LEFT | Position.RIGHT;
-  }) => void;
-  deleteRow: ({
-    position,
-  }: {
-    position: Position.TOP | Position.BOTTOM;
-  }) => void;
-}
-
-const SizeControl: React.FC<Props> = ({
+const SizeControl: React.FC<SizeControlProps> = ({
   children,
   addRow,
   addColumn,
