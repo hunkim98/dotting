@@ -13,7 +13,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store/modules";
 import { pixelDataElement } from "../../../../store/modules/pixelData";
 import ReactDOM, { render } from "react-dom";
-import { Pixel2dRow } from "../Panel";
+import { Pixel2dRow, Position } from "../Panel";
 import { SizeControlProps } from "../SizeControl/SizeControlProps";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
 
@@ -41,22 +41,46 @@ const PixelsContainer: React.FC<Props> = ({
   useEffect(() => {
     console.log("record changed");
     if (actionRecord) {
-      console.log(actionRecord.type in pixelDataRedux.pixelChangeActionType);
       if (actionRecord.type in pixelDataRedux.pixelChangeActionType) {
-        if (
-          actionRecord.type ===
-          pixelDataRedux.pixelChangeActionType.PIXEL_CHANGE
-        ) {
-          const data = actionRecord.before;
-          for (let i = 0; i < data.length; i++) {
-            modifyPixelById({
-              rowIndex: data[i].rowIndex,
-              columnIndex: data[i].columnIndex,
-              color: data[i].color,
-              name: data[i].name,
-            });
-          }
-          // modifyPixelById();
+        switch (actionRecord.type) {
+          case pixelDataRedux.pixelChangeActionType.PIXEL_CHANGE:
+            const data = actionRecord.before;
+            for (let i = 0; i < data.length; i++) {
+              modifyPixelById({
+                rowIndex: data[i].rowIndex,
+                columnIndex: data[i].columnIndex,
+                color: data[i].color,
+                name: data[i].name,
+              });
+            }
+            break;
+        }
+      } else if (actionRecord.type in pixelDataRedux.laneChangeActionType) {
+        switch (actionRecord.type) {
+          case pixelDataRedux.laneChangeActionType.REMOVE_TOP_LANE:
+            addRow({ position: Position.TOP, data: actionRecord.before });
+            break;
+          case pixelDataRedux.laneChangeActionType.REMOVE_BOTTOM_LANE:
+            addRow({ position: Position.BOTTOM, data: actionRecord.before });
+            break;
+          case pixelDataRedux.laneChangeActionType.REMOVE_LEFT_LANE:
+            addColumn({ position: Position.LEFT, data: actionRecord.before });
+            break;
+          case pixelDataRedux.laneChangeActionType.REMOVE_RIGHT_LANE:
+            addColumn({ position: Position.RIGHT, data: actionRecord.before });
+            break;
+          case pixelDataRedux.laneChangeActionType.ADD_TOP_LANE:
+            deleteRow({ position: Position.TOP });
+            break;
+          case pixelDataRedux.laneChangeActionType.ADD_BOTTOM_LANE:
+            deleteRow({ position: Position.BOTTOM });
+            break;
+          case pixelDataRedux.laneChangeActionType.ADD_LEFT_LANE:
+            deleteColumn({ position: Position.LEFT });
+            break;
+          case pixelDataRedux.laneChangeActionType.ADD_RIGHT_LANE:
+            deleteColumn({ position: Position.RIGHT });
+            break;
         }
       }
     }

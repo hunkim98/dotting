@@ -16,12 +16,19 @@ type OwnProps = {
   id: string;
   rowIndex: number;
   columnIndex: number;
-  dataColor?: string;
+  dataColor: string | undefined;
+  dataName: string | undefined;
 };
 
 type Props = OwnProps; //OwnProps & OtherProps
 
-const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
+const Pixel: React.FC<Props> = ({
+  rowIndex,
+  columnIndex,
+  dataColor,
+  id,
+  dataName,
+}) => {
   const isLeftClicked = useSelector(
     (state: RootState) => state.mouseEvent.isLeftClicked
   );
@@ -140,6 +147,7 @@ const Pixel: React.FC<Props> = ({ rowIndex, columnIndex, dataColor, id }) => {
   return (
     <S.Container
       id={id}
+      data-name={dataName ? dataName : ""}
       className="pixel"
       color={pixelColor}
       draggable="false"

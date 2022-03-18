@@ -1,3 +1,4 @@
+import { pixelDataElement } from "../../../../store/modules/pixelData";
 import { Pixel2dPixel, Position } from "../Panel";
 
 export interface SizeControlProps {
@@ -6,14 +7,14 @@ export interface SizeControlProps {
     data,
   }: {
     position: Position.LEFT | Position.RIGHT;
-    data: Pixel2dPixel[];
+    data: pixelDataElement[];
   }) => void;
   addRow: ({
     position,
     data,
   }: {
     position: Position.TOP | Position.BOTTOM;
-    data: Pixel2dPixel[];
+    data: pixelDataElement[];
   }) => void;
   deleteColumn: ({
     position,

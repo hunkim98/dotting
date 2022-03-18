@@ -16,6 +16,7 @@ export const modifyPixelById = ({
   if (pixel) {
     previousColor = pixel.style.backgroundColor;
     pixel.style.backgroundColor = color ? color : "";
+    pixel.dataset.name = name;
   }
   return { previousColor };
 };

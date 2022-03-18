@@ -66,14 +66,14 @@ const Panel: React.FC<Props> = ({
     data,
   }: {
     position: Position.LEFT | Position.RIGHT;
-    data: Pixel2dPixel[];
+    data: pixelData.pixelDataElement[];
   }) => {
     const newColumnIndex =
       position === Position.LEFT
         ? pixel2dArray[0].columns[0].columnIndex - 1
         : pixel2dArray[0].columns[pixel2dArray[0].columns.length - 1]
             .columnIndex + 1;
-    const tempPixel2dArray = pixel2dArray.map((row) => {
+    const tempPixel2dArray = pixel2dArray.map((row, elementIndex) => {
       const key = `row${row.rowIndex}column${newColumnIndex}`;
       const newColumn: Pixel2dPixel = {
         columnIndex: newColumnIndex,
@@ -83,6 +83,8 @@ const Panel: React.FC<Props> = ({
             id={key}
             rowIndex={row.rowIndex}
             columnIndex={newColumnIndex}
+            dataColor={data[elementIndex]?.color}
+            dataName={data[elementIndex]?.name}
           ></Pixel>
         ),
       };
@@ -102,7 +104,7 @@ const Panel: React.FC<Props> = ({
     data,
   }: {
     position: Position.TOP | Position.BOTTOM;
-    data: Pixel2dPixel[];
+    data: pixelData.pixelDataElement[];
   }) => {
     const newRowIndex =
       position === Position.TOP
@@ -119,6 +121,8 @@ const Panel: React.FC<Props> = ({
             id={`row${newRowIndex}column${i}`}
             rowIndex={newRowIndex}
             columnIndex={i}
+            dataColor={data[i]?.color}
+            dataName={data[i]?.name}
           />
         ),
       });
@@ -174,6 +178,7 @@ const Panel: React.FC<Props> = ({
               rowIndex={rowIndex}
               columnIndex={columnIndex}
               dataColor={pixel.color}
+              dataName={pixel.name}
             ></Pixel>
           ),
         });
@@ -214,6 +219,7 @@ const Panel: React.FC<Props> = ({
           addColumn={addColumn}
           deleteRow={deleteRow}
           deleteColumn={deleteColumn}
+          pixel2dArray={pixel2dArray}
         >
           <PixelsContainer
             panelRef={panelRef}
