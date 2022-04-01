@@ -41,10 +41,14 @@ const PixelsContainer: React.FC<Props> = ({
   useEffect(() => {
     console.log("record changed");
     if (actionRecord) {
+      const data =
+        actionRecord.action === "undo"
+          ? actionRecord.before
+          : actionRecord.after;
       if (actionRecord.type in pixelDataRedux.pixelChangeActionType) {
         switch (actionRecord.type) {
           case pixelDataRedux.pixelChangeActionType.PIXEL_CHANGE:
-            const data = actionRecord.before;
+            console.log(data);
             for (let i = 0; i < data.length; i++) {
               modifyPixelById({
                 rowIndex: data[i].rowIndex,
@@ -58,16 +62,16 @@ const PixelsContainer: React.FC<Props> = ({
       } else if (actionRecord.type in pixelDataRedux.laneChangeActionType) {
         switch (actionRecord.type) {
           case pixelDataRedux.laneChangeActionType.REMOVE_TOP_LANE:
-            addRow({ position: Position.TOP, data: actionRecord.before });
+            addRow({ position: Position.TOP, data: data });
             break;
           case pixelDataRedux.laneChangeActionType.REMOVE_BOTTOM_LANE:
-            addRow({ position: Position.BOTTOM, data: actionRecord.before });
+            addRow({ position: Position.BOTTOM, data: data });
             break;
           case pixelDataRedux.laneChangeActionType.REMOVE_LEFT_LANE:
-            addColumn({ position: Position.LEFT, data: actionRecord.before });
+            addColumn({ position: Position.LEFT, data: data });
             break;
           case pixelDataRedux.laneChangeActionType.REMOVE_RIGHT_LANE:
-            addColumn({ position: Position.RIGHT, data: actionRecord.before });
+            addColumn({ position: Position.RIGHT, data: data });
             break;
           case pixelDataRedux.laneChangeActionType.ADD_TOP_LANE:
             deleteRow({ position: Position.TOP });

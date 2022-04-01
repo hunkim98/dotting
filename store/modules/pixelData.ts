@@ -35,6 +35,10 @@ export interface pixelAction {
   after: pixelDataElement[];
 }
 
+interface actionRecord extends pixelAction {
+  action: "redo" | "undo";
+}
+
 export interface pixelRecord {
   actions: number;
   indexes: pixelIndexes;
@@ -42,15 +46,13 @@ export interface pixelRecord {
 
 export type pixelData = {
   record: pixelDataElement[][];
-  present: pixelDataElement[][];
   past: Array<any>;
   future: Array<any>;
-  actionRecord: pixelAction | undefined;
+  actionRecord: actionRecord | undefined;
 };
 
 const initialState: pixelData = {
   record: [],
-  present: [],
   past: [],
   future: [],
   actionRecord: undefined,
@@ -83,16 +85,16 @@ const pixelDataSlice = createSlice({
         const previous = state.past[state.past.length - 1];
         const newPast = state.past.slice(0, state.past.length - 1);
         state.past = newPast;
-        state.actionRecord = previous;
-        state.future = [state.present, ...state.future];
+        state.actionRecord = { action: "undo", ...previous };
+        state.future = [previous, ...state.future];
       }
     },
     redo: (state) => {
       if (state.future.length > 0) {
         const next = state.future[0];
         const newFuture = state.future.slice(1);
-        state.past = [...state.past, state.present];
-        state.record = next;
+        state.past = [...state.past, next];
+        state.actionRecord = { action: "redo", ...next };
         state.future = newFuture;
       }
     },

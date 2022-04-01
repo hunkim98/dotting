@@ -14,6 +14,7 @@ export const modifyPixelById = ({
   const pixel = document.getElementById(`row${rowIndex}column${columnIndex}`);
   let previousColor = undefined;
   if (pixel) {
+    console.log(color);
     previousColor = pixel.style.backgroundColor;
     pixel.style.backgroundColor = color ? color : "";
     pixel.dataset.name = name;

@@ -146,10 +146,11 @@ const Pixel: React.FC<Props> = ({
 
   return (
     <S.Container
+      // inline style로 해야지 mondifyColor 가 가능하다
+      style={{ backgroundColor: dataColor }}
       id={id}
       data-name={dataName ? dataName : ""}
       className="pixel"
-      color={pixelColor}
       draggable="false"
       onMouseDown={onMouseDownHandler}
       onMouseOver={onMouseOverHandler}
@@ -167,11 +168,5 @@ const Pixel: React.FC<Props> = ({
     ></S.Container>
   );
 };
-
-// function mapStateToProps(state: RootState) {
-//   return {
-//     isLeftClicked: state.mouseEvent.isLeftClicked,
-//   };
-// }
 
 export default Pixel;
