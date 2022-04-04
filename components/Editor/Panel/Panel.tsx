@@ -234,7 +234,11 @@ const Panel: React.FC<Props> = ({
               return (
                 <div style={{ display: "flex" }} key={`row${row.rowIndex}`}>
                   {row.columns.map((element) => {
-                    return <PixelBorder />;
+                    return (
+                      <PixelBorder
+                        key={`row${row.rowIndex}column${element.columnIndex}`}
+                      />
+                    );
                   })}
                 </div>
               );
