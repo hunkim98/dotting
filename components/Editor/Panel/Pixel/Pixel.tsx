@@ -29,16 +29,12 @@ const Pixel: React.FC<Props> = ({
   id,
   dataName,
 }) => {
-  const isLeftClicked = useSelector(
-    (state: RootState) => state.mouseEvent.isLeftClicked
-  );
   const dispatch = useDispatch();
+  const brushColor = useSelector((state: RootState) => state.brush.colorString);
   const [pixelColor, setPixelColor] = useState<string | undefined>(dataColor);
   const [oldColor, setOldColor] = useState(pixelColor);
 
   // const { data } = useSelector((state: RootState) => state.pixelData);
-
-  const { color } = useContext(ColorContext);
 
   const applyColor =
     // useCallback(
@@ -47,8 +43,8 @@ const Pixel: React.FC<Props> = ({
       const { previousColor } = modifyPixelById({
         rowIndex: rowIndex,
         columnIndex: columnIndex,
-        color: color,
-        name: color,
+        color: brushColor,
+        name: brushColor,
       });
       dispatch(
         pixelDataRedux.update({
@@ -66,8 +62,8 @@ const Pixel: React.FC<Props> = ({
               {
                 rowIndex: rowIndex,
                 columnIndex: columnIndex,
-                color: color,
-                name: color,
+                color: brushColor,
+                name: brushColor,
               },
             ],
           },
@@ -133,7 +129,7 @@ const Pixel: React.FC<Props> = ({
 
   const changeColorOnHover = () => {
     setOldColor(pixelColor);
-    setPixelColor(color);
+    setPixelColor(brushColor);
   };
 
   const reset = useCallback(() => {

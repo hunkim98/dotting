@@ -188,11 +188,7 @@ const Home: NextPage = () => {
         />
       </Canvas>
       <Toolbar>
-        {/* <ColorPicker
-          brushColor={color}
-          color={color}
-          changeColor={changeColor}
-        /> */}
+        <ColorPicker />
         <ColorGroups
           dataArray={[]}
           selectedGroup={selectedGroup}
