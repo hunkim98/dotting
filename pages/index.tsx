@@ -114,9 +114,9 @@ const Home: NextPage = () => {
   }, [canvasSize]);
 
   const downloadImage = useCallback(() => {
-    // const pixelRef = document.getElementById("pixelsContainer");
-    console.log(panelRef);
-    downloadImageRef(panelRef.current);
+    const pixelRef = document.getElementById("pixelsContainer");
+    console.log(pixelRef);
+    downloadImageRef(pixelRef);
   }, []);
 
   // const saveProject = useCallback(() => {
