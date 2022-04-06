@@ -49,13 +49,17 @@ export type pixelData = {
   past: Array<any>;
   future: Array<any>;
   actionRecord: actionRecord | undefined;
+  pixelDataTriggered: boolean;
 };
 
 const initialState: pixelData = {
   record: [],
   past: [],
   future: [],
+  // colorGroupActionPast: [],
+  // colorGroupActionFuture: []
   actionRecord: undefined,
+  pixelDataTriggered: false,
 };
 
 const pixelDataSlice = createSlice({
@@ -67,18 +71,23 @@ const pixelDataSlice = createSlice({
       actions: PayloadAction<{ data: pixelDataElement[][] }>
     ) => {
       console.log(actions.payload.data);
+      state.pixelDataTriggered = !state.pixelDataTriggered;
       // state.topRowIndex = 0;
       // state.bottomRowIndex = actions.payload.data.length;
       // state.leftColumnIndex = 0;
       // state.rightColumnIndex = actions.payload.data[0].length;
       // state.past = [actions.payload.data];
     },
-    update: (state, data: PayloadAction<{ action: pixelAction }>) => {
+    update: (
+      state,
+      data: PayloadAction<{ action: pixelAction; element: pixelDataElement }>
+    ) => {
       state.past = [...state.past, data.payload.action];
       console.log(data.payload.action);
       if (state.future.length !== 0) {
         state.future = [];
       }
+      state.pixelDataTriggered = !state.pixelDataTriggered;
     },
     undo: (state) => {
       if (state.past.length > 0) {
@@ -87,6 +96,7 @@ const pixelDataSlice = createSlice({
         state.past = newPast;
         state.actionRecord = { action: "undo", ...previous };
         state.future = [previous, ...state.future];
+        state.pixelDataTriggered = !state.pixelDataTriggered;
       }
     },
     redo: (state) => {
@@ -96,6 +106,7 @@ const pixelDataSlice = createSlice({
         state.past = [...state.past, next];
         state.actionRecord = { action: "redo", ...next };
         state.future = newFuture;
+        state.pixelDataTriggered = !state.pixelDataTriggered;
       }
     },
   },

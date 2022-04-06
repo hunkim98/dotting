@@ -40,7 +40,7 @@ const Pixel: React.FC<Props> = ({
     // useCallback(
     () => {
       console.log(rowIndex, columnIndex);
-      const { previousColor } = modifyPixelById({
+      const { previousColor, previousName } = modifyPixelById({
         rowIndex: rowIndex,
         columnIndex: columnIndex,
         color: brushColor,
@@ -55,7 +55,7 @@ const Pixel: React.FC<Props> = ({
                 rowIndex: rowIndex,
                 columnIndex: columnIndex,
                 color: previousColor,
-                name: previousColor,
+                name: previousName,
               },
             ],
             after: [
@@ -66,6 +66,12 @@ const Pixel: React.FC<Props> = ({
                 name: brushColor,
               },
             ],
+          },
+          element: {
+            rowIndex: rowIndex,
+            columnIndex: columnIndex,
+            color: brushColor,
+            name: brushColor,
           },
         })
       );
