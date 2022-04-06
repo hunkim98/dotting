@@ -5,21 +5,23 @@ import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
 import { DraggableContext } from "../../../context/DraggableContext";
 import { ChromePicker, ColorResult } from "react-color";
 import { DataContext } from "../../../context/DataContext";
+import { RootState } from "../../../store/modules";
+import { useDispatch, useSelector } from "react-redux";
 interface Props {
   selectedGroup: colorGroup | undefined;
   setOpenChangePanel: React.Dispatch<SetStateAction<boolean>>;
-  initialColor: string;
 }
 
 const ColorWindow: React.FC<Props> = ({
   selectedGroup,
   setOpenChangePanel,
-  initialColor,
 }) => {
+  const brushColor = useSelector((state: RootState) => state.brush.colorString);
+  const dispatch = useDispatch();
   const { setDataArray, setIsHistoryBranchCreated, history, historyIndex } =
     useContext(DataContext);
   const { position, setPosition } = useContext(DraggableContext);
-  const [currentColor, setCurrentColor] = useState<string>(initialColor);
+  const [currentColor, setCurrentColor] = useState<string>(brushColor);
   const onControlledDrag = (e: DraggableEvent, position: DraggableData) => {
     const { x, y } = position;
     setPosition({ x, y });
