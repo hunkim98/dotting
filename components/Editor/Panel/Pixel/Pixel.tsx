@@ -67,12 +67,13 @@ const Pixel: React.FC<Props> = ({
               },
             ],
           },
-          element: {
-            rowIndex: rowIndex,
-            columnIndex: columnIndex,
-            color: brushColor,
-            name: brushColor,
-          },
+
+          // element: {
+          //   rowIndex: rowIndex,
+          //   columnIndex: columnIndex,
+          //   color: brushColor,
+          //   name: brushColor,
+          // },
         })
       );
     };

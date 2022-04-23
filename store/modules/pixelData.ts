@@ -78,7 +78,13 @@ const pixelDataSlice = createSlice({
       // state.rightColumnIndex = actions.payload.data[0].length;
       // state.past = [actions.payload.data];
     },
-    update: (state, data: PayloadAction<{ action: pixelAction }>) => {
+    update: (
+      state,
+      data: PayloadAction<{
+        action: pixelAction;
+        // element: pixelDataElement
+      }>
+    ) => {
       state.past = [...state.past, data.payload.action];
       console.log(data.payload.action);
       if (state.future.length !== 0) {
