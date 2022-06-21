@@ -19,10 +19,6 @@ import {
   rowColumnColor,
 } from "../const/CommonDTO";
 import { downloadImageRef } from "../const/CommonFunctions";
-import { ColorContext } from "../context/ColorContext";
-import { DataContext } from "../context/DataContext";
-import { MouseDragContext } from "../context/MouseDragContext";
-import styles from "../styles/Home.module.css";
 import { PanelBelowButtons } from "../components/Editor/PanelControl/PanelBelowButtons";
 import { Panel } from "../components/Editor/Panel";
 import { Toolbar } from "../components/Editor/Toolbar";
@@ -30,7 +26,6 @@ import { Canvas } from "../components/Editor/Canvas";
 import { ColorPicker } from "../components/Editor/Toolbar/ColorPicker";
 import { ColorGroups } from "../components/Editor/Toolbar/ColorGroups";
 import { ColorWindow } from "../components/Editor/ColorWindow";
-import * as mouseDragActions from "../store/modules/mouseEvent";
 import { useDispatch } from "react-redux";
 import { initialize, pixelDataElement } from "../store/modules/pixelData";
 
@@ -42,7 +37,7 @@ const Home: NextPage = () => {
 
   const [hideOptions, setHideOptions] = useState<boolean>(false);
   const [hideDrawingPanel, setHideDrawingPanel] = useState<boolean>(true);
-  const [selectedGroup, setSelectedGroup] = useState<colorGroup>();
+  // const [selectedGroup, setSelectedGroup] = useState<colorGroup>();
   const [buttonText, setButonText] = useState<"start drawing" | "reset">(
     "start drawing"
   );
@@ -148,7 +143,7 @@ const Home: NextPage = () => {
       </Head>
       {openChangePanel && (
         <ColorWindow
-          selectedGroup={selectedGroup}
+          // selectedGroup={selectedGroup}
           setOpenChangePanel={setOpenChangePanel}
         />
       )}
@@ -190,8 +185,8 @@ const Home: NextPage = () => {
         <ColorPicker />
         <ColorGroups
           dataArray={[]}
-          selectedGroup={selectedGroup}
-          setSelectedGroup={setSelectedGroup}
+          // selectedGroup={selectedGroup}
+          // setSelectedGroup={setSelectedGroup}
           openChangePanel={openChangePanel}
           setOpenChangePanel={setOpenChangePanel}
           setOpenChangePanelKey={setOpenChangePanelKey}

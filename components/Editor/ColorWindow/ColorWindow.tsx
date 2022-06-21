@@ -6,18 +6,17 @@ import { DraggableContext } from "../../../context/DraggableContext";
 import { ChromePicker, ColorResult } from "react-color";
 import { DataContext } from "../../../context/DataContext";
 import { RootState } from "../../../store/modules";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 interface Props {
-  selectedGroup: colorGroup | undefined;
+  // selectedGroup: colorGroup | undefined;
   setOpenChangePanel: React.Dispatch<SetStateAction<boolean>>;
 }
 
 const ColorWindow: React.FC<Props> = ({
-  selectedGroup,
+  // selectedGroup,
   setOpenChangePanel,
 }) => {
   const brushColor = useSelector((state: RootState) => state.brush.colorString);
-  const dispatch = useDispatch();
   const { setDataArray, setIsHistoryBranchCreated, history, historyIndex } =
     useContext(DataContext);
   const { position, setPosition } = useContext(DraggableContext);
@@ -34,21 +33,21 @@ const ColorWindow: React.FC<Props> = ({
     const colorHexString = color.hex;
     setCurrentColor(colorHexString);
     console.log(color);
-    if (selectedGroup) {
-      console.log("changed color of dataArray");
-      setDataArray((array) =>
-        array.filter((element) => {
-          if (element.name === selectedGroup.name) {
-            element.color = colorHexString;
-            return element;
-          }
-          return element;
-        })
-      );
-      if (historyIndex < history.length) {
-        setIsHistoryBranchCreated(false);
-      }
-    }
+    // if (selectedGroup) {
+    //   console.log("changed color of dataArray");
+    //   setDataArray((array) =>
+    //     array.filter((element) => {
+    //       if (element.name === selectedGroup.name) {
+    //         element.color = colorHexString;
+    //         return element;
+    //       }
+    //       return element;
+    //     })
+    //   );
+    //   if (historyIndex < history.length) {
+    //     setIsHistoryBranchCreated(false);
+    //   }
+    // }
   };
   return (
     <Draggable position={position} onDrag={onControlledDrag}>

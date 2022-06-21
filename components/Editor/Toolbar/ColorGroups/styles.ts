@@ -13,9 +13,11 @@ export const Container = styled.div`
 
 export const ScrollerContainer = styled.div<{
   index: number;
-  selectedGroup: colorGroup | undefined;
+  // selectedGroup: colorGroup | undefined;
   openChangePanel: boolean;
-}>`
-  background-color: ${({ selectedGroup, openChangePanel, index }) =>
-    selectedGroup?.index === index && openChangePanel && "#DCD87B"};
-`;
+}>``;
+
+// `
+//   background-color: ${({ selectedGroup, openChangePanel, index }) =>
+//     selectedGroup?.index === index && openChangePanel && "#DCD87B"};
+// `;

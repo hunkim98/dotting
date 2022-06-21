@@ -5,17 +5,12 @@ import {
   rowColumnColor,
   PanelKeys,
 } from "../../../const/CommonDTO";
-import { range } from "../../../const/CommonFunctions";
-import { DataContext } from "../../../context/DataContext";
 
-import { PixelBordersContainer } from "./PixelBordersContainer";
 import { PixelsContainer } from "./PixelsContainer";
 import * as S from "./styles";
-import { useDispatch, useSelector, Provider } from "react-redux";
+import { useDispatch } from "react-redux";
 import * as pixelData from "../../../store/modules/pixelData";
 import { Pixel } from "./Pixel";
-import { ThemeProvider } from "styled-components";
-import * as mouseEvent from "../../../store/modules/mouseEvent";
 import { PixelBorder } from "./PixelBorder";
 import { SizeControl } from "./SizeControl";
 
