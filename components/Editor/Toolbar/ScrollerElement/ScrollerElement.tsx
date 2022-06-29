@@ -1,63 +1,116 @@
-import { useContext, useState } from "react";
-import { useDispatch } from "react-redux";
-import { dataArrayElement } from "../../../../const/CommonDTO";
+import { useContext, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  colorGroup,
+  colorGroupElement,
+  dataArrayElement,
+} from "../../../../const/CommonDTO";
+import { modifyPixelById } from "../../../../const/PixelFunctions";
 import { DataContext } from "../../../../context/DataContext";
-import { setSelectedGroup } from "../../../../store/modules/selectedGroup";
+import { RootState } from "../../../../store/modules";
+import { changeBrushColor } from "../../../../store/modules/brush";
+import {
+  pixelChangeActionType,
+  pixelDataElement,
+  update,
+} from "../../../../store/modules/pixelData";
+import {
+  initializeSelectedGroup,
+  setSelectedGroup,
+} from "../../../../store/modules/selectedGroup";
 import * as S from "./styles";
 interface Props {
+  groups: colorGroup[];
+  data: colorGroupElement[];
   name: string;
   color: string | undefined;
   count: number;
-  setOpenChangePanel: React.Dispatch<React.SetStateAction<boolean>>;
-  setOpenChangePanelKey: React.Dispatch<React.SetStateAction<string>>;
+  index: number;
+  selectedGroupIndex: number | undefined;
+  setSelectedGroupIndex: React.Dispatch<
+    React.SetStateAction<number | undefined>
+  >;
 }
 
 const ScrollerElement: React.FC<Props> = ({
+  groups,
+  index,
+  selectedGroupIndex,
+  setSelectedGroupIndex,
+  data,
   name,
   color,
-  setOpenChangePanel,
-  setOpenChangePanelKey,
   count,
 }) => {
   const dispatch = useDispatch();
-  const [groupName, setGroupName] = useState<string>(name);
-  const {
-    dataArray,
-    setDataArray,
-    history,
-    historyIndex,
-    setIsHistoryBranchCreated,
-  } = useContext(DataContext);
+  const selectedGroup = useSelector(
+    (state: RootState) => state.selectedGroup.group
+  );
+  const [groupName, setGroupName] = useState<string>(groups[index].name);
+  const onGroupClick = (groupElements: pixelDataElement[]) => {
+    dispatch(setSelectedGroup({ data: groupElements }));
+  };
 
   return (
-    <S.Container>
-      <S.Color
-        color={color}
-        onClick={() => {
-          setOpenChangePanel(true);
-          setOpenChangePanelKey(name);
-          dispatch(setSelectedGroup({ data: [] }));
-        }}
-      />
-      <S.Name
-        value={name}
-        onChange={(e) => {
-          setGroupName(e.target.value);
-        }}
-      />
+    <S.Container
+      onClick={() => {
+        setSelectedGroupIndex(index);
+        setGroupName(groups[index].name);
+        dispatch(changeBrushColor({ brushColor: color! }));
+        onGroupClick(
+          data.map((element) => {
+            return { ...element, name: name };
+          })
+        );
+      }}
+      selected={selectedGroup.length !== 0 && selectedGroupIndex === index}
+    >
+      <S.Color color={color} />
+      {selectedGroup.length === 0 || selectedGroupIndex !== index ? (
+        <S.Name>{groups[index].name}</S.Name>
+      ) : (
+        <S.Input
+          value={groupName}
+          onChange={(e) => {
+            setGroupName(e.target.value);
+          }}
+        />
+      )}
       <S.Button
         onClick={(e) => {
-          const temp = JSON.parse(JSON.stringify(dataArray));
-          temp.map((X: dataArrayElement) => {
-            if (X.name === name) {
-              X.name = groupName;
-            }
-            return X;
+          e.stopPropagation();
+          const beforeData: pixelDataElement[] = [];
+          const afterData: pixelDataElement[] = [];
+          selectedGroup.map((element) => {
+            const { previousColor, previousName } = modifyPixelById({
+              rowIndex: element.rowIndex,
+              columnIndex: element.columnIndex,
+              color: element.color,
+              name: groupName,
+            });
+            beforeData.push({
+              rowIndex: element.rowIndex,
+              columnIndex: element.columnIndex,
+              color: previousColor,
+              name: previousName,
+            });
+            afterData.push({
+              rowIndex: element.rowIndex,
+              columnIndex: element.columnIndex,
+              color: previousColor,
+              name: groupName,
+            });
           });
-          setDataArray(temp);
-          if (historyIndex < history.length) {
-            setIsHistoryBranchCreated(false);
-          }
+          dispatch(initializeSelectedGroup());
+          dispatch(
+            update({
+              action: {
+                type: pixelChangeActionType.PIXEL_CHANGE,
+                before: beforeData,
+                after: afterData,
+              },
+            })
+          );
         }}
       >
         OK

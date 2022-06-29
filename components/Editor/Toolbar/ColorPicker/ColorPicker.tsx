@@ -50,7 +50,7 @@ const ColorPicker: React.FC<Props> = ({}) => {
             }, //this removes the shadow
           },
         }}
-        color={tempColor}
+        color={brushColor}
         onChange={changeColor}
         disableAlpha={true}
       />

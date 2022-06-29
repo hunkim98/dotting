@@ -1,3 +1,7 @@
+export enum ModifyActionType {
+  ColorChange,
+  NameChange,
+}
 interface Props {
   rowIndex: number;
   columnIndex: number;
@@ -15,7 +19,6 @@ export const modifyPixelById = ({
   let previousColor = undefined;
   let previousName = undefined;
   if (pixel) {
-    console.log(color);
     previousColor = pixel.style.backgroundColor;
     previousName = pixel.dataset.name;
     pixel.style.backgroundColor = color ? color : "";
@@ -30,7 +33,7 @@ export const decodePixelId = (elementId: string) => {
     elementId.slice(0, indexOfColumnString).replace("row", "")
   );
   const columnIndex = Number(
-    elementId.slice(indexOfColumnString, -1).replace("column", "")
+    elementId.slice(indexOfColumnString).replace("column", "")
   );
   return { rowIndex, columnIndex };
 };

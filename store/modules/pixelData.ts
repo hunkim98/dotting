@@ -70,7 +70,6 @@ const pixelDataSlice = createSlice({
       state,
       actions: PayloadAction<{ data: pixelDataElement[][] }>
     ) => {
-      console.log(actions.payload.data);
       state.pixelDataTriggered = !state.pixelDataTriggered;
       // state.topRowIndex = 0;
       // state.bottomRowIndex = actions.payload.data.length;
@@ -86,7 +85,6 @@ const pixelDataSlice = createSlice({
       }>
     ) => {
       state.past = [...state.past, data.payload.action];
-      console.log(data.payload.action);
       if (state.future.length !== 0) {
         state.future = [];
       }

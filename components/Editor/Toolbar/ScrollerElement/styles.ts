@@ -1,6 +1,10 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
+export const Container = styled.div<{
+  // selectedGroup: colorGroup | undefined;
+  selected: boolean;
+}>`
+  background-color: ${({ selected }) => selected && "#DCD87B"};
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -17,7 +21,8 @@ export const Color = styled.div<{ color: string | undefined }>`
   /* height: 100%; */
 `;
 
-export const Name = styled.input``;
+export const Name = styled.div``;
+export const Input = styled.input``;
 
 export const Button = styled.button``;
 

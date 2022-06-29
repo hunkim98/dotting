@@ -15,29 +15,13 @@ import { setSelectedGroup } from "../../../../store/modules/selectedGroup";
 import { ScrollerElement } from "../ScrollerElement";
 import * as S from "./styles";
 
-interface Props {
-  dataArray: dataArrayElement[];
-  // selectedGroup: colorGroup | undefined;
-  // setSelectedGroup: React.Dispatch<SetStateAction<colorGroup | undefined>>;
-  openChangePanel: boolean;
-  setOpenChangePanel: React.Dispatch<SetStateAction<boolean>>;
-  setOpenChangePanelKey: React.Dispatch<React.SetStateAction<string>>;
-  changeColor: ColorChangeHandler | undefined;
-}
+interface Props {}
 
-const ColorGroups: React.FC<Props> = ({
-  dataArray,
-  openChangePanel,
-  setOpenChangePanel,
-  setOpenChangePanelKey,
-}) => {
-  const dispatch = useDispatch();
+const ColorGroups: React.FC<Props> = ({}) => {
   const pixelDataTriggered = useSelector(
     (state: RootState) => state.pixelData.pixelDataTriggered
   );
-  const [colorGroupElements, setColorGroupElements] = useState<
-    pixelDataElement[]
-  >([]);
+  const [selectedGroupIndex, setSelectedGroupIndex] = useState<number>();
   const [colorGroups, setColorGroups] = useState<colorGroup[]>([]);
 
   useEffect(() => {
@@ -76,73 +60,28 @@ const ColorGroups: React.FC<Props> = ({
           };
         });
         setColorGroups(colorGroup);
-        console.log(colorGroup);
       }
     }
-    setColorGroupElements(tempPixelDataElements);
   }, [pixelDataTriggered]);
-  // const { color, changeColor } = useContext(ColorContext);
-  const groupOnClick = (
-    index: number,
-    name: string,
-    color: string | undefined
-  ) => {
-    dispatch(setSelectedGroup({ data: [] }));
-    // setSelectedGroup({
-    //   index,
-    //   name,
-    //   color,
-    // });
-    setOpenChangePanel(true);
-    // changeColor(color);
-  };
+
   return (
     <S.Container>
       {colorGroups.map((group, groupIndex) => {
         return (
-          <S.ScrollerContainer
+          <ScrollerElement
+            groups={colorGroups}
+            key={groupIndex}
             index={groupIndex}
-            openChangePanel={openChangePanel}
-          >
-            <ScrollerElement
-              name={group.name}
-              color={group.color}
-              count={group.data.length}
-              setOpenChangePanel={setOpenChangePanel}
-              setOpenChangePanelKey={setOpenChangePanelKey}
-            />
-          </S.ScrollerContainer>
+            selectedGroupIndex={selectedGroupIndex}
+            setSelectedGroupIndex={setSelectedGroupIndex}
+            data={group.data}
+            name={colorGroups[groupIndex].name}
+            color={group.color}
+            count={group.data.length}
+          />
         );
       })}
     </S.Container>
-    // <S.Container>
-    //   {Object.keys(groupBy(colorGroupElements, "name")).map(
-    //     (keyName: string, i: number) => {
-    //       const keyColor = colorGroupElements.find((X) => {
-    //         return X.name === keyName;
-    //       })?.color;
-    //       return (
-    //         <S.ScrollerContainer
-    //           index={i}
-    //           // selectedGroup={selectedGroup}
-    //           openChangePanel={openChangePanel}
-    //           key={keyName}
-    //           onClick={() => {
-    //             groupOnClick(i, keyName, keyColor);
-    //           }}
-    //         >
-    //           <ScrollerElement
-    //             name={keyName}
-    //             color={keyColor}
-    //             count={groupBy(colorGroupElements, "name")[keyName].length}
-    //             setOpenChangePanel={setOpenChangePanel}
-    //             setOpenChangePanelKey={setOpenChangePanelKey}
-    //           />
-    //         </S.ScrollerContainer>
-    //       );
-    //     }
-    //   )}
-    // </S.Container>
   );
 };
 

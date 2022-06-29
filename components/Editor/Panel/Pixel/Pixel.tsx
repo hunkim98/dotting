@@ -11,6 +11,7 @@ import { modifyPixelById } from "../../../../const/PixelFunctions";
 import React, { MouseEvent } from "react";
 import { store } from "../../../../store/configureStore";
 import ReactDOM from "react-dom";
+import { appendToSelectedGroup } from "../../../../store/modules/selectedGroup";
 
 type OwnProps = {
   id: string;
@@ -31,6 +32,9 @@ const Pixel: React.FC<Props> = ({
 }) => {
   const dispatch = useDispatch();
   const brushColor = useSelector((state: RootState) => state.brush.colorString);
+  const groupName = useSelector(
+    (state: RootState) => state.selectedGroup.groupName
+  );
   const [pixelColor, setPixelColor] = useState<string | undefined>(dataColor);
   const [oldColor, setOldColor] = useState(pixelColor);
 
@@ -39,13 +43,25 @@ const Pixel: React.FC<Props> = ({
   const applyColor =
     // useCallback(
     () => {
-      console.log(rowIndex, columnIndex);
+      const name = groupName || brushColor;
       const { previousColor, previousName } = modifyPixelById({
         rowIndex: rowIndex,
         columnIndex: columnIndex,
         color: brushColor,
-        name: brushColor,
+        name: name,
       });
+      if (groupName) {
+        dispatch(
+          appendToSelectedGroup({
+            data: {
+              name: name,
+              color: brushColor,
+              rowIndex: rowIndex,
+              columnIndex: columnIndex,
+            },
+          })
+        );
+      }
       dispatch(
         pixelDataRedux.update({
           action: {
