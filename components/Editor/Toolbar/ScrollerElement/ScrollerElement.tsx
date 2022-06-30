@@ -6,7 +6,6 @@ import {
   dataArrayElement,
 } from "../../../../const/CommonDTO";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
-import { DataContext } from "../../../../context/DataContext";
 import { RootState } from "../../../../store/modules";
 import { changeBrushColor } from "../../../../store/modules/brush";
 import {

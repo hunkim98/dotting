@@ -2,7 +2,6 @@ import { SetStateAction, useContext, useState } from "react";
 import { changeBrushColor } from "../../../store/modules/brush";
 import * as S from "./styles";
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
-import { DraggableContext } from "../../../context/DraggableContext";
 import { ChromePicker, ColorResult } from "react-color";
 import { RootState } from "../../../store/modules";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,22 +12,22 @@ import {
   pixelDataElement,
   update,
 } from "../../../store/modules/pixelData";
+import { setColorWindowPosition } from "../../../store/modules/draggableWindow";
 
 interface Props {}
 
 const ColorWindow: React.FC<Props> = ({}) => {
-  console.log("colorwindowcolorwindow");
   const dispatch = useDispatch();
   const brushColor = useSelector((state: RootState) => state.brush.colorString);
   const selectedGroup = useSelector(
     (state: RootState) => state.selectedGroup.group
   );
-  const [tempColor, setTempColor] = useState(brushColor);
-  const { position, setPosition } = useContext(DraggableContext);
-  const [currentColor, setCurrentColor] = useState<string>(brushColor);
-  const onControlledDrag = (e: DraggableEvent, position: DraggableData) => {
-    const { x, y } = position;
-    setPosition({ x, y });
+  const position = useSelector(
+    (state: RootState) => state.draggableWindow.position
+  );
+  const onControlledDrag = (e: DraggableEvent, newPosition: DraggableData) => {
+    const { x, y } = newPosition;
+    dispatch(setColorWindowPosition({ x, y }));
   };
 
   const changeSelectedGroupColor = (

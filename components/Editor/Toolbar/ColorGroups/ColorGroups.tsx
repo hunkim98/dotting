@@ -7,7 +7,6 @@ import {
   dataArrayElement,
 } from "../../../../const/CommonDTO";
 import { decodePixelId } from "../../../../const/PixelFunctions";
-import { ColorContext } from "../../../../context/ColorContext";
 import { groupBy } from "../../../../functions/groupBy";
 import { RootState } from "../../../../store/modules";
 import { pixelDataElement } from "../../../../store/modules/pixelData";

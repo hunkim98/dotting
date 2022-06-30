@@ -5,6 +5,7 @@ import pixelData from "./pixelData";
 import pixelHistory from "./pixelHistory";
 import brush from "./brush";
 import selectedGroup from "./selectedGroup";
+import draggableWindow from "./draggableWindow";
 
 const rootReducer = combineReducers({
   mouseEvent,
@@ -12,6 +13,7 @@ const rootReducer = combineReducers({
   pixelHistory,
   brush,
   selectedGroup,
+  draggableWindow,
 });
 
 export default rootReducer;

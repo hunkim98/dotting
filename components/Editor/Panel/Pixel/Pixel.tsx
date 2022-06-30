@@ -1,7 +1,4 @@
 import { useCallback, useContext, useEffect, useState } from "react";
-import { dataArrayElement } from "../../../../const/CommonDTO";
-import { ColorContext } from "../../../../context/ColorContext";
-import { DataContext } from "../../../../context/DataContext";
 import * as mouseEvent from "../../../../store/modules/mouseEvent";
 import * as S from "./styles";
 import { connect, Provider, useDispatch, useSelector } from "react-redux";
@@ -9,8 +6,6 @@ import { RootState } from "../../../../store/modules";
 import * as pixelDataRedux from "../../../../store/modules/pixelData";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
 import React, { MouseEvent } from "react";
-import { store } from "../../../../store/configureStore";
-import ReactDOM from "react-dom";
 import { appendToSelectedGroup } from "../../../../store/modules/selectedGroup";
 
 type OwnProps = {
