@@ -172,7 +172,7 @@ const Pixel: React.FC<Props> = ({
       onMouseUp={() => {
         dispatch(mouseEvent.mouseClickOff());
       }}
-      onPointerDown={(e) => {
+      onPointerDown={(e: any) => {
         if (e.pressure > 0) {
         }
       }}
