@@ -10,12 +10,3 @@ export const Container = styled.div`
   border: 1px solid black;
   overflow: visible; //this is for showing element outside
 `;
-
-export const ScrollerContainer = styled.div<{
-  index: number;
-  selectedGroup: colorGroup | undefined;
-  openChangePanel: boolean;
-}>`
-  background-color: ${({ selectedGroup, openChangePanel, index }) =>
-    selectedGroup?.index === index && openChangePanel && "#DCD87B"};
-`;

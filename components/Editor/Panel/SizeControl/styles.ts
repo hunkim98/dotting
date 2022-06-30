@@ -1,13 +1,5 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-left: 40px;
-  margin-right: 40px;
-`;
-
 export const HeightControlContainer = styled.div<{
   location: "top" | "bottom";
 }>`

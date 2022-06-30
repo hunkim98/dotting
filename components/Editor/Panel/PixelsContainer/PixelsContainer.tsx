@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   dataArrayElement,
   PanelKeys,
@@ -7,53 +7,103 @@ import {
 } from "../../../../const/CommonDTO";
 import { Pixel } from "../Pixel";
 import * as S from "./styles";
+import * as mouseEvent from "../../../../store/modules/mouseEvent";
+import * as pixelDataRedux from "../../../../store/modules/pixelData";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../../../store/modules";
+import { pixelDataElement } from "../../../../store/modules/pixelData";
+import ReactDOM, { render } from "react-dom";
+import { Pixel2dRow, Position } from "../Panel";
+import { SizeControlProps } from "../SizeControl/SizeControlProps";
+import { modifyPixelById } from "../../../../const/PixelFunctions";
 
-interface Props {
-  panelRef: any;
-  setIsHistoryBranchCreated: React.Dispatch<React.SetStateAction<boolean>>;
-  finalRows: PixelDTO[][];
-  randomKey: number;
-  currentKeys: PanelKeys;
-  panelColor: dataArrayElement[];
+interface Props extends SizeControlProps {
+  panelRef: React.RefObject<HTMLDivElement>;
+  pixel2dArray: Pixel2dRow[];
 }
 
 const PixelsContainer: React.FC<Props> = ({
   panelRef,
-  setIsHistoryBranchCreated,
-  finalRows,
-  randomKey,
-  currentKeys,
-  panelColor,
+  pixel2dArray,
+  addRow,
+  addColumn,
+  deleteColumn,
+  deleteRow,
 }) => {
+  const dispatch = useDispatch();
+
+  console.log("pixelContainer rendered");
+
+  const actionRecord = useSelector(
+    (state: RootState) => state.pixelData.actionRecord
+  );
+
+  useEffect(() => {
+    console.log("record changed");
+    if (actionRecord) {
+      const data =
+        actionRecord.action === "undo"
+          ? actionRecord.before
+          : actionRecord.after;
+      if (actionRecord.type in pixelDataRedux.pixelChangeActionType) {
+        switch (actionRecord.type) {
+          case pixelDataRedux.pixelChangeActionType.PIXEL_CHANGE:
+            console.log(data);
+            for (let i = 0; i < data.length; i++) {
+              modifyPixelById({
+                rowIndex: data[i].rowIndex,
+                columnIndex: data[i].columnIndex,
+                color: data[i].color,
+                name: data[i].name,
+              });
+            }
+            break;
+        }
+      } else if (actionRecord.type in pixelDataRedux.laneChangeActionType) {
+        switch (actionRecord.type) {
+          case pixelDataRedux.laneChangeActionType.REMOVE_TOP_LANE:
+            addRow({ position: Position.TOP, data: data });
+            break;
+          case pixelDataRedux.laneChangeActionType.REMOVE_BOTTOM_LANE:
+            addRow({ position: Position.BOTTOM, data: data });
+            break;
+          case pixelDataRedux.laneChangeActionType.REMOVE_LEFT_LANE:
+            addColumn({ position: Position.LEFT, data: data });
+            break;
+          case pixelDataRedux.laneChangeActionType.REMOVE_RIGHT_LANE:
+            addColumn({ position: Position.RIGHT, data: data });
+            break;
+          case pixelDataRedux.laneChangeActionType.ADD_TOP_LANE:
+            deleteRow({ position: Position.TOP });
+            break;
+          case pixelDataRedux.laneChangeActionType.ADD_BOTTOM_LANE:
+            deleteRow({ position: Position.BOTTOM });
+            break;
+          case pixelDataRedux.laneChangeActionType.ADD_LEFT_LANE:
+            deleteColumn({ position: Position.LEFT });
+            break;
+          case pixelDataRedux.laneChangeActionType.ADD_RIGHT_LANE:
+            deleteColumn({ position: Position.RIGHT });
+            break;
+        }
+      }
+    }
+    // if(typeof actionRecord === pixelDataRedux.laneChangeActionType)
+  }, [actionRecord]);
+
   return (
-    <div
-      id="pixels"
-      ref={panelRef}
-      onMouseDown={() => {
-        //user committed an action while looking through histories
-        setIsHistoryBranchCreated(false);
-      }}
-    >
-      {finalRows.map((X: PixelDTO[], Xindex: number) => {
+    <div id="pixelsContainer" ref={panelRef}>
+      {pixel2dArray.map((row) => {
         return (
-          <S.Row key={randomKey + currentKeys.T_key + Xindex} className="row">
-            {X.map((Y: PixelDTO, Yindex: number) => {
-              const color = panelColor.find((item: rowColumnColor) => {
-                return (
-                  item.rowIndex === currentKeys.T_key + Xindex &&
-                  item.columnIndex === currentKeys.L_key + Yindex
-                );
-              }); //this checks if the index already exists
-              return (
-                <Pixel
-                  key={randomKey + currentKeys.L_key + Yindex}
-                  rowIndex={currentKeys.T_key + Xindex}
-                  columnIndex={currentKeys.L_key + Yindex}
-                  dataColor={color?.color}
-                />
-              );
+          <div
+            key={`row${row.rowIndex}`}
+            id={`row${row.rowIndex}`}
+            className="row"
+          >
+            {row.columns.map((element) => {
+              return element.pixel;
             })}
-          </S.Row>
+          </div>
         );
       })}
     </div>

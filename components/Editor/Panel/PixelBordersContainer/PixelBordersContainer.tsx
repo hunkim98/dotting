@@ -1,26 +1,27 @@
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { PanelKeys, PixelDTO } from "../../../../const/CommonDTO";
+import { RootState } from "../../../../store/modules";
+import { pixelDataElement } from "../../../../store/modules/pixelData";
 import { PixelBorder } from "../PixelBorder";
 import * as S from "./styles";
 interface Props {
-  finalRows: PixelDTO[][];
-  randomKey: number;
-  currentKeys: PanelKeys;
+  initialData: pixelDataElement[][];
 }
 
-const PixelBordersContainer: React.FC<Props> = ({
-  finalRows,
-  randomKey,
-  currentKeys,
-}) => {
+const PixelBordersContainer: React.FC<Props> = ({ initialData }) => {
+  const record = useSelector((state: RootState) => state.pixelData.record);
+  const [pixelData, setPixelData] = useState<pixelDataElement[][]>([]);
+  useEffect(() => {
+    setPixelData(record);
+  }, [record]);
   return (
     <S.Container>
-      {finalRows.map((X: PixelDTO[], Xindex: number) => {
+      {initialData.map((row, rowIndex) => {
         return (
-          <S.Row key={randomKey + currentKeys.T_key + Xindex}>
-            {X.map((Y: PixelDTO, Yindex: number) => {
-              return (
-                <PixelBorder key={randomKey + currentKeys.L_key + Yindex} />
-              );
+          <S.Row key={rowIndex}>
+            {row.map((column, columnIndex) => {
+              return <PixelBorder key={columnIndex} />;
             })}
           </S.Row>
         );

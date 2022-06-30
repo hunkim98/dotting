@@ -1,3 +1,5 @@
+import { pixelDataElement } from "../store/modules/pixelData";
+
 export interface PanelKeys {
   L_key: number;
   R_key: number;
@@ -18,10 +20,12 @@ export interface dataArrayElement {
   name: string;
 }
 
+export interface colorGroupElement extends Omit<pixelDataElement, "name"> {}
+
 export interface colorGroup {
-  index: number;
   name: string;
   color: string | undefined;
+  data: colorGroupElement[];
 }
 
 export interface PixelDTO {

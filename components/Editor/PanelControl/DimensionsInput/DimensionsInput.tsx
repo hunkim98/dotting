@@ -5,14 +5,12 @@ import * as S from "./styles";
 interface Props {
   defaultWidth: number;
   defaultHeight: number;
-  resetKeys: PanelKeys;
-  setResetKeys: Dispatch<SetStateAction<PanelKeys>>;
+  setCanvasSize: Dispatch<SetStateAction<{ width: number; height: number }>>;
 }
 const DimensionsInput: React.FC<Props> = ({
   defaultWidth,
   defaultHeight,
-  resetKeys,
-  setResetKeys,
+  setCanvasSize,
 }) => {
   return (
     <>
@@ -23,9 +21,8 @@ const DimensionsInput: React.FC<Props> = ({
             type="number"
             defaultValue={defaultWidth}
             onChange={(e) => {
-              setResetKeys({
-                ...resetKeys,
-                R_key: Number(e.target.value) - 1,
+              setCanvasSize((size) => {
+                return { ...size, width: Number(e.target.value) };
               });
             }}
           />
@@ -36,9 +33,8 @@ const DimensionsInput: React.FC<Props> = ({
             type="number"
             defaultValue={defaultHeight}
             onChange={(e) => {
-              setResetKeys({
-                ...resetKeys,
-                B_key: Number(e.target.value) - 1,
+              setCanvasSize((size) => {
+                return { ...size, height: Number(e.target.value) };
               });
             }}
           />
