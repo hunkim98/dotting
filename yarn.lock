@@ -332,6 +332,11 @@
   resolved "https://registry.yarnpkg.com/@types/downloadjs/-/downloadjs-1.4.3.tgz#01c0414a9756afa2bd438b1e2ec6c50de7df316d"
   integrity sha512-MjJepFle/tLtT2/jmDNth6ZnwWzEhm40L+olE5HKR70ISUCfgT55eqreeHldAzFLY2HDUGsn8zgyto8KygN0CA==
 
+"@types/google-protobuf@^3.15.5":
+  version "3.15.6"
+  resolved "https://registry.yarnpkg.com/@types/google-protobuf/-/google-protobuf-3.15.6.tgz#674a69493ef2c849b95eafe69167ea59079eb504"
+  integrity sha512-pYVNNJ+winC4aek+lZp93sIKxnXt5qMkuKmaqS3WGuTq0Bw1ZDYNBgzG5kkdtwcv+GmYJGo3yEg6z2cKKAiEdw==
+
 "@types/hoist-non-react-statics@*", "@types/hoist-non-react-statics@^3.3.0":
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/@types/hoist-non-react-statics/-/hoist-non-react-statics-3.3.1.tgz#1124aafe5118cb591977aeb1ceaaed1070eb039f"
@@ -344,6 +349,11 @@
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
+
+"@types/long@^4.0.1":
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/@types/long/-/long-4.0.2.tgz#b74129719fc8d11c01868010082d483b7545591a"
+  integrity sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==
 
 "@types/node@*", "@types/node@17.0.9":
   version "17.0.9"
@@ -1218,6 +1228,16 @@ globby@^11.0.4:
     merge2 "^1.4.1"
     slash "^3.0.0"
 
+google-protobuf@^3.19.4:
+  version "3.20.1"
+  resolved "https://registry.yarnpkg.com/google-protobuf/-/google-protobuf-3.20.1.tgz#1b255c2b59bcda7c399df46c65206aa3c7a0ce8b"
+  integrity sha512-XMf1+O32FjYIV3CYu6Tuh5PNbfNEU5Xu22X+Xkdb/DUexFlCzhvv7d5Iirm4AOwn8lv4al1YvIhzGrg2j9Zfzw==
+
+grpc-web@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/grpc-web/-/grpc-web-1.3.1.tgz#6d8affe75a103790b7ad570824e765a1d6a418e4"
+  integrity sha512-VxyYEAGsatecAFY3xieRDzsuhm92yQBsJD7fd5Z3MY150hZWPwkrUWetzJ0QK5W0uym4+VedPQrei38wk0eIjQ==
+
 has-bigints@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/has-bigints/-/has-bigints-1.0.1.tgz#64fe6acb020673e3b78db035a5af69aa9d07b113"
@@ -1518,6 +1538,11 @@ lodash@^4.0.1, lodash@^4.17.11, lodash@^4.17.15:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
+
+long@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/long/-/long-5.2.0.tgz#2696dadf4b4da2ce3f6f6b89186085d94d52fd61"
+  integrity sha512-9RTUNjK60eJbx3uz+TEGF7fUr29ZDxR5QzXcyDpeSfeH28S9ycINflOgOlppit5U+4kNTe83KQnMEerw7GmE8w==
 
 loose-envify@^1.1.0, loose-envify@^1.4.0:
   version "1.4.0"
@@ -2305,3 +2330,14 @@ yallist@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/yallist/-/yallist-4.0.0.tgz#9bb92790d9c0effec63be73519e11a35019a3a72"
   integrity sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==
+
+yorkie-js-sdk@^0.2.9:
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/yorkie-js-sdk/-/yorkie-js-sdk-0.2.9.tgz#a0c9902c6540675fe68b8e42ef17cc7977b4aa00"
+  integrity sha512-ZjJKqZzWio6xfK+78b76sktw9OZ9xYp009anMIFut+FQyfPn5i/DWnXiHkZSq53lTjdnNNU8JAuMyDpl9K6ptQ==
+  dependencies:
+    "@types/google-protobuf" "^3.15.5"
+    "@types/long" "^4.0.1"
+    google-protobuf "^3.19.4"
+    grpc-web "^1.3.1"
+    long "^5.2.0"

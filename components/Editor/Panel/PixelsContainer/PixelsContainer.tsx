@@ -16,6 +16,7 @@ import ReactDOM, { render } from "react-dom";
 import { Pixel2dRow, Position } from "../Panel";
 import { SizeControlProps } from "../SizeControl/SizeControlProps";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
+import yorkie from "yorkie-js-sdk";
 
 interface Props extends SizeControlProps {
   panelRef: React.RefObject<HTMLDivElement>;
