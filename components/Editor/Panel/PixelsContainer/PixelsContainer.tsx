@@ -16,12 +16,23 @@ import ReactDOM, { render } from "react-dom";
 import { Pixel2dRow, Position } from "../Panel";
 import { SizeControlProps } from "../SizeControl/SizeControlProps";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
-import yorkie from "yorkie-js-sdk";
+import {
+  activateClient,
+  attachDoc,
+  // createDocument,
+  DottingDoc,
+  // setClient,
+  // setDoc,
+} from "../../../../store/modules/docSlice";
+import { Client, Document } from "yorkie-js-sdk";
 
 interface Props extends SizeControlProps {
   panelRef: React.RefObject<HTMLDivElement>;
   pixel2dArray: Pixel2dRow[];
 }
+
+const INITIAL_ROW_COUNT = 32;
+const INITIAL_COLUMN_COUNT = 32;
 
 const PixelsContainer: React.FC<Props> = ({
   panelRef,
@@ -38,6 +49,80 @@ const PixelsContainer: React.FC<Props> = ({
   const actionRecord = useSelector(
     (state: RootState) => state.pixelData.actionRecord
   );
+  const [doc, setDoc] = useState<Document<any>>();
+  const [client, setClient] = useState<Client>();
+
+  // useEffect(() => {
+  //   dispatch(activateClient());
+  // }, []);
+
+  // useEffect(() => {
+  //   dispatch(createDocument("first"));
+  // });
+
+  // useEffect(() => {
+  //   async function attachDocAsync() {
+  //     if (!client || !doc) {
+  //       return;
+  //     }
+  //     await dispatch(attachDoc({ client, doc }));
+  //   }
+  //   attachDocAsync();
+  // }, [client, doc]);
+
+  useEffect(() => {
+    const activate = async () => {
+      const yorkie = await import("yorkie-js-sdk");
+      const client = new yorkie.Client("http://localhost:8080");
+      await client.activate();
+      setClient(client);
+      // dispatch(setClient(client));
+
+      const doc = new yorkie.Document<any>("dotting");
+      await client.attach(doc);
+      setDoc(doc);
+      // dispatch(setDoc(doc));
+
+      doc.update((root: any) => {
+        if (!root.dataArray) {
+          const tempDataArray: pixelDataElement[][] = [];
+          for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
+            const tempRow: pixelDataElement[] = [];
+            for (let j = 0; j < INITIAL_COLUMN_COUNT; j++) {
+              tempRow.push({
+                name: undefined,
+                color: undefined,
+                rowIndex: i,
+                columnIndex: j,
+              });
+            }
+            tempDataArray.push(tempRow);
+          }
+          root.dataArray = tempDataArray;
+          root.dataObjects = {};
+          root.number = 0;
+          root.oneDimension = [1];
+        }
+      });
+
+      doc.subscribe((event) => {
+        if (event.type === "local-change") {
+          console.log("local evetn", event);
+        } else if (event.type === "remote-change") {
+          for (const changeInfo of event.value) {
+            console.log(changeInfo.change);
+            for (const path of changeInfo.paths) {
+              if (path.startsWith(`$.dataArray`)) {
+                //dataArray is change
+                console.log(path);
+              }
+            }
+          }
+        }
+      });
+    };
+    activate();
+  }, []);
 
   useEffect(() => {
     console.log("record changed");
@@ -92,22 +177,78 @@ const PixelsContainer: React.FC<Props> = ({
     // if(typeof actionRecord === pixelDataRedux.laneChangeActionType)
   }, [actionRecord]);
 
+  if (!doc || !client) {
+    return null;
+  }
+
   return (
-    <div id="pixelsContainer" ref={panelRef}>
-      {pixel2dArray.map((row) => {
-        return (
-          <div
-            key={`row${row.rowIndex}`}
-            id={`row${row.rowIndex}`}
-            className="row"
-          >
-            {row.columns.map((element) => {
-              return element.pixel;
-            })}
-          </div>
-        );
-      })}
-    </div>
+    <>
+      <button
+        onClick={(e) => {
+          console.log(doc.getRoot().dataArray);
+          doc.update((root) => {
+            let tempArray = [...root.dataArray];
+            tempArray[0][0] = {
+              name: String(Math.random()),
+              color: "#000000",
+              rowIndex: 0,
+              columnIndex: Math.random(),
+            };
+            root.dataArray = tempArray;
+          });
+        }}
+      >
+        doc array update
+      </button>
+      <button
+        onClick={(e) => {
+          doc.update((root) => {
+            root.dataObjects = {
+              name: String(Math.random()),
+              color: "#000000",
+              rowIndex: 0,
+              columnIndex: 0,
+            };
+            console.log(root.dataArray[0][0].columnIndex);
+          });
+        }}
+      >
+        doc array 2
+      </button>
+      <button
+        onClick={(e) => {
+          doc.update((root) => {
+            root.number = Math.random();
+          });
+        }}
+      >
+        other update
+      </button>
+      <button
+        onClick={(e) => {
+          doc.update((root) => {
+            root.oneDimension[0] = 2;
+          });
+        }}
+      >
+        one dimension
+      </button>
+      <div id="pixelsContainer" ref={panelRef}>
+        {pixel2dArray.map((row) => {
+          return (
+            <div
+              key={`row${row.rowIndex}`}
+              id={`row${row.rowIndex}`}
+              className="row"
+            >
+              {row.columns.map((element) => {
+                return element.pixel;
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 };
 
