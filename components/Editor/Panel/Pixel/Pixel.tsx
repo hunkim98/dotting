@@ -32,6 +32,7 @@ const Pixel: React.FC<Props> = ({
   );
   const [pixelColor, setPixelColor] = useState<string | undefined>(dataColor);
   const [oldColor, setOldColor] = useState(pixelColor);
+  const doc = useSelector((state: RootState) => state.docSlice.doc);
 
   // const { data } = useSelector((state: RootState) => state.pixelData);
 
@@ -44,6 +45,9 @@ const Pixel: React.FC<Props> = ({
         columnIndex: columnIndex,
         color: brushColor,
         name: name,
+      });
+      doc?.update((root) => {
+        root.dataArray[rowIndex][columnIndex].color = brushColor;
       });
       if (groupName) {
         dispatch(

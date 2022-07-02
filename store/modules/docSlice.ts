@@ -8,7 +8,7 @@ export type DottingDoc = {
 
 export interface DocState {
   client?: Client;
-  doc?: Document<DottingDoc>;
+  doc?: Document<any>;
 }
 
 type ActivateClientResult = { client: Client; doc: Document<DottingDoc> };
@@ -64,22 +64,22 @@ export const attachDoc = createAsyncThunk<
   try {
     await client.attach(doc);
     doc.update((root: any) => {
-      if (!root.dataArray) {
-        const tempDataArray: pixelDataElement[][] = [];
-        for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
-          const tempRow: pixelDataElement[] = [];
-          for (let j = 0; j < INITIAL_COLUMN_COUNT; j++) {
-            tempRow.push({
-              name: undefined,
-              color: undefined,
-              rowIndex: i,
-              columnIndex: j,
-            });
-          }
-          tempDataArray.push(tempRow);
-        }
-        root.dataArray = tempDataArray;
-      }
+      // if (!root.dataArray) {
+      //   const tempDataArray: pixelDataElement[][] = [];
+      //   for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
+      //     const tempRow: pixelDataElement[] = [];
+      //     for (let j = 0; j < INITIAL_COLUMN_COUNT; j++) {
+      //       tempRow.push({
+      //         name: undefined,
+      //         color: undefined,
+      //         rowIndex: i,
+      //         columnIndex: j,
+      //       });
+      //     }
+      //     tempDataArray.push(tempRow);
+      //   }
+      //   root.dataArray = tempDataArray;
+      // }
     });
     await client.sync();
     return { doc, client };
@@ -92,15 +92,15 @@ const docSlice = createSlice({
   name: "docSlice",
   initialState,
   reducers: {
-    setDoc(state, action: PayloadAction<Document<DottingDoc>>) {
+    setReduxDoc(state, action: PayloadAction<Document<any>>) {
       state.doc = action.payload;
     },
-    setClient(state, action: PayloadAction<Client>) {
+    setReduxClient(state, action: PayloadAction<any>) {
       state.client = action.payload;
     },
   },
 });
 
 const { reducer, actions } = docSlice;
-export const { setClient, setDoc } = actions;
+export const { setReduxDoc, setReduxClient } = actions;
 export default reducer;

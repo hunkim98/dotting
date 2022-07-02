@@ -8,11 +8,15 @@ import {
 
 import { PixelsContainer } from "./PixelsContainer";
 import * as S from "./styles";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as pixelData from "../../../store/modules/pixelData";
 import { Pixel } from "./Pixel";
 import { PixelBorder } from "./PixelBorder";
 import { SizeControl } from "./SizeControl";
+import { Client, Document } from "yorkie-js-sdk";
+import { setReduxClient, setReduxDoc } from "../../../store/modules/docSlice";
+import { RootState } from "../../../store/modules";
+import { modifyPixelById } from "../../../const/PixelFunctions";
 
 interface Props {
   initialData: pixelData.pixelDataElement[][];
@@ -37,6 +41,8 @@ export enum Position {
   TOP,
   BOTTOM,
 }
+const INITIAL_ROW_COUNT = 32;
+const INITIAL_COLUMN_COUNT = 32;
 
 const Panel: React.FC<Props> = ({
   initialData,
@@ -44,6 +50,76 @@ const Panel: React.FC<Props> = ({
   colorArray,
   setColorArray,
 }) => {
+  const doc = useSelector((state: RootState) => state.docSlice.doc);
+  const client = useSelector((state: RootState) => state.docSlice.client);
+  useEffect(() => {
+    const activate = async () => {
+      const yorkie = await import("yorkie-js-sdk");
+      const client = new yorkie.Client("http://localhost:8080");
+      await client.activate();
+
+      dispatch(setReduxClient(client));
+
+      const doc = new yorkie.Document<any>("dotting");
+      await client.attach(doc);
+      dispatch(setReduxDoc(doc));
+
+      doc.subscribe((event) => {
+        if (event.type === "local-change") {
+          console.log("local evetn", event);
+        } else if (event.type === "remote-change") {
+          for (const changeInfo of event.value) {
+            console.log(changeInfo.change);
+            for (const path of changeInfo.paths) {
+              console.log("all paths: ", path);
+              if (path.startsWith(`$.dataArray`)) {
+                //dataArray is change
+                const changePathArray = path.split(".");
+                const rowIndex = changePathArray[2];
+                const columnIndex = changePathArray[3];
+                const changeType = changePathArray[4];
+                const newColor =
+                  doc.getRoot().dataArray[rowIndex][columnIndex].color;
+                const newName =
+                  doc.getRoot().dataArray[rowIndex][columnIndex].name;
+                if (changeType === "color") {
+                  modifyPixelById({
+                    rowIndex: Number(rowIndex),
+                    columnIndex: Number(columnIndex),
+                    color: newColor,
+                    name: newName,
+                  });
+                } else if (changeType === "name") {
+                }
+              }
+            }
+          }
+        }
+      });
+      doc.update((root) => {
+        console.log("useEffect updated");
+
+        if (!root.datArray) {
+          for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
+            root.dataArray[i] = {};
+            root.dataArray[`row${i}`] = true;
+            for (let j = 0; j < INITIAL_COLUMN_COUNT; j++) {
+              if (!root.dataArray[`column${j}`]) {
+                root.dataArray[`column${j}`] = true;
+              }
+              root.dataArray[i][j] = {};
+              root.dataArray[i][j].name = undefined;
+              root.dataArray[i][j].color = undefined;
+            }
+          }
+        }
+      });
+      // });
+    };
+
+    activate();
+  }, []);
+
   console.log("panel rendered");
   const dispatch = useDispatch();
   const [pixel2dArray, setPixel2dArray] = useState<Pixel2dRow[]>([]);
@@ -190,8 +266,72 @@ const Panel: React.FC<Props> = ({
     initialize();
   }, [initialData]);
 
+  if (!doc || !client) {
+    return null;
+  }
+
   return (
     <S.Container>
+      <button
+        onClick={(e) => {
+          doc.update((root) => {
+            console.log(root.dataArray[1][1].name);
+            root.dataArray[1][1].name = "hi";
+          });
+        }}
+      >
+        doc array update
+      </button>
+      <button
+        onClick={(e) => {
+          doc.update((root) => {
+            console.log(root.dataArray.row1, root.dataArray.column1);
+            // console.log(root.dataArray[1][1]);
+            // root.dataArray[1][1] = undefined;
+          });
+        }}
+      >
+        checkflag
+      </button>
+      <button
+        onClick={(e) => {
+          doc.update((root) => {
+            console.log(root.dataArray[1][1]);
+            root.dataArray[1][1] = undefined;
+          });
+        }}
+      >
+        doc make undefined
+      </button>
+      <button
+        onClick={(e) => {
+          doc.update((root) => {
+            root.number = Math.random();
+          });
+        }}
+      >
+        other update
+      </button>
+      <button
+        onClick={(e) => {
+          doc.update((root) => {
+            root.row1column1 = undefined;
+            // root.oneDimension[0] = 2;
+          });
+        }}
+      >
+        make undefined
+      </button>
+      <button
+        onClick={(e) => {
+          doc.update((root) => {
+            root.row1column1.name = "daff";
+            // root.oneDimension[0] = 2;
+          });
+        }}
+      >
+        change name
+      </button>
       <div>
         <button
           onClick={() => {
@@ -217,6 +357,8 @@ const Panel: React.FC<Props> = ({
           pixel2dArray={pixel2dArray}
         >
           <PixelsContainer
+            doc={doc}
+            client={client}
             panelRef={panelRef}
             pixel2dArray={pixel2dArray}
             addColumn={addColumn}
