@@ -63,6 +63,35 @@ const Panel: React.FC<Props> = ({
       const doc = new yorkie.Document<any>("dotting");
       await client.attach(doc);
       dispatch(setReduxDoc(doc));
+      doc.update((root) => {
+        console.log("useEffect updated");
+
+        if (!root.datArray) {
+          root.dataArray = {};
+          for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
+            root.dataArray[i] = {};
+            for (let j = 0; j < INITIAL_COLUMN_COUNT; j++) {
+              if (!root.dataArray[`column${j}`]) {
+              }
+              root.dataArray[i][j] = {};
+              root.dataArray[i][j].name = null;
+              root.dataArray[i][j].color = null;
+            }
+          }
+        } else {
+          //root.dataArray exists
+        }
+        if (!root.lane) {
+          root.lane = {};
+          for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
+            root.lane[`row${i}`] = true;
+          }
+          for (let j = 0; j < INITIAL_COLUMN_COUNT; j++) {
+            root.lane[`column${j}`] = true;
+          }
+        }
+        console.log("Is this dataArray", Object.keys(root.dataArray));
+      });
 
       doc.subscribe((event) => {
         if (event.type === "local-change") {
@@ -91,29 +120,14 @@ const Panel: React.FC<Props> = ({
                   });
                 } else if (changeType === "name") {
                 }
+              } else if (path.startsWith(`$.lane`)) {
+                //this has to do with lane option
               }
             }
           }
         }
       });
-      doc.update((root) => {
-        console.log("useEffect updated");
 
-        if (!root.datArray) {
-          for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
-            root.dataArray[i] = {};
-            root.dataArray[`row${i}`] = true;
-            for (let j = 0; j < INITIAL_COLUMN_COUNT; j++) {
-              if (!root.dataArray[`column${j}`]) {
-                root.dataArray[`column${j}`] = true;
-              }
-              root.dataArray[i][j] = {};
-              root.dataArray[i][j].name = undefined;
-              root.dataArray[i][j].color = undefined;
-            }
-          }
-        }
-      });
       // });
     };
 
@@ -285,7 +299,7 @@ const Panel: React.FC<Props> = ({
       <button
         onClick={(e) => {
           doc.update((root) => {
-            console.log(root.dataArray.row1, root.dataArray.column1);
+            // console.log(root.dataArray.row1, root.dataArray.column1);
             // console.log(root.dataArray[1][1]);
             // root.dataArray[1][1] = undefined;
           });
@@ -315,7 +329,7 @@ const Panel: React.FC<Props> = ({
       <button
         onClick={(e) => {
           doc.update((root) => {
-            root.row1column1 = undefined;
+            // root.row1column1 = undefined;
             // root.oneDimension[0] = 2;
           });
         }}
@@ -325,7 +339,7 @@ const Panel: React.FC<Props> = ({
       <button
         onClick={(e) => {
           doc.update((root) => {
-            root.row1column1.name = "daff";
+            // root.row1column1.name = "daff";
             // root.oneDimension[0] = 2;
           });
         }}
