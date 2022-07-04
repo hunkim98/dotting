@@ -75,8 +75,6 @@ const Panel: React.FC<Props> = ({
           for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
             root.dataArray[i] = {};
             for (let j = 0; j < INITIAL_COLUMN_COUNT; j++) {
-              if (!root.dataArray[`column${j}`]) {
-              }
               root.dataArray[i][j] = {};
               root.dataArray[i][j].name = undefined;
               root.dataArray[i][j].color = undefined;
@@ -87,9 +85,13 @@ const Panel: React.FC<Props> = ({
         }
         // if (!root.laneKeys) {
         root.laneKeys = {
+          prev_rowStartKey: 0,
           rowStartKey: 0,
+          prev_rowLastKey: INITIAL_ROW_COUNT - 1,
           rowLastKey: INITIAL_ROW_COUNT - 1,
+          prev_columnStartKey: 0,
           columnStartKey: 0,
+          prev_columnLastKey: INITIAL_COLUMN_COUNT - 1,
           columnLastKey: INITIAL_COLUMN_COUNT - 1,
         };
         // }
@@ -112,42 +114,98 @@ const Panel: React.FC<Props> = ({
           for (const changeInfo of event.value) {
             // console.log(changeInfo.change);
             for (const path of changeInfo.paths) {
-              // console.log("all paths: ", path);
+              console.log("all paths: ", path);
               if (path.startsWith(`$.dataArray`)) {
                 //dataArray is change
                 const changePathArray = path.split(".");
                 const rowIndex = changePathArray[2];
                 const columnIndex = changePathArray[3];
                 const changeType = changePathArray[4];
-                const newColor =
-                  doc.getRoot().dataArray[rowIndex][columnIndex].color;
-                const newName =
-                  doc.getRoot().dataArray[rowIndex][columnIndex].name;
-                if (changeType === "color") {
-                  modifyPixelById({
-                    rowIndex: Number(rowIndex),
-                    columnIndex: Number(columnIndex),
-                    color: newColor,
-                    name: newName,
-                  });
-                } else if (changeType === "name") {
-                  dispatch(
-                    appendToGroup({
-                      key: newName,
-                      data: [
-                        {
-                          rowIndex: Number(rowIndex),
-                          columnIndex: Number(columnIndex),
-                          color: newColor,
-                          name: newName,
-                        },
-                      ],
-                    })
-                  );
-                  dispatch(changeGroupColor({ key: newName, color: newColor }));
+                if (doc.getRoot().dataArray[rowIndex][columnIndex]) {
+                  const newColor =
+                    doc.getRoot().dataArray[rowIndex][columnIndex].color;
+                  const newName =
+                    doc.getRoot().dataArray[rowIndex][columnIndex].name;
+                  if (changeType === "color") {
+                    modifyPixelById({
+                      rowIndex: Number(rowIndex),
+                      columnIndex: Number(columnIndex),
+                      color: newColor,
+                      name: newName,
+                    });
+                  } else if (changeType === "name") {
+                    dispatch(
+                      appendToGroup({
+                        key: newName,
+                        data: [
+                          {
+                            rowIndex: Number(rowIndex),
+                            columnIndex: Number(columnIndex),
+                            color: newColor,
+                            name: newName,
+                          },
+                        ],
+                      })
+                    );
+                    dispatch(
+                      changeGroupColor({ key: newName, color: newColor })
+                    );
+                  }
                 }
-              } else if (path.startsWith(`$.lane`)) {
+              } else if (path.startsWith(`$.laneKeys`)) {
                 //this has to do with lane option
+                const changePathArray = path.split(".");
+                const changedPart = changePathArray[2];
+                switch (changedPart) {
+                  case "rowStartKey":
+                    const topRowChangeAmount =
+                      doc.getRoot().laneKeys.rowStartKey -
+                      doc.getRoot().laneKeys.prev_rowStartKey;
+                    if (topRowChangeAmount > 0) {
+                      deleteRow({ position: Position.TOP });
+                      doc.getRoot().laneKeys.prev_rowStartKey += 1;
+                    } else if (topRowChangeAmount < 0) {
+                      addRow({ position: Position.TOP, data: [] });
+                      doc.getRoot().laneKeys.prev_rowStartKey -= 1;
+                    }
+                    break;
+                  case "rowLastKey":
+                    const bottomRowChangeAmount =
+                      doc.getRoot().laneKeys.rowLastKey -
+                      doc.getRoot().laneKeys.prev_rowLastKey;
+                    if (bottomRowChangeAmount > 0) {
+                      addRow({ position: Position.BOTTOM, data: [] });
+                      doc.getRoot().laneKeys.prev_rowLastKey += 1;
+                    } else if (bottomRowChangeAmount < 0) {
+                      deleteRow({ position: Position.BOTTOM });
+                      doc.getRoot().laneKeys.prev_rowLastKey -= 1;
+                    }
+                    break;
+                  case "columnStartKey":
+                    const leftColumnChangeAmount =
+                      doc.getRoot().laneKeys.columnStartKey -
+                      doc.getRoot().laneKeys.prev_columnStartKey;
+                    if (leftColumnChangeAmount > 0) {
+                      addColumn({ position: Position.LEFT, data: [] });
+                      doc.getRoot().laneKeys.prev_columnStartKey += 1;
+                    } else if (leftColumnChangeAmount < 0) {
+                      deleteColumn({ position: Position.LEFT });
+                      doc.getRoot().laneKeys.prev_columnStartKey -= 1;
+                    }
+                    break;
+                  case "columnLastKey":
+                    const rightColumnChangeAmount =
+                      doc.getRoot().laneKeys.columnLastKey -
+                      doc.getRoot().laneKeys.prev_columnLastKey;
+                    if (rightColumnChangeAmount > 0) {
+                      addColumn({ position: Position.RIGHT, data: [] });
+                      doc.getRoot().laneKeys.prev_columnLastKey += 1;
+                    } else if (rightColumnChangeAmount < 0) {
+                      deleteColumn({ position: Position.RIGHT });
+                      doc.getRoot().laneKeys.prev_columnLastKey -= 1;
+                    }
+                    break;
+                }
               }
             }
           }
@@ -179,6 +237,19 @@ const Panel: React.FC<Props> = ({
     position: Position.LEFT | Position.RIGHT;
     data: pixelData.pixelDataElement[];
   }) => {
+    doc?.update((root) => {
+      const newColumnIndex =
+        position === Position.LEFT
+          ? root.laneKeys.columnStartKey - 1
+          : root.laneKeys.columnLastKey + 1;
+      for (const rows of root.dataArray) {
+        rows[newColumnIndex].name = undefined;
+        rows[newColumnIndex].color = undefined;
+      }
+      position === Position.LEFT
+        ? (root.laneKeys.columnStartKey -= 1)
+        : (root.laneKeys.columnLastKey += 1);
+    });
     const newColumnIndex =
       position === Position.LEFT
         ? pixel2dArray[0].columns[0].columnIndex - 1
@@ -217,6 +288,25 @@ const Panel: React.FC<Props> = ({
     position: Position.TOP | Position.BOTTOM;
     data: pixelData.pixelDataElement[];
   }) => {
+    doc?.update((root) => {
+      const newRowIndex =
+        position === Position.TOP
+          ? root.laneKeys.rowStartKey - 1
+          : root.laneKeys.rowLastKey + 1;
+      root.dataArray[newRowIndex] = {};
+      for (
+        let i = root.laneKeys.columnStartKey;
+        i < root.laneKeys.columnLastKey + 1;
+        i++
+      ) {
+        root.dataArray[newRowIndex][i] = {};
+        root.dataArray[newRowIndex][i].name = undefined;
+        root.dataArray[newRowIndex][i].color = undefined;
+      }
+      position === Position.TOP
+        ? (root.laneKeys.rowStartKey -= 1)
+        : (root.laneKeys.rowLastKey += 1);
+    });
     const newRowIndex =
       position === Position.TOP
         ? pixel2dArray[0].rowIndex - 1
@@ -251,6 +341,19 @@ const Panel: React.FC<Props> = ({
   }: {
     position: Position.LEFT | Position.RIGHT;
   }) => {
+    doc?.update((root) => {
+      const columnIndexToDelete =
+        position === Position.LEFT
+          ? root.laneKeys.columnStartKey + 1
+          : root.laneKeys.columnLastKey - 1;
+      for (const rows of root.dataArray) {
+        rows[columnIndexToDelete].name = undefined;
+        rows[columnIndexToDelete].color = undefined;
+      }
+      position === Position.LEFT
+        ? (root.laneKeys.columnStartKey += 1)
+        : (root.laneKeys.columnLastKey -= 1);
+    });
     const sliceStartIndex = position === Position.LEFT ? 1 : 0;
     const sliceEndIndex = position === Position.LEFT ? undefined : -1;
     const tempPixel2dArray = pixel2dArray.map((row) => {
@@ -267,6 +370,23 @@ const Panel: React.FC<Props> = ({
   }: {
     position: Position.TOP | Position.BOTTOM;
   }) => {
+    doc?.update((root) => {
+      const rowIndexToDelete =
+        position === Position.TOP
+          ? root.laneKeys.rowStartKey + 1
+          : root.laneKeys.rowLastKey - 1;
+      for (
+        let i = root.laneKeys.columnStartKey;
+        i < root.laneKeys.columnLastKey + 1;
+        i++
+      ) {
+        root.dataArray[rowIndexToDelete][i].name = undefined;
+        root.dataArray[rowIndexToDelete][i].color = undefined;
+      }
+      position === Position.TOP
+        ? (root.laneKeys.rowStartKey += 1)
+        : (root.laneKeys.rowLastKey -= 1);
+    });
     const rowIndexToDelete =
       position === Position.TOP ? 0 : pixel2dArray.length - 1;
     const tempPixel2dArray = pixel2dArray.filter((row, rowIndex) => {
