@@ -7,6 +7,7 @@ import * as pixelDataRedux from "../../../../store/modules/pixelData";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
 import React, { MouseEvent } from "react";
 import { appendToSelectedGroup } from "../../../../store/modules/selectedGroup";
+import { appendToGroup } from "../../../../store/modules/colorGroupSlice";
 
 type OwnProps = {
   id: string;
@@ -46,8 +47,22 @@ const Pixel: React.FC<Props> = ({
         color: brushColor,
         name: name,
       });
+      dispatch(
+        appendToGroup({
+          key: name,
+          data: [
+            {
+              rowIndex: rowIndex,
+              columnIndex: columnIndex,
+              color: brushColor,
+              name: name,
+            },
+          ],
+        })
+      );
       doc?.update((root) => {
         root.dataArray[rowIndex][columnIndex].color = brushColor;
+        root.dataArray[rowIndex][columnIndex].name = brushColor;
       });
       if (groupName) {
         dispatch(

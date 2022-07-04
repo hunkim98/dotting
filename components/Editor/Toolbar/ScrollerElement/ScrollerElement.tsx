@@ -19,8 +19,8 @@ import {
 } from "../../../../store/modules/selectedGroup";
 import * as S from "./styles";
 interface Props {
-  groups: colorGroup[];
-  data: colorGroupElement[];
+  groups: string[];
+  data: pixelDataElement[];
   name: string;
   color: string | undefined;
   count: number;
@@ -45,7 +45,7 @@ const ScrollerElement: React.FC<Props> = ({
   const selectedGroup = useSelector(
     (state: RootState) => state.selectedGroup.group
   );
-  const [groupName, setGroupName] = useState<string>(groups[index].name);
+  const [groupName, setGroupName] = useState<string>(groups[index]);
   const onGroupClick = (groupElements: pixelDataElement[]) => {
     dispatch(setSelectedGroup({ data: groupElements }));
   };
@@ -54,7 +54,7 @@ const ScrollerElement: React.FC<Props> = ({
     <S.Container
       onClick={() => {
         setSelectedGroupIndex(index);
-        setGroupName(groups[index].name);
+        setGroupName(groups[index]);
         dispatch(changeBrushColor({ brushColor: color! }));
         onGroupClick(
           data.map((element) => {
@@ -66,7 +66,7 @@ const ScrollerElement: React.FC<Props> = ({
     >
       <S.Color color={color} />
       {selectedGroup.length === 0 || selectedGroupIndex !== index ? (
-        <S.Name>{groups[index].name}</S.Name>
+        <S.Name>{groups[index]}</S.Name>
       ) : (
         <S.Input
           value={groupName}

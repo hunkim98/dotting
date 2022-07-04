@@ -7,6 +7,7 @@ import brush from "./brush";
 import selectedGroup from "./selectedGroup";
 import draggableWindow from "./draggableWindow";
 import docSlice from "./docSlice";
+import colorGroupSlice from "./colorGroupSlice";
 
 const rootReducer = combineReducers({
   mouseEvent,
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   selectedGroup,
   draggableWindow,
   docSlice,
+  colorGroupSlice,
 });
 
 export default rootReducer;

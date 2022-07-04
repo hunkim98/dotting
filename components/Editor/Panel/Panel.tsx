@@ -66,7 +66,7 @@ const Panel: React.FC<Props> = ({
       doc.update((root) => {
         console.log("useEffect updated");
 
-        if (!root.datArray) {
+        if (!root.dataArray) {
           root.dataArray = {};
           for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
             root.dataArray[i] = {};
@@ -74,33 +74,45 @@ const Panel: React.FC<Props> = ({
               if (!root.dataArray[`column${j}`]) {
               }
               root.dataArray[i][j] = {};
-              root.dataArray[i][j].name = null;
-              root.dataArray[i][j].color = null;
+              root.dataArray[i][j].name = undefined;
+              root.dataArray[i][j].color = undefined;
             }
           }
         } else {
           //root.dataArray exists
         }
-        if (!root.lane) {
-          root.lane = {};
-          for (let i = 0; i < INITIAL_ROW_COUNT; i++) {
-            root.lane[`row${i}`] = true;
-          }
-          for (let j = 0; j < INITIAL_COLUMN_COUNT; j++) {
-            root.lane[`column${j}`] = true;
-          }
-        }
-        console.log("Is this dataArray", Object.keys(root.dataArray));
+        // if (!root.laneKeys) {
+        root.counterTest = new yorkie.Counter(155);
+        root.laneKeys = {
+          rowStartKey: 0,
+          rowLastKey: INITIAL_ROW_COUNT - 1,
+          columnStartKey: 0,
+          columnLastKey: INITIAL_COLUMN_COUNT - 1,
+        };
+        // }
+        // root.laneKeys.rowStartKey = new yorkie.Counter(0);
+        // root.laneKeys.rowLastkey = new yorkie.Counter(INITIAL_ROW_COUNT - 1);
+        // root.laneKeys.columnStartKey = new yorkie.Counter(0);
+        // root.laneKeys.columnLastKey = new yorkie.Counter(
+        //   INITIAL_COLUMN_COUNT - 1
+        // );
+        // }
+        console.log(
+          "Is this dataArray",
+          Object.keys(root.dataArray),
+          root.counterTest.value
+        );
       });
 
       doc.subscribe((event) => {
         if (event.type === "local-change") {
-          console.log("local evetn", event);
+          // console.log("local evetn", event);
+          // console.log("local event value: ", event.value);
         } else if (event.type === "remote-change") {
           for (const changeInfo of event.value) {
-            console.log(changeInfo.change);
+            // console.log(changeInfo.change);
             for (const path of changeInfo.paths) {
-              console.log("all paths: ", path);
+              // console.log("all paths: ", path);
               if (path.startsWith(`$.dataArray`)) {
                 //dataArray is change
                 const changePathArray = path.split(".");
