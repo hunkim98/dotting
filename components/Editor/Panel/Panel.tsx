@@ -17,6 +17,10 @@ import { Client, Document } from "yorkie-js-sdk";
 import { setReduxClient, setReduxDoc } from "../../../store/modules/docSlice";
 import { RootState } from "../../../store/modules";
 import { modifyPixelById } from "../../../const/PixelFunctions";
+import {
+  appendToGroup,
+  changeGroupColor,
+} from "../../../store/modules/colorGroupSlice";
 
 interface Props {
   initialData: pixelData.pixelDataElement[][];
@@ -82,7 +86,6 @@ const Panel: React.FC<Props> = ({
           //root.dataArray exists
         }
         // if (!root.laneKeys) {
-        root.counterTest = new yorkie.Counter(155);
         root.laneKeys = {
           rowStartKey: 0,
           rowLastKey: INITIAL_ROW_COUNT - 1,
@@ -97,11 +100,8 @@ const Panel: React.FC<Props> = ({
         //   INITIAL_COLUMN_COUNT - 1
         // );
         // }
-        console.log(
-          "Is this dataArray",
-          Object.keys(root.dataArray),
-          root.counterTest.value
-        );
+
+        console.log("Is this dataArray", Object.keys(root.dataArray));
       });
 
       doc.subscribe((event) => {
@@ -131,6 +131,20 @@ const Panel: React.FC<Props> = ({
                     name: newName,
                   });
                 } else if (changeType === "name") {
+                  dispatch(
+                    appendToGroup({
+                      key: newName,
+                      data: [
+                        {
+                          rowIndex: Number(rowIndex),
+                          columnIndex: Number(columnIndex),
+                          color: newColor,
+                          name: newName,
+                        },
+                      ],
+                    })
+                  );
+                  dispatch(changeGroupColor({ key: newName, color: newColor }));
                 }
               } else if (path.startsWith(`$.lane`)) {
                 //this has to do with lane option

@@ -17,7 +17,7 @@ const groupSlice = createSlice({
   reducers: {
     setSelectedGroup: (
       state,
-      action: PayloadAction<{ data: pixelDataElement[] }>
+      action: PayloadAction<{ data: pixelDataElement[]; name: string }>
     ) => {
       state.group = action.payload.data;
       state.groupName = action.payload.data[0].name;

@@ -13,6 +13,7 @@ import {
   update,
 } from "../../../store/modules/pixelData";
 import { setColorWindowPosition } from "../../../store/modules/draggableWindow";
+import { changeGroupColor } from "../../../store/modules/colorGroupSlice";
 
 interface Props {}
 
@@ -22,6 +23,10 @@ const ColorWindow: React.FC<Props> = ({}) => {
   const selectedGroup = useSelector(
     (state: RootState) => state.selectedGroup.group
   );
+  const selectedGroupName = useSelector(
+    (state: RootState) => state.selectedGroup.groupName
+  );
+  const doc = useSelector((state: RootState) => state.docSlice.doc);
   const position = useSelector(
     (state: RootState) => state.draggableWindow.position
   );
@@ -46,6 +51,11 @@ const ColorWindow: React.FC<Props> = ({}) => {
         color: color.hex,
         name: element.name,
       });
+      doc?.update((root) => {
+        root.dataArray[element.rowIndex][element.columnIndex].color = color.hex;
+        root.dataArray[element.rowIndex][element.columnIndex].name =
+          selectedGroupName;
+      });
       beforeData.push({
         rowIndex: element.rowIndex,
         columnIndex: element.columnIndex,
@@ -59,6 +69,9 @@ const ColorWindow: React.FC<Props> = ({}) => {
         name: element.name,
       });
     });
+    if (selectedGroupName) {
+      dispatch(changeGroupColor({ key: selectedGroupName, color: color.hex }));
+    }
     dispatch(changeBrushColor({ brushColor: color.hex }));
     dispatch(
       update({

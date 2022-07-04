@@ -8,6 +8,7 @@ import {
 import { modifyPixelById } from "../../../../const/PixelFunctions";
 import { RootState } from "../../../../store/modules";
 import { changeBrushColor } from "../../../../store/modules/brush";
+import { changeGroupName } from "../../../../store/modules/colorGroupSlice";
 import {
   pixelChangeActionType,
   pixelDataElement,
@@ -45,9 +46,10 @@ const ScrollerElement: React.FC<Props> = ({
   const selectedGroup = useSelector(
     (state: RootState) => state.selectedGroup.group
   );
+  const doc = useSelector((state: RootState) => state.docSlice.doc);
   const [groupName, setGroupName] = useState<string>(groups[index]);
   const onGroupClick = (groupElements: pixelDataElement[]) => {
-    dispatch(setSelectedGroup({ data: groupElements }));
+    dispatch(setSelectedGroup({ data: groupElements, name: name }));
   };
 
   return (
@@ -80,12 +82,19 @@ const ScrollerElement: React.FC<Props> = ({
           e.stopPropagation();
           const beforeData: pixelDataElement[] = [];
           const afterData: pixelDataElement[] = [];
+          dispatch(
+            changeGroupName({ originalKey: groups[index], newKey: groupName })
+          );
           selectedGroup.map((element) => {
             const { previousColor, previousName } = modifyPixelById({
               rowIndex: element.rowIndex,
               columnIndex: element.columnIndex,
               color: element.color,
               name: groupName,
+            });
+            doc?.update((root) => {
+              root.dataArray[element.rowIndex][element.columnIndex].name =
+                groupName;
             });
             beforeData.push({
               rowIndex: element.rowIndex,

@@ -33,6 +33,15 @@ const ColorGroupSlice = createSlice({
       state.data[action.payload.newKey] = data;
       delete state.data[action.payload.originalKey];
     },
+    changeGroupColor(
+      state,
+      action: PayloadAction<{ key: string; color: string }>
+    ) {
+      const elementsToChangeColor = state.data[action.payload.key];
+      for (const item of elementsToChangeColor) {
+        item.color = action.payload.color;
+      }
+    },
     appendToGroup(
       state,
       action: PayloadAction<{
@@ -41,7 +50,6 @@ const ColorGroupSlice = createSlice({
       }>
     ) {
       if (state.data[action.payload.key]) {
-        console.log("existsststs");
         state.data[action.payload.key] = state.data[action.payload.key].concat(
           action.payload.data
         );
@@ -67,7 +75,7 @@ const ColorGroupSlice = createSlice({
                 pixelElementIndexToDelete = i;
               }
             }
-            if (pixelElementIndexToDelete) {
+            if (pixelElementIndexToDelete !== undefined) {
               state.data[previousName] = state.data[previousName].filter(
                 (item, index) => index !== pixelElementIndexToDelete
               );
@@ -80,11 +88,6 @@ const ColorGroupSlice = createSlice({
         if (!state.getNameByPixelIndex[rowIndex]) {
           state.getNameByPixelIndex[rowIndex] = {};
         }
-        console.log("redux color group", Object.keys(state.data));
-        console.log(
-          "redux elements",
-          state.data[Object.keys(state.data)[0]].length
-        );
         state.getNameByPixelIndex[rowIndex][columnIndex] = action.payload.key;
       }
     },
@@ -92,5 +95,5 @@ const ColorGroupSlice = createSlice({
 });
 
 const { reducer, actions } = ColorGroupSlice;
-export const { changeGroupName, appendToGroup } = actions;
+export const { changeGroupName, appendToGroup, changeGroupColor } = actions;
 export default reducer;
