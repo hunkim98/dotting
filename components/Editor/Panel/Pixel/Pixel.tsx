@@ -40,7 +40,7 @@ const Pixel: React.FC<Props> = ({
   const applyColor =
     // useCallback(
     () => {
-      const name = groupName || brushColor;
+      const name = groupName ? groupName : brushColor;
       const { previousColor, previousName } = modifyPixelById({
         rowIndex: rowIndex,
         columnIndex: columnIndex,
@@ -62,7 +62,7 @@ const Pixel: React.FC<Props> = ({
       );
       doc?.update((root) => {
         root.dataArray[rowIndex][columnIndex].color = brushColor;
-        root.dataArray[rowIndex][columnIndex].name = brushColor;
+        root.dataArray[rowIndex][columnIndex].name = name;
       });
       if (groupName) {
         dispatch(

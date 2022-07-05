@@ -237,11 +237,12 @@ const Panel: React.FC<Props> = ({
     position: Position.LEFT | Position.RIGHT;
     data: pixelData.pixelDataElement[];
   }) => {
+    const newColumnIndex =
+      position === Position.LEFT
+        ? pixel2dArray[0].columns[0].columnIndex - 1
+        : pixel2dArray[0].columns[pixel2dArray[0].columns.length - 1]
+            .columnIndex + 1;
     doc?.update((root) => {
-      const newColumnIndex =
-        position === Position.LEFT
-          ? root.laneKeys.columnStartKey - 1
-          : root.laneKeys.columnLastKey + 1;
       for (const rows of root.dataArray) {
         rows[newColumnIndex].name = undefined;
         rows[newColumnIndex].color = undefined;
@@ -250,11 +251,7 @@ const Panel: React.FC<Props> = ({
         ? (root.laneKeys.columnStartKey -= 1)
         : (root.laneKeys.columnLastKey += 1);
     });
-    const newColumnIndex =
-      position === Position.LEFT
-        ? pixel2dArray[0].columns[0].columnIndex - 1
-        : pixel2dArray[0].columns[pixel2dArray[0].columns.length - 1]
-            .columnIndex + 1;
+
     const tempPixel2dArray = pixel2dArray.map((row, elementIndex) => {
       const key = `row${row.rowIndex}column${newColumnIndex}`;
       const newColumn: Pixel2dPixel = {
@@ -288,11 +285,11 @@ const Panel: React.FC<Props> = ({
     position: Position.TOP | Position.BOTTOM;
     data: pixelData.pixelDataElement[];
   }) => {
+    const newRowIndex =
+      position === Position.TOP
+        ? pixel2dArray[0].rowIndex - 1
+        : pixel2dArray[pixel2dArray.length - 1].rowIndex + 1;
     doc?.update((root) => {
-      const newRowIndex =
-        position === Position.TOP
-          ? root.laneKeys.rowStartKey - 1
-          : root.laneKeys.rowLastKey + 1;
       root.dataArray[newRowIndex] = {};
       for (
         let i = root.laneKeys.columnStartKey;
@@ -307,10 +304,7 @@ const Panel: React.FC<Props> = ({
         ? (root.laneKeys.rowStartKey -= 1)
         : (root.laneKeys.rowLastKey += 1);
     });
-    const newRowIndex =
-      position === Position.TOP
-        ? pixel2dArray[0].rowIndex - 1
-        : pixel2dArray[pixel2dArray.length - 1].rowIndex + 1;
+
     const columnCount = pixel2dArray[0].columns.length;
     const columns: Pixel2dPixel[] = [];
     for (let i = 0; i < columnCount; i++) {
