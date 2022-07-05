@@ -19,7 +19,7 @@ const SizeControl: React.FC<Props> = ({
   pixel2dArray,
 }) => {
   const dispatch = useDispatch();
-
+  const doc = useSelector((state: RootState) => state.docSlice.doc);
   const addRowAndUpdateRedux = ({
     position,
   }: {

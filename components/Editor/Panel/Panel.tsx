@@ -158,15 +158,17 @@ const Panel: React.FC<Props> = ({
                 const changedPart = changePathArray[2];
                 switch (changedPart) {
                   case "rowStartKey":
+                    console.log("this is called");
                     const topRowChangeAmount =
                       doc.getRoot().laneKeys.rowStartKey -
                       doc.getRoot().laneKeys.prev_rowStartKey;
                     if (topRowChangeAmount > 0) {
                       deleteRow({ position: Position.TOP });
-                      doc.getRoot().laneKeys.prev_rowStartKey += 1;
+                      doc.getRoot().laneKeys.prev_rowStartKey++;
                     } else if (topRowChangeAmount < 0) {
+                      console.log("added row to tope");
                       addRow({ position: Position.TOP, data: [] });
-                      doc.getRoot().laneKeys.prev_rowStartKey -= 1;
+                      doc.getRoot().laneKeys.prev_rowStartKey--;
                     }
                     break;
                   case "rowLastKey":
@@ -175,10 +177,10 @@ const Panel: React.FC<Props> = ({
                       doc.getRoot().laneKeys.prev_rowLastKey;
                     if (bottomRowChangeAmount > 0) {
                       addRow({ position: Position.BOTTOM, data: [] });
-                      doc.getRoot().laneKeys.prev_rowLastKey += 1;
+                      doc.getRoot().laneKeys.prev_rowLastKey++;
                     } else if (bottomRowChangeAmount < 0) {
                       deleteRow({ position: Position.BOTTOM });
-                      doc.getRoot().laneKeys.prev_rowLastKey -= 1;
+                      doc.getRoot().laneKeys.prev_rowLastKey--;
                     }
                     break;
                   case "columnStartKey":
@@ -187,10 +189,10 @@ const Panel: React.FC<Props> = ({
                       doc.getRoot().laneKeys.prev_columnStartKey;
                     if (leftColumnChangeAmount > 0) {
                       addColumn({ position: Position.LEFT, data: [] });
-                      doc.getRoot().laneKeys.prev_columnStartKey += 1;
+                      doc.getRoot().laneKeys.prev_columnStartKey++;
                     } else if (leftColumnChangeAmount < 0) {
                       deleteColumn({ position: Position.LEFT });
-                      doc.getRoot().laneKeys.prev_columnStartKey -= 1;
+                      doc.getRoot().laneKeys.prev_columnStartKey--;
                     }
                     break;
                   case "columnLastKey":
@@ -199,10 +201,10 @@ const Panel: React.FC<Props> = ({
                       doc.getRoot().laneKeys.prev_columnLastKey;
                     if (rightColumnChangeAmount > 0) {
                       addColumn({ position: Position.RIGHT, data: [] });
-                      doc.getRoot().laneKeys.prev_columnLastKey += 1;
+                      doc.getRoot().laneKeys.prev_columnLastKey++;
                     } else if (rightColumnChangeAmount < 0) {
                       deleteColumn({ position: Position.RIGHT });
-                      doc.getRoot().laneKeys.prev_columnLastKey -= 1;
+                      doc.getRoot().laneKeys.prev_columnLastKey--;
                     }
                     break;
                 }
@@ -285,11 +287,16 @@ const Panel: React.FC<Props> = ({
     position: Position.TOP | Position.BOTTOM;
     data: pixelData.pixelDataElement[];
   }) => {
-    const newRowIndex =
-      position === Position.TOP
-        ? pixel2dArray[0].rowIndex - 1
-        : pixel2dArray[pixel2dArray.length - 1].rowIndex + 1;
+    let newRowIndex!: number;
+    // const newRowIndex =
+    // position === Position.TOP
+    //   ? pixel2dArray[0].rowIndex - 1
+    //   : pixel2dArray[pixel2dArray.length - 1].rowIndex + 1;
     doc?.update((root) => {
+      newRowIndex =
+        position === Position.TOP
+          ? Number(root.laneKeys.rowStartKey - 1)
+          : Number(root.laneKeys.rowLastKey + 1);
       root.dataArray[newRowIndex] = {};
       for (
         let i = root.laneKeys.columnStartKey;
@@ -300,34 +307,39 @@ const Panel: React.FC<Props> = ({
         root.dataArray[newRowIndex][i].name = undefined;
         root.dataArray[newRowIndex][i].color = undefined;
       }
-      position === Position.TOP
-        ? (root.laneKeys.rowStartKey -= 1)
-        : (root.laneKeys.rowLastKey += 1);
+      if (position === Position.TOP) {
+        root.laneKeys.rowStartKey--;
+      } else {
+        root.laneKeys.rowLastKey++;
+      }
     });
-
-    const columnCount = pixel2dArray[0].columns.length;
-    const columns: Pixel2dPixel[] = [];
-    for (let i = 0; i < columnCount; i++) {
-      columns.push({
-        columnIndex: i,
-        pixel: (
-          <Pixel
-            key={`row${newRowIndex}column${i}`}
-            id={`row${newRowIndex}column${i}`}
-            rowIndex={newRowIndex}
-            columnIndex={i}
-            dataColor={data[i]?.color}
-            dataName={data[i]?.name}
-          />
-        ),
+    if (newRowIndex) {
+      const firstRowColumns = pixel2dArray[0].columns;
+      console.log(newRowIndex, firstRowColumns, "this is inner");
+      const columns: Pixel2dPixel[] = [];
+      firstRowColumns.map((element) => {
+        const i = element.columnIndex;
+        columns.push({
+          columnIndex: i,
+          pixel: (
+            <Pixel
+              key={`row${newRowIndex}column${i}`}
+              id={`row${newRowIndex}column${i}`}
+              rowIndex={newRowIndex}
+              columnIndex={i}
+              dataColor={data[i]?.color}
+              dataName={data[i]?.name}
+            />
+          ),
+        });
       });
+      const newRow: Pixel2dRow = { rowIndex: newRowIndex, columns: columns };
+      const tempPixel2dArray =
+        position === Position.TOP
+          ? appendBefore(newRow, pixel2dArray)
+          : appendBehind(newRow, pixel2dArray);
+      setPixel2dArray(tempPixel2dArray);
     }
-    const newRow: Pixel2dRow = { rowIndex: newRowIndex, columns: columns };
-    const tempPixel2dArray =
-      position === Position.TOP
-        ? appendBefore(newRow, pixel2dArray)
-        : appendBehind(newRow, pixel2dArray);
-    setPixel2dArray(tempPixel2dArray);
   };
 
   const deleteColumn = ({
