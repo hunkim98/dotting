@@ -42,6 +42,30 @@ const ColorGroupSlice = createSlice({
         item.color = action.payload.color;
       }
     },
+    removeFromGroup(
+      state,
+      action: PayloadAction<{ rowIndex: number; columnIndex: number }>
+    ) {
+      if (
+        state.getNameByPixelIndex[action.payload.rowIndex] &&
+        state.getNameByPixelIndex[action.payload.rowIndex][
+          action.payload.columnIndex
+        ]
+      ) {
+        const key =
+          state.getNameByPixelIndex[action.payload.rowIndex][
+            action.payload.columnIndex
+          ];
+        if (key) {
+          //remove the particular elements from the group
+          state.data[key].filter(
+            (element) =>
+              element.columnIndex !== action.payload.columnIndex &&
+              element.rowIndex !== action.payload.rowIndex
+          );
+        }
+      }
+    },
     appendToGroup(
       state,
       action: PayloadAction<{

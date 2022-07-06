@@ -169,7 +169,12 @@ const SizeControl: React.FC<Props> = ({
 
     //doc update
     doc?.update((root) => {
-      delete root.dataArray[rowIndexToDelete];
+      const columnStartKey = root.laneKeys.columnStartKey;
+      const columnLastkey = root.laneKeys.columnLastKey;
+      for (let i = columnStartKey; i < columnLastkey + 1; i++) {
+        root.dataArray[rowIndexToDelete][i].color = undefined;
+        root.dataArray[rowIndexToDelete][i].name = undefined;
+      }
       if (position === Position.TOP) {
         root.laneKeys.rowStartKey++;
       } else {

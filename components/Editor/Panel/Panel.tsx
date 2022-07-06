@@ -124,6 +124,7 @@ const Panel: React.FC<Props> = ({
               if (path.startsWith(`$.dataArray`)) {
                 //dataArray is change
                 const changePathArray = path.split(".");
+                // if (changePathArray.length === 5) {
                 const rowIndex = changePathArray[2];
                 const columnIndex = changePathArray[3];
                 const changeType = changePathArray[4];
@@ -159,6 +160,7 @@ const Panel: React.FC<Props> = ({
                       );
                     }
                   }
+                  // }
                 }
               } else if (path.startsWith(`$.laneKeys`)) {
                 //this has to do with lane option
@@ -173,6 +175,7 @@ const Panel: React.FC<Props> = ({
                       doc.getRoot().laneKeys.prev_rowStartKey;
                     const topRowChangeAmount = rowStartKey - prevRowStartKey;
                     if (topRowChangeAmount > 0) {
+                      console.log("doc update delete");
                       deleteRow({
                         rowIndex: prevRowStartKey,
                         position: Position.TOP,
@@ -346,66 +349,29 @@ const Panel: React.FC<Props> = ({
         );
       }
     });
-
-    return { newRowIndex: newRowIndex };
   };
 
   const deleteColumn = ({ columnIndex, position }: DeleteColumnInterface) => {
-    doc?.update((root) => {
-      const columnIndexToDelete =
-        position === Position.LEFT
-          ? root.laneKeys.columnStartKey + 1
-          : root.laneKeys.columnLastKey - 1;
-      for (const rows of root.dataArray) {
-        rows[columnIndexToDelete].name = undefined;
-        rows[columnIndexToDelete].color = undefined;
-      }
-      position === Position.LEFT
-        ? (root.laneKeys.columnStartKey += 1)
-        : (root.laneKeys.columnLastKey -= 1);
+    const columnIndexToDelete = columnIndex;
+    setPixel2dArray((previous) => {
+      return previous.map((previousRow) => {
+        return {
+          rowIndex: previousRow.rowIndex,
+          columns: previousRow.columns.filter((element) => {
+            element.columnIndex !== columnIndexToDelete;
+          }),
+        };
+      });
     });
-    const sliceStartIndex = position === Position.LEFT ? 1 : 0;
-    const sliceEndIndex = position === Position.LEFT ? undefined : -1;
-    const tempPixel2dArray = pixel2dArray.map((row) => {
-      return {
-        rowIndex: row.rowIndex,
-        columns: row.columns.slice(sliceStartIndex, sliceEndIndex),
-      };
-    });
-    setPixel2dArray(tempPixel2dArray);
   };
 
   const deleteRow = ({ rowIndex, position }: DeleteRowInterface) => {
-    const rowElements = document.getElementsByClassName("row");
-    const rowToDelete =
-      position === Position.TOP
-        ? rowElements[0]
-        : rowElements[rowElements.length - 1];
-    const columnsInRow = rowToDelete.children;
-
-    doc?.update((root) => {
-      const rowIndexToDelete =
-        position === Position.TOP
-          ? root.laneKeys.rowStartKey + 1
-          : root.laneKeys.rowLastKey - 1;
-      for (
-        let i = root.laneKeys.columnStartKey;
-        i < root.laneKeys.columnLastKey + 1;
-        i++
-      ) {
-        root.dataArray[rowIndexToDelete][i].name = undefined;
-        root.dataArray[rowIndexToDelete][i].color = undefined;
-      }
-      position === Position.TOP
-        ? (root.laneKeys.rowStartKey += 1)
-        : (root.laneKeys.rowLastKey -= 1);
+    const rowIndexToDelete = rowIndex;
+    setPixel2dArray((previous) => {
+      return previous.filter((row) => {
+        return row.rowIndex !== rowIndexToDelete;
+      });
     });
-    const rowIndexToDelete =
-      position === Position.TOP ? 0 : pixel2dArray.length - 1;
-    const tempPixel2dArray = pixel2dArray.filter((row, rowIndex) => {
-      return rowIndex !== rowIndexToDelete;
-    });
-    setPixel2dArray(tempPixel2dArray);
   };
 
   const initialize = () => {
