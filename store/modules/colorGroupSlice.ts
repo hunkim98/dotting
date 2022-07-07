@@ -44,25 +44,52 @@ const ColorGroupSlice = createSlice({
     },
     removeFromGroup(
       state,
-      action: PayloadAction<{ rowIndex: number; columnIndex: number }>
+      action: PayloadAction<{ rowIndex?: number; columnIndex?: number }>
     ) {
-      if (
-        state.getNameByPixelIndex[action.payload.rowIndex] &&
-        state.getNameByPixelIndex[action.payload.rowIndex][
-          action.payload.columnIndex
-        ]
-      ) {
-        const key =
-          state.getNameByPixelIndex[action.payload.rowIndex][
-            action.payload.columnIndex
-          ];
-        if (key) {
-          //remove the particular elements from the group
-          state.data[key].filter(
-            (element) =>
-              element.columnIndex !== action.payload.columnIndex &&
-              element.rowIndex !== action.payload.rowIndex
+      if (action.payload.rowIndex !== undefined) {
+        const rowIndexToDelete = action.payload.rowIndex;
+        if (state.getNameByPixelIndex[rowIndexToDelete]) {
+          const columnIndexes = Object.keys(
+            state.getNameByPixelIndex[rowIndexToDelete]
           );
+          for (const columnIndex of columnIndexes) {
+            const groupName =
+              state.getNameByPixelIndex[rowIndexToDelete][columnIndex];
+            if (groupName) {
+              if (state.data[groupName]) {
+                state.data[groupName] = state.data[groupName].filter(
+                  (element) => {
+                    return element.rowIndex !== rowIndexToDelete;
+                  }
+                );
+                if (state.data[groupName].length === 0) {
+                  delete state.data[groupName];
+                }
+
+                delete state.getNameByPixelIndex[rowIndexToDelete][columnIndex];
+              }
+            }
+          }
+        }
+      }
+      if (action.payload.columnIndex !== undefined) {
+        const columnIndexToDelete = action.payload.columnIndex;
+        const currentRowIndexes = Object.keys(state.getNameByPixelIndex);
+        for (const rowIndex of currentRowIndexes) {
+          const groupName =
+            state.getNameByPixelIndex[rowIndex][columnIndexToDelete];
+          if (groupName) {
+            if (state.data[groupName]) {
+              state.data[groupName] = state.data[groupName].filter(
+                (element) => element.columnIndex !== columnIndexToDelete
+              );
+
+              if (state.data[groupName].length === 0) {
+                delete state.data[groupName];
+              }
+              delete state.getNameByPixelIndex[rowIndex][columnIndexToDelete];
+            }
+          }
         }
       }
     },
@@ -119,5 +146,10 @@ const ColorGroupSlice = createSlice({
 });
 
 const { reducer, actions } = ColorGroupSlice;
-export const { changeGroupName, appendToGroup, changeGroupColor } = actions;
+export const {
+  changeGroupName,
+  appendToGroup,
+  changeGroupColor,
+  removeFromGroup,
+} = actions;
 export default reducer;

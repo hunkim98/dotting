@@ -75,46 +75,6 @@ const ColorGroups: React.FC<Props> = ({}) => {
   //   });
   // }, [doc, client]);
 
-  // useEffect(() => {
-  //   const tempPixelDataElements: pixelDataElement[] = [];
-  //   const pixelRef = document.getElementById("pixelsContainer");
-  //   if (pixelRef) {
-  //     for (let i = 0; i < pixelRef.children.length; i++) {
-  //       for (let j = 0; j < pixelRef.children[i].children.length; j++) {
-  //         const pixelElement = pixelRef.children[i].children[j] as HTMLElement;
-  //         const name = pixelElement.dataset.name;
-  //         if (name) {
-  //           const id = pixelElement.id;
-  //           const color = pixelElement.style.backgroundColor;
-  //           const { rowIndex, columnIndex } = decodePixelId(id);
-  //           tempPixelDataElements.push({
-  //             rowIndex,
-  //             columnIndex,
-  //             color,
-  //             name,
-  //           });
-  //         }
-  //       }
-  //       const colorGroupObject = groupBy(tempPixelDataElements, "name");
-  //       const colorGroupNames = Object.keys(colorGroupObject);
-  //       const colorGroup = colorGroupNames.map((element) => {
-  //         const colorGroupElementsExcludeName: colorGroupElement[] = (
-  //           colorGroupObject[element] as pixelDataElement[]
-  //         ).map((pixelData) => {
-  //           const { name, ...others } = pixelData;
-  //           return others;
-  //         });
-  //         return {
-  //           name: element,
-  //           color: colorGroupElementsExcludeName[0].color,
-  //           data: colorGroupElementsExcludeName,
-  //         };
-  //       });
-  //       setColorGroups(colorGroup);
-  //     }
-  //   }
-  // }, [pixelDataTriggered]);
-
   if (!doc) {
     return null;
   }
@@ -137,21 +97,6 @@ const ColorGroups: React.FC<Props> = ({}) => {
           />
         );
       })}
-      {/* {colorGroups.map((group, groupIndex) => {
-        return (
-          <ScrollerElement
-            groups={colorGroups}
-            key={groupIndex}
-            index={groupIndex}
-            selectedGroupIndex={selectedGroupIndex}
-            setSelectedGroupIndex={setSelectedGroupIndex}
-            data={group.data}
-            name={colorGroups[groupIndex].name}
-            color={group.color}
-            count={group.data.length}
-          />
-        );
-      })} */}
     </S.Container>
   );
 };

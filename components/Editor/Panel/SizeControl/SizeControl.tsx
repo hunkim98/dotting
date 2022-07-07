@@ -7,6 +7,7 @@ import * as S from "./styles";
 import * as pixelDataRedux from "../../../../store/modules/pixelData";
 import { RootState } from "../../../../store/modules";
 import { decodePixelId } from "../../../../const/PixelFunctions";
+import { removeFromGroup } from "../../../../store/modules/colorGroupSlice";
 
 interface Props extends SizeControlProps {
   pixel2dArray: Pixel2dRow[];
@@ -41,6 +42,7 @@ const SizeControl: React.FC<Props> = ({
         : rowIndexToAppendFrom + 1;
 
     //doc update
+    console.log(doc?.getRoot().laneKeys.rowStartKey, newRowIndex);
     const isNewRowValid =
       position === Position.TOP
         ? doc?.getRoot().laneKeys.rowStartKey > newRowIndex
@@ -183,6 +185,7 @@ const SizeControl: React.FC<Props> = ({
     });
 
     //change applied to Panel.tsx
+    dispatch(removeFromGroup({ rowIndex: rowIndexToDelete }));
     deleteRow({ rowIndex: rowIndexToDelete, position: position }); //this setstates pixel2dArray, must happen after the above
     dispatch(
       pixelDataRedux.update({
@@ -241,6 +244,7 @@ const SizeControl: React.FC<Props> = ({
     });
 
     //locally change Panel.tsx
+    dispatch(removeFromGroup({ columnIndex: columnIndexToDelete }));
     deleteColumn({ columnIndex: columnIndexToDelete, position: position });
     dispatch(
       pixelDataRedux.update({

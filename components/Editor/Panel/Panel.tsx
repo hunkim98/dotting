@@ -20,6 +20,7 @@ import { decodePixelId, modifyPixelById } from "../../../const/PixelFunctions";
 import {
   appendToGroup,
   changeGroupColor,
+  removeFromGroup,
 } from "../../../store/modules/colorGroupSlice";
 import {
   AddColumnInterface,
@@ -163,38 +164,50 @@ const Panel: React.FC<Props> = ({
                   // }
                 }
               } else if (path.startsWith(`$.laneKeys`)) {
-                //this has to do with lane option
                 const changePathArray = path.split(".");
                 const changedPart = changePathArray[2];
-                // addRow({ position: Position.TOP, data: [] });
+
+                const rowStartKey = doc.getRoot().laneKeys.rowStartKey;
+                const prevRowStartKey = doc.getRoot().laneKeys.prev_rowStartKey;
+                const rowLastKey = doc.getRoot().laneKeys.rowLastKey;
+                const prevRowLastKey = doc.getRoot().laneKeys.prev_rowLastKey;
+                const columnStartKey = doc.getRoot().laneKeys.columnStartKey;
+                const prevColumnStartKey =
+                  doc.getRoot().laneKeys.prev_columnStartKey;
+                const columnLastKey = doc.getRoot().laneKeys.columnLastKey;
+                const prevColumnLastKey =
+                  doc.getRoot().laneKeys.prev_columnLastKey;
+
                 switch (changedPart) {
                   case "rowStartKey":
-                    console.log("this is called");
-                    const rowStartKey = doc.getRoot().laneKeys.rowStartKey;
-                    const prevRowStartKey =
-                      doc.getRoot().laneKeys.prev_rowStartKey;
                     const topRowChangeAmount = rowStartKey - prevRowStartKey;
+                    console.log(
+                      "previousRowStartKey",
+                      prevRowStartKey,
+                      "rowStartKey",
+                      rowStartKey
+                    );
                     if (topRowChangeAmount > 0) {
-                      console.log("doc update delete");
                       deleteRow({
                         rowIndex: prevRowStartKey,
                         position: Position.TOP,
                       });
-                      doc.getRoot().laneKeys.prev_rowStartKey++;
+                      dispatch(removeFromGroup({ rowIndex: prevRowStartKey }));
+                      doc.update((root) => {
+                        root.laneKeys.prev_rowStartKey = prevRowStartKey + 1;
+                      });
                     } else if (topRowChangeAmount < 0) {
-                      console.log("added row to top");
                       addRow({
                         rowIndex: prevRowStartKey - 1,
                         position: Position.TOP,
                         data: [],
                       });
-                      doc.getRoot().laneKeys.prev_rowStartKey--;
+                      doc.update((root) => {
+                        root.laneKeys.prev_rowStartKey = prevRowStartKey - 1;
+                      });
                     }
                     break;
                   case "rowLastKey":
-                    const rowLastKey = doc.getRoot().laneKeys.rowLastKey;
-                    const prevRowLastKey =
-                      doc.getRoot().laneKeys.prev_rowLastKey;
                     const bottomRowChangeAmount = rowLastKey - prevRowLastKey;
                     if (bottomRowChangeAmount > 0) {
                       addRow({
@@ -202,20 +215,21 @@ const Panel: React.FC<Props> = ({
                         position: Position.BOTTOM,
                         data: [],
                       });
-                      doc.getRoot().laneKeys.prev_rowLastKey++;
+                      doc.update((root) => {
+                        root.laneKeys.prev_rowLastKey = prevRowLastKey + 1;
+                      });
                     } else if (bottomRowChangeAmount < 0) {
                       deleteRow({
                         rowIndex: prevRowLastKey,
                         position: Position.BOTTOM,
                       });
-                      doc.getRoot().laneKeys.prev_rowLastKey--;
+                      dispatch(removeFromGroup({ rowIndex: prevRowLastKey }));
+                      doc.update((root) => {
+                        root.laneKeys.prev_rowLastKey = prevRowLastKey - 1;
+                      });
                     }
                     break;
                   case "columnStartKey":
-                    const columnStartKey =
-                      doc.getRoot().laneKeys.columnStartKey;
-                    const prevColumnStartKey =
-                      doc.getRoot().laneKeys.prev_columnStartKey;
                     const leftColumnChangeAmount =
                       columnStartKey - prevColumnStartKey;
                     if (leftColumnChangeAmount > 0) {
@@ -223,20 +237,26 @@ const Panel: React.FC<Props> = ({
                         columnIndex: prevColumnStartKey,
                         position: Position.LEFT,
                       });
-                      doc.getRoot().laneKeys.prev_columnStartKey++;
+                      dispatch(
+                        removeFromGroup({ columnIndex: prevColumnStartKey })
+                      );
+                      doc.update((root) => {
+                        root.laneKeys.prev_columnStartKey =
+                          prevColumnStartKey + 1;
+                      });
                     } else if (leftColumnChangeAmount < 0) {
                       addColumn({
                         columnIndex: prevColumnStartKey - 1,
                         position: Position.LEFT,
                         data: [],
                       });
-                      doc.getRoot().laneKeys.prev_columnStartKey--;
+                      doc.update((root) => {
+                        root.laneKeys.prev_columnStartKey =
+                          prevColumnStartKey - 1;
+                      });
                     }
                     break;
                   case "columnLastKey":
-                    const columnLastKey = doc.getRoot().laneKeys.columnLastKey;
-                    const prevColumnLastKey =
-                      doc.getRoot().laneKeys.prev_columnLastKey;
                     const rightColumnChangeAmount =
                       columnLastKey - prevColumnLastKey;
                     if (rightColumnChangeAmount > 0) {
@@ -245,13 +265,22 @@ const Panel: React.FC<Props> = ({
                         position: Position.RIGHT,
                         data: [],
                       });
-                      doc.getRoot().laneKeys.prev_columnLastKey++;
+                      doc.update((root) => {
+                        root.laneKeys.prev_columnLastKey =
+                          prevColumnLastKey + 1;
+                      });
                     } else if (rightColumnChangeAmount < 0) {
                       deleteColumn({
                         columnIndex: prevColumnLastKey,
                         position: Position.RIGHT,
                       });
-                      doc.getRoot().laneKeys.prev_columnLastKey--;
+                      dispatch(
+                        removeFromGroup({ columnIndex: prevColumnLastKey })
+                      );
+                      doc.update((root) => {
+                        root.laneKeys.prev_columnLastKey =
+                          prevColumnLastKey - 1;
+                      });
                     }
                     break;
                 }
@@ -355,10 +384,11 @@ const Panel: React.FC<Props> = ({
     const columnIndexToDelete = columnIndex;
     setPixel2dArray((previous) => {
       return previous.map((previousRow) => {
+        console.log(previousRow);
         return {
           rowIndex: previousRow.rowIndex,
           columns: previousRow.columns.filter((element) => {
-            element.columnIndex !== columnIndexToDelete;
+            return element.columnIndex !== columnIndexToDelete;
           }),
         };
       });
