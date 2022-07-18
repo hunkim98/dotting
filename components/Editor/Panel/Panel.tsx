@@ -9,7 +9,7 @@ import {
 import { PixelsContainer } from "./PixelsContainer";
 import * as S from "./styles";
 import { useDispatch, useSelector } from "react-redux";
-import * as pixelData from "../../../store/modules/pixelData";
+import * as localHistoryRedux from "../../../store/modules/localHistory";
 import { Pixel } from "./Pixel";
 import { PixelBorder } from "./PixelBorder";
 import { SizeControl } from "./SizeControl";
@@ -28,9 +28,10 @@ import {
   DeleteColumnInterface,
   DeleteRowInterface,
 } from "./SizeControl/SizeControlProps";
+import { pixelDataElement } from "../../../store/modules/pixelData";
 
 interface Props {
-  initialData: pixelData.pixelDataElement[][];
+  initialData: pixelDataElement[][];
   panelRef: React.RefObject<HTMLDivElement>;
   colorArray: dataArrayElement[];
   setColorArray: React.Dispatch<React.SetStateAction<dataArrayElement[]>>;
@@ -141,6 +142,18 @@ const Panel: React.FC<Props> = ({
                       color: newColor,
                       name: newName,
                     });
+                    dispatch(
+                      localHistoryRedux.checkPollution({
+                        target: [
+                          {
+                            rowIndex: Number(rowIndex),
+                            columnIndex: Number(columnIndex),
+                            color: newColor,
+                            name: newName,
+                          },
+                        ],
+                      })
+                    );
                   } else if (changeType === "name") {
                     if (newName) {
                       dispatch(
@@ -181,12 +194,6 @@ const Panel: React.FC<Props> = ({
                 switch (changedPart) {
                   case "rowStartKey":
                     const topRowChangeAmount = rowStartKey - prevRowStartKey;
-                    console.log(
-                      "previousRowStartKey",
-                      prevRowStartKey,
-                      "rowStartKey",
-                      rowStartKey
-                    );
                     if (topRowChangeAmount > 0) {
                       deleteRow({
                         rowIndex: prevRowStartKey,
@@ -441,78 +448,17 @@ const Panel: React.FC<Props> = ({
 
   return (
     <S.Container>
-      <button
-        onClick={(e) => {
-          doc.update((root) => {
-            console.log(root.dataArray[1][1].name);
-            root.dataArray[1][1].name = "hi";
-          });
-        }}
-      >
-        doc array update
-      </button>
-      <button
-        onClick={(e) => {
-          doc.update((root) => {
-            // console.log(root.dataArray.row1, root.dataArray.column1);
-            // console.log(root.dataArray[1][1]);
-            // root.dataArray[1][1] = undefined;
-          });
-        }}
-      >
-        checkflag
-      </button>
-      <button
-        onClick={(e) => {
-          doc.update((root) => {
-            console.log(root.dataArray[1][1]);
-            root.dataArray[1][1] = undefined;
-          });
-        }}
-      >
-        doc make undefined
-      </button>
-      <button
-        onClick={(e) => {
-          doc.update((root) => {
-            root.number = Math.random();
-          });
-        }}
-      >
-        other update
-      </button>
-      <button
-        onClick={(e) => {
-          doc.update((root) => {
-            // root.row1column1 = undefined;
-            // root.oneDimension[0] = 2;
-            root.laneKeys.hi = 0;
-          });
-        }}
-      >
-        add row test
-      </button>
-      <button
-        onClick={(e) => {
-          doc.update((root) => {
-            // root.row1column1.name = "daff";
-            // root.oneDimension[0] = 2;
-          });
-        }}
-      >
-        change name
-      </button>
       <div>
         <button
           onClick={() => {
-            dispatch(pixelData.undo());
+            dispatch(localHistoryRedux.undo());
           }}
         >
           back
         </button>
         <button
           onClick={() => {
-            dispatch(pixelData.redo());
+            dispatch(localHistoryRedux.redo());
           }}
         >
           forward

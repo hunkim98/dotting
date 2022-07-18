@@ -3,11 +3,12 @@ import * as mouseEvent from "../../../../store/modules/mouseEvent";
 import * as S from "./styles";
 import { connect, Provider, useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store/modules";
-import * as pixelDataRedux from "../../../../store/modules/pixelData";
+import * as localHistoryRedux from "../../../../store/modules/localHistory";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
 import React, { MouseEvent } from "react";
 import { appendToSelectedGroup } from "../../../../store/modules/selectedGroup";
 import { appendToGroup } from "../../../../store/modules/colorGroupSlice";
+import { pixelChangeActionType } from "../../../../store/modules/pixelData";
 
 type OwnProps = {
   id: string;
@@ -77,9 +78,9 @@ const Pixel: React.FC<Props> = ({
         );
       }
       dispatch(
-        pixelDataRedux.update({
+        localHistoryRedux.update({
           action: {
-            type: pixelDataRedux.pixelChangeActionType.PIXEL_CHANGE,
+            type: pixelChangeActionType.PIXEL_CHANGE,
             before: [
               {
                 rowIndex: rowIndex,

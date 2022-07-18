@@ -8,6 +8,7 @@ import selectedGroup from "./selectedGroup";
 import draggableWindow from "./draggableWindow";
 import docSlice from "./docSlice";
 import colorGroupSlice from "./colorGroupSlice";
+import localHistorySlice from "./localHistory";
 
 const rootReducer = combineReducers({
   mouseEvent,
@@ -18,6 +19,7 @@ const rootReducer = combineReducers({
   draggableWindow,
   docSlice,
   colorGroupSlice,
+  localHistorySlice,
 });
 
 export default rootReducer;

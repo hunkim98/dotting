@@ -4,10 +4,14 @@ import { Pixel2dPixel, Pixel2dRow, Position } from "../Panel";
 import { Pixel } from "../Pixel";
 import { SizeControlProps } from "./SizeControlProps";
 import * as S from "./styles";
-import * as pixelDataRedux from "../../../../store/modules/pixelData";
+import * as localHistoryRedux from "../../../../store/modules/localHistory";
 import { RootState } from "../../../../store/modules";
 import { decodePixelId } from "../../../../const/PixelFunctions";
 import { removeFromGroup } from "../../../../store/modules/colorGroupSlice";
+import {
+  laneChangeActionType,
+  pixelDataElement,
+} from "../../../../store/modules/pixelData";
 
 interface Props extends SizeControlProps {
   pixel2dArray: Pixel2dRow[];
@@ -72,14 +76,15 @@ const SizeControl: React.FC<Props> = ({
       //change Panel
       addRow({ rowIndex: newRowIndex, position: position, data: [] });
       dispatch(
-        pixelDataRedux.update({
+        localHistoryRedux.update({
           action: {
             type:
               position === Position.TOP
-                ? pixelDataRedux.laneChangeActionType.ADD_TOP_LANE
-                : pixelDataRedux.laneChangeActionType.ADD_BOTTOM_LANE,
+                ? laneChangeActionType.ADD_TOP_LANE
+                : laneChangeActionType.ADD_BOTTOM_LANE,
             before: [],
             after: [],
+            affectedLaneKey: newRowIndex,
           },
         })
       );
@@ -126,14 +131,15 @@ const SizeControl: React.FC<Props> = ({
       //change applied locally to Panel.tsx
       addColumn({ columnIndex: newColumnIndex, position: position, data: [] });
       dispatch(
-        pixelDataRedux.update({
+        localHistoryRedux.update({
           action: {
             type:
               position === Position.LEFT
-                ? pixelDataRedux.laneChangeActionType.ADD_LEFT_LANE
-                : pixelDataRedux.laneChangeActionType.ADD_RIGHT_LANE,
+                ? laneChangeActionType.ADD_LEFT_LANE
+                : laneChangeActionType.ADD_RIGHT_LANE,
             before: [],
             after: [],
+            affectedLaneKey: newColumnIndex,
           },
         })
       );
@@ -153,7 +159,7 @@ const SizeControl: React.FC<Props> = ({
         : rowElements[rowElements.length - 1];
     const rowIndexToDelete = Number(rowToDelete.id.replace("row", "")); // ex: row0
 
-    const beforeData: pixelDataRedux.pixelDataElement[] = [];
+    const beforeData: pixelDataElement[] = [];
     if (rowToDelete) {
       for (let i = 0; i < rowToDelete.children.length; i++) {
         const columnElement: HTMLElement = rowToDelete.children[
@@ -188,14 +194,15 @@ const SizeControl: React.FC<Props> = ({
     dispatch(removeFromGroup({ rowIndex: rowIndexToDelete }));
     deleteRow({ rowIndex: rowIndexToDelete, position: position }); //this setstates pixel2dArray, must happen after the above
     dispatch(
-      pixelDataRedux.update({
+      localHistoryRedux.update({
         action: {
           type:
             position === Position.TOP
-              ? pixelDataRedux.laneChangeActionType.REMOVE_TOP_LANE
-              : pixelDataRedux.laneChangeActionType.REMOVE_BOTTOM_LANE,
+              ? laneChangeActionType.REMOVE_TOP_LANE
+              : laneChangeActionType.REMOVE_BOTTOM_LANE,
           before: beforeData,
           after: [],
+          affectedLaneKey: rowIndexToDelete,
         },
       })
     );
@@ -214,7 +221,7 @@ const SizeControl: React.FC<Props> = ({
     const { columnIndex } = decodePixelId(columnToDelete.id);
     const columnIndexToDelete = columnIndex;
 
-    const beforeData: pixelDataRedux.pixelDataElement[] = [];
+    const beforeData: pixelDataElement[] = [];
     if (rowElements) {
       for (let i = 0; i < rowElements.length; i++) {
         const columnElement = rowElements[i].children[
@@ -247,14 +254,15 @@ const SizeControl: React.FC<Props> = ({
     dispatch(removeFromGroup({ columnIndex: columnIndexToDelete }));
     deleteColumn({ columnIndex: columnIndexToDelete, position: position });
     dispatch(
-      pixelDataRedux.update({
+      localHistoryRedux.update({
         action: {
           type:
             position === Position.LEFT
-              ? pixelDataRedux.laneChangeActionType.REMOVE_LEFT_LANE
-              : pixelDataRedux.laneChangeActionType.REMOVE_RIGHT_LANE,
+              ? laneChangeActionType.REMOVE_LEFT_LANE
+              : laneChangeActionType.REMOVE_RIGHT_LANE,
           before: beforeData,
           after: [],
+          affectedLaneKey: columnIndexToDelete,
         },
       })
     );

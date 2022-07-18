@@ -8,10 +8,13 @@ import {
 import { Pixel } from "../Pixel";
 import * as S from "./styles";
 import * as mouseEvent from "../../../../store/modules/mouseEvent";
-import * as pixelDataRedux from "../../../../store/modules/pixelData";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store/modules";
-import { pixelDataElement } from "../../../../store/modules/pixelData";
+import {
+  laneChangeActionType,
+  pixelChangeActionType,
+  pixelDataElement,
+} from "../../../../store/modules/pixelData";
 import ReactDOM, { render } from "react-dom";
 import { Pixel2dRow, Position } from "../Panel";
 import { SizeControlProps } from "../SizeControl/SizeControlProps";
@@ -34,9 +37,6 @@ interface Props extends SizeControlProps {
   doc: Document<any>;
 }
 
-const INITIAL_ROW_COUNT = 32;
-const INITIAL_COLUMN_COUNT = 32;
-
 const PixelsContainer: React.FC<Props> = ({
   panelRef,
   pixel2dArray,
@@ -52,61 +52,85 @@ const PixelsContainer: React.FC<Props> = ({
   console.log("pixelContainer rendered");
 
   const actionRecord = useSelector(
-    (state: RootState) => state.pixelData.actionRecord
+    (state: RootState) => state.localHistorySlice.actionRecord
   );
 
   useEffect(() => {
     console.log("record changed");
+    //actionRecord is local history
     if (actionRecord) {
-      const data =
-        actionRecord.action === "undo"
-          ? actionRecord.before
-          : actionRecord.after;
-      if (actionRecord.type in pixelDataRedux.pixelChangeActionType) {
-        switch (actionRecord.type) {
-          case pixelDataRedux.pixelChangeActionType.PIXEL_CHANGE:
-            console.log(data);
-            for (let i = 0; i < data.length; i++) {
-              modifyPixelById({
-                rowIndex: data[i].rowIndex,
-                columnIndex: data[i].columnIndex,
-                color: data[i].color,
-                name: data[i].name,
+      if (actionRecord.isPolluted) {
+        alert(
+          "Somebody has overriden your past actions. Cannot perform undo/redo"
+        );
+      } else {
+        if (actionRecord.type in pixelChangeActionType) {
+          for (let i = 0; i < actionRecord.target.length; i++) {
+            const { rowIndex, columnIndex, color, name } =
+              actionRecord.target[i];
+            modifyPixelById({
+              rowIndex,
+              columnIndex,
+              color,
+              name,
+            });
+            doc?.update((root) => {
+              root.dataArray[rowIndex][columnIndex].color = color;
+              root.dataArray[rowIndex][columnIndex].name = name;
+            });
+          }
+        } else if (actionRecord.type in laneChangeActionType) {
+          const laneKey = actionRecord.affectedLaneKey!;
+          switch (actionRecord.type) {
+            case laneChangeActionType.REMOVE_TOP_LANE:
+              deleteRow({
+                position: Position.TOP,
+                rowIndex: laneKey,
               });
-            }
-            break;
-        }
-      } else if (actionRecord.type in pixelDataRedux.laneChangeActionType) {
-        switch (actionRecord.type) {
-          case pixelDataRedux.laneChangeActionType.REMOVE_TOP_LANE:
-            addRow({ position: Position.TOP, data: data });
-            break;
-          case pixelDataRedux.laneChangeActionType.REMOVE_BOTTOM_LANE:
-            addRow({ position: Position.BOTTOM, data: data });
-            break;
-          case pixelDataRedux.laneChangeActionType.REMOVE_LEFT_LANE:
-            addColumn({ position: Position.LEFT, data: data });
-            break;
-          case pixelDataRedux.laneChangeActionType.REMOVE_RIGHT_LANE:
-            addColumn({ position: Position.RIGHT, data: data });
-            break;
-          case pixelDataRedux.laneChangeActionType.ADD_TOP_LANE:
-            deleteRow({ position: Position.TOP });
-            break;
-          case pixelDataRedux.laneChangeActionType.ADD_BOTTOM_LANE:
-            deleteRow({ position: Position.BOTTOM });
-            break;
-          case pixelDataRedux.laneChangeActionType.ADD_LEFT_LANE:
-            deleteColumn({ position: Position.LEFT });
-            break;
-          case pixelDataRedux.laneChangeActionType.ADD_RIGHT_LANE:
-            deleteColumn({ position: Position.RIGHT });
-            break;
+              break;
+            case laneChangeActionType.ADD_TOP_LANE:
+              addRow({
+                position: Position.TOP,
+                rowIndex: laneKey,
+                data: actionRecord.target,
+              });
+              break;
+            case laneChangeActionType.REMOVE_LEFT_LANE:
+              deleteColumn({ position: Position.LEFT, columnIndex: laneKey });
+              break;
+            case laneChangeActionType.ADD_LEFT_LANE:
+              addColumn({
+                position: Position.LEFT,
+                columnIndex: laneKey,
+                data: actionRecord.target,
+              });
+              break;
+            case laneChangeActionType.REMOVE_BOTTOM_LANE:
+              deleteRow({ position: Position.BOTTOM, rowIndex: laneKey });
+              break;
+            case laneChangeActionType.ADD_BOTTOM_LANE:
+              addRow({
+                position: Position.BOTTOM,
+                rowIndex: laneKey,
+                data: actionRecord.target,
+              });
+              break;
+            case laneChangeActionType.REMOVE_RIGHT_LANE:
+              deleteColumn({ position: Position.RIGHT, columnIndex: laneKey });
+              break;
+            case laneChangeActionType.ADD_RIGHT_LANE:
+              addColumn({
+                position: Position.RIGHT,
+                columnIndex: laneKey,
+                data: actionRecord.target,
+              });
+              break;
+          }
         }
       }
     }
     // if(typeof actionRecord === pixelDataRedux.laneChangeActionType)
-  }, [actionRecord]);
+  }, [actionRecord, doc]);
 
   return (
     <>

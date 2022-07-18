@@ -15,27 +15,28 @@ export interface pixelIndexes {
 }
 
 export enum pixelChangeActionType {
-  PIXEL_CHANGE,
+  PIXEL_CHANGE = "PIXEL_CHANGE",
 }
 
 export enum laneChangeActionType {
-  ADD_TOP_LANE = 1,
-  REMOVE_TOP_LANE,
-  ADD_LEFT_LANE,
-  REMOVE_LEFT_LANE,
-  ADD_RIGHT_LANE,
-  REMOVE_RIGHT_LANE,
-  ADD_BOTTOM_LANE,
-  REMOVE_BOTTOM_LANE,
+  ADD_TOP_LANE = "ADD_TOP_LANE",
+  REMOVE_TOP_LANE = "REMOVE_TOP_LANE",
+  ADD_LEFT_LANE = "ADD_LEFT_LANE",
+  REMOVE_LEFT_LANE = "REMOVE_LEFT_LANE",
+  ADD_RIGHT_LANE = "ADD_RIGHT_LANE",
+  REMOVE_RIGHT_LANE = "REMOVE_RIGHT_LANE",
+  ADD_BOTTOM_LANE = "ADD_BOTTOM_LANE",
+  REMOVE_BOTTOM_LANE = "REMOVE_BOTTOM_LANE",
 }
 
 export interface pixelAction {
   type: pixelChangeActionType | laneChangeActionType;
+  affectedLaneKey?: number;
   before: pixelDataElement[];
   after: pixelDataElement[];
 }
 
-interface actionRecord extends pixelAction {
+export interface actionRecord extends pixelAction {
   action: "redo" | "undo";
 }
 
