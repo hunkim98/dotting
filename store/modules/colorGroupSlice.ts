@@ -46,9 +46,12 @@ const ColorGroupSlice = createSlice({
       state,
       action: PayloadAction<{ rowIndex?: number; columnIndex?: number }>
     ) {
+      console.log("remove group1");
       if (action.payload.rowIndex !== undefined) {
+        console.log("remove group2");
         const rowIndexToDelete = action.payload.rowIndex;
         if (state.getNameByPixelIndex[rowIndexToDelete]) {
+          console.log("remove group3");
           const columnIndexes = Object.keys(
             state.getNameByPixelIndex[rowIndexToDelete]
           );
@@ -65,7 +68,7 @@ const ColorGroupSlice = createSlice({
                 if (state.data[groupName].length === 0) {
                   delete state.data[groupName];
                 }
-
+                console.log("remove group4");
                 delete state.getNameByPixelIndex[rowIndexToDelete][columnIndex];
               }
             }

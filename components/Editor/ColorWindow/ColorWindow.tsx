@@ -7,13 +7,13 @@ import { RootState } from "../../../store/modules";
 import { useDispatch, useSelector } from "react-redux";
 import { initializeSelectedGroup } from "../../../store/modules/selectedGroup";
 import { modifyPixelById } from "../../../const/PixelFunctions";
+import * as localHistoryRedux from "../../../store/modules/localHistory";
+import { setColorWindowPosition } from "../../../store/modules/draggableWindow";
+import { changeGroupColor } from "../../../store/modules/colorGroupSlice";
 import {
   pixelChangeActionType,
   pixelDataElement,
-  update,
 } from "../../../store/modules/pixelData";
-import { setColorWindowPosition } from "../../../store/modules/draggableWindow";
-import { changeGroupColor } from "../../../store/modules/colorGroupSlice";
 
 interface Props {}
 
@@ -74,7 +74,7 @@ const ColorWindow: React.FC<Props> = ({}) => {
     }
     dispatch(changeBrushColor({ brushColor: color.hex }));
     dispatch(
-      update({
+      localHistoryRedux.update({
         action: {
           type: pixelChangeActionType.PIXEL_CHANGE,
           before: beforeData,

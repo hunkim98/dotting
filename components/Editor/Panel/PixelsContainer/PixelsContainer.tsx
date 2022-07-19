@@ -7,7 +7,7 @@ import {
 } from "../../../../const/CommonDTO";
 import { Pixel } from "../Pixel";
 import * as S from "./styles";
-import * as mouseEvent from "../../../../store/modules/mouseEvent";
+import * as localHistoryRedux from "../../../../store/modules/localHistory";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../../store/modules";
 import {
@@ -19,16 +19,11 @@ import ReactDOM, { render } from "react-dom";
 import { Pixel2dRow, Position } from "../Panel";
 import { SizeControlProps } from "../SizeControl/SizeControlProps";
 import { modifyPixelById } from "../../../../const/PixelFunctions";
-import {
-  activateClient,
-  attachDoc,
-  // createDocument,
-  DottingDoc,
-  // setClient,
-  // setDoc,
-} from "../../../../store/modules/docSlice";
 import { Client, Document } from "yorkie-js-sdk";
-import { doesNotReject } from "assert";
+import {
+  appendToGroup,
+  removeFromGroup,
+} from "../../../../store/modules/colorGroupSlice";
 
 interface Props extends SizeControlProps {
   panelRef: React.RefObject<HTMLDivElement>;
@@ -63,6 +58,7 @@ const PixelsContainer: React.FC<Props> = ({
         alert(
           "Somebody has overriden your past actions. Cannot perform undo/redo"
         );
+        dispatch(localHistoryRedux.initialize());
       } else {
         if (actionRecord.type in pixelChangeActionType) {
           for (let i = 0; i < actionRecord.target.length; i++) {
@@ -74,6 +70,16 @@ const PixelsContainer: React.FC<Props> = ({
               color,
               name,
             });
+            if (name) {
+              dispatch(
+                appendToGroup({
+                  key: name,
+                  data: [{ rowIndex, columnIndex, color, name }],
+                })
+              );
+            } else {
+              dispatch(removeFromGroup({ rowIndex, columnIndex }));
+            }
             doc?.update((root) => {
               root.dataArray[rowIndex][columnIndex].color = color;
               root.dataArray[rowIndex][columnIndex].name = name;

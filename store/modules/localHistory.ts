@@ -200,5 +200,5 @@ const localHistorySlice = createSlice({
 });
 
 const { reducer, actions } = localHistorySlice;
-export const { update, undo, redo, checkPollution } = actions;
+export const { update, undo, redo, checkPollution, initialize } = actions;
 export default reducer;

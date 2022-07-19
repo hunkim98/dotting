@@ -156,6 +156,12 @@ const Panel: React.FC<Props> = ({
                     );
                   } else if (changeType === "name") {
                     if (newName) {
+                      // dispatch(
+                      //   removeFromGroup({
+                      //     rowIndex: Number(rowIndex),
+                      //     columnIndex: Number(columnIndex),
+                      //   })
+                      // );
                       dispatch(
                         appendToGroup({
                           key: newName,
@@ -171,6 +177,15 @@ const Panel: React.FC<Props> = ({
                       );
                       dispatch(
                         changeGroupColor({ key: newName, color: newColor })
+                      );
+                    } else {
+                      console.log(newName, "is empty!");
+                      //this is called when there is no newname
+                      dispatch(
+                        removeFromGroup({
+                          rowIndex: Number(rowIndex),
+                          columnIndex: Number(columnIndex),
+                        })
                       );
                     }
                   }

@@ -9,10 +9,10 @@ import { modifyPixelById } from "../../../../const/PixelFunctions";
 import { RootState } from "../../../../store/modules";
 import { changeBrushColor } from "../../../../store/modules/brush";
 import { changeGroupName } from "../../../../store/modules/colorGroupSlice";
+import * as localHistoryRedux from "../../../../store/modules/localHistory";
 import {
   pixelChangeActionType,
   pixelDataElement,
-  update,
 } from "../../../../store/modules/pixelData";
 import {
   initializeSelectedGroup,
@@ -111,7 +111,7 @@ const ScrollerElement: React.FC<Props> = ({
           });
           dispatch(initializeSelectedGroup());
           dispatch(
-            update({
+            localHistoryRedux.update({
               action: {
                 type: pixelChangeActionType.PIXEL_CHANGE,
                 before: beforeData,
