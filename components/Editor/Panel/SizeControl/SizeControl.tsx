@@ -12,6 +12,12 @@ import {
   laneChangeActionType,
   pixelDataElement,
 } from "../../../../store/modules/pixelData";
+import {
+  addColumnToDoc,
+  addRowToDoc,
+  deleteColumnFromDoc,
+  deleteRowFromDoc,
+} from "../../../../utils/doc.size.control";
 
 interface Props extends SizeControlProps {
   pixel2dArray: Pixel2dRow[];
@@ -55,24 +61,7 @@ const SizeControl: React.FC<Props> = ({
 
     if (isNewRowValid) {
       //docUpdate
-      doc?.update((root) => {
-        root.dataArray[newRowIndex] = {};
-        for (
-          let i = root.laneKeys.columnStartKey;
-          i < root.laneKeys.columnLastKey + 1;
-          i++
-        ) {
-          root.dataArray[newRowIndex][i] = {};
-          root.dataArray[newRowIndex][i].name = undefined;
-          root.dataArray[newRowIndex][i].color = undefined;
-        }
-        if (position === Position.TOP) {
-          root.laneKeys.rowStartKey--;
-        } else {
-          root.laneKeys.rowLastKey++;
-        }
-      });
-
+      addRowToDoc({ doc, laneIndex: newRowIndex, position });
       //change Panel
       addRow({ rowIndex: newRowIndex, position: position, data: [] });
       dispatch(
@@ -113,21 +102,7 @@ const SizeControl: React.FC<Props> = ({
 
     //doc update
     if (isNewColumnValid) {
-      doc?.update((root) => {
-        const rowStartKey = root.laneKeys.rowStartKey;
-        const rowLastKey = root.laneKeys.rowLastKey;
-        for (let i = rowStartKey; i < rowLastKey + 1; i++) {
-          root.dataArray[i][newColumnIndex] = {};
-          root.dataArray[i][newColumnIndex].name = undefined;
-          root.dataArray[i][newColumnIndex].color = undefined;
-        }
-        if (position === Position.LEFT) {
-          root.laneKeys.columnStartKey--;
-        } else {
-          root.laneKeys.columnLastKey++;
-        }
-      });
-
+      addColumnToDoc({ doc, laneIndex: newColumnIndex, position });
       //change applied locally to Panel.tsx
       addColumn({ columnIndex: newColumnIndex, position: position, data: [] });
       dispatch(
@@ -176,19 +151,7 @@ const SizeControl: React.FC<Props> = ({
     }
 
     //doc update
-    doc?.update((root) => {
-      const columnStartKey = root.laneKeys.columnStartKey;
-      const columnLastkey = root.laneKeys.columnLastKey;
-      for (let i = columnStartKey; i < columnLastkey + 1; i++) {
-        root.dataArray[rowIndexToDelete][i].color = undefined;
-        root.dataArray[rowIndexToDelete][i].name = undefined;
-      }
-      if (position === Position.TOP) {
-        root.laneKeys.rowStartKey++;
-      } else {
-        root.laneKeys.rowLastKey--;
-      }
-    });
+    deleteRowFromDoc({ doc, laneIndex: rowIndexToDelete, position });
 
     //change applied to Panel.tsx
     dispatch(removeFromGroup({ rowIndex: rowIndexToDelete }));
@@ -238,17 +201,7 @@ const SizeControl: React.FC<Props> = ({
     }
 
     //doc update
-    doc?.update((root) => {
-      for (const row of Array.from(rowElements)) {
-        const rowIndex = Number(row.id.replace("row", ""));
-        delete root.dataArray[rowIndex][columnIndex];
-      }
-      if (position === Position.LEFT) {
-        root.laneKeys.columnStartKey++;
-      } else {
-        root.laneKeys.columnLastKey--;
-      }
-    });
+    deleteColumnFromDoc({ doc, laneIndex: columnIndexToDelete, position });
 
     //locally change Panel.tsx
     dispatch(removeFromGroup({ columnIndex: columnIndexToDelete }));

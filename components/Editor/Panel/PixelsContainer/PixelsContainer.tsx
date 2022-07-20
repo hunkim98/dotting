@@ -24,6 +24,12 @@ import {
   appendToGroup,
   removeFromGroup,
 } from "../../../../store/modules/colorGroupSlice";
+import {
+  addColumnToDoc,
+  addRowToDoc,
+  deleteColumnFromDoc,
+  deleteRowFromDoc,
+} from "../../../../utils/doc.size.control";
 
 interface Props extends SizeControlProps {
   panelRef: React.RefObject<HTMLDivElement>;
@@ -86,6 +92,7 @@ const PixelsContainer: React.FC<Props> = ({
             });
           }
         } else if (actionRecord.type in laneChangeActionType) {
+          console.log("lane change", actionRecord.type);
           const laneKey = actionRecord.affectedLaneKey!;
           switch (actionRecord.type) {
             case laneChangeActionType.REMOVE_TOP_LANE:
@@ -93,6 +100,12 @@ const PixelsContainer: React.FC<Props> = ({
                 position: Position.TOP,
                 rowIndex: laneKey,
               });
+              deleteRowFromDoc({
+                doc,
+                laneIndex: laneKey,
+                position: Position.TOP,
+              });
+
               break;
             case laneChangeActionType.ADD_TOP_LANE:
               addRow({
@@ -100,9 +113,21 @@ const PixelsContainer: React.FC<Props> = ({
                 rowIndex: laneKey,
                 data: actionRecord.target,
               });
+              addRowToDoc({
+                doc,
+                laneIndex: laneKey,
+                position: Position.TOP,
+                data: actionRecord.target,
+              });
+
               break;
             case laneChangeActionType.REMOVE_LEFT_LANE:
               deleteColumn({ position: Position.LEFT, columnIndex: laneKey });
+              deleteColumnFromDoc({
+                doc,
+                laneIndex: laneKey,
+                position: Position.LEFT,
+              });
               break;
             case laneChangeActionType.ADD_LEFT_LANE:
               addColumn({
@@ -110,9 +135,20 @@ const PixelsContainer: React.FC<Props> = ({
                 columnIndex: laneKey,
                 data: actionRecord.target,
               });
+              addColumnToDoc({
+                doc,
+                position: Position.LEFT,
+                laneIndex: laneKey,
+                data: actionRecord.target,
+              });
               break;
             case laneChangeActionType.REMOVE_BOTTOM_LANE:
               deleteRow({ position: Position.BOTTOM, rowIndex: laneKey });
+              deleteColumnFromDoc({
+                doc,
+                position: Position.BOTTOM,
+                laneIndex: laneKey,
+              });
               break;
             case laneChangeActionType.ADD_BOTTOM_LANE:
               addRow({
@@ -120,14 +156,31 @@ const PixelsContainer: React.FC<Props> = ({
                 rowIndex: laneKey,
                 data: actionRecord.target,
               });
+              addRowToDoc({
+                doc,
+                position: Position.BOTTOM,
+                laneIndex: laneKey,
+                data: actionRecord.target,
+              });
               break;
             case laneChangeActionType.REMOVE_RIGHT_LANE:
               deleteColumn({ position: Position.RIGHT, columnIndex: laneKey });
+              deleteColumnFromDoc({
+                doc,
+                position: Position.RIGHT,
+                laneIndex: laneKey,
+              });
               break;
             case laneChangeActionType.ADD_RIGHT_LANE:
               addColumn({
                 position: Position.RIGHT,
                 columnIndex: laneKey,
+                data: actionRecord.target,
+              });
+              addColumnToDoc({
+                doc,
+                position: Position.RIGHT,
+                laneIndex: laneKey,
                 data: actionRecord.target,
               });
               break;

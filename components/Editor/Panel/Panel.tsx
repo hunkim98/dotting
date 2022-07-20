@@ -180,6 +180,7 @@ const Panel: React.FC<Props> = ({
                       );
                     } else {
                       console.log(newName, "is empty!");
+                      console.log(rowIndex, columnIndex);
                       //this is called when there is no newname
                       dispatch(
                         removeFromGroup({

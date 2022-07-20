@@ -46,12 +46,13 @@ const ColorGroupSlice = createSlice({
       state,
       action: PayloadAction<{ rowIndex?: number; columnIndex?: number }>
     ) {
-      console.log("remove group1");
-      if (action.payload.rowIndex !== undefined) {
-        console.log("remove group2");
+      console.log("called!");
+      if (
+        action.payload.rowIndex !== undefined &&
+        action.payload.columnIndex === undefined
+      ) {
         const rowIndexToDelete = action.payload.rowIndex;
         if (state.getNameByPixelIndex[rowIndexToDelete]) {
-          console.log("remove group3");
           const columnIndexes = Object.keys(
             state.getNameByPixelIndex[rowIndexToDelete]
           );
@@ -68,14 +69,16 @@ const ColorGroupSlice = createSlice({
                 if (state.data[groupName].length === 0) {
                   delete state.data[groupName];
                 }
-                console.log("remove group4");
                 delete state.getNameByPixelIndex[rowIndexToDelete][columnIndex];
               }
             }
           }
         }
       }
-      if (action.payload.columnIndex !== undefined) {
+      if (
+        action.payload.columnIndex !== undefined &&
+        action.payload.rowIndex === undefined
+      ) {
         const columnIndexToDelete = action.payload.columnIndex;
         const currentRowIndexes = Object.keys(state.getNameByPixelIndex);
         for (const rowIndex of currentRowIndexes) {
@@ -91,6 +94,35 @@ const ColorGroupSlice = createSlice({
                 delete state.data[groupName];
               }
               delete state.getNameByPixelIndex[rowIndex][columnIndexToDelete];
+            }
+          }
+        }
+      }
+      if (
+        action.payload.columnIndex !== undefined &&
+        action.payload.rowIndex !== undefined
+      ) {
+        const columnIndexToDelete = action.payload.columnIndex;
+        const rowIndexToDelete = action.payload.rowIndex;
+        if (state.getNameByPixelIndex[rowIndexToDelete]) {
+          const groupName =
+            state.getNameByPixelIndex[rowIndexToDelete][columnIndexToDelete];
+          if (groupName) {
+            if (state.data[groupName]) {
+              state.data[groupName] = state.data[groupName].filter(
+                (element) => {
+                  return (
+                    element.rowIndex !== rowIndexToDelete &&
+                    element.columnIndex !== columnIndexToDelete
+                  );
+                }
+              );
+              if (state.data[groupName].length === 0) {
+                delete state.data[groupName];
+              }
+              delete state.getNameByPixelIndex[rowIndexToDelete][
+                columnIndexToDelete
+              ];
             }
           }
         }

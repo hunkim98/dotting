@@ -21,8 +21,10 @@ export type oppositeAction = {
 };
 
 export type localHistoryType = {
-  past: Array<pixelAction & { isPolluted: boolean }>;
-  future: Array<pixelAction & { isPolluted: boolean }>;
+  past: Array<pixelAction & { isPolluted: boolean; affectedLaneKey?: number }>;
+  future: Array<
+    pixelAction & { isPolluted: boolean; affectedLaneKey?: number }
+  >;
   actionRecord: oppositeAction | undefined;
 };
 
@@ -30,27 +32,33 @@ const getTargetAction = ({
   convertedPixelAction,
   action,
 }: {
-  convertedPixelAction: pixelAction & { isPolluted: boolean };
+  convertedPixelAction: pixelAction & {
+    isPolluted: boolean;
+    affectedLaneKey?: number;
+  };
   action: "undo" | "redo";
 }): oppositeAction => {
+  console.log("affected lane", convertedPixelAction.affectedLaneKey);
   if (action === "undo") {
     return {
       target: convertedPixelAction.before,
       type: convertedPixelAction.type,
       isPolluted: convertedPixelAction.isPolluted,
+      affectedLaneKey: convertedPixelAction.affectedLaneKey,
     };
   } else {
     return {
       target: convertedPixelAction.after,
       type: convertedPixelAction.type,
       isPolluted: convertedPixelAction.isPolluted,
+      affectedLaneKey: convertedPixelAction.affectedLaneKey,
     };
   }
 };
 
 const convertActionType = (
-  action: pixelAction & { isPolluted: boolean }
-): pixelAction & { isPolluted: boolean } => {
+  action: pixelAction & { isPolluted: boolean; affectedLaneKey?: number }
+): pixelAction & { isPolluted: boolean; affectedLaneKey?: number } => {
   const actionType = action.type;
   if (actionType in pixelChangeActionType) {
     return action;
@@ -63,6 +71,7 @@ const convertActionType = (
       before: action.before,
       after: action.after,
       isPolluted: action.isPolluted,
+      affectedLaneKey: action.affectedLaneKey,
     };
   }
 };
@@ -100,11 +109,17 @@ const localHistorySlice = createSlice({
       state.past = [];
       state.future = [];
     },
-    update: (state, data: PayloadAction<{ action: pixelAction }>) => {
+    update: (
+      state,
+      data: PayloadAction<{
+        action: pixelAction & { affectedLaneKey?: number };
+      }>
+    ) => {
       state.past = [
         ...state.past,
         { ...data.payload.action, isPolluted: false },
       ];
+      console.log(data.payload.action);
       if (state.future.length !== 0) {
         state.future = [];
       }
@@ -114,10 +129,12 @@ const localHistorySlice = createSlice({
       if (state.past.length > 0) {
         const previous = state.past[state.past.length - 1]; //previous is the opposite action
         const pixelActionWithConvertedType = convertActionType(previous);
+        console.log("this was previous", previous.affectedLaneKey);
         const targetAction = getTargetAction({
           convertedPixelAction: pixelActionWithConvertedType,
           action: "undo",
         });
+        console.log(targetAction);
         const newPast = state.past.slice(0, state.past.length - 1);
         state.past = newPast;
         state.actionRecord = targetAction;
