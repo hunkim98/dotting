@@ -22,6 +22,7 @@ import { modifyPixelById } from "../../../../const/PixelFunctions";
 import { Client, Document } from "yorkie-js-sdk";
 import {
   appendToGroup,
+  applyChangeToGroup,
   removeFromGroup,
 } from "../../../../store/modules/colorGroupSlice";
 import {
@@ -76,16 +77,17 @@ const PixelsContainer: React.FC<Props> = ({
               color,
               name,
             });
-            if (name) {
-              dispatch(
-                appendToGroup({
-                  key: name,
-                  data: [{ rowIndex, columnIndex, color, name }],
-                })
-              );
-            } else {
-              dispatch(removeFromGroup({ rowIndex, columnIndex }));
-            }
+            dispatch(applyChangeToGroup({ data: [actionRecord.target[i]] }));
+            // if (name) {
+            //   dispatch(
+            //     appendToGroup({
+            //       key: name,
+            //       data: [{ rowIndex, columnIndex, color, name }],
+            //     })
+            //   );
+            // } else {
+            //   dispatch(removeFromGroup({ rowIndex, columnIndex }));
+            // }
             doc?.update((root) => {
               root.dataArray[rowIndex][columnIndex].color = color;
               root.dataArray[rowIndex][columnIndex].name = name;
@@ -96,6 +98,7 @@ const PixelsContainer: React.FC<Props> = ({
           const laneKey = actionRecord.affectedLaneKey!;
           switch (actionRecord.type) {
             case laneChangeActionType.REMOVE_TOP_LANE:
+              dispatch(removeFromGroup({ rowIndex: laneKey }));
               deleteRow({
                 position: Position.TOP,
                 rowIndex: laneKey,
@@ -108,6 +111,7 @@ const PixelsContainer: React.FC<Props> = ({
 
               break;
             case laneChangeActionType.ADD_TOP_LANE:
+              dispatch(applyChangeToGroup({ data: actionRecord.target }));
               addRow({
                 position: Position.TOP,
                 rowIndex: laneKey,
@@ -122,6 +126,7 @@ const PixelsContainer: React.FC<Props> = ({
 
               break;
             case laneChangeActionType.REMOVE_LEFT_LANE:
+              dispatch(removeFromGroup({ columnIndex: laneKey }));
               deleteColumn({ position: Position.LEFT, columnIndex: laneKey });
               deleteColumnFromDoc({
                 doc,
@@ -130,6 +135,7 @@ const PixelsContainer: React.FC<Props> = ({
               });
               break;
             case laneChangeActionType.ADD_LEFT_LANE:
+              dispatch(applyChangeToGroup({ data: actionRecord.target }));
               addColumn({
                 position: Position.LEFT,
                 columnIndex: laneKey,
@@ -143,6 +149,7 @@ const PixelsContainer: React.FC<Props> = ({
               });
               break;
             case laneChangeActionType.REMOVE_BOTTOM_LANE:
+              dispatch(removeFromGroup({ rowIndex: laneKey }));
               deleteRow({ position: Position.BOTTOM, rowIndex: laneKey });
               deleteColumnFromDoc({
                 doc,
@@ -151,6 +158,7 @@ const PixelsContainer: React.FC<Props> = ({
               });
               break;
             case laneChangeActionType.ADD_BOTTOM_LANE:
+              dispatch(applyChangeToGroup({ data: actionRecord.target }));
               addRow({
                 position: Position.BOTTOM,
                 rowIndex: laneKey,
@@ -164,6 +172,7 @@ const PixelsContainer: React.FC<Props> = ({
               });
               break;
             case laneChangeActionType.REMOVE_RIGHT_LANE:
+              dispatch(removeFromGroup({ columnIndex: laneKey }));
               deleteColumn({ position: Position.RIGHT, columnIndex: laneKey });
               deleteColumnFromDoc({
                 doc,
@@ -172,6 +181,7 @@ const PixelsContainer: React.FC<Props> = ({
               });
               break;
             case laneChangeActionType.ADD_RIGHT_LANE:
+              dispatch(applyChangeToGroup({ data: actionRecord.target }));
               addColumn({
                 position: Position.RIGHT,
                 columnIndex: laneKey,

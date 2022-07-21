@@ -46,7 +46,6 @@ const ColorGroupSlice = createSlice({
       state,
       action: PayloadAction<{ rowIndex?: number; columnIndex?: number }>
     ) {
-      console.log("called!");
       if (
         action.payload.rowIndex !== undefined &&
         action.payload.columnIndex === undefined
@@ -128,6 +127,42 @@ const ColorGroupSlice = createSlice({
         }
       }
     },
+    applyChangeToGroup(
+      state,
+      action: PayloadAction<{ data: pixelDataElement[] }>
+    ) {
+      for (const pixelElement of action.payload.data) {
+        const rowIndex = pixelElement.rowIndex;
+        const columnIndex = pixelElement.columnIndex;
+        const nameInRedux =
+          state.getNameByPixelIndex[rowIndex] &&
+          state.getNameByPixelIndex[rowIndex][columnIndex];
+        const nameFromClient = pixelElement.name;
+        if (nameFromClient) {
+          if (state.data[nameFromClient]) {
+            state.data[nameFromClient] =
+              state.data[nameFromClient].concat(pixelElement);
+          } else {
+            state.data[nameFromClient] = [pixelElement];
+          }
+        } else {
+          //the data that was passed to redux was an undefined group name
+          //remove
+          if (nameInRedux) {
+            for (let i = 0; i < state.data[nameInRedux].length; i++) {
+              state.data[nameInRedux] = state.data[nameInRedux].filter(
+                (item, index) =>
+                  item.rowIndex !== rowIndex && item.columnIndex !== columnIndex
+              );
+            }
+            if (state.data[nameInRedux].length === 0) {
+              delete state.data[nameInRedux];
+            }
+          }
+        }
+        state.getNameByPixelIndex[rowIndex][columnIndex] = nameFromClient;
+      }
+    },
     appendToGroup(
       state,
       action: PayloadAction<{
@@ -186,5 +221,6 @@ export const {
   appendToGroup,
   changeGroupColor,
   removeFromGroup,
+  applyChangeToGroup,
 } = actions;
 export default reducer;
