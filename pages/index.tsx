@@ -26,11 +26,13 @@ import { Canvas } from "../components/Editor/Canvas";
 import { ColorPicker } from "../components/Editor/Toolbar/ColorPicker";
 import { ColorGroups } from "../components/Editor/Toolbar/ColorGroups";
 import { ColorWindow } from "../components/Editor/ColorWindow";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { initialize, pixelDataElement } from "../store/modules/pixelData";
+import { RootState } from "../store/modules";
 
 const Home: NextPage = () => {
   const dispatch = useDispatch();
+  const doc = useSelector((state: RootState) => state.docSlice.doc);
   const defaultHeight: number = useMemo(() => 32, []);
   const defaultWidth: number = useMemo(() => 32, []);
   const [initialData, setInitialData] = useState<pixelDataElement[][]>([]);
@@ -90,6 +92,22 @@ const Home: NextPage = () => {
   const resetOrStartPanel = useCallback(() => {
     initializeDrawingPanel();
     const temp: pixelDataElement[][] = [];
+    doc?.update((root) => {
+      for (
+        let i = root.laneKeys.rowStartKey;
+        i < root.laneKeys.rowLastKey - 1;
+        i++
+      ) {
+        for (
+          let j = root.laneKeys.columnStartKey;
+          j < root.laneKeys.columnLastKey - 1;
+          j++
+        ) {
+          root.dataArray[i][j].color = undefined;
+          root.dataArray[i][j].name = undefined;
+        }
+      }
+    });
     for (let i = 0; i < canvasSize.height; i++) {
       temp.push([]);
       for (let j = 0; j < canvasSize.width; j++) {

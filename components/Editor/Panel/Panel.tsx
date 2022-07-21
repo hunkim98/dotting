@@ -19,6 +19,7 @@ import { RootState } from "../../../store/modules";
 import { decodePixelId, modifyPixelById } from "../../../const/PixelFunctions";
 import {
   appendToGroup,
+  applyChangeToGroup,
   changeGroupColor,
   removeFromGroup,
 } from "../../../store/modules/colorGroupSlice";
@@ -64,6 +65,34 @@ const Panel: React.FC<Props> = ({
 }) => {
   const doc = useSelector((state: RootState) => state.docSlice.doc);
   const client = useSelector((state: RootState) => state.docSlice.client);
+
+  const initialize = () => {
+    const tempPixel2dArray: Pixel2dRow[] = [];
+    initialData.map((row, rowIndex) => {
+      const tempPixel2dArrayRow: Pixel2dPixel[] = [];
+      row.map((pixel, columnIndex) => {
+        tempPixel2dArrayRow.push({
+          columnIndex: columnIndex,
+          pixel: (
+            <Pixel
+              key={`row${rowIndex}column${columnIndex}`}
+              id={`row${rowIndex}column${columnIndex}`}
+              rowIndex={rowIndex}
+              columnIndex={columnIndex}
+              dataColor={pixel.color}
+              dataName={pixel.name}
+            ></Pixel>
+          ),
+        });
+      });
+      tempPixel2dArray.push({
+        rowIndex: rowIndex,
+        columns: tempPixel2dArrayRow,
+      });
+    });
+    setPixel2dArray(tempPixel2dArray);
+  };
+
   useEffect(() => {
     const activate = async () => {
       const yorkie = await import("yorkie-js-sdk");
@@ -90,28 +119,68 @@ const Panel: React.FC<Props> = ({
           }
         } else {
           //root.dataArray exists
+          const tempPixel2dArray: Pixel2dRow[] = [];
+          for (
+            let i = root.laneKeys.rowStartKey;
+            i < root.laneKeys.rowLastKey + 1;
+            i++
+          ) {
+            const tempPixel2dArrayRow: Pixel2dPixel[] = [];
+            for (
+              let j = root.laneKeys.columnStartKey;
+              j < root.laneKeys.columnLastKey + 1;
+              j++
+            ) {
+              const dataColor = root.dataArray[i] && root.dataArray[i][j].color;
+              const dataName = root.dataArray[i] && root.dataArray[i][j].name;
+              tempPixel2dArrayRow.push({
+                columnIndex: j,
+                pixel: (
+                  <Pixel
+                    key={`row${i}column${j}`}
+                    id={`row${i}column${j}`}
+                    rowIndex={i}
+                    columnIndex={j}
+                    dataColor={dataColor}
+                    dataName={dataName}
+                  ></Pixel>
+                ),
+              });
+              if (dataName) {
+                dispatch(
+                  appendToGroup({
+                    key: dataName,
+                    data: [
+                      {
+                        rowIndex: i,
+                        columnIndex: j,
+                        color: dataColor,
+                        name: dataName,
+                      },
+                    ],
+                  })
+                );
+              }
+            }
+            tempPixel2dArray.push({
+              rowIndex: i,
+              columns: tempPixel2dArrayRow,
+            });
+          }
+          setPixel2dArray(tempPixel2dArray);
         }
-        // if (!root.laneKeys) {
-        root.laneKeys = {
-          prev_rowStartKey: 0,
-          rowStartKey: 0,
-          prev_rowLastKey: INITIAL_ROW_COUNT - 1,
-          rowLastKey: INITIAL_ROW_COUNT - 1,
-          prev_columnStartKey: 0,
-          columnStartKey: 0,
-          prev_columnLastKey: INITIAL_COLUMN_COUNT - 1,
-          columnLastKey: INITIAL_COLUMN_COUNT - 1,
-        };
-        // }
-        // root.laneKeys.rowStartKey = new yorkie.Counter(0);
-        // root.laneKeys.rowLastkey = new yorkie.Counter(INITIAL_ROW_COUNT - 1);
-        // root.laneKeys.columnStartKey = new yorkie.Counter(0);
-        // root.laneKeys.columnLastKey = new yorkie.Counter(
-        //   INITIAL_COLUMN_COUNT - 1
-        // );
-        // }
-
-        console.log("Is this dataArray", Object.keys(root.dataArray));
+        if (!root.laneKeys) {
+          root.laneKeys = {
+            prev_rowStartKey: 0,
+            rowStartKey: 0,
+            prev_rowLastKey: INITIAL_ROW_COUNT - 1,
+            rowLastKey: INITIAL_ROW_COUNT - 1,
+            prev_columnStartKey: 0,
+            columnStartKey: 0,
+            prev_columnLastKey: INITIAL_COLUMN_COUNT - 1,
+            columnLastKey: INITIAL_COLUMN_COUNT - 1,
+          };
+        }
       });
 
       doc.subscribe((event) => {
@@ -427,36 +496,9 @@ const Panel: React.FC<Props> = ({
     });
   };
 
-  const initialize = () => {
-    const tempPixel2dArray: Pixel2dRow[] = [];
-    initialData.map((row, rowIndex) => {
-      const tempPixel2dArrayRow: Pixel2dPixel[] = [];
-      row.map((pixel, columnIndex) => {
-        tempPixel2dArrayRow.push({
-          columnIndex: columnIndex,
-          pixel: (
-            <Pixel
-              key={`row${rowIndex}column${columnIndex}`}
-              id={`row${rowIndex}column${columnIndex}`}
-              rowIndex={rowIndex}
-              columnIndex={columnIndex}
-              dataColor={pixel.color}
-              dataName={pixel.name}
-            ></Pixel>
-          ),
-        });
-      });
-      tempPixel2dArray.push({
-        rowIndex: rowIndex,
-        columns: tempPixel2dArrayRow,
-      });
-    });
-    setPixel2dArray(tempPixel2dArray);
-  };
-
-  useEffect(() => {
-    initialize();
-  }, [initialData]);
+  // useEffect(() => {
+  //   initialize();
+  // }, [initialData]);
 
   if (!doc || !client) {
     return null;
