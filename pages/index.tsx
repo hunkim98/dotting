@@ -80,34 +80,10 @@ const Home: NextPage = () => {
 
   const [colorData, setColorData] = useState<rowColumnColor[]>([]);
 
-  const initializeDrawingPanel = useCallback(() => {
+  const startNewProejct = () => {
     setHideOptions(!hideOptions);
     setHideDrawingPanel(!hideDrawingPanel);
-
-    buttonText === "start drawing"
-      ? setButonText("reset")
-      : setButonText("start drawing");
-  }, [hideOptions, hideDrawingPanel]);
-
-  const resetOrStartPanel = useCallback(() => {
-    initializeDrawingPanel();
     const temp: pixelDataElement[][] = [];
-    doc?.update((root) => {
-      for (
-        let i = root.laneKeys.rowStartKey;
-        i < root.laneKeys.rowLastKey - 1;
-        i++
-      ) {
-        for (
-          let j = root.laneKeys.columnStartKey;
-          j < root.laneKeys.columnLastKey - 1;
-          j++
-        ) {
-          root.dataArray[i][j].color = undefined;
-          root.dataArray[i][j].name = undefined;
-        }
-      }
-    });
     for (let i = 0; i < canvasSize.height; i++) {
       temp.push([]);
       for (let j = 0; j < canvasSize.width; j++) {
@@ -121,10 +97,7 @@ const Home: NextPage = () => {
     }
     setInitialData(temp);
     dispatch(initialize({ data: temp }));
-    // setDataArray([]);
-    // setHistory([]);
-    // setHistoryIndex(0);
-  }, [canvasSize]);
+  };
 
   const downloadImage = useCallback(() => {
     const pixelRef = document.getElementById("pixelsContainer");
@@ -149,9 +122,6 @@ const Home: NextPage = () => {
     // resetDataKeyState(colorData, keyData);
   };
 
-  // const { mouseDown, mouseUp } = useMouseEvent();
-  console.log("index");
-
   return (
     <Editor>
       <Head>
@@ -171,10 +141,10 @@ const Home: NextPage = () => {
             // setResetKeys={setResetKeys}
           />
         )}
-        <PanelUpperButtons
-          buttonText={buttonText}
-          clickFunctions={[resetOrStartPanel]}
-        />
+        {hideDrawingPanel && (
+          <PanelUpperButtons clickFunctions={[startNewProejct]} />
+        )}
+
         {hideOptions && (
           <>
             <Panel

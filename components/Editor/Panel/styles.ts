@@ -43,3 +43,20 @@ export const WidthControlContainer = styled.div<{
   flex-direction: column;
   justify-content: center;
 `;
+
+export const ResetButton = styled.button`
+  font-size: 1.25rem;
+  background-color: transparent;
+  color: white;
+  padding: 1rem 3rem;
+  border-radius: 0.25rem;
+  text-transform: uppercase;
+  border: 1px solid white;
+  transition: background-color 0.2s ease-in-out;
+  margin-bottom: 2rem;
+  &:hover {
+    cursor: pointer;
+    background-color: red;
+    border-color: red;
+  }
+`;

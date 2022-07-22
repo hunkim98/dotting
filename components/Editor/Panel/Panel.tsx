@@ -21,6 +21,7 @@ import {
   appendToGroup,
   applyChangeToGroup,
   changeGroupColor,
+  initializeGroup,
   removeFromGroup,
 } from "../../../store/modules/colorGroupSlice";
 import {
@@ -29,7 +30,7 @@ import {
   DeleteColumnInterface,
   DeleteRowInterface,
 } from "./SizeControl/SizeControlProps";
-import { pixelDataElement } from "../../../store/modules/pixelData";
+import { initialize, pixelDataElement } from "../../../store/modules/pixelData";
 
 interface Props {
   initialData: pixelDataElement[][];
@@ -66,32 +67,32 @@ const Panel: React.FC<Props> = ({
   const doc = useSelector((state: RootState) => state.docSlice.doc);
   const client = useSelector((state: RootState) => state.docSlice.client);
 
-  const initialize = () => {
-    const tempPixel2dArray: Pixel2dRow[] = [];
-    initialData.map((row, rowIndex) => {
-      const tempPixel2dArrayRow: Pixel2dPixel[] = [];
-      row.map((pixel, columnIndex) => {
-        tempPixel2dArrayRow.push({
-          columnIndex: columnIndex,
-          pixel: (
-            <Pixel
-              key={`row${rowIndex}column${columnIndex}`}
-              id={`row${rowIndex}column${columnIndex}`}
-              rowIndex={rowIndex}
-              columnIndex={columnIndex}
-              dataColor={pixel.color}
-              dataName={pixel.name}
-            ></Pixel>
-          ),
-        });
-      });
-      tempPixel2dArray.push({
-        rowIndex: rowIndex,
-        columns: tempPixel2dArrayRow,
-      });
-    });
-    setPixel2dArray(tempPixel2dArray);
-  };
+  // const initialize = () => {
+  //   const tempPixel2dArray: Pixel2dRow[] = [];
+  //   initialData.map((row, rowIndex) => {
+  //     const tempPixel2dArrayRow: Pixel2dPixel[] = [];
+  //     row.map((pixel, columnIndex) => {
+  //       tempPixel2dArrayRow.push({
+  //         columnIndex: columnIndex,
+  //         pixel: (
+  //           <Pixel
+  //             key={`row${rowIndex}column${columnIndex}`}
+  //             id={`row${rowIndex}column${columnIndex}`}
+  //             rowIndex={rowIndex}
+  //             columnIndex={columnIndex}
+  //             dataColor={pixel.color}
+  //             dataName={pixel.name}
+  //           ></Pixel>
+  //         ),
+  //       });
+  //     });
+  //     tempPixel2dArray.push({
+  //       rowIndex: rowIndex,
+  //       columns: tempPixel2dArrayRow,
+  //     });
+  //   });
+  //   setPixel2dArray(tempPixel2dArray);
+  // };
 
   useEffect(() => {
     const activate = async () => {
@@ -392,6 +393,53 @@ const Panel: React.FC<Props> = ({
   const dispatch = useDispatch();
   const [pixel2dArray, setPixel2dArray] = useState<Pixel2dRow[]>([]);
 
+  const resetDoc = () => {
+    const tempPixel2dArray: Pixel2dRow[] = [];
+    doc?.update((root) => {
+      root.laneKeys.rowStartKey = 0;
+      root.laneKeys.prevRowStartKey = 0;
+      root.laneKeys.rowLastKey = 31;
+      root.laneKeys.prevRowLastKey = 31;
+      root.laneKeys.columnStartKey = 0;
+      root.laneKeys.prevColumnStartKey = 0;
+      root.laneKeys.columnLastKey = 31;
+      root.laneKeys.prevColumnLastKey = 31;
+
+      for (
+        let i = root.laneKeys.rowStartKey;
+        i < root.laneKeys.rowLastKey + 1;
+        i++
+      ) {
+        const tempPixel2dArrayRow: Pixel2dPixel[] = [];
+        for (
+          let j = root.laneKeys.columnStartKey;
+          j < root.laneKeys.columnLastKey + 1;
+          j++
+        ) {
+          root.dataArray[i][j].color = undefined;
+          root.dataArray[i][j].name = undefined;
+          tempPixel2dArrayRow.push({
+            columnIndex: j,
+            pixel: (
+              <Pixel
+                key={`row${i}column${j}`}
+                id={`row${i}column${j}`}
+                rowIndex={i}
+                columnIndex={j}
+                dataColor={undefined}
+                dataName={undefined}
+              ></Pixel>
+            ),
+          });
+        }
+        tempPixel2dArray.push({ rowIndex: i, columns: tempPixel2dArrayRow });
+      }
+      setPixel2dArray(tempPixel2dArray);
+      dispatch(initializeGroup());
+      // dispatch(initialize({data: tempPixel2dArray}));
+    });
+  };
+
   function appendBehind<Type>(element: Type, array: Type[]): Type[] {
     return [...array, element];
   }
@@ -506,6 +554,7 @@ const Panel: React.FC<Props> = ({
 
   return (
     <S.Container>
+      <S.ResetButton onClick={resetDoc}>Reset</S.ResetButton>
       <div>
         <button
           onClick={() => {

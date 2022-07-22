@@ -25,6 +25,10 @@ const ColorGroupSlice = createSlice({
   name: "colorGroupSlice",
   initialState,
   reducers: {
+    initializeGroup(state) {
+      state.data = {};
+      state.getNameByPixelIndex = {};
+    },
     changeGroupName(
       state,
       action: PayloadAction<{ originalKey: string; newKey: string }>
@@ -222,5 +226,6 @@ export const {
   changeGroupColor,
   removeFromGroup,
   applyChangeToGroup,
+  initializeGroup,
 } = actions;
 export default reducer;
