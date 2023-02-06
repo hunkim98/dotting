@@ -13,11 +13,11 @@ import { Coord, PanZoom } from "./types";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "./touch";
 
 export default class Canvas extends EventDispatcher {
-  private MAX_SCALE = 1.2;
+  private MAX_SCALE = 1.5;
 
-  private MIN_SCALE = 0.9;
+  private MIN_SCALE = 0.6;
 
-  private ZOOM_SENSITIVITY = 300;
+  private ZOOM_SENSITIVITY = 200;
 
   private element: HTMLCanvasElement;
 
@@ -79,19 +79,17 @@ export default class Canvas extends EventDispatcher {
   drawGrids() {
     const isColumnCountEven = this.columnCount % 2;
     const isRowCountEven = this.rowCount % 2;
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
     const leftTopPoint: Coord = {
       x: isColumnCountEven
-        ? -((this.columnCount / 2) * this.gridSquareLength)
+        ? -((this.columnCount / 2) * squareLength)
         : -(
-            Math.floor(this.columnCount / 2) * this.gridSquareLength +
-            this.gridSquareLength * 0.5
+            Math.floor(this.columnCount / 2) * squareLength +
+            squareLength * 0.5
           ),
       y: isRowCountEven
-        ? -((this.rowCount / 2) * this.gridSquareLength)
-        : -(
-            Math.floor(this.rowCount / 2) * this.gridSquareLength +
-            this.gridSquareLength * 0.5
-          ),
+        ? -((this.rowCount / 2) * squareLength)
+        : -(Math.floor(this.rowCount / 2) * squareLength + squareLength * 0.5),
     };
     const ctx = this.ctx;
     const correctedPosition = getScreenPoint(leftTopPoint, this.panZoom);
@@ -103,48 +101,23 @@ export default class Canvas extends EventDispatcher {
     );
     ctx.save();
     ctx.lineWidth = 1;
-    // {
-    //   ctx.beginPath();
-    //   ctx.moveTo(leftTopScreenPoint.x, leftTopScreenPoint.y);
-    //   ctx.lineTo(
-    //     leftTopScreenPoint.x,
-    //     leftTopScreenPoint.y + this.rowCount * this.gridSquareLength
-    //   );
-    //   ctx.stroke();
-    //   ctx.closePath();
-    // }
-    // {
-    //   ctx.beginPath();
-    //   ctx.moveTo(leftTopScreenPoint.x, leftTopScreenPoint.y);
-    //   ctx.lineTo(
-    //     leftTopScreenPoint.x + this.columnCount * this.gridSquareLength,
-    //     leftTopScreenPoint.y
-    //   );
-    //   ctx.stroke();
-    //   ctx.closePath();
-    // }
+
     for (let i = 0; i <= this.columnCount; i++) {
       ctx.beginPath();
-      ctx.moveTo(
-        leftTopScreenPoint.x + i * this.gridSquareLength,
-        leftTopScreenPoint.y
-      );
+      ctx.moveTo(leftTopScreenPoint.x + i * squareLength, leftTopScreenPoint.y);
       ctx.lineTo(
-        leftTopScreenPoint.x + i * this.gridSquareLength,
-        leftTopScreenPoint.y + this.rowCount * this.gridSquareLength
+        leftTopScreenPoint.x + i * squareLength,
+        leftTopScreenPoint.y + this.rowCount * squareLength
       );
       ctx.stroke();
       ctx.closePath();
     }
     for (let j = 0; j <= this.rowCount; j++) {
       ctx.beginPath();
-      ctx.moveTo(
-        leftTopScreenPoint.x,
-        leftTopScreenPoint.y + j * this.gridSquareLength
-      );
+      ctx.moveTo(leftTopScreenPoint.x, leftTopScreenPoint.y + j * squareLength);
       ctx.lineTo(
-        leftTopScreenPoint.x + this.columnCount * this.gridSquareLength,
-        leftTopScreenPoint.y + j * this.gridSquareLength
+        leftTopScreenPoint.x + this.columnCount * squareLength,
+        leftTopScreenPoint.y + j * squareLength
       );
       ctx.stroke();
       ctx.closePath();
@@ -238,11 +211,12 @@ export default class Canvas extends EventDispatcher {
 
     if (scale) {
       this.panZoom.scale = scale;
-      this.gridSquareLength = this.gridSquareLength * scale;
     }
     if (offset) {
       this.panZoom.offset = offset;
     }
+    // this.gridSquareLength = this.gridSquareLength * this.panZoom.scale;
+    // console.log(this.gridSquareLength);
 
     this.render();
     //reset the offset
@@ -267,7 +241,7 @@ export default class Canvas extends EventDispatcher {
     this.panPoint.lastMousePos = currentMousePos;
     const mouseDiff = diffPoints(lastMousePos, currentMousePos);
     const offset = diffPoints(this.panZoom.offset, mouseDiff);
-    this.panZoom.offset = offset;
+    // this.panZoom.offset = offset;
     this.setPanZoom({ offset });
     return;
   };
@@ -303,17 +277,18 @@ export default class Canvas extends EventDispatcher {
   handleWheel = (e: WheelEvent) => {
     e.preventDefault();
     if (e.ctrlKey) {
-      const { deltaY } = e;
-      const zoom = 1 - deltaY / this.ZOOM_SENSITIVITY;
-      const newScale = this.panZoom.scale * zoom;
+      const zoom = 1 - e.deltaY / this.ZOOM_SENSITIVITY;
+      let newScale = this.panZoom.scale * zoom;
 
-      if (newScale > this.MAX_SCALE || newScale < this.MIN_SCALE) {
-        return;
+      if (newScale > this.MAX_SCALE) {
+        newScale = this.MAX_SCALE;
       }
-      console.log(newScale, "newScale");
+      if (newScale < this.MIN_SCALE) {
+        newScale = this.MIN_SCALE;
+      }
       const mouseOffset = { x: e.offsetX, y: e.offsetY };
       const newOffset = this.returnScrollOffsetFromMouseOffset(
-        { x: mouseOffset.x, y: mouseOffset.y },
+        mouseOffset,
         this.panZoom,
         newScale
       );
@@ -324,7 +299,7 @@ export default class Canvas extends EventDispatcher {
         x: e.deltaX,
         y: e.deltaY,
       });
-      this.setPanZoom({ offset });
+      this.setPanZoom({ ...this.panZoom, offset });
     }
   };
 

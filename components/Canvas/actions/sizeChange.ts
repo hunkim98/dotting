@@ -1,20 +1,12 @@
 import Canvas from "../Canvas";
 import { PixelData } from "../types";
-import { AbstractAction, ActionType } from "./base";
-
-export type CanvasDirection =
-  | CanvasVerticalDirection
-  | CanvasHorizontalDirection;
-
-export enum CanvasVerticalDirection {
-  TOP = "TOP",
-  BOTTOM = "BOTTOM",
-}
-
-export enum CanvasHorizontalDirection {
-  LEFT = "LEFT",
-  RIGHT = "RIGHT",
-}
+import {
+  AbstractAction,
+  ActionType,
+  CanvasHorizontalDirection,
+  CanvasVerticalDirection,
+  CanvasDirection,
+} from "./base";
 
 export class SizeChangeAction implements AbstractAction {
   type = ActionType.size;
