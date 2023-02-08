@@ -10,8 +10,8 @@ export const convertCartesianToScreen = (
   dpr: number
 ): Coord => {
   const screenPoint = {
-    x: Math.floor(cartesianCoord.x + canvas.width / dpr / 2),
-    y: Math.floor(cartesianCoord.y + canvas.height / dpr / 2),
+    x: cartesianCoord.x + canvas.width / dpr / 2,
+    y: cartesianCoord.y + canvas.height / dpr / 2,
   } as Coord;
   return screenPoint;
 };
@@ -75,4 +75,25 @@ export function getWorldPoint(point: Coord, panZoom: PanZoom): Coord {
   const { offset, scale } = panZoom;
 
   return { x: (point.x - offset.x) / scale, y: (point.y - offset.y) / scale };
+}
+
+export function convertScreenPointToCartesian(
+  canvas: HTMLCanvasElement,
+  screenPoint: Coord,
+  dpr: number
+): Coord {
+  const cartesianCoord = {
+    x: screenPoint.x - canvas.width / dpr / 2,
+    y: screenPoint.y - canvas.height / dpr / 2,
+  } as Coord;
+  return cartesianCoord;
+}
+
+export function worldPointToCartesian(point: Coord, panZoom: PanZoom): Coord {
+  const { offset, scale } = panZoom;
+
+  return {
+    x: (point.x - offset.x) / scale,
+    y: (point.y - offset.y) / scale,
+  };
 }
