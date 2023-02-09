@@ -74,7 +74,40 @@ export default class Canvas extends EventDispatcher {
     this.initialize();
   }
 
-  drawRects() {}
+  drawRects() {
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    // leftTopPoint is a cartesian coordinate
+    const leftTopPoint: Coord = {
+      x: -((this.columnCount / 2) * this.gridSquareLength),
+      y: -((this.rowCount / 2) * this.gridSquareLength),
+    };
+    const ctx = this.ctx;
+    let convertedScreenPoint = convertCartesianToScreen(
+      this.element,
+      leftTopPoint,
+      this.dpr
+    );
+    const correctedScreenPoint = getScreenPoint(
+      convertedScreenPoint,
+      this.panZoom
+    );
+    ctx.save();
+    ctx.translate(correctedScreenPoint.x, correctedScreenPoint.y);
+    // ctx.scale(this.panZoom.scale, this.panZoom.scale);
+    for (let i = 0; i < this.rowCount; i++) {
+      for (let j = 0; j < this.columnCount; j++) {
+        const color = this.data.get(i)?.get(j)?.color || "white";
+        ctx.fillStyle = color;
+        ctx.fillRect(
+          j * squareLength,
+          i * squareLength,
+          squareLength,
+          squareLength
+        );
+      }
+    }
+    ctx.restore();
+  }
 
   drawGrids() {
     const isColumnCountEven = this.columnCount % 2;
@@ -185,6 +218,14 @@ export default class Canvas extends EventDispatcher {
     touchy(this.element, addEvent, "mouseout", this.onMouseOut);
     touchy(this.element, addEvent, "mousemove", this.onMouseMove);
     this.element.addEventListener("wheel", this.handleWheel);
+
+    //initialize data
+    for (let i = 0; i < this.rowCount; i++) {
+      for (let j = 0; j < this.columnCount; j++) {
+        this.data.set(i, new Map());
+        this.data.get(i)!.set(j, { color: "" });
+      }
+    }
   }
 
   onMouseDown(evt: TouchyEvent) {
@@ -205,50 +246,54 @@ export default class Canvas extends EventDispatcher {
       }
     }
 
-    let mouseWorldPoint = {
-      x: pointCoord.x - this.panZoom.offset.x,
-      y: pointCoord.y - this.panZoom.offset.y,
-    };
-
-    // const diffPointsOfMouseOffset = diffPoints(pointCoord, {
-    //   x: this.element.width / this.dpr / 2,
-    //   y: this.element.height / this.dpr / 2,
-    // });
     const diffPointsOfMouseOffset = getWorldPoint(pointCoord, this.panZoom);
     const mouseCartCoord = diffPoints(diffPointsOfMouseOffset, {
       x: this.element.width / this.dpr / 2,
       y: this.element.height / this.dpr / 2,
     });
-    console.log(this.panZoom.offset, "offset");
-    // mouseWorldPoint = getWorldPoint(pointCoord, this.panZoom);
-    // console.log("offset", this.panZoom.offset);
 
-    // const mouseScreenPoint = getScreenPoint(mouseWorldPoint, this.panZoom);
+    console.log("cart coord", mouseCartCoord);
 
     const isColumnCountEven = this.columnCount % 2;
     const isRowCountEven = this.rowCount % 2;
-    const squareLength = this.gridSquareLength * this.panZoom.scale;
     const leftTopPoint: Coord = {
       x: isColumnCountEven
-        ? -((this.columnCount / 2) * squareLength)
+        ? -((this.columnCount / 2) * this.gridSquareLength)
         : -(
-            Math.floor(this.columnCount / 2) * squareLength +
-            squareLength * 0.5
+            Math.floor(this.columnCount / 2) * this.gridSquareLength +
+            this.gridSquareLength * 0.5
           ),
       y: isRowCountEven
-        ? -((this.rowCount / 2) * squareLength)
-        : -(Math.floor(this.rowCount / 2) * squareLength + squareLength * 0.5),
+        ? -((this.rowCount / 2) * this.gridSquareLength)
+        : -(
+            Math.floor(this.rowCount / 2) * this.gridSquareLength +
+            this.gridSquareLength * 0.5
+          ),
     };
-    const ctx = this.ctx;
-    const correctedPosition = getScreenPoint(leftTopPoint, this.panZoom);
-    const leftTopScreenPoint = convertCartesianToScreen(
-      this.element,
-      correctedPosition,
-      this.dpr
-    );
+    let isMouseInGrid = false;
+    if (
+      mouseCartCoord.x > leftTopPoint.x &&
+      mouseCartCoord.x <
+        leftTopPoint.x + this.columnCount * this.gridSquareLength &&
+      mouseCartCoord.y > leftTopPoint.y &&
+      mouseCartCoord.y < leftTopPoint.y + this.rowCount * this.gridSquareLength
+    ) {
+      const row = Math.floor(
+        (mouseCartCoord.y - leftTopPoint.y) / this.gridSquareLength
+      );
+      const column = Math.floor(
+        (mouseCartCoord.x - leftTopPoint.x) / this.gridSquareLength
+      );
+      isMouseInGrid = true;
+      console.log("row", row, "column", column);
+      this.data.get(row)!.set(column, { color: "#ff0000" });
+      this.render();
+    }
 
-    touchy(this.element, addEvent, "mousemove", this.handlePanning);
-    touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
+    if (!isMouseInGrid) {
+      touchy(this.element, addEvent, "mousemove", this.handlePanning);
+      touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
+    }
   }
 
   onMouseMove(evt: TouchyEvent) {
@@ -328,7 +373,6 @@ export default class Canvas extends EventDispatcher {
     });
     const scaleOffset = diffPoints(mouseOffset, newMousePos);
     const offset = addPoints(panZoom.offset, scaleOffset);
-    console.log("offset", offset);
 
     return offset;
   };
@@ -488,6 +532,7 @@ export default class Canvas extends EventDispatcher {
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(0, 0, this.width, this.height);
     this.ctx.restore();
+    this.drawRects();
     this.drawGrids();
   }
 
