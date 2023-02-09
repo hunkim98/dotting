@@ -25,11 +25,13 @@ export default class Canvas extends EventDispatcher {
 
   private origin = { x: 0, y: 0 };
 
-  private columnCount = 5;
+  private columnCount = 11;
 
-  private rowCount = 5;
+  private rowCount = 11;
 
   private pinchZoomPrevDiff = 0;
+
+  private isDragging = false;
 
   private data = new Map<
     // this number is rowIndex
@@ -228,32 +230,19 @@ export default class Canvas extends EventDispatcher {
     }
   }
 
-  onMouseDown(evt: TouchyEvent) {
+  getMouseCartCoord(evt: TouchyEvent) {
     evt.preventDefault();
     const point = this.getPointFromTouchyEvent(evt);
     const pointCoord = { x: point.offsetX, y: point.offsetY };
-    this.panPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
-
-    if (window.TouchEvent && evt instanceof TouchEvent) {
-      const touchCount = evt.touches.length;
-      if (touchCount >= 2) {
-        const firstTouch = evt.touches[0];
-        const secondTouch = evt.touches[1];
-        const pinchZoomCurrentDiff =
-          Math.abs(firstTouch.clientX - secondTouch.clientX) +
-          Math.abs(firstTouch.clientY - secondTouch.clientY);
-        this.pinchZoomPrevDiff = pinchZoomCurrentDiff;
-      }
-    }
-
     const diffPointsOfMouseOffset = getWorldPoint(pointCoord, this.panZoom);
     const mouseCartCoord = diffPoints(diffPointsOfMouseOffset, {
       x: this.element.width / this.dpr / 2,
       y: this.element.height / this.dpr / 2,
     });
+    return mouseCartCoord;
+  }
 
-    console.log("cart coord", mouseCartCoord);
-
+  drawPixelFromCartCoord(mouseCartCoord: Coord) {
     const isColumnCountEven = this.columnCount % 2;
     const isRowCountEven = this.rowCount % 2;
     const leftTopPoint: Coord = {
@@ -289,6 +278,30 @@ export default class Canvas extends EventDispatcher {
       this.data.get(row)!.set(column, { color: "#ff0000" });
       this.render();
     }
+    return isMouseInGrid;
+  }
+
+  onMouseDown(evt: TouchyEvent) {
+    evt.preventDefault();
+    const point = this.getPointFromTouchyEvent(evt);
+    const pointCoord = { x: point.offsetX, y: point.offsetY };
+    this.panPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
+
+    if (window.TouchEvent && evt instanceof TouchEvent) {
+      const touchCount = evt.touches.length;
+      if (touchCount >= 2) {
+        const firstTouch = evt.touches[0];
+        const secondTouch = evt.touches[1];
+        const pinchZoomCurrentDiff =
+          Math.abs(firstTouch.clientX - secondTouch.clientX) +
+          Math.abs(firstTouch.clientY - secondTouch.clientY);
+        this.pinchZoomPrevDiff = pinchZoomCurrentDiff;
+      }
+    }
+
+    const mouseCartCoord = this.getMouseCartCoord(evt);
+    const isMouseInGrid = this.drawPixelFromCartCoord(mouseCartCoord);
+    this.isDragging = isMouseInGrid;
 
     if (!isMouseInGrid) {
       touchy(this.element, addEvent, "mousemove", this.handlePanning);
@@ -300,9 +313,14 @@ export default class Canvas extends EventDispatcher {
     evt.preventDefault();
     const point = this.getPointFromTouchyEvent(evt);
     const pointCoord = { x: point.offsetX, y: point.offsetY };
+    if (this.isDragging) {
+      const mouseCartCoord = this.getMouseCartCoord(evt);
+      this.drawPixelFromCartCoord(mouseCartCoord);
+    }
   }
 
   onMouseUp() {
+    this.isDragging = false;
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
   }
