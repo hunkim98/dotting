@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useState } from "react";
-import Canvas from "../Canvas";
+import Canvas, { MouseMode } from "../Canvas";
 
 interface Params {
   divRef: RefObject<HTMLDivElement>;
@@ -35,7 +35,15 @@ function useCanvas({ divRef, canvasRef, onSetIsPanZoomedCallBack }: Params) {
       }
     };
 
+    const onMouseUp = () => {
+      if (canvas) {
+        canvas.setMouseMode(MouseMode.NULL);
+        canvas.removePanListeners();
+      }
+    };
+
     onResize();
+    window.addEventListener("mouseup", onMouseUp);
     window.addEventListener("resize", onResize);
     canvas?.addEventListener("setIsPanZoomed", onSetIsPanZoomedCallBack);
     return () => {

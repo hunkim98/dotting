@@ -12,6 +12,11 @@ import EventDispatcher from "./eventDispatcher";
 import { Coord, PanZoom } from "./types";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "./touch";
 
+export enum MouseMode {
+  DRAWING = "DRAWING",
+  PANNING = "PANNING",
+  NULL = "NULL",
+}
 export default class Canvas extends EventDispatcher {
   private MAX_SCALE = 1.5;
 
@@ -31,7 +36,7 @@ export default class Canvas extends EventDispatcher {
 
   private pinchZoomPrevDiff = 0;
 
-  private isDragging = false;
+  private mouseMode: MouseMode = MouseMode.NULL;
 
   private data = new Map<
     // this number is rowIndex
@@ -301,9 +306,9 @@ export default class Canvas extends EventDispatcher {
 
     const mouseCartCoord = this.getMouseCartCoord(evt);
     const isMouseInGrid = this.drawPixelFromCartCoord(mouseCartCoord);
-    this.isDragging = isMouseInGrid;
+    this.mouseMode = isMouseInGrid ? MouseMode.DRAWING : MouseMode.PANNING;
 
-    if (!isMouseInGrid) {
+    if (this.mouseMode === MouseMode.PANNING) {
       touchy(this.element, addEvent, "mousemove", this.handlePanning);
       touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
     }
@@ -313,19 +318,28 @@ export default class Canvas extends EventDispatcher {
     evt.preventDefault();
     const point = this.getPointFromTouchyEvent(evt);
     const pointCoord = { x: point.offsetX, y: point.offsetY };
-    if (this.isDragging) {
+    if (this.mouseMode === MouseMode.DRAWING) {
       const mouseCartCoord = this.getMouseCartCoord(evt);
       this.drawPixelFromCartCoord(mouseCartCoord);
     }
   }
 
+  removePanListeners() {
+    console.log("removed");
+    touchy(this.element, removeEvent, "mousemove", this.handlePanning);
+    touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
+  }
+
   onMouseUp() {
-    this.isDragging = false;
+    this.mouseMode = MouseMode.NULL;
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
   }
 
   onMouseOut() {
+    if (this.mouseMode === MouseMode.PANNING) {
+      return;
+    }
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
   }
@@ -338,7 +352,6 @@ export default class Canvas extends EventDispatcher {
       this.panZoom.scale = scale;
     }
     if (offset) {
-      console.log(offset);
       let correctedOffset = { ...offset };
       const columnCount = this.data.entries().next().value[1].size;
       const rowCount = this.data.size;
@@ -385,8 +398,6 @@ export default class Canvas extends EventDispatcher {
             this.panZoom.scale) /
             2;
       }
-
-      console.log(correctedOffset);
       this.panZoom.offset = correctedOffset;
     }
 
@@ -463,6 +474,10 @@ export default class Canvas extends EventDispatcher {
       this.setPanZoom({ ...this.panZoom, offset });
     }
   };
+
+  setMouseMode(mode: MouseMode) {
+    this.mouseMode = mode;
+  }
 
   handlePinchZoom = (evt: TouchyEvent) => {
     if (window.TouchEvent && evt instanceof TouchEvent) {
