@@ -2,7 +2,7 @@
   "name": "dotting",
   "private": true,
   "scripts": {
-    "dev": "NODE_ENV=development next dev",
+    "dev": "NODE_ENV=development next dev -p 3005",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

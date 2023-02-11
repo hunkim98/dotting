@@ -25,7 +25,7 @@ export default class Canvas extends EventDispatcher {
 
   private origin = { x: 0, y: 0 };
 
-  private columnCount = 11;
+  private columnCount = 15;
 
   private rowCount = 11;
 
@@ -223,8 +223,8 @@ export default class Canvas extends EventDispatcher {
 
     //initialize data
     for (let i = 0; i < this.rowCount; i++) {
+      this.data.set(i, new Map());
       for (let j = 0; j < this.columnCount; j++) {
-        this.data.set(i, new Map());
         this.data.get(i)!.set(j, { color: "" });
       }
     }
@@ -338,12 +338,39 @@ export default class Canvas extends EventDispatcher {
       this.panZoom.scale = scale;
     }
     if (offset) {
+      console.log(offset);
       let correctedOffset = { ...offset };
-      if (correctedOffset.x < -100 * this.panZoom.scale) {
-        correctedOffset.x = -100 * this.panZoom.scale;
+      const columnCount = this.data.entries().next().value[1].size;
+      const rowCount = this.data.size;
+      console.log(this.width, columnCount * this.gridSquareLength);
+      // console.log(-columnCount * this.gridSquareLength * this.panZoom.scale);
+      const isColumnCountEven = columnCount % 2;
+      const isRowCountEven = rowCount % 2;
+      let leftTopX = isColumnCountEven
+        ? -((columnCount / 2) * this.gridSquareLength) * this.dpr
+        : -(
+            Math.floor(columnCount / 2) * this.gridSquareLength +
+            this.gridSquareLength * 0.5
+          ) * this.dpr;
+      let leftTopY = isRowCountEven
+        ? -((rowCount / 2) * this.gridSquareLength * this.dpr)
+        : -(
+            Math.floor(rowCount / 2) * this.gridSquareLength +
+            this.gridSquareLength * 0.5
+          ) * this.dpr;
+      // console.log(minXPosition);
+      const minXPosition =
+        (-(this.width - columnCount * this.gridSquareLength) / 2) *
+        this.panZoom.scale;
+      const minYPosition =
+        (-(this.height - rowCount * this.gridSquareLength) / 2) *
+        this.panZoom.scale;
+      console.log(minXPosition, minYPosition);
+      if (correctedOffset.x < minXPosition) {
+        correctedOffset.x = minXPosition;
       }
-      if (offset.y < -100 * this.panZoom.scale) {
-        correctedOffset.y = -100 * this.panZoom.scale;
+      if (offset.y < minYPosition) {
+        correctedOffset.y = minYPosition;
       }
       this.panZoom.offset = correctedOffset;
     }
