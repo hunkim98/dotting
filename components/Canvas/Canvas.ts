@@ -25,7 +25,7 @@ export default class Canvas extends EventDispatcher {
 
   private origin = { x: 0, y: 0 };
 
-  private columnCount = 15;
+  private columnCount = 13;
 
   private rowCount = 11;
 
@@ -342,40 +342,53 @@ export default class Canvas extends EventDispatcher {
       let correctedOffset = { ...offset };
       const columnCount = this.data.entries().next().value[1].size;
       const rowCount = this.data.size;
-      console.log(this.width, columnCount * this.gridSquareLength);
-      // console.log(-columnCount * this.gridSquareLength * this.panZoom.scale);
-      const isColumnCountEven = columnCount % 2;
-      const isRowCountEven = rowCount % 2;
-      let leftTopX = isColumnCountEven
-        ? -((columnCount / 2) * this.gridSquareLength) * this.dpr
-        : -(
-            Math.floor(columnCount / 2) * this.gridSquareLength +
-            this.gridSquareLength * 0.5
-          ) * this.dpr;
-      let leftTopY = isRowCountEven
-        ? -((rowCount / 2) * this.gridSquareLength * this.dpr)
-        : -(
-            Math.floor(rowCount / 2) * this.gridSquareLength +
-            this.gridSquareLength * 0.5
-          ) * this.dpr;
-      // console.log(minXPosition);
       const minXPosition =
         (-(this.width - columnCount * this.gridSquareLength) / 2) *
         this.panZoom.scale;
       const minYPosition =
         (-(this.height - rowCount * this.gridSquareLength) / 2) *
         this.panZoom.scale;
-      console.log(minXPosition, minYPosition);
       if (correctedOffset.x < minXPosition) {
         correctedOffset.x = minXPosition;
       }
-      if (offset.y < minYPosition) {
+      if (correctedOffset.y < minYPosition) {
         correctedOffset.y = minYPosition;
       }
+
+      if (
+        correctedOffset.x >
+        this.width -
+          columnCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.width - columnCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2
+      ) {
+        correctedOffset.x =
+          this.width -
+          columnCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.width - columnCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2;
+      }
+      if (
+        correctedOffset.y >
+        this.height -
+          rowCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.height - rowCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2
+      ) {
+        correctedOffset.y =
+          this.height -
+          rowCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.height - rowCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2;
+      }
+
+      console.log(correctedOffset);
       this.panZoom.offset = correctedOffset;
     }
-    // this.gridSquareLength = this.gridSquareLength * this.panZoom.scale;
-    // console.log(this.gridSquareLength);
 
     this.render();
     //reset the offset
