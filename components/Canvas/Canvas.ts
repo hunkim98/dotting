@@ -29,13 +29,13 @@ export enum ButtonDirection {
 export default class Canvas extends EventDispatcher {
   private MAX_SCALE = 1.5;
 
-  private MIN_SCALE = 0.6;
+  private MIN_SCALE = 0.3;
 
   private ZOOM_SENSITIVITY = 200;
 
-  private buttonSize: number = 25;
+  private buttonHeight: number = 25;
 
-  private buttonMargin: number = 30;
+  private buttonMargin: number = this.buttonHeight / 2 + 5;
 
   private element: HTMLCanvasElement;
 
@@ -104,22 +104,22 @@ export default class Canvas extends EventDispatcher {
     const gridsHeight = this.gridSquareLength * this.getRowCount();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const topButtonPos: Coord = {
-      x: -this.buttonSize / 2,
-      y: -gridsHeight / 2 - this.buttonMargin - this.buttonSize / 2,
+      x: -this.buttonHeight / 2,
+      y: -gridsHeight / 2 - this.buttonMargin - this.buttonHeight / 2,
     };
     const bottomButtonPos: Coord = {
-      x: -this.buttonSize / 2,
-      y: gridsHeight / 2 + this.buttonMargin - this.buttonSize / 2,
+      x: -this.buttonHeight / 2,
+      y: gridsHeight / 2 + this.buttonMargin - this.buttonHeight / 2,
     };
 
     const leftButtonPos: Coord = {
-      x: -gridsWidth / 2 - this.buttonMargin - this.buttonSize / 2,
-      y: -this.buttonSize / 2,
+      x: -gridsWidth / 2 - this.buttonMargin - this.buttonHeight / 2,
+      y: -this.buttonHeight / 2,
     };
 
     const rightButtonPos: Coord = {
-      x: gridsWidth / 2 + this.buttonMargin - this.buttonSize / 2,
-      y: -this.buttonSize / 2,
+      x: gridsWidth / 2 + this.buttonMargin - this.buttonHeight / 2,
+      y: -this.buttonHeight / 2,
     };
 
     const x = coord.x;
@@ -127,26 +127,26 @@ export default class Canvas extends EventDispatcher {
     const topButtonRect = {
       x: topButtonPos.x,
       y: topButtonPos.y,
-      width: this.buttonSize,
-      height: this.buttonSize,
+      width: this.buttonHeight,
+      height: this.buttonHeight,
     };
     const bottomButtonRect = {
       x: bottomButtonPos.x,
       y: bottomButtonPos.y,
-      width: this.buttonSize,
-      height: this.buttonSize,
+      width: this.buttonHeight,
+      height: this.buttonHeight,
     };
     const leftButtonRect = {
       x: leftButtonPos.x,
       y: leftButtonPos.y,
-      width: this.buttonSize,
-      height: this.buttonSize,
+      width: this.buttonHeight,
+      height: this.buttonHeight,
     };
     const rightButtonRect = {
       x: rightButtonPos.x,
       y: rightButtonPos.y,
-      width: this.buttonSize,
-      height: this.buttonSize,
+      width: this.buttonHeight,
+      height: this.buttonHeight,
     };
 
     if (
@@ -187,7 +187,7 @@ export default class Canvas extends EventDispatcher {
     ctx.save();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
     const buttonPos: Coord = {
-      x: -this.buttonSize / 2,
+      x: -this.buttonHeight / 2,
       y: -gridsHeight / 2 - this.buttonMargin,
     };
     let convertedScreenPoint = convertCartesianToScreen(
@@ -202,9 +202,9 @@ export default class Canvas extends EventDispatcher {
     ctx.fillStyle = "blue";
     ctx.fillRect(
       correctedScreenPoint.x,
-      correctedScreenPoint.y - (this.buttonSize / 2) * this.panZoom.scale,
-      this.buttonSize * this.panZoom.scale,
-      this.buttonSize * this.panZoom.scale
+      correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale
     );
     ctx.restore();
   }
@@ -214,7 +214,7 @@ export default class Canvas extends EventDispatcher {
     ctx.save();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
     const buttonPos: Coord = {
-      x: -this.buttonSize / 2,
+      x: -this.buttonHeight / 2,
       y: gridsHeight / 2 + this.buttonMargin,
     };
     let convertedScreenPoint = convertCartesianToScreen(
@@ -229,9 +229,9 @@ export default class Canvas extends EventDispatcher {
     ctx.fillStyle = "red";
     ctx.fillRect(
       correctedScreenPoint.x,
-      correctedScreenPoint.y - (this.buttonSize / 2) * this.panZoom.scale,
-      this.buttonSize * this.panZoom.scale,
-      this.buttonSize * this.panZoom.scale
+      correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale
     );
     ctx.restore();
   }
@@ -243,7 +243,7 @@ export default class Canvas extends EventDispatcher {
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const buttonPos: Coord = {
       x: -gridsWidth / 2 - this.buttonMargin,
-      y: -this.buttonSize / 2,
+      y: -this.buttonHeight / 2,
     };
     let convertedScreenPoint = convertCartesianToScreen(
       this.element,
@@ -256,10 +256,10 @@ export default class Canvas extends EventDispatcher {
     );
     ctx.fillStyle = "green";
     ctx.fillRect(
-      correctedScreenPoint.x - (this.buttonSize / 2) * this.panZoom.scale,
+      correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
-      this.buttonSize * this.panZoom.scale,
-      this.buttonSize * this.panZoom.scale
+      this.buttonHeight * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale
     );
     ctx.restore();
   }
@@ -270,7 +270,7 @@ export default class Canvas extends EventDispatcher {
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const buttonPos: Coord = {
       x: gridsWidth / 2 + this.buttonMargin,
-      y: -this.buttonSize / 2,
+      y: -this.buttonHeight / 2,
     };
     let convertedScreenPoint = convertCartesianToScreen(
       this.element,
@@ -283,10 +283,10 @@ export default class Canvas extends EventDispatcher {
     );
     ctx.fillStyle = "orange";
     ctx.fillRect(
-      correctedScreenPoint.x - (this.buttonSize / 2) * this.panZoom.scale,
+      correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
-      this.buttonSize * this.panZoom.scale,
-      this.buttonSize * this.panZoom.scale
+      this.buttonHeight * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale
     );
     ctx.restore();
   }
@@ -306,25 +306,34 @@ export default class Canvas extends EventDispatcher {
       y: -((this.getRowCount() / 2) * this.gridSquareLength),
     };
     const ctx = this.ctx;
-    let convertedScreenPoint = convertCartesianToScreen(
+    let convertedLetTopScreenPoint = convertCartesianToScreen(
       this.element,
       leftTopPoint,
       this.dpr
     );
-    const correctedScreenPoint = getScreenPoint(
-      convertedScreenPoint,
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLetTopScreenPoint,
       this.panZoom
     );
     ctx.save();
-    ctx.translate(correctedScreenPoint.x, correctedScreenPoint.y);
+    // ctx.translate(correctedScreenPoint.x, correctedScreenPoint.y);
     // ctx.scale(this.panZoom.scale, this.panZoom.scale);
+    const allRowKeys = Array.from(this.data.keys());
+    const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
+    const currentTopIndex = Math.min(...allRowKeys);
+    const currentLeftIndex = Math.min(...allColumnKeys);
+
     for (let i = 0; i < this.getRowCount(); i++) {
       for (let j = 0; j < this.getColumnCount(); j++) {
-        const color = this.data.get(i)?.get(j)?.color || "white";
+        // console.log(i, j, this.data.get(i)?.get(j)?.color);
+        const rowIndex = i + currentTopIndex;
+        const columnIndex = j + currentLeftIndex;
+        const color =
+          this.data.get(rowIndex)?.get(columnIndex)?.color || "white";
         ctx.fillStyle = color;
         ctx.fillRect(
-          j * squareLength,
-          i * squareLength,
+          j * squareLength + correctedLeftTopScreenPoint.x,
+          i * squareLength + correctedLeftTopScreenPoint.y,
           squareLength,
           squareLength
         );
@@ -334,8 +343,6 @@ export default class Canvas extends EventDispatcher {
   }
 
   drawGrids() {
-    const isColumnCountEven = this.getColumnCount() % 2;
-    const isRowCountEven = this.getRowCount() % 2;
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const leftTopPoint: Coord = {
@@ -480,15 +487,22 @@ export default class Canvas extends EventDispatcher {
       mouseCartCoord.y <
         leftTopPoint.y + this.getRowCount() * this.gridSquareLength
     ) {
-      const row = Math.floor(
+      // The above conditions are to check if the mouse is in the grid
+      const allRowKeys = Array.from(this.data.keys());
+      const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
+      const currentTopIndex = Math.min(...allRowKeys);
+      const currentLeftIndex = Math.min(...allColumnKeys);
+      const rowOffset = Math.floor(
         (mouseCartCoord.y - leftTopPoint.y) / this.gridSquareLength
       );
-      const column = Math.floor(
+      const columnOffset = Math.floor(
         (mouseCartCoord.x - leftTopPoint.x) / this.gridSquareLength
       );
       isMouseInGrid = true;
-      console.log("row", row, "column", column);
-      this.data.get(row)!.set(column, { color: "#ff0000" });
+      console.log("row", rowOffset, "column", columnOffset);
+      this.data
+        .get(currentTopIndex + rowOffset)!
+        .set(currentLeftIndex + columnOffset, { color: "#ff0000" });
       this.render();
     }
     return isMouseInGrid;
@@ -513,6 +527,7 @@ export default class Canvas extends EventDispatcher {
     }
 
     const mouseCartCoord = this.getMouseCartCoord(evt);
+    console.log("mouseCartCoord", mouseCartCoord);
     const isMouseInGrid = this.drawPixelFromCartCoord(mouseCartCoord);
     const buttonDirection = this.detectButtonClicked(mouseCartCoord);
     this.mouseMode = isMouseInGrid ? MouseMode.DRAWING : MouseMode.PANNING;
@@ -534,7 +549,7 @@ export default class Canvas extends EventDispatcher {
 
   handleExtension = (evt: TouchyEvent) => {
     evt.preventDefault();
-    const minAmountForExtension = this.buttonSize;
+    const minAmountForExtension = this.buttonHeight;
     if (window.TouchEvent && evt instanceof TouchEvent) {
       if (evt.touches.length > 1) {
         return;
@@ -546,16 +561,17 @@ export default class Canvas extends EventDispatcher {
       this.extensionPoint.lastMousePos,
       mouseCartCoord
     );
-    console.log("buttonDirection", buttonDirection);
-    console.log("extension amount", extensionAmount);
+    console.log(extensionAmount, "extensionAmount");
+
     if (buttonDirection) {
       switch (buttonDirection) {
         case ButtonDirection.TOP:
           if (extensionAmount.y > minAmountForExtension) {
             this.extendGrid(ButtonDirection.TOP);
-            this.extensionPoint.lastMousePos.y -= this.gridSquareLength;
+            this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
           } else if (extensionAmount.y < -minAmountForExtension) {
             this.shortenGrid(ButtonDirection.TOP);
+            this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
           }
           break;
         case ButtonDirection.BOTTOM:
@@ -579,27 +595,39 @@ export default class Canvas extends EventDispatcher {
   };
 
   extendGrid(direction: ButtonDirection) {
+    const currentRowCount = this.getRowCount();
+    const currentColumnCount = this.getColumnCount();
+    const allRowKeys = Array.from(this.data.keys());
+    const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
+    const currentTopIndex = Math.min(...allRowKeys);
+    const currentLeftIndex = Math.min(...allColumnKeys);
+    const currentBottomIndex = currentTopIndex + currentRowCount - 1;
+    const currentRightIndex = currentLeftIndex + currentColumnCount - 1;
+    console.log(currentTopIndex, "currentTopIndex");
+
     switch (direction) {
       case ButtonDirection.TOP:
-        const currentRowCount = this.getRowCount();
-        this.data.set(currentRowCount, new Map());
-        for (let i = 0; i < currentRowCount; i++) {
-          this.data.get(currentRowCount)!.set(i, { color: "" });
+        const newTopIndex = currentTopIndex - 1;
+        console.log("new top index", newTopIndex);
+        this.data.set(newTopIndex, new Map());
+        for (let i = currentLeftIndex; i <= currentRightIndex; i++) {
+          this.data.get(newTopIndex)!.set(i, { color: "" });
         }
-        // this.setPanZoom({
-        //   offset: {
-        //     x: this.panZoom.offset.x,
-        //     y:
-        //       this.panZoom.offset.y +
-        //       (this.panZoom.scale * this.gridSquareLength) / 2,
-        //   },
-        // });
+        this.setPanZoom({
+          offset: {
+            x: this.panZoom.offset.x,
+            y:
+              this.panZoom.offset.y -
+              (this.gridSquareLength / 2) * this.panZoom.scale,
+          },
+        });
         break;
       case ButtonDirection.BOTTOM:
         this.data.set(-1, new Map());
         for (let i = 0; i < this.getColumnCount(); i++) {
           this.data.get(-1)!.set(i, { color: "" });
         }
+
         break;
       case ButtonDirection.LEFT:
         this.data.forEach((row) => {
@@ -619,10 +647,23 @@ export default class Canvas extends EventDispatcher {
   }
 
   shortenGrid(direction: ButtonDirection) {
+    const allRowKeys = Array.from(this.data.keys());
+    const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
+    const currentTopIndex = Math.min(...allRowKeys);
+    const currentLeftIndex = Math.min(...allColumnKeys);
+    const currentBottomIndex = currentTopIndex + this.getRowCount() - 1;
+    const currentRightIndex = currentLeftIndex + this.getColumnCount() - 1;
     switch (direction) {
       case ButtonDirection.TOP:
-        this.data.delete(this.getRowCount() - 1);
-
+        this.data.delete(currentTopIndex);
+        this.setPanZoom({
+          offset: {
+            x: this.panZoom.offset.x,
+            y:
+              this.panZoom.offset.y +
+              (this.gridSquareLength / 2) * this.panZoom.scale,
+          },
+        });
         break;
       case ButtonDirection.BOTTOM:
         this.data.delete(0);
@@ -656,7 +697,6 @@ export default class Canvas extends EventDispatcher {
   }
 
   removePanListeners() {
-    console.log("removed");
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
   }
@@ -695,51 +735,51 @@ export default class Canvas extends EventDispatcher {
     }
     if (offset) {
       let correctedOffset = { ...offset };
-      // const columnCount = this.data.entries().next().value[1].size;
-      // const rowCount = this.data.size;
-      // const minXPosition =
-      //   (-(this.width - columnCount * this.gridSquareLength) / 2) *
-      //   this.panZoom.scale;
-      // const minYPosition =
-      //   (-(this.height - rowCount * this.gridSquareLength) / 2) *
-      //   this.panZoom.scale;
-      // if (correctedOffset.x < minXPosition) {
-      //   correctedOffset.x = minXPosition;
-      // }
-      // if (correctedOffset.y < minYPosition) {
-      //   correctedOffset.y = minYPosition;
-      // }
+      const columnCount = this.data.entries().next().value[1].size;
+      const rowCount = this.data.size;
+      const minXPosition =
+        (-(this.width - columnCount * this.gridSquareLength) / 2) *
+        this.panZoom.scale;
+      const minYPosition =
+        (-(this.height - rowCount * this.gridSquareLength) / 2) *
+        this.panZoom.scale;
+      if (correctedOffset.x < minXPosition) {
+        correctedOffset.x = minXPosition;
+      }
+      if (correctedOffset.y < minYPosition) {
+        correctedOffset.y = minYPosition;
+      }
 
-      // if (
-      //   correctedOffset.x >
-      //   this.width -
-      //     columnCount * this.gridSquareLength * this.panZoom.scale -
-      //     ((this.width - columnCount * this.gridSquareLength) *
-      //       this.panZoom.scale) /
-      //       2
-      // ) {
-      //   correctedOffset.x =
-      //     this.width -
-      //     columnCount * this.gridSquareLength * this.panZoom.scale -
-      //     ((this.width - columnCount * this.gridSquareLength) *
-      //       this.panZoom.scale) /
-      //       2;
-      // }
-      // if (
-      //   correctedOffset.y >
-      //   this.height -
-      //     rowCount * this.gridSquareLength * this.panZoom.scale -
-      //     ((this.height - rowCount * this.gridSquareLength) *
-      //       this.panZoom.scale) /
-      //       2
-      // ) {
-      //   correctedOffset.y =
-      //     this.height -
-      //     rowCount * this.gridSquareLength * this.panZoom.scale -
-      //     ((this.height - rowCount * this.gridSquareLength) *
-      //       this.panZoom.scale) /
-      //       2;
-      // }
+      if (
+        correctedOffset.x >
+        this.width -
+          columnCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.width - columnCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2
+      ) {
+        correctedOffset.x =
+          this.width -
+          columnCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.width - columnCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2;
+      }
+      if (
+        correctedOffset.y >
+        this.height -
+          rowCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.height - rowCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2
+      ) {
+        correctedOffset.y =
+          this.height -
+          rowCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.height - rowCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2;
+      }
       this.panZoom.offset = correctedOffset;
     }
 
