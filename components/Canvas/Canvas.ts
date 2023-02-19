@@ -15,6 +15,15 @@ import { addEvent, removeEvent, touchy, TouchyEvent } from "./touch";
 export enum MouseMode {
   DRAWING = "DRAWING",
   PANNING = "PANNING",
+  EXTENDING = "EXTENDING",
+  NULL = "NULL",
+}
+
+export enum ButtonDirection {
+  TOP = "TOP",
+  BOTTOM = "BOTTOM",
+  LEFT = "LEFT",
+  RIGHT = "RIGHT",
   NULL = "NULL",
 }
 export default class Canvas extends EventDispatcher {
@@ -24,15 +33,19 @@ export default class Canvas extends EventDispatcher {
 
   private ZOOM_SENSITIVITY = 200;
 
+  private buttonSize: number = 25;
+
+  private buttonMargin: number = 30;
+
   private element: HTMLCanvasElement;
 
   private gridSquareLength: number = 20;
 
   private origin = { x: 0, y: 0 };
 
-  private columnCount = 13;
+  private columnCount = 5;
 
-  private rowCount = 11;
+  private rowCount = 5;
 
   private pinchZoomPrevDiff = 0;
 
@@ -65,6 +78,14 @@ export default class Canvas extends EventDispatcher {
     lastMousePos: this.origin,
   };
 
+  private extensionPoint: {
+    lastMousePos: Coord;
+    direction: ButtonDirection | null;
+  } = {
+    lastMousePos: this.origin,
+    direction: null,
+  };
+
   private width = 0;
 
   private height = 0;
@@ -79,6 +100,206 @@ export default class Canvas extends EventDispatcher {
     this.ctx = canvas.getContext("2d")!;
 
     this.initialize();
+  }
+
+  //http://jsfiddle.net/dX9Y3/
+
+  detectButtonClicked(coord: Coord): ButtonDirection | null {
+    const gridsHeight = this.gridSquareLength * this.rowCount;
+    const gridsWidth = this.gridSquareLength * this.columnCount;
+    const topButtonPos: Coord = {
+      x: -this.buttonSize / 2,
+      y: -gridsHeight / 2 - this.buttonMargin - this.buttonSize / 2,
+    };
+    const bottomButtonPos: Coord = {
+      x: -this.buttonSize / 2,
+      y: gridsHeight / 2 + this.buttonMargin - this.buttonSize / 2,
+    };
+
+    const leftButtonPos: Coord = {
+      x: -gridsWidth / 2 - this.buttonMargin - this.buttonSize / 2,
+      y: -this.buttonSize / 2,
+    };
+
+    const rightButtonPos: Coord = {
+      x: gridsWidth / 2 + this.buttonMargin - this.buttonSize / 2,
+      y: -this.buttonSize / 2,
+    };
+
+    const x = coord.x;
+    const y = coord.y;
+    const topButtonRect = {
+      x: topButtonPos.x,
+      y: topButtonPos.y,
+      width: this.buttonSize,
+      height: this.buttonSize,
+    };
+    const bottomButtonRect = {
+      x: bottomButtonPos.x,
+      y: bottomButtonPos.y,
+      width: this.buttonSize,
+      height: this.buttonSize,
+    };
+    const leftButtonRect = {
+      x: leftButtonPos.x,
+      y: leftButtonPos.y,
+      width: this.buttonSize,
+      height: this.buttonSize,
+    };
+    const rightButtonRect = {
+      x: rightButtonPos.x,
+      y: rightButtonPos.y,
+      width: this.buttonSize,
+      height: this.buttonSize,
+    };
+
+    if (
+      x >= topButtonRect.x &&
+      x <= topButtonRect.x + topButtonRect.width &&
+      y >= topButtonRect.y &&
+      y <= topButtonRect.y + topButtonRect.height
+    ) {
+      return ButtonDirection.TOP;
+    } else if (
+      x >= bottomButtonRect.x &&
+      x <= bottomButtonRect.x + bottomButtonRect.width &&
+      y >= bottomButtonRect.y &&
+      y <= bottomButtonRect.y + bottomButtonRect.height
+    ) {
+      return ButtonDirection.BOTTOM;
+    } else if (
+      x >= leftButtonRect.x &&
+      x <= leftButtonRect.x + leftButtonRect.width &&
+      y >= leftButtonRect.y &&
+      y <= leftButtonRect.y + leftButtonRect.height
+    ) {
+      return ButtonDirection.LEFT;
+    } else if (
+      x >= rightButtonRect.x &&
+      x <= rightButtonRect.x + rightButtonRect.width &&
+      y >= rightButtonRect.y &&
+      y <= rightButtonRect.y + rightButtonRect.height
+    ) {
+      return ButtonDirection.RIGHT;
+    } else {
+      return null;
+    }
+  }
+
+  drawTopButton() {
+    const ctx = this.ctx;
+    ctx.save();
+    const gridsHeight = this.gridSquareLength * this.rowCount;
+    const buttonPos: Coord = {
+      x: -this.buttonSize / 2,
+      y: -gridsHeight / 2 - this.buttonMargin,
+    };
+    let convertedScreenPoint = convertCartesianToScreen(
+      this.element,
+      buttonPos,
+      this.dpr
+    );
+    const correctedScreenPoint = getScreenPoint(
+      convertedScreenPoint,
+      this.panZoom
+    );
+    ctx.fillStyle = "blue";
+    ctx.fillRect(
+      correctedScreenPoint.x,
+      correctedScreenPoint.y - (this.buttonSize / 2) * this.panZoom.scale,
+      this.buttonSize * this.panZoom.scale,
+      this.buttonSize * this.panZoom.scale
+    );
+    ctx.restore();
+  }
+
+  drawBottomButton() {
+    const ctx = this.ctx;
+    ctx.save();
+    const gridsHeight = this.gridSquareLength * this.rowCount;
+    const buttonPos: Coord = {
+      x: -this.buttonSize / 2,
+      y: gridsHeight / 2 + this.buttonMargin,
+    };
+    let convertedScreenPoint = convertCartesianToScreen(
+      this.element,
+      buttonPos,
+      this.dpr
+    );
+    const correctedScreenPoint = getScreenPoint(
+      convertedScreenPoint,
+      this.panZoom
+    );
+    ctx.fillStyle = "red";
+    ctx.fillRect(
+      correctedScreenPoint.x,
+      correctedScreenPoint.y - (this.buttonSize / 2) * this.panZoom.scale,
+      this.buttonSize * this.panZoom.scale,
+      this.buttonSize * this.panZoom.scale
+    );
+    ctx.restore();
+  }
+
+  drawLeftButton() {
+    const ctx = this.ctx;
+
+    ctx.save();
+    const gridsWidth = this.gridSquareLength * this.columnCount;
+    const buttonPos: Coord = {
+      x: -gridsWidth / 2 - this.buttonMargin,
+      y: -this.buttonSize / 2,
+    };
+    let convertedScreenPoint = convertCartesianToScreen(
+      this.element,
+      buttonPos,
+      this.dpr
+    );
+    const correctedScreenPoint = getScreenPoint(
+      convertedScreenPoint,
+      this.panZoom
+    );
+    ctx.fillStyle = "green";
+    ctx.fillRect(
+      correctedScreenPoint.x - (this.buttonSize / 2) * this.panZoom.scale,
+      correctedScreenPoint.y,
+      this.buttonSize * this.panZoom.scale,
+      this.buttonSize * this.panZoom.scale
+    );
+    ctx.restore();
+  }
+
+  drawRightButton() {
+    const ctx = this.ctx;
+    ctx.save();
+    const gridsWidth = this.gridSquareLength * this.columnCount;
+    const buttonPos: Coord = {
+      x: gridsWidth / 2 + this.buttonMargin,
+      y: -this.buttonSize / 2,
+    };
+    let convertedScreenPoint = convertCartesianToScreen(
+      this.element,
+      buttonPos,
+      this.dpr
+    );
+    const correctedScreenPoint = getScreenPoint(
+      convertedScreenPoint,
+      this.panZoom
+    );
+    ctx.fillStyle = "orange";
+    ctx.fillRect(
+      correctedScreenPoint.x - (this.buttonSize / 2) * this.panZoom.scale,
+      correctedScreenPoint.y,
+      this.buttonSize * this.panZoom.scale,
+      this.buttonSize * this.panZoom.scale
+    );
+    ctx.restore();
+  }
+
+  drawButtons() {
+    this.drawTopButton();
+    this.drawBottomButton();
+    this.drawLeftButton();
+    this.drawRightButton();
   }
 
   drawRects() {
@@ -306,12 +527,95 @@ export default class Canvas extends EventDispatcher {
 
     const mouseCartCoord = this.getMouseCartCoord(evt);
     const isMouseInGrid = this.drawPixelFromCartCoord(mouseCartCoord);
+    const buttonDirection = this.detectButtonClicked(mouseCartCoord);
     this.mouseMode = isMouseInGrid ? MouseMode.DRAWING : MouseMode.PANNING;
+    if (buttonDirection) {
+      this.extensionPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
+      this.extensionPoint.direction = buttonDirection;
+      this.mouseMode = MouseMode.EXTENDING;
+      touchy(this.element, addEvent, "mousemove", this.handleExtension);
+    }
 
     if (this.mouseMode === MouseMode.PANNING) {
       touchy(this.element, addEvent, "mousemove", this.handlePanning);
       touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
     }
+  }
+
+  handleExtension = (evt: TouchyEvent) => {
+    evt.preventDefault();
+    if (window.TouchEvent && evt instanceof TouchEvent) {
+      if (evt.touches.length > 1) {
+        return;
+      }
+    }
+    const mouseCartCoord = this.getMouseCartCoord(evt);
+    const buttonDirection = this.extensionPoint.direction;
+    const extensionAmount = diffPoints(
+      this.extensionPoint.lastMousePos,
+      mouseCartCoord
+    );
+    console.log("buttonDirection", buttonDirection);
+    console.log("extension amount", extensionAmount);
+    if (buttonDirection) {
+      switch (buttonDirection) {
+        case ButtonDirection.TOP:
+          if (extensionAmount.y > 0) {
+            this.extendGrid(ButtonDirection.TOP);
+          }
+          break;
+        case ButtonDirection.BOTTOM:
+          if (extensionAmount.y < 0) {
+            this.extendGrid(ButtonDirection.BOTTOM);
+          }
+          break;
+        case ButtonDirection.LEFT:
+          if (extensionAmount.x > 0) {
+            this.extendGrid(ButtonDirection.LEFT);
+          }
+          break;
+        case ButtonDirection.RIGHT:
+          if (extensionAmount.x < 0) {
+            this.extendGrid(ButtonDirection.RIGHT);
+          }
+          break;
+      }
+      this.render();
+    }
+  };
+
+  extendGrid(direction: ButtonDirection) {
+    switch (direction) {
+      case ButtonDirection.TOP:
+        this.data.set(this.rowCount, new Map());
+        for (let i = 0; i < this.columnCount; i++) {
+          this.data.get(this.rowCount)!.set(i, { color: "" });
+        }
+        this.rowCount++;
+        break;
+      case ButtonDirection.BOTTOM:
+        this.data.set(-1, new Map());
+        for (let i = 0; i < this.columnCount; i++) {
+          this.data.get(-1)!.set(i, { color: "" });
+        }
+        this.rowCount++;
+        break;
+      case ButtonDirection.LEFT:
+        this.data.forEach((row) => {
+          row.set(-1, { color: "" });
+        });
+        this.columnCount++;
+        break;
+      case ButtonDirection.RIGHT:
+        this.data.forEach((row) => {
+          row.set(this.columnCount, { color: "" });
+        });
+        this.columnCount++;
+        break;
+      default:
+        break;
+    }
+    this.render();
   }
 
   onMouseMove(evt: TouchyEvent) {
@@ -607,6 +911,7 @@ export default class Canvas extends EventDispatcher {
     this.ctx.restore();
     this.drawRects();
     this.drawGrids();
+    this.drawButtons();
   }
 
   clear() {
