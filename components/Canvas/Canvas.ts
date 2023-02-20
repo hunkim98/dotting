@@ -527,7 +527,6 @@ export default class Canvas extends EventDispatcher {
     }
 
     const mouseCartCoord = this.getMouseCartCoord(evt);
-    console.log("mouseCartCoord", mouseCartCoord);
     const isMouseInGrid = this.drawPixelFromCartCoord(mouseCartCoord);
     const buttonDirection = this.detectButtonClicked(mouseCartCoord);
     this.mouseMode = isMouseInGrid ? MouseMode.DRAWING : MouseMode.PANNING;
@@ -549,7 +548,7 @@ export default class Canvas extends EventDispatcher {
 
   handleExtension = (evt: TouchyEvent) => {
     evt.preventDefault();
-    const minAmountForExtension = this.buttonHeight;
+    const minAmountForExtension = this.gridSquareLength / 2;
     if (window.TouchEvent && evt instanceof TouchEvent) {
       if (evt.touches.length > 1) {
         return;
@@ -561,7 +560,6 @@ export default class Canvas extends EventDispatcher {
       this.extensionPoint.lastMousePos,
       mouseCartCoord
     );
-    console.log(extensionAmount, "extensionAmount");
 
     if (buttonDirection) {
       switch (buttonDirection) {
@@ -575,18 +573,30 @@ export default class Canvas extends EventDispatcher {
           }
           break;
         case ButtonDirection.BOTTOM:
-          if (extensionAmount.y < minAmountForExtension) {
+          if (extensionAmount.y < -minAmountForExtension) {
             this.extendGrid(ButtonDirection.BOTTOM);
+            this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
+          } else if (extensionAmount.y > minAmountForExtension) {
+            this.shortenGrid(ButtonDirection.BOTTOM);
+            this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
           }
           break;
         case ButtonDirection.LEFT:
           if (extensionAmount.x > minAmountForExtension) {
             this.extendGrid(ButtonDirection.LEFT);
+            this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
+          } else if (extensionAmount.x < -minAmountForExtension) {
+            this.shortenGrid(ButtonDirection.LEFT);
+            this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
           }
           break;
         case ButtonDirection.RIGHT:
-          if (extensionAmount.x < minAmountForExtension) {
+          if (extensionAmount.x < -minAmountForExtension) {
             this.extendGrid(ButtonDirection.RIGHT);
+            this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
+          } else if (extensionAmount.x > minAmountForExtension) {
+            this.shortenGrid(ButtonDirection.RIGHT);
+            this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
           }
           break;
       }
@@ -603,12 +613,10 @@ export default class Canvas extends EventDispatcher {
     const currentLeftIndex = Math.min(...allColumnKeys);
     const currentBottomIndex = currentTopIndex + currentRowCount - 1;
     const currentRightIndex = currentLeftIndex + currentColumnCount - 1;
-    console.log(currentTopIndex, "currentTopIndex");
 
     switch (direction) {
       case ButtonDirection.TOP:
         const newTopIndex = currentTopIndex - 1;
-        console.log("new top index", newTopIndex);
         this.data.set(newTopIndex, new Map());
         for (let i = currentLeftIndex; i <= currentRightIndex; i++) {
           this.data.get(newTopIndex)!.set(i, { color: "" });
@@ -623,21 +631,47 @@ export default class Canvas extends EventDispatcher {
         });
         break;
       case ButtonDirection.BOTTOM:
-        this.data.set(-1, new Map());
-        for (let i = 0; i < this.getColumnCount(); i++) {
-          this.data.get(-1)!.set(i, { color: "" });
+        const newBottomIndex = currentBottomIndex + 1;
+        this.data.set(newBottomIndex, new Map());
+        for (let i = currentLeftIndex; i <= currentRightIndex; i++) {
+          this.data.get(newBottomIndex)!.set(i, { color: "" });
         }
-
+        this.setPanZoom({
+          offset: {
+            x: this.panZoom.offset.x,
+            y:
+              this.panZoom.offset.y +
+              (this.gridSquareLength / 2) * this.panZoom.scale,
+          },
+        });
         break;
       case ButtonDirection.LEFT:
+        const newLeftIndex = currentLeftIndex - 1;
         this.data.forEach((row) => {
-          row.set(-1, { color: "" });
+          row.set(newLeftIndex, { color: "" });
+        });
+        this.setPanZoom({
+          offset: {
+            x:
+              this.panZoom.offset.x -
+              (this.gridSquareLength / 2) * this.panZoom.scale,
+            y: this.panZoom.offset.y,
+          },
         });
 
         break;
       case ButtonDirection.RIGHT:
+        const newRightIndex = currentRightIndex + 1;
         this.data.forEach((row) => {
-          row.set(this.getColumnCount(), { color: "" });
+          row.set(newRightIndex, { color: "" });
+        });
+        this.setPanZoom({
+          offset: {
+            x:
+              this.panZoom.offset.x +
+              (this.gridSquareLength / 2) * this.panZoom.scale,
+            y: this.panZoom.offset.y,
+          },
         });
         break;
       default:
@@ -666,18 +700,43 @@ export default class Canvas extends EventDispatcher {
         });
         break;
       case ButtonDirection.BOTTOM:
-        this.data.delete(0);
+        console.log("bottom deleted");
+        this.data.delete(currentBottomIndex);
+        this.setPanZoom({
+          offset: {
+            x: this.panZoom.offset.x,
+            y:
+              this.panZoom.offset.y -
+              (this.gridSquareLength / 2) * this.panZoom.scale,
+          },
+        });
 
         break;
       case ButtonDirection.LEFT:
         this.data.forEach((row) => {
-          row.delete(0);
+          row.delete(currentLeftIndex);
+        });
+        this.setPanZoom({
+          offset: {
+            x:
+              this.panZoom.offset.x +
+              (this.gridSquareLength / 2) * this.panZoom.scale,
+            y: this.panZoom.offset.y,
+          },
         });
 
         break;
       case ButtonDirection.RIGHT:
         this.data.forEach((row) => {
-          row.delete(this.getColumnCount() - 1);
+          row.delete(currentRightIndex);
+        });
+        this.setPanZoom({
+          offset: {
+            x:
+              this.panZoom.offset.x -
+              (this.gridSquareLength / 2) * this.panZoom.scale,
+            y: this.panZoom.offset.y,
+          },
         });
         break;
       default:
@@ -952,10 +1011,6 @@ export default class Canvas extends EventDispatcher {
 
   scale(x: number, y: number) {
     this.ctx.scale(x, y);
-  }
-
-  renderGraph(userId: number) {
-    this.reset();
   }
 
   roundRect(
