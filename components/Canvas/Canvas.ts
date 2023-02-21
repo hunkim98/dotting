@@ -462,21 +462,9 @@ export default class Canvas extends EventDispatcher {
   }
 
   drawPixelFromCartCoord(mouseCartCoord: Coord) {
-    const isColumnCountEven = this.getColumnCount() % 2;
-    const isRowCountEven = this.getRowCount() % 2;
     const leftTopPoint: Coord = {
-      x: isColumnCountEven
-        ? -((this.getColumnCount() / 2) * this.gridSquareLength)
-        : -(
-            Math.floor(this.getColumnCount() / 2) * this.gridSquareLength +
-            this.gridSquareLength * 0.5
-          ),
-      y: isRowCountEven
-        ? -((this.getRowCount() / 2) * this.gridSquareLength)
-        : -(
-            Math.floor(this.getRowCount() / 2) * this.gridSquareLength +
-            this.gridSquareLength * 0.5
-          ),
+      x: -((this.getColumnCount() / 2) * this.gridSquareLength),
+      y: -((this.getRowCount() / 2) * this.gridSquareLength),
     };
     let isMouseInGrid = false;
     if (
