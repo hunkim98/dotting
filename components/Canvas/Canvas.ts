@@ -487,7 +487,6 @@ export default class Canvas extends EventDispatcher {
         (mouseCartCoord.x - leftTopPoint.x) / this.gridSquareLength
       );
       isMouseInGrid = true;
-      console.log("row", rowOffset, "column", columnOffset);
       this.data
         .get(currentTopIndex + rowOffset)!
         .set(currentLeftIndex + columnOffset, { color: "#ff0000" });
@@ -781,52 +780,98 @@ export default class Canvas extends EventDispatcher {
       this.panZoom.scale = scale;
     }
     if (offset) {
+      console.log("offset", offset);
       let correctedOffset = { ...offset };
       const columnCount = this.data.entries().next().value[1].size;
       const rowCount = this.data.size;
-      const minXPosition =
-        (-(this.width - columnCount * this.gridSquareLength) / 2) *
-        this.panZoom.scale;
-      const minYPosition =
-        (-(this.height - rowCount * this.gridSquareLength) / 2) *
-        this.panZoom.scale;
+
+      // rowCount * this.gridSquareLength * this.panZoom.scale < this.height
+      // Offset changes when grid is bigger than canvas
+      const isGridRowsBiggerThanCanvas =
+        rowCount * this.gridSquareLength * this.panZoom.scale > this.height;
+      const isGridColumnsBiggerThanCanvas =
+        columnCount * this.gridSquareLength * this.panZoom.scale > this.width;
+
+      const minXPosition = isGridColumnsBiggerThanCanvas
+        ? this.width -
+          columnCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.width - columnCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2
+        : (-(this.width - columnCount * this.gridSquareLength) / 2) *
+          this.panZoom.scale;
+
+      const minYPosition = isGridRowsBiggerThanCanvas
+        ? this.height -
+          rowCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.height - rowCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2
+        : (-(this.height - rowCount * this.gridSquareLength) / 2) *
+          this.panZoom.scale;
+
+      const maxXPosition = isGridColumnsBiggerThanCanvas
+        ? (-(this.width - columnCount * this.gridSquareLength) / 2) *
+          this.panZoom.scale
+        : this.width -
+          columnCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.width - columnCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2;
+
+      const maxYPosition = isGridRowsBiggerThanCanvas
+        ? (rowCount * this.gridSquareLength * this.panZoom.scale) / 2 -
+          (this.height / 2) * this.panZoom.scale
+        : this.height -
+          rowCount * this.gridSquareLength * this.panZoom.scale -
+          ((this.height - rowCount * this.gridSquareLength) *
+            this.panZoom.scale) /
+            2;
       if (correctedOffset.x < minXPosition) {
+        console.log(
+          "current offset is less than min x position",
+          correctedOffset.x
+        );
         correctedOffset.x = minXPosition;
       }
       if (correctedOffset.y < minYPosition) {
+        console.log(
+          "current offset is less than min y position",
+          correctedOffset.y,
+          minYPosition
+        );
         correctedOffset.y = minYPosition;
       }
+      if (correctedOffset.x > maxXPosition) {
+        console.log(
+          "current offset is greater than max x position",
+          correctedOffset.x
+        );
+        correctedOffset.x = maxXPosition;
+      }
+      if (correctedOffset.y > maxYPosition) {
+        console.log(
+          "current offset is greater than max y position",
+          correctedOffset.y,
+          maxYPosition
+        );
+        correctedOffset.y = maxYPosition;
+      }
 
-      if (
-        correctedOffset.x >
-        this.width -
-          columnCount * this.gridSquareLength * this.panZoom.scale -
-          ((this.width - columnCount * this.gridSquareLength) *
-            this.panZoom.scale) /
-            2
-      ) {
-        correctedOffset.x =
-          this.width -
-          columnCount * this.gridSquareLength * this.panZoom.scale -
-          ((this.width - columnCount * this.gridSquareLength) *
-            this.panZoom.scale) /
-            2;
-      }
-      if (
-        correctedOffset.y >
-        this.height -
-          rowCount * this.gridSquareLength * this.panZoom.scale -
-          ((this.height - rowCount * this.gridSquareLength) *
-            this.panZoom.scale) /
-            2
-      ) {
-        correctedOffset.y =
-          this.height -
-          rowCount * this.gridSquareLength * this.panZoom.scale -
-          ((this.height - rowCount * this.gridSquareLength) *
-            this.panZoom.scale) /
-            2;
-      }
+      // if (rowCount * this.gridSquareLength * this.panZoom.scale > this.height) {
+      // correctedOffset.y =
+      //   (rowCount * this.gridSquareLength * this.panZoom.scale) / 2 -
+      //   (this.height / 2) * this.panZoom.scale;
+      // }
+      // if (
+      //   columnCount * this.gridSquareLength * this.panZoom.scale <
+      //   this.width
+      // ) {
+      //   correctedOffset.x =
+      //     (columnCount * this.gridSquareLength * this.panZoom.scale) / 2 -
+      //     (this.width / 2) * this.panZoom.scale;
+      // }
+
       this.panZoom.offset = correctedOffset;
     }
 
