@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useState } from "react";
-import Canvas, { MouseMode } from "../components/Canvas";
+import Canvas, { MouseMode } from ".";
 
 interface Params {
   divRef: RefObject<HTMLDivElement>;

@@ -1,3 +1,3 @@
-import useCanvas from "./hooks/useCanvas";
+import useCanvas from "./components/Canvas/useCanvas";
 
 export { useCanvas };
