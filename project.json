@@ -1,0 +1,1 @@
+{"generatedAt":1677207738246,"builder":{"name":"webpack4"},"hasCustomBabel":false,"hasCustomWebpack":true,"hasStaticDirs":false,"hasStorybookEslint":false,"refCount":0,"packageManager":{"type":"yarn","version":"1.22.19"},"storybookVersion":"6.5.16","language":"javascript","storybookPackages":{"@storybook/react":{"version":"6.5.16"}},"framework":{"name":"react"},"addons":{}}
