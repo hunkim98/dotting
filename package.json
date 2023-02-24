@@ -1,7 +1,8 @@
 {
   "scripts": {
     "build": "rollup -c",
-    "storybook": "start-storybook -p 6009"
+    "dev": "start-storybook -p 6005",
+    "storybook:build": "build-storybook -o .out docs-build"
   },
   "devDependencies": {
     "@babel/core": "^7.21.0",
