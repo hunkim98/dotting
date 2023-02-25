@@ -86,19 +86,10 @@ export const Dotter = forwardRef(function Dotter(
 
   return (
     <div
-      style={{
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      style={{ width: props.width, height: props.height }}
+      ref={containerRef}
     >
-      <div
-        style={{ width: props.width, height: props.height }}
-        ref={containerRef}
-      >
-        <canvas ref={gotRef} style={{ border: "1px solid black" }} />
-      </div>
+      <canvas ref={gotRef} style={{ border: "1px solid black" }} />
     </div>
   );
 });
