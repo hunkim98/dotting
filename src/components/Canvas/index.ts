@@ -501,17 +501,18 @@ export default class Canvas extends EventDispatcher {
     const pointCoord = { x: point.offsetX, y: point.offsetY };
     this.panPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
 
-    if (window.TouchEvent && evt instanceof TouchEvent) {
-      const touchCount = evt.touches.length;
-      if (touchCount >= 2) {
-        const firstTouch = evt.touches[0];
-        const secondTouch = evt.touches[1];
-        const pinchZoomCurrentDiff =
-          Math.abs(firstTouch.clientX - secondTouch.clientX) +
-          Math.abs(firstTouch.clientY - secondTouch.clientY);
-        this.pinchZoomPrevDiff = pinchZoomCurrentDiff;
-      }
-    }
+    // if (window.TouchEvent && evt instanceof TouchEvent) {
+    //   const touchCount = evt.touches.length;
+    //   console.log("touchCount", touchCount, " mobile");
+    //   if (touchCount >= 2) {
+    //     const firstTouch = evt.touches[0];
+    //     const secondTouch = evt.touches[1];
+    //     const pinchZoomCurrentDiff =
+    //       Math.abs(firstTouch.clientX - secondTouch.clientX) +
+    //       Math.abs(firstTouch.clientY - secondTouch.clientY);
+    //     this.pinchZoomPrevDiff = pinchZoomCurrentDiff;
+    //   }
+    // }
 
     const mouseCartCoord = this.getMouseCartCoord(evt);
     const isMouseInGrid = this.drawPixelFromCartCoord(mouseCartCoord);
@@ -752,6 +753,7 @@ export default class Canvas extends EventDispatcher {
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
     touchy(this.element, removeEvent, "mousemove", this.handleExtension);
+    this.pinchZoomPrevDiff = undefined;
   }
 
   onMouseOut() {
@@ -827,33 +829,15 @@ export default class Canvas extends EventDispatcher {
             this.panZoom.scale) /
             2;
       if (correctedOffset.x < minXPosition) {
-        console.log(
-          "current offset is less than min x position",
-          correctedOffset.x
-        );
         correctedOffset.x = minXPosition;
       }
       if (correctedOffset.y < minYPosition) {
-        console.log(
-          "current offset is less than min y position",
-          correctedOffset.y,
-          minYPosition
-        );
         correctedOffset.y = minYPosition;
       }
       if (correctedOffset.x > maxXPosition) {
-        console.log(
-          "current offset is greater than max x position",
-          correctedOffset.x
-        );
         correctedOffset.x = maxXPosition;
       }
       if (correctedOffset.y > maxYPosition) {
-        console.log(
-          "current offset is greater than max y position",
-          correctedOffset.y,
-          maxYPosition
-        );
         correctedOffset.y = maxYPosition;
       }
 
@@ -955,20 +939,35 @@ export default class Canvas extends EventDispatcher {
   handlePinchZoom = (evt: TouchyEvent) => {
     if (window.TouchEvent && evt instanceof TouchEvent) {
       const touchCount = evt.touches.length;
-      if (!(touchCount >= 2)) {
+      if (touchCount < 2) {
         return;
       }
-      const firstTouch = evt.touches[0];
-      const secondTouch = evt.touches[1];
+      const canvasTouchEventIndexes = [];
+      for (let i = 0; i < touchCount; i++) {
+        const target = evt.touches.item(i)!.target;
+        if (target instanceof HTMLCanvasElement) {
+          canvasTouchEventIndexes.push(i);
+        }
+      }
+      if (canvasTouchEventIndexes.length !== 2) {
+        return;
+      }
+      const firstTouch = evt.touches[canvasTouchEventIndexes[0]];
+      const secondTouch = evt.touches[canvasTouchEventIndexes[1]];
       const pinchZoomCurrentDiff =
-        Math.pow(firstTouch.clientX - secondTouch.clientX, 2) +
-        Math.pow(firstTouch.clientY - secondTouch.clientY, 2);
+        Math.abs(firstTouch.clientX - secondTouch.clientX) +
+        Math.abs(firstTouch.clientY - secondTouch.clientY);
       const firstTouchPoint = this.getPointFromTouch(firstTouch);
       const secondTouchPoint = this.getPointFromTouch(secondTouch);
       const touchCenterPos = {
-        x: (firstTouchPoint.offsetX + secondTouchPoint.offsetX) / 2,
+        x: (firstTouchPoint.offsetX + secondTouchPoint.offsetY) / 2,
         y: (firstTouchPoint.offsetY + secondTouchPoint.offsetY) / 2,
-      } as Coord;
+      };
+
+      if (!this.pinchZoomPrevDiff) {
+        this.pinchZoomPrevDiff = pinchZoomCurrentDiff;
+        return;
+      }
 
       const deltaX = this.pinchZoomPrevDiff - pinchZoomCurrentDiff;
       const zoom = 1 - (deltaX * 2) / this.ZOOM_SENSITIVITY;
@@ -976,43 +975,74 @@ export default class Canvas extends EventDispatcher {
       if (this.MIN_SCALE > newScale || newScale > this.MAX_SCALE) {
         return;
       }
-      const newOffset = this.returnScrollOffsetFromMouseOffset(
-        touchCenterPos,
-        this.panZoom,
-        newScale
-      );
-      this.setPanZoom({ scale: newScale, offset: newOffset });
+      const worldPos = getWorldPoint(touchCenterPos, {
+        scale: this.panZoom.scale,
+        offset: this.panZoom.offset,
+      });
+      const newTouchCenterPos = getScreenPoint(worldPos, {
+        scale: newScale,
+        offset: this.panZoom.offset,
+      });
+      const scaleOffset = diffPoints(touchCenterPos, newTouchCenterPos);
+      const offset = addPoints(this.panZoom.offset, scaleOffset);
+      this.setPanZoom!({ offset, scale: newScale });
       this.pinchZoomPrevDiff = pinchZoomCurrentDiff;
     }
   };
 
   getPointFromTouch(touch: Touch) {
     const r = this.element.getBoundingClientRect();
+    let originY = touch.clientY;
+    let originX = touch.clientX;
     const offsetX = touch.clientX - r.left;
     const offsetY = touch.clientY - r.top;
     return {
+      x: originX - this.panZoom.offset.x,
+      y: originY - this.panZoom.offset.y,
       offsetX: offsetX,
       offsetY: offsetY,
     };
   }
 
-  getPointFromTouchyEvent(evt: TouchyEvent) {
+  getPointFromTouchyEvent(
+    evt: TouchyEvent
+  ): Coord & { offsetX: number; offsetY: number } {
+    let originY;
+    let originX;
+    let offsetX;
+    let offsetY;
     if (window.TouchEvent && evt instanceof TouchEvent) {
-      return this.getPointFromTouch(evt.touches[0]);
-      // }
+      //this is for tablet or mobile
+      let isCanvasTouchIncluded = false;
+      let firstCanvasTouchIndex = 0;
+      for (let i = 0; i < evt.touches.length; i++) {
+        const target = evt.touches.item(i)!.target;
+        if (target instanceof HTMLCanvasElement) {
+          isCanvasTouchIncluded = true;
+          firstCanvasTouchIndex = i;
+          break;
+        }
+      }
+      if (isCanvasTouchIncluded) {
+        return this.getPointFromTouch(evt.touches[firstCanvasTouchIndex]);
+      } else {
+        return this.getPointFromTouch(evt.touches[0]);
+      }
     } else {
-      // this is for PC
-      // offsetX = evt.offsetX;
-      // offsetY = evt.offsetY;
-      // originY += window.scrollY;
-      // originX += window.scrollX;
-      return {
-        //   y: originY - this.panZoom.offset.y,
-        //   x: originX - this.panZoom.offset.x,
-        offsetX: evt.offsetX,
-        offsetY: evt.offsetY,
-      };
+      //this is for PC
+      originY = evt.clientY;
+      originX = evt.clientX;
+      offsetX = evt.offsetX;
+      offsetY = evt.offsetY;
     }
+    originY += window.scrollY;
+    originX += window.scrollX;
+    return {
+      y: originY - this.panZoom.offset.y,
+      x: originX - this.panZoom.offset.x,
+      offsetX: offsetX,
+      offsetY: offsetY,
+    };
   }
 
   getWidth() {
