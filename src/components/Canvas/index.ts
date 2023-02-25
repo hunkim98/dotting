@@ -677,6 +677,9 @@ export default class Canvas extends EventDispatcher {
     const currentRightIndex = currentLeftIndex + this.getColumnCount() - 1;
     switch (direction) {
       case ButtonDirection.TOP:
+        if (allRowKeys.length <= 2) {
+          break;
+        }
         this.data.delete(currentTopIndex);
         this.setPanZoom({
           offset: {
@@ -688,7 +691,9 @@ export default class Canvas extends EventDispatcher {
         });
         break;
       case ButtonDirection.BOTTOM:
-        console.log("bottom deleted");
+        if (allRowKeys.length <= 2) {
+          break;
+        }
         this.data.delete(currentBottomIndex);
         this.setPanZoom({
           offset: {
@@ -701,6 +706,9 @@ export default class Canvas extends EventDispatcher {
 
         break;
       case ButtonDirection.LEFT:
+        if (allColumnKeys.length <= 2) {
+          break;
+        }
         this.data.forEach((row) => {
           row.delete(currentLeftIndex);
         });
@@ -715,6 +723,9 @@ export default class Canvas extends EventDispatcher {
 
         break;
       case ButtonDirection.RIGHT:
+        if (allColumnKeys.length <= 2) {
+          break;
+        }
         this.data.forEach((row) => {
           row.delete(currentRightIndex);
         });

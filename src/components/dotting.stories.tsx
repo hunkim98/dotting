@@ -17,7 +17,7 @@ export const Primary = () => {
   });
 
   return (
-    <div style={{ width: 300, height: 300 }} ref={divRef}>
+    <div style={{ width: "100%", height: 300 }} ref={divRef}>
       <canvas ref={canvasRef} style={{ border: "1px solid black" }} />
     </div>
   );
