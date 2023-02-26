@@ -10,12 +10,12 @@ module.exports = {
   staticDirs: ["../public"],
   addons: ["@storybook/addon-essentials", "@storybook/addon-postcss"],
   core: {
-    builder: "webpack5",
+    builder: "@storybook/builder-webpack5",
   },
 
   features: {
     interactionsDebugger: true,
-    previewMdx2: true, // 👈 MDX 2 enabled here
+    previewMdx2: true,
   },
   typescript: {
     // check: true,
