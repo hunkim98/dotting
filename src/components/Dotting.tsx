@@ -9,21 +9,22 @@ import { forwardRef, useRef } from "react";
 import Canvas from "./Canvas";
 import useCanvas from "./Canvas/useCanvas";
 
-export interface DotterProps {
+export interface DottingProps {
   width: number;
   height: number;
+  ref?: ForwardedRef<DottingRef>;
 }
 
-export interface DotterRef {
+export interface DottingRef {
   download: (filename?: string, type?: string) => void;
   clear: () => void;
   context?: CanvasRenderingContext2D | null;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
-export const Dotter = forwardRef(function Dotter(
-  props: DotterProps,
-  ref: ForwardedRef<DotterRef>
+const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
+  props: DottingProps,
+  ref: ForwardedRef<DottingRef>
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
@@ -44,7 +45,7 @@ export const Dotter = forwardRef(function Dotter(
     return () => {
       window.removeEventListener("resize", onResize);
     };
-  }, [canvas, containerRef]);
+  }, [canvas, containerRef, props.height, props.width]);
 
   // Reference: https://github.com/ascorbic/react-artboard/blob/main/src/components/Artboard.tsx
   const gotRef = useCallback(
@@ -93,3 +94,5 @@ export const Dotter = forwardRef(function Dotter(
     </div>
   );
 });
+
+export default Dotting;

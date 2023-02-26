@@ -1,19 +1,33 @@
 const path = require("path");
 
 module.exports = {
-  stories: ["../src/**/*.stories.@(js|tsx|mdx)"],
+  stories: [
+    "../stories/**/*.stories.@(js|tsx|mdx|jsx)",
+    "../stories/**/*.stories.mdx)",
+  ],
   // Add any Storybook addons you want here: https://storybook.js.org/addons/
-  addons: [],
-  //   core: {
-  //     builder: "webpack5",
-  //   },
-  webpackFinal: async (config) => {
-    config.module.rules.push({
-      test: /\.scss$/,
-      use: ["style-loader", "css-loader", "sass-loader"],
-      include: path.resolve(__dirname, "../"),
-    });
 
+  staticDirs: ["../public"],
+  addons: [
+    "@storybook/addon-essentials",
+    "@storybook/addon-docs",
+    "@storybook/addon-postcss",
+  ],
+
+  features: {
+    interactionsDebugger: true,
+  },
+  typescript: {
+    // check: true,
+    reactDocgen: "react-docgen-typescript",
+    reactDocgenTypescriptOptions: {
+      compilerOptions: {
+        allowSyntheticDefaultImports: false,
+        esModuleInterop: false,
+      },
+    },
+  },
+  webpackFinal: async (config) => {
     config.module.rules.push({
       test: /\.(ts|tsx)$/,
       loader: require.resolve("babel-loader"),
@@ -22,11 +36,6 @@ module.exports = {
       },
     });
     config.resolve.extensions.push(".ts", ".tsx");
-    // config.resolve.plugins = [
-    //   new TsconfigPathsPlugin({
-    //     configFile: path.resolve(__dirname, "../tsconfig.json"),
-    //   }),
-    // ];
 
     return config;
   },
