@@ -10,7 +10,7 @@ module.exports = {
   staticDirs: ["../public"],
   addons: ["@storybook/addon-essentials", "@storybook/addon-postcss"],
   core: {
-    builder: "@storybook/builder-webpack5",
+    builder: "webpack5",
   },
 
   features: {
