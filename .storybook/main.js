@@ -6,13 +6,16 @@ module.exports = {
     "../stories/**/*.stories.mdx)",
   ],
   // Add any Storybook addons you want here: https://storybook.js.org/addons/
-
+  framework: "@storybook/react",
   staticDirs: ["../public"],
   addons: [
-    "@storybook/addon-essentials",
+    // "@storybook/addon-essentials",
     "@storybook/addon-docs",
     "@storybook/addon-postcss",
   ],
+  core: {
+    builder: "@storybook/builder-webpack5",
+  },
 
   features: {
     interactionsDebugger: true,
