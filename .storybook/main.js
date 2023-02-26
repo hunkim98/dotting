@@ -16,7 +16,6 @@ module.exports = {
 
   features: {
     interactionsDebugger: true,
-    previewMdx2: true,
   },
   typescript: {
     // check: true,
