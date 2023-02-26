@@ -8,17 +8,14 @@ module.exports = {
   // Add any Storybook addons you want here: https://storybook.js.org/addons/
   framework: "@storybook/react",
   staticDirs: ["../public"],
-  addons: [
-    // "@storybook/addon-essentials",
-    "@storybook/addon-docs",
-    "@storybook/addon-postcss",
-  ],
+  addons: ["@storybook/addon-essentials", "@storybook/addon-postcss"],
   core: {
     builder: "@storybook/builder-webpack5",
   },
 
   features: {
     interactionsDebugger: true,
+    previewMdx2: true, // 👈 MDX 2 enabled here
   },
   typescript: {
     // check: true,

@@ -5,13 +5,13 @@
     "storybook:build": "build-storybook"
   },
   "devDependencies": {
-    "@mdx-js/react": "^1.6.22",
     "@babel/core": "^7.21.0",
     "@storybook/addon-docs": "^6.5.16",
     "@storybook/addon-essentials": "^6.5.16",
     "@storybook/addon-postcss": "^2.0.0",
     "@storybook/builder-webpack5": "^6.5.16",
     "@storybook/manager-webpack5": "^6.5.16",
+    "@storybook/mdx2-csf": "^0.0.4",
     "@storybook/preset-typescript": "^3.0.0",
     "@storybook/react": "^6.5.16",
     "@types/react": "^18.0.28",
@@ -30,10 +30,5 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
-  },
-  "overrides": {
-    "@storybook/addon-docs": {
-      "@mdx-js/react": "^1.6.22"
-    }
   }
 }
