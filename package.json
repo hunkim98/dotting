@@ -29,5 +29,10 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
+  },
+  "overrides": {
+    "@storybook/addon-docs": {
+      "@mdx-js/react": "1.6.22"
+    }
   }
 }
