@@ -1,3 +1,3 @@
-import useCanvas from "./components/Canvas/useCanvas";
+import Dotting from "./components/Dotting";
 
-export { useCanvas };
+export { Dotting };

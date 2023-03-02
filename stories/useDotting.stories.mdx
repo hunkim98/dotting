@@ -1,0 +1,285 @@
+import { Meta } from "@storybook/addon-docs";
+import Code from "./assets/code-brackets.svg";
+import Colors from "./assets/colors.svg";
+import Comments from "./assets/comments.svg";
+import Direction from "./assets/direction.svg";
+import Flow from "./assets/flow.svg";
+import Plugin from "./assets/plugin.svg";
+import Repo from "./assets/repo.svg";
+import StackAlt from "./assets/stackalt.svg";
+import Dotting from "../src/components/Dotting";
+import { Clear, ChangePixelColor } from "./useDottingComponents";
+
+<Meta title="Hooks/useDotting" />
+
+<style>
+  {`
+  .subheading {
+    --mediumdark: '#999999';
+    font-weight: 900;
+    font-size: 13px;
+    color: #999;
+    letter-spacing: 6px;
+    line-height: 24px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    margin-top: 40px;
+    font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+
+  .link-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    row-gap: 10px;
+  }
+
+  @media (min-width: 620px) {
+    .link-list {
+      row-gap: 20px;
+      column-gap: 20px;
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media all and (-ms-high-contrast:none) {
+  .link-list {
+      display: -ms-grid;
+      -ms-grid-columns: 1fr 1fr;
+      -ms-grid-rows: 1fr 1fr;
+    }
+  }
+
+  .link-item {
+    display: block;
+    padding: 20px 30px 20px 15px;
+    border: 1px solid #00000010;
+    border-radius: 5px;
+    transition: background 150ms ease-out, border 150ms ease-out, transform 150ms ease-out;
+    color: #333333;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .link-item:hover {
+    border-color: #1EA7FD50;
+    transform: translate3d(0, -3px, 0);
+    box-shadow: rgba(0, 0, 0, 0.08) 0 3px 10px 0;
+  }
+
+  .link-item:active {
+    border-color: #1EA7FD;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .link-item strong {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+  
+  .link-item img {
+    height: 40px;
+    width: 40px;
+    margin-right: 15px;
+    flex: none;
+  }
+
+  .link-item span {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .tip {
+    display: inline-block;
+    border-radius: 1em;
+    font-size: 11px;
+    line-height: 12px;
+    font-weight: 700;
+    background: #E7FDD8;
+    color: #66BF3C;
+    padding: 4px 12px;
+    margin-right: 10px;
+    vertical-align: top;
+  }
+
+  .tip-wrapper {
+    font-size: 13px;
+    line-height: 20px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+
+  .tip-wrapper code {
+    font-size: 12px;
+    display: inline-block;
+  }
+  
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #cccccc;
+  margin: 15px auto;
+  margin-bottom: 80px;
+  background: white;
+  color: #333333;
+  font-family: "Nunito Sans",-apple-system,".SFNSText-Regular","San Francisco",BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+table .css-1p8ieni {
+  margin: 0;
+}
+
+h4 {
+  margin-top: 15px;
+}
+
+th {
+  background: steelblue;
+  height: 54px;
+  width: 25%;
+  font-weight: lighter;
+  text-shadow: 0 1px 0 #38678f;
+  color: white;
+  border: 1px solid black;
+  box-shadow: inset 0px 1px 2px #cccccc;
+  transition: all 0.2s;
+}
+tr {
+  border-bottom: 1px solid #cccccc;
+}
+tr:last-child {
+  border-bottom: 0px;
+}
+td {
+  border-right: 1px solid #cccccc;
+  padding: 10px;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+td:first-child {
+  font-size: 12px;
+  font-family: monospace
+
+}
+td:last-child {
+  border-right: 0px;
+}
+td.selected {
+  background: #d7e4ef;
+  z-index: ;
+}
+td input {
+  font-size: 14px;
+  background: none;
+  outline: none;
+  border: 0;
+  display: table-cell;
+  height: 100%;
+  width: 100%;
+}
+td input:focus {
+  box-shadow: 0 1px 0 steelblue;
+  color: steelblue;
+}
+::-moz-selection {
+  background: steelblue;
+  color: white;
+}
+::selection {
+  background: steelblue;
+  color: white;
+}
+`}
+</style>
+
+# Using hooks for interaction!
+
+#### How to setup hooks
+
+To manipulate the Dotting component you should have a ref object attached to the Dotting Component.
+You can use React's `useRef` to get the DottingRef refobject of the Dotting Component.
+After the ref object is set, you can use the `useDotting` hook and pass the ref as its parameter.
+
+Below is the example setup for using the `useDotting` hook.
+The example below shows how you can clear the canvas.
+
+#### Setup Example (Clearing the Canvas)
+
+```ts
+export const Component = () => {
+  const ref = useRef<DottingRef>();
+  const { clear } = useDotting(ref);
+  return (
+    <div>
+      <Dotting ref={ref} width={"100%"} height={300} />
+      <button onClick={clear}>Clear Canvas</button>
+    </div>
+  );
+};
+```
+
+<Clear />
+
+#### Methods that you can use with useDotting
+
+```
+const { clear, changePixelColor } = useDotting(ref)
+```
+
+<table>
+  <tr>
+    <td></td>
+    <td>
+      <strong>Description</strong>
+    </td>
+    <td>
+      <strong>Parameters</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>clear()</td>
+    <td>Allows you to clear the canvas</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>changePixelColor(changes: PixelModifyData)</td>
+    <td>
+      Allows you to color a specific index. If the index provided is not in the
+      grid, the grid first extends its grid and then colors it
+    </td>
+    <td></td>
+  </tr>
+</table>
+
+### Usage Examples
+
+#### 1. Change Pixel Color Example
+
+<ChangePixelColor />
+
+<div className="subheading">Example Source Codes</div>
+
+<div className="link-list">
+
+<a
+  className="link-item"
+  href="https://github.com/hunkim98/dotting"
+  target="_blank"
+>
+  <img src={StackAlt} alt="Build" />
+  <span>
+    <strong>Github Source Code</strong>
+    View the source code and contribute to the project!
+  </span>
+</a>
+
+</div>
+
+<div className="tip-wrapper">
+  {/* <span className="tip">Tip</span>Edit the Markdown in{" "}
+  <code>src/stories/Introduction.stories.mdx</code> */}
+</div>

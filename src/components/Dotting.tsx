@@ -3,22 +3,35 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useState,
 } from "react";
 import { forwardRef, useRef } from "react";
 import Canvas from "./Canvas";
-import useCanvas from "./Canvas/useCanvas";
+import { DottingData, PixelModifyData, PixelData } from "./Canvas/types";
 
 export interface DottingProps {
-  width: number;
-  height: number;
+  width: number | string;
+  height: number | string;
+  colors?: Array<string>;
   ref?: ForwardedRef<DottingRef>;
 }
 
 export interface DottingRef {
-  download: (filename?: string, type?: string) => void;
   clear: () => void;
-  context?: CanvasRenderingContext2D | null;
+  data: DottingData;
+  dataArray: Array<Array<PixelData>>;
+  gridIndices: {
+    topRowIndex: number;
+    bottomRowIndex: number;
+    leftColumnIndex: number;
+    rightColumnIndex: number;
+  };
+  dimensions: () => {
+    columnCount: number;
+    rowCount: number;
+  };
+  changePixelColor: (changes: PixelModifyData) => void;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -28,6 +41,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
+  const colors = useMemo(() => colors, [props.colors]);
 
   // We put resize handler
   useEffect(() => {
@@ -60,10 +74,32 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   );
 
   const clear = useCallback(() => {
-    if (!canvas) {
-      return;
-    }
-    canvas.clear();
+    canvas?.clear();
+  }, [canvas]);
+
+  const data = useMemo(() => {
+    return canvas?.getData();
+  }, [canvas]);
+
+  const dataArray = useMemo(() => {
+    return canvas?.getDataArray();
+  }, [canvas]);
+
+  const gridIndices = useMemo(() => {
+    return canvas?.getGridIndices();
+  }, [canvas]);
+
+  const changePixelColor = useCallback(
+    (
+      changes: Array<{ rowIndex: number; columnIndex: number; color: string }>
+    ) => {
+      canvas?.changePixelColor(changes);
+    },
+    [canvas]
+  );
+
+  const dimensions = useCallback(() => {
+    return canvas?.getDimensions();
   }, [canvas]);
 
   // useImperativeHandle makes the ref used in the place that uses the FC component
@@ -71,18 +107,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   useImperativeHandle(
     ref,
     () => ({
-      download: (filename = "image.png", type?: string) => {
-        if (!canvas) {
-          return;
-        }
-        const a = document.createElement("a");
-        // a.href = canvas.toDataURL(type);
-        // a.download = filename;
-        a.click();
-      },
       clear,
+      data,
+      dataArray,
+      gridIndices,
+      dimensions,
+      changePixelColor,
     }),
-    [canvas]
+    [clear]
   );
 
   return (

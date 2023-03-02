@@ -9,7 +9,14 @@ import {
   gradientPoints,
 } from "../../utils/math";
 import EventDispatcher from "../../utils/eventDispatcher";
-import { Coord, PanZoom } from "./types";
+import {
+  Coord,
+  DottingData,
+  DottingInitData,
+  PanZoom,
+  PixelData,
+  PixelModifyData,
+} from "./types";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
 
 export enum MouseMode {
@@ -49,17 +56,19 @@ export default class Canvas extends EventDispatcher {
 
   private hoveredButton: ButtonDirection | null = null;
 
-  private data = new Map<
+  private brushColor: string = "#ff0000";
+
+  private data: DottingData = new Map<
     // this number is rowIndex
     number,
     Map<
       // this number is columnIndex
       number,
-      {
-        color: string;
-      }
+      PixelData
     >
   >();
+
+  private setData?: (data: DottingData) => void;
 
   private history: Array<{
     rowIndex: number;
@@ -92,12 +101,24 @@ export default class Canvas extends EventDispatcher {
 
   private ctx: CanvasRenderingContext2D;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    setData?: (data: DottingData) => void,
+    initData?: DottingInitData
+  ) {
     super();
     this.element = canvas;
     this.ctx = canvas.getContext("2d")!;
+    if (setData) {
+      this.setData = setData;
+    }
 
     this.initialize();
+  }
+
+  setCanvasData(data: DottingData) {
+    this.data = data;
+    this.render();
   }
 
   //http://jsfiddle.net/dX9Y3/
@@ -423,6 +444,94 @@ export default class Canvas extends EventDispatcher {
     return this.data;
   }
 
+  getDataArray() {
+    const dataArray: Array<Array<PixelData>> = [];
+    const allRows = Array.from(this.data.entries());
+    for (let i = 0; i < allRows.length; i++) {
+      const columns = Array.from(allRows[i][1]);
+      const columnPixels = columns.map((element) => element[1]);
+      dataArray.push(columnPixels);
+    }
+    return dataArray;
+  }
+
+  getGridIndices() {
+    const allRowKeys = Array.from(this.data.keys());
+    const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
+    const currentTopIndex = Math.min(...allRowKeys);
+    const currentLeftIndex = Math.min(...allColumnKeys);
+    return {
+      topRowIndex: currentTopIndex,
+      bottomRowIndex: currentTopIndex + allRowKeys.length - 1,
+      leftColumnIndex: currentLeftIndex,
+      rightColumnIndex: currentLeftIndex + allColumnKeys.length - 1,
+    };
+  }
+
+  getDimensions() {
+    return {
+      columnCount: this.getColumnCount(),
+      rowCount: this.getRowCount(),
+    };
+  }
+
+  /**
+   * This changes the color in the grid.
+   * @param changes An array of data about position of change and wanted color
+   */
+  changePixelColor(changes: PixelModifyData) {
+    const rowIndices = changes.map((change) => change.rowIndex);
+    const columnIndices = changes.map((change) => change.columnIndex);
+    const minRowIndex = Math.min(...rowIndices);
+    const maxRowIndex = Math.max(...rowIndices);
+    const minColumnIndex = Math.min(...columnIndices);
+    const maxColumnIndex = Math.min(...columnIndices);
+    const currentCanvasIndices = this.getGridIndices();
+    if (minRowIndex < currentCanvasIndices.topRowIndex) {
+      for (
+        let index = currentCanvasIndices.topRowIndex - 1;
+        minRowIndex <= index;
+        index--
+      ) {
+        this.extendGrid(ButtonDirection.TOP);
+      }
+    }
+    if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
+      for (
+        let index = currentCanvasIndices.bottomRowIndex + 1;
+        maxRowIndex >= index;
+        index++
+      ) {
+        this.extendGrid(ButtonDirection.BOTTOM);
+      }
+    }
+    if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
+      for (
+        let index = currentCanvasIndices.leftColumnIndex - 1;
+        minColumnIndex <= index;
+        index--
+      ) {
+        this.extendGrid(ButtonDirection.LEFT);
+      }
+    }
+    if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
+      for (
+        let index = currentCanvasIndices.rightColumnIndex + 1;
+        maxColumnIndex >= index;
+        index++
+      ) {
+        this.extendGrid(ButtonDirection.RIGHT);
+      }
+    }
+
+    for (const change of changes) {
+      this.data
+        .get(change.rowIndex)!
+        .set(change.columnIndex, { color: change.color });
+    }
+    this.render();
+  }
+
   reset() {
     this.scale(1, 1);
     this.panZoom = {
@@ -508,9 +617,13 @@ export default class Canvas extends EventDispatcher {
         (mouseCartCoord.x - leftTopPoint.x) / this.gridSquareLength
       );
       isMouseInGrid = true;
+      if (this.setData) {
+        console.log("controlled mode");
+        return isMouseInGrid;
+      }
       this.data
         .get(currentTopIndex + rowOffset)!
-        .set(currentLeftIndex + columnOffset, { color: "#ff0000" });
+        .set(currentLeftIndex + columnOffset, { color: this.brushColor });
       this.render();
     }
     return isMouseInGrid;
