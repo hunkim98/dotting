@@ -68,13 +68,10 @@ export default class Canvas extends EventDispatcher {
     >
   >();
 
-  private setData?: (data: DottingData) => void;
-
-  private history: Array<{
+  private hoveredPixel: {
     rowIndex: number;
     columnIndex: number;
-    action: "color" | "erase";
-  }> = [];
+  } | null = null;
 
   private panZoom: PanZoom = {
     scale: 1,
@@ -101,18 +98,10 @@ export default class Canvas extends EventDispatcher {
 
   private ctx: CanvasRenderingContext2D;
 
-  constructor(
-    canvas: HTMLCanvasElement,
-    setData?: (data: DottingData) => void,
-    initData?: DottingInitData
-  ) {
+  constructor(canvas: HTMLCanvasElement) {
     super();
     this.element = canvas;
     this.ctx = canvas.getContext("2d")!;
-    if (setData) {
-      this.setData = setData;
-    }
-
     this.initialize();
   }
 
@@ -357,7 +346,7 @@ export default class Canvas extends EventDispatcher {
       convertedLetTopScreenPoint,
       this.panZoom
     );
-    ctx.save();
+
     // ctx.translate(correctedScreenPoint.x, correctedScreenPoint.y);
     // ctx.scale(this.panZoom.scale, this.panZoom.scale);
     const allRowKeys = Array.from(this.data.keys());
@@ -365,13 +354,64 @@ export default class Canvas extends EventDispatcher {
     const currentTopIndex = Math.min(...allRowKeys);
     const currentLeftIndex = Math.min(...allColumnKeys);
 
+    if (this.hoveredPixel) {
+      ctx.save();
+      const { rowIndex, columnIndex } = this.hoveredPixel;
+      const relativeRowIndex = rowIndex - currentTopIndex;
+      const relativeColumnIndex = columnIndex - currentLeftIndex;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength
+      );
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = this.brushColor;
+
+      ctx.fillRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength
+      );
+      ctx.restore();
+    }
+
+    ctx.save();
     for (let i = 0; i < this.getRowCount(); i++) {
       for (let j = 0; j < this.getColumnCount(); j++) {
         // console.log(i, j, this.data.get(i)?.get(j)?.color);
         const rowIndex = i + currentTopIndex;
         const columnIndex = j + currentLeftIndex;
-        const color =
-          this.data.get(rowIndex)?.get(columnIndex)?.color || "white";
+        const color = this.data.get(rowIndex)?.get(columnIndex)?.color;
+        if (
+          this.hoveredPixel &&
+          this.hoveredPixel.rowIndex === rowIndex &&
+          this.hoveredPixel.columnIndex === columnIndex
+        ) {
+          ctx.save();
+          const { rowIndex, columnIndex } = this.hoveredPixel;
+          const relativeRowIndex = rowIndex - currentTopIndex;
+          const relativeColumnIndex = columnIndex - currentLeftIndex;
+          ctx.globalAlpha = 0.5;
+          ctx.fillStyle = this.brushColor;
+          if (color === this.brushColor) {
+            ctx.globalAlpha = 1;
+          }
+          ctx.fillRect(
+            relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+            relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+            squareLength,
+            squareLength
+          );
+          ctx.restore();
+          continue;
+        }
+        if (!color) {
+          continue;
+        }
+
         ctx.fillStyle = color;
         ctx.fillRect(
           j * squareLength + correctedLeftTopScreenPoint.x,
@@ -591,6 +631,47 @@ export default class Canvas extends EventDispatcher {
     return mouseCartCoord;
   }
 
+  changeBrushColor(color: string) {
+    this.brushColor = color;
+  }
+
+  getPixelIndexFromMouseCartCoord(mouseCartCoord: Coord) {
+    const leftTopPoint: Coord = {
+      x: -((this.getColumnCount() / 2) * this.gridSquareLength),
+      y: -((this.getRowCount() / 2) * this.gridSquareLength),
+    };
+    if (
+      mouseCartCoord.x > leftTopPoint.x &&
+      mouseCartCoord.x <
+        leftTopPoint.x + this.getColumnCount() * this.gridSquareLength &&
+      mouseCartCoord.y > leftTopPoint.y &&
+      mouseCartCoord.y <
+        leftTopPoint.y + this.getRowCount() * this.gridSquareLength
+    ) {
+      // The above conditions are to check if the mouse is in the grid
+      const allRowKeys = Array.from(this.data.keys());
+      const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
+      const currentTopIndex = Math.min(...allRowKeys);
+      const currentLeftIndex = Math.min(...allColumnKeys);
+      const rowOffset = Math.floor(
+        (mouseCartCoord.y - leftTopPoint.y) / this.gridSquareLength
+      );
+      const columnOffset = Math.floor(
+        (mouseCartCoord.x - leftTopPoint.x) / this.gridSquareLength
+      );
+      return {
+        rowIndex: currentTopIndex + rowOffset,
+        columnIndex: currentLeftIndex + columnOffset,
+      };
+    }
+    return null;
+  }
+
+  drawPixel(rowIndex: number, columnIndex: number) {
+    this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+    this.render();
+  }
+
   drawPixelFromCartCoord(mouseCartCoord: Coord) {
     const leftTopPoint: Coord = {
       x: -((this.getColumnCount() / 2) * this.gridSquareLength),
@@ -617,10 +698,6 @@ export default class Canvas extends EventDispatcher {
         (mouseCartCoord.x - leftTopPoint.x) / this.gridSquareLength
       );
       isMouseInGrid = true;
-      if (this.setData) {
-        console.log("controlled mode");
-        return isMouseInGrid;
-      }
       this.data
         .get(currentTopIndex + rowOffset)!
         .set(currentLeftIndex + columnOffset, { color: this.brushColor });
@@ -879,13 +956,21 @@ export default class Canvas extends EventDispatcher {
 
   onMouseMove(evt: TouchyEvent) {
     evt.preventDefault();
-    if (this.mouseMode === MouseMode.DRAWING) {
-      const mouseCartCoord = this.getMouseCartCoord(evt);
-      this.drawPixelFromCartCoord(mouseCartCoord);
-      return;
-    }
 
     const mouseCartCoord = this.getMouseCartCoord(evt);
+    const pixelIndex = this.getPixelIndexFromMouseCartCoord(mouseCartCoord);
+    if (pixelIndex) {
+      if (this.mouseMode === MouseMode.DRAWING) {
+        this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
+      } else {
+        this.hoveredPixel = pixelIndex;
+        this.render();
+      }
+    } else {
+      this.hoveredPixel = null;
+      this.render();
+    }
+
     const buttonDirection = this.detectMouseOnButton(mouseCartCoord);
     if (buttonDirection) {
       this.hoveredButton = buttonDirection;
@@ -1265,6 +1350,16 @@ export default class Canvas extends EventDispatcher {
     this.drawRects();
     this.drawGrids();
     this.drawButtons();
+  }
+
+  drawHoveredPixel() {
+    if (this.hoveredPixel) {
+      const { rowIndex, columnIndex } = this.hoveredPixel;
+      this.ctx.save();
+      this.ctx.fillStyle = this.brushColor;
+      this.ctx.globalAlpha = 0.5;
+      this.ctx.restore();
+    }
   }
 
   clear() {

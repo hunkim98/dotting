@@ -32,8 +32,19 @@ export interface DottingRef {
     rowCount: number;
   };
   changePixelColor: (changes: PixelModifyData) => void;
+  changeBrushColor: (color: string) => void;
 }
 
+const defaultColors = [
+  "#FF0000",
+  "#0000FF",
+  "#00FF00",
+  "#FF00FF",
+  "#00FFFF",
+  "#FFFF00",
+  "#000000",
+  "#FFFFFF",
+];
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
 const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   props: DottingProps,
@@ -41,7 +52,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
-  const colors = useMemo(() => colors, [props.colors]);
+  const colors: Array<string> = useMemo(
+    () => (colors ? colors : [...defaultColors]),
+    [props.colors]
+  );
 
   // We put resize handler
   useEffect(() => {
@@ -102,6 +116,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     return canvas?.getDimensions();
   }, [canvas]);
 
+  const changeBrushColor = useCallback(
+    (color: string) => {
+      canvas?.changeBrushColor(color);
+    },
+    [canvas]
+  );
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -113,6 +133,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       gridIndices,
       dimensions,
       changePixelColor,
+      changeBrushColor,
     }),
     [clear]
   );
@@ -122,6 +143,31 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       style={{ width: props.width, height: props.height }}
       ref={containerRef}
     >
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          marginLeft: -2,
+          marginRight: -2,
+          marginTop: -2,
+          marginBottom: 6,
+          justifyContent: "center",
+        }}
+      >
+        {colors.map((color) => (
+          <div
+            onClick={changeBrushColor.bind(null, color)}
+            style={{
+              width: 25,
+              height: 25,
+              margin: 2,
+              border: "1px solid black",
+              backgroundColor: color,
+              display: "inline-block",
+            }}
+          />
+        ))}
+      </div>
       <canvas ref={gotRef} style={{ border: "1px solid black" }} />
     </div>
   );

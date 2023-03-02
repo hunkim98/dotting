@@ -11,8 +11,18 @@ export default {
   title: "Components/Dotting",
   component: DottingComponent,
   argTypes: {
-    width: { defaultValue: 300 },
-    height: { defaultValue: 300 },
+    width: {
+      defaultValue: 300,
+      table: {
+        defaultValue: 300,
+      },
+    },
+    height: {
+      defaultValue: 300,
+      table: {
+        defaultValue: 300,
+      },
+    },
     ref: { control: { disable: true } },
   },
 };
