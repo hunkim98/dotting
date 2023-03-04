@@ -8,7 +8,7 @@ import Plugin from "./assets/plugin.svg";
 import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
-import { Clear, ChangePixelColor } from "./useDottingComponents";
+import { Clear, ColorPixels, GridInformation } from "./useDottingComponents";
 
 <Meta title="Hooks/useDotting" />
 
@@ -129,6 +129,10 @@ table {
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
+thead {
+  border-bottom: 1px solid #cccccc;
+}
+
 table .css-1p8ieni {
   margin: 0;
 }
@@ -196,70 +200,73 @@ td input:focus {
 `}
 </style>
 
-# Using hooks for interaction!
+# `useDotting`
 
-#### How to setup hooks
+With `useDotting`, you can manipulate the grid and also get information of the pixels in the grid.
 
-To manipulate the Dotting component you should have a ref object attached to the Dotting Component.
-You can use React's `useRef` to get the DottingRef refobject of the Dotting Component.
-After the ref object is set, you can use the `useDotting` hook and pass the ref as its parameter.
+#### Methods provided by `useDotting`
 
-Below is the example setup for using the `useDotting` hook.
-The example below shows how you can clear the canvas.
+<table>
+  <thead>
+    <tr>
+      <td></td>
+      <td>
+        <strong>Description</strong>
+      </td>
+      <td>
+        <strong>Parameters</strong>
+      </td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`clear()`</td>
+      <td>Allows you to clear the canvas</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>`colorPixels(data: PixelModifyData)`</td>
+      <td>
+        Allows you to color pixels on specific indices. If the index provided is
+        not in the grid, the grid first extends its grid and then colors it
+      </td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
 
-#### Setup Example (Clearing the Canvas)
+### Examples
+
+#### 1. Change Pixel Color Example `colorPixels(data: PixelModifyData)`
+
+With `colorPixels` method, you can change the color of specific pixels.
+The `PixelModifyData` type is defined as follows:
 
 ```ts
-export const Component = () => {
-  const ref = useRef<DottingRef>();
-  const { clear } = useDotting(ref);
-  return (
-    <div>
-      <Dotting ref={ref} width={"100%"} height={300} />
-      <button onClick={clear}>Clear Canvas</button>
-    </div>
-  );
-};
+export type PixelModifyData = Array<PixelModifyItem>;
+
+export interface PixelModifyItem {
+  rowIndex: number;
+  columnIndex: number;
+  color: string;
+}
 ```
+
+By passing an array of `PixelModifyItem` you are able to color the pixels.
+If the rowIndex and columnIndex of the pixel is not in the grid, the grid
+first extends its grid and then colors it.
+
+<ColorPixels />
+
+#### 2. Clear Example `clear()`
+
+With `clear` method, you can clear all the pixels in the grid.
 
 <Clear />
 
-#### Methods that you can use with useDotting
+#### 3. Get Grid Information Example `gridIndices`, `dimensions`
 
-```
-const { clear, changePixelColor } = useDotting(ref)
-```
-
-<table>
-  <tr>
-    <td></td>
-    <td>
-      <strong>Description</strong>
-    </td>
-    <td>
-      <strong>Parameters</strong>
-    </td>
-  </tr>
-  <tr>
-    <td>`clear()`</td>
-    <td>Allows you to clear the canvas</td>
-    <td></td>
-  </tr>
-  <tr>
-    <td>`changePixelColor(changes: PixelModifyData)`</td>
-    <td>
-      Allows you to color a specific index. If the index provided is not in the
-      grid, the grid first extends its grid and then colors it
-    </td>
-    <td></td>
-  </tr>
-</table>
-
-### Usage Examples
-
-#### 1. Change Pixel Color Example
-
-<ChangePixelColor />
+<GridInformation />
 
 <div className="subheading">Example Source Codes</div>
 
@@ -283,3 +290,4 @@ const { clear, changePixelColor } = useDotting(ref)
   {/* <span className="tip">Tip</span>Edit the Markdown in{" "}
   <code>src/stories/Introduction.stories.mdx</code> */}
 </div>
+```

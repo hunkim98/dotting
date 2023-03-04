@@ -20,16 +20,31 @@ const useDotting = (ref: MutableRefObject<DottingRef>) => {
     ref.current?.clear();
   }, [ref]);
 
-  const changePixelColor = useCallback(
+  const getData = useCallback(() => ref.current?.getData(), [ref.current]);
+
+  const getDataArray = useCallback(() => ref.current?.getDataArray(), [ref]);
+
+  const getGridIndices = useCallback(
+    () => ref.current?.getGridIndices(),
+    [ref]
+  );
+
+  const getDimensions = useCallback(() => ref.current?.getDimensions(), [ref]);
+
+  const colorPixels = useCallback(
     (changes: PixelModifyData) => {
-      ref.current?.changePixelColor(changes);
+      ref.current?.colorPixels(changes);
     },
     [ref]
   );
 
   return {
     clear,
-    changePixelColor,
+    getData,
+    getDataArray,
+    getGridIndices,
+    getDimensions,
+    colorPixels,
   };
 };
 

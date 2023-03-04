@@ -21,7 +21,7 @@ const Clear = () => {
           padding: "5px 10px",
           background: "none",
           marginTop: 10,
-          marginBottom: 30,
+          marginBottom: 50,
         }}
         onClick={clear}
       >

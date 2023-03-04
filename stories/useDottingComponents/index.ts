@@ -1,4 +1,5 @@
 import Clear from "./Clear";
-import ChangePixelColor from "./ChangePixelColor";
+import ColorPixels from "./ColorPixels";
+import GridInformation from "./GridInformation";
 
-export { Clear, ChangePixelColor };
+export { Clear, ColorPixels, GridInformation };

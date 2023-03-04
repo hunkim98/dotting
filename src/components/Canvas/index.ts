@@ -517,11 +517,11 @@ export default class Canvas extends EventDispatcher {
 
   /**
    * This changes the color in the grid.
-   * @param changes An array of data about position of change and wanted color
+   * @param data An array of data about position of change and wanted color
    */
-  changePixelColor(changes: PixelModifyData) {
-    const rowIndices = changes.map((change) => change.rowIndex);
-    const columnIndices = changes.map((change) => change.columnIndex);
+  colorPixels(data: PixelModifyData) {
+    const rowIndices = data.map((change) => change.rowIndex);
+    const columnIndices = data.map((change) => change.columnIndex);
     const minRowIndex = Math.min(...rowIndices);
     const maxRowIndex = Math.max(...rowIndices);
     const minColumnIndex = Math.min(...columnIndices);
@@ -564,7 +564,7 @@ export default class Canvas extends EventDispatcher {
       }
     }
 
-    for (const change of changes) {
+    for (const change of data) {
       this.data
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
@@ -598,6 +598,7 @@ export default class Canvas extends EventDispatcher {
   }
 
   initialize() {
+    this.emit = this.emit.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
     this.onMouseOut = this.onMouseOut.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
@@ -668,42 +669,17 @@ export default class Canvas extends EventDispatcher {
   }
 
   drawPixel(rowIndex: number, columnIndex: number) {
-    this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
-    this.render();
-  }
-
-  drawPixelFromCartCoord(mouseCartCoord: Coord) {
-    const leftTopPoint: Coord = {
-      x: -((this.getColumnCount() / 2) * this.gridSquareLength),
-      y: -((this.getRowCount() / 2) * this.gridSquareLength),
-    };
-    let isMouseInGrid = false;
-    if (
-      mouseCartCoord.x > leftTopPoint.x &&
-      mouseCartCoord.x <
-        leftTopPoint.x + this.getColumnCount() * this.gridSquareLength &&
-      mouseCartCoord.y > leftTopPoint.y &&
-      mouseCartCoord.y <
-        leftTopPoint.y + this.getRowCount() * this.gridSquareLength
-    ) {
-      // The above conditions are to check if the mouse is in the grid
-      const allRowKeys = Array.from(this.data.keys());
-      const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
-      const currentTopIndex = Math.min(...allRowKeys);
-      const currentLeftIndex = Math.min(...allColumnKeys);
-      const rowOffset = Math.floor(
-        (mouseCartCoord.y - leftTopPoint.y) / this.gridSquareLength
-      );
-      const columnOffset = Math.floor(
-        (mouseCartCoord.x - leftTopPoint.x) / this.gridSquareLength
-      );
-      isMouseInGrid = true;
-      this.data
-        .get(currentTopIndex + rowOffset)!
-        .set(currentLeftIndex + columnOffset, { color: this.brushColor });
-      this.render();
+    if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
+      this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+      console.log("emitted!");
+      this.emit("dataChange", {
+        rowIndex,
+        columnIndex,
+        color: this.brushColor,
+      });
     }
-    return isMouseInGrid;
+
+    this.render();
   }
 
   onMouseDown(evt: TouchyEvent) {
@@ -725,9 +701,12 @@ export default class Canvas extends EventDispatcher {
     // }
 
     const mouseCartCoord = this.getMouseCartCoord(evt);
-    const isMouseInGrid = this.drawPixelFromCartCoord(mouseCartCoord);
+    const pixelIndex = this.getPixelIndexFromMouseCartCoord(mouseCartCoord);
+    if (pixelIndex) {
+      this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
+    }
     const buttonDirection = this.detectButtonClicked(mouseCartCoord);
-    this.mouseMode = isMouseInGrid ? MouseMode.DRAWING : MouseMode.PANNING;
+    this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
     if (buttonDirection) {
       this.extensionPoint.lastMousePos = {
         x: mouseCartCoord.x,
@@ -1010,7 +989,7 @@ export default class Canvas extends EventDispatcher {
 
   getColumnCount() {
     if (this.data.size === 0) return 0;
-    return this.data.entries().next().value[1].size;
+    return this.data.entries().next().value[1].size as number;
   }
 
   getRowCount() {
@@ -1018,7 +997,6 @@ export default class Canvas extends EventDispatcher {
   }
 
   setPanZoom(param: Partial<PanZoom>) {
-    this.emit("setIsPanZoomed");
     const { scale, offset } = param;
 
     if (scale) {

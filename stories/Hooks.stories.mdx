@@ -8,10 +8,9 @@ import Plugin from "./assets/plugin.svg";
 import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
-import { ChangeBrushColor } from "./useBrushComponents";
-import CustomExample from "./custom/CustomExample";
+import { Clear, ColorPixels } from "./useDottingComponents";
 
-<Meta title="Introduction" />
+<Meta title="Hooks/Setup" />
 
 <style>
   {`
@@ -118,38 +117,30 @@ import CustomExample from "./custom/CustomExample";
 `}
 </style>
 
-# Welcome to Dotting!
+# Using hooks for interaction!
 
-#### Finding a pixel art editor for your website? Look no further!
+#### How to setup hooks
 
-Dotting is a pixel art drawing component for React for creators who want to implement a pixel canvas editor to their websites.
-Dotting works for **both PC and moible environments**. You can freely pan & zoom around the using your mouse or your fingers.
-The canvas grid size is changeable. You can extend your canvas grid to any size by extending the grid from any edges. Make your websites interactive by adding a simple pixel art canvas editor to your website!
+To manipulate the Dotting component you should have a ref object attached to the Dotting Component.
+You can use React's `useRef` to get the DottingRef refobject of the Dotting Component.
+After the ref object is set, you can use the `useDotting` or `useBrush` hook and pass the ref as its parameter.
 
-Dotting welcomes all contributions!
-If you are interested in contributing, visit [**Dotting Github**](https://github.com/hunkim98/dotting) to view the source code!
+Below is the example setup for using the `useDotting` hook.
+The example below shows how you can clear the canvas.
 
-<CustomExample />
+#### Setup Example (Clearing the Canvas)
 
-<div className="subheading">Resources</div>
+```ts
+export const Component = () => {
+  const ref = useRef<DottingRef>();
+  const { clear } = useDotting(ref);
+  return (
+    <div>
+      <Dotting ref={ref} width={"100%"} height={300} />
+      <button onClick={clear}>Clear Canvas</button>
+    </div>
+  );
+};
+```
 
-<div className="link-list">
-
-<a
-  className="link-item"
-  href="https://github.com/hunkim98/dotting"
-  target="_blank"
->
-  <img src={StackAlt} alt="Build" />
-  <span>
-    <strong>Github Source Code</strong>
-    View the source code and contribute to the project!
-  </span>
-</a>
-
-</div>
-
-<div className="tip-wrapper">
-  {/* <span className="tip">Tip</span>Edit the Markdown in{" "}
-  <code>src/stories/Introduction.stories.mdx</code> */}
-</div>
+<Clear />

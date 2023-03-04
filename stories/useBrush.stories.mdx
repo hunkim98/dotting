@@ -9,9 +9,8 @@ import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
 import { ChangeBrushColor } from "./useBrushComponents";
-import CustomExample from "./custom/CustomExample";
 
-<Meta title="Introduction" />
+<Meta title="Hooks/useBrush" />
 
 <style>
   {`
@@ -115,23 +114,128 @@ import CustomExample from "./custom/CustomExample";
     font-size: 12px;
     display: inline-block;
   }
+  
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #cccccc;
+  margin: 15px auto;
+  margin-bottom: 80px;
+  background: white;
+  color: #333333;
+  font-family: "Nunito Sans",-apple-system,".SFNSText-Regular","San Francisco",BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+thead {
+  border-bottom: 1px solid #cccccc;
+}
+
+table .css-1p8ieni {
+  margin: 0;
+}
+
+h4 {
+  margin-top: 15px;
+}
+
+th {
+  background: steelblue;
+  height: 54px;
+  width: 25%;
+  font-weight: lighter;
+  text-shadow: 0 1px 0 #38678f;
+  color: white;
+  border: 1px solid black;
+  box-shadow: inset 0px 1px 2px #cccccc;
+  transition: all 0.2s;
+}
+tr {
+  border-bottom: 1px solid #cccccc;
+}
+tr:last-child {
+  border-bottom: 0px;
+}
+td {
+  border-right: 1px solid #cccccc;
+  padding: 10px;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+td:first-child {
+  font-size: 12px;
+  font-family: monospace
+
+}
+td:last-child {
+  border-right: 0px;
+}
+td.selected {
+  background: #d7e4ef;
+  z-index: ;
+}
+td input {
+  font-size: 14px;
+  background: none;
+  outline: none;
+  border: 0;
+  display: table-cell;
+  height: 100%;
+  width: 100%;
+}
+td input:focus {
+  box-shadow: 0 1px 0 steelblue;
+  color: steelblue;
+}
+::-moz-selection {
+  background: steelblue;
+  color: white;
+}
+::selection {
+  background: steelblue;
+  color: white;
+}
 `}
 </style>
 
-# Welcome to Dotting!
+# `useBrush`
 
-#### Finding a pixel art editor for your website? Look no further!
+With `useBrush`, you can change the brush color and mode.
 
-Dotting is a pixel art drawing component for React for creators who want to implement a pixel canvas editor to their websites.
-Dotting works for **both PC and moible environments**. You can freely pan & zoom around the using your mouse or your fingers.
-The canvas grid size is changeable. You can extend your canvas grid to any size by extending the grid from any edges. Make your websites interactive by adding a simple pixel art canvas editor to your website!
+#### Methods provided by `useBrush`
 
-Dotting welcomes all contributions!
-If you are interested in contributing, visit [**Dotting Github**](https://github.com/hunkim98/dotting) to view the source code!
+<table>
+  <thead>
+    <tr>
+      <td></td>
+      <td>
+        <strong>Description</strong>
+      </td>
+      <td>
+        <strong>Parameters</strong>
+      </td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`changeBrushColor(color: string)`</td>
+      <td>Allows you to change the brush color</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
 
-<CustomExample />
+### Examples
 
-<div className="subheading">Resources</div>
+#### 1. Change Brush Color Example `changeBrushColor(color: string)`
+
+With `changeBrushColor` method, you can change the color of the brush.
+
+<ChangeBrushColor />
+
+<div className="subheading">Example Source Codes</div>
 
 <div className="link-list">
 
@@ -153,3 +257,4 @@ If you are interested in contributing, visit [**Dotting Github**](https://github
   {/* <span className="tip">Tip</span>Edit the Markdown in{" "}
   <code>src/stories/Introduction.stories.mdx</code> */}
 </div>
+```

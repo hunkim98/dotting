@@ -19,19 +19,19 @@ export interface DottingProps {
 
 export interface DottingRef {
   clear: () => void;
-  data: DottingData;
-  dataArray: Array<Array<PixelData>>;
-  gridIndices: {
+  getData: () => DottingData;
+  getDataArray: () => Array<Array<PixelData>>;
+  getGridIndices: () => {
     topRowIndex: number;
     bottomRowIndex: number;
     leftColumnIndex: number;
     rightColumnIndex: number;
   };
-  dimensions: () => {
+  getDimensions: () => {
     columnCount: number;
     rowCount: number;
   };
-  changePixelColor: (changes: PixelModifyData) => void;
+  colorPixels: (data: PixelModifyData) => void;
   changeBrushColor: (color: string) => void;
 }
 
@@ -82,39 +82,35 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         return;
       }
       const canvas = new Canvas(canvasRef);
+      canvas.addEventListener("dataChange", (data) => {
+        console.log(data);
+      });
       setCanvas(canvas);
     },
     [history]
   );
 
-  const clear = useCallback(() => {
-    canvas?.clear();
+  const clear = useCallback(() => canvas?.clear(), [canvas]);
+
+  const getData = useCallback(() => canvas?.getData(), [canvas]);
+
+  const getDataArray = useCallback(() => canvas?.getDataArray(), [canvas]);
+
+  const getGridIndices = useCallback(() => canvas?.getGridIndices(), [canvas]);
+
+  const getDimensions = useCallback(() => {
+    console.log(canvas?.getDimensions(), "hi");
+    return canvas?.getDimensions();
   }, [canvas]);
 
-  const data = useMemo(() => {
-    return canvas?.getData();
-  }, [canvas]);
-
-  const dataArray = useMemo(() => {
-    return canvas?.getDataArray();
-  }, [canvas]);
-
-  const gridIndices = useMemo(() => {
-    return canvas?.getGridIndices();
-  }, [canvas]);
-
-  const changePixelColor = useCallback(
+  const colorPixels = useCallback(
     (
       changes: Array<{ rowIndex: number; columnIndex: number; color: string }>
     ) => {
-      canvas?.changePixelColor(changes);
+      canvas?.colorPixels(changes);
     },
     [canvas]
   );
-
-  const dimensions = useCallback(() => {
-    return canvas?.getDimensions();
-  }, [canvas]);
 
   const changeBrushColor = useCallback(
     (color: string) => {
@@ -127,49 +123,54 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   useImperativeHandle(
     ref,
     () => ({
+      // for useDotting
       clear,
-      data,
-      dataArray,
-      gridIndices,
-      dimensions,
-      changePixelColor,
+      getData,
+      getDataArray,
+      getGridIndices,
+      getDimensions,
+      colorPixels,
+      // for useBrush
       changeBrushColor,
     }),
     [clear]
   );
 
   return (
+    // <div>
+    //   <div
+    //     style={{
+    //       display: "flex",
+    //       flexWrap: "wrap",
+    //       marginLeft: -2,
+    //       marginRight: -2,
+    //       marginTop: -2,
+    //       marginBottom: 6,
+    //       justifyContent: "center",
+    //     }}
+    //   >
+    //     {colors.map((color) => (
+    //       <div
+    //         key={color}
+    //         onClick={changeBrushColor.bind(null, color)}
+    //         style={{
+    //           width: 25,
+    //           height: 25,
+    //           margin: 2,
+    //           border: "1px solid black",
+    //           backgroundColor: color,
+    //           display: "inline-block",
+    //         }}
+    //       />
+    //     ))}
+    //   </div>
     <div
       style={{ width: props.width, height: props.height }}
       ref={containerRef}
     >
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          marginLeft: -2,
-          marginRight: -2,
-          marginTop: -2,
-          marginBottom: 6,
-          justifyContent: "center",
-        }}
-      >
-        {colors.map((color) => (
-          <div
-            onClick={changeBrushColor.bind(null, color)}
-            style={{
-              width: 25,
-              height: 25,
-              margin: 2,
-              border: "1px solid black",
-              backgroundColor: color,
-              display: "inline-block",
-            }}
-          />
-        ))}
-      </div>
       <canvas ref={gotRef} style={{ border: "1px solid black" }} />
     </div>
+    // </div>
   );
 });
 
