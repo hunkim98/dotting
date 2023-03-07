@@ -8,9 +8,10 @@ import Plugin from "./assets/plugin.svg";
 import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
-import { Clear, ColorPixels, GridInformation } from "./useDottingComponents";
+import { ChangeBrushColor } from "./useBrushComponents";
+import { GridInformation } from "./useGridComponents";
 
-<Meta title="Hooks/useDotting" />
+<Meta title="Hooks/useGrid" />
 
 <style>
   {`
@@ -200,11 +201,11 @@ td input:focus {
 `}
 </style>
 
-# `useDotting`
+# `useBrush`
 
-With `useDotting`, you can manipulate the grid and also get information of the pixels in the grid.
+With `useBrush`, you can change the brush color and mode.
 
-#### Methods provided by `useDotting`
+#### Methods provided by `useBrush`
 
 <table>
   <thead>
@@ -220,16 +221,8 @@ With `useDotting`, you can manipulate the grid and also get information of the p
   </thead>
   <tbody>
     <tr>
-      <td>`clear()`</td>
-      <td>Allows you to clear the canvas</td>
-      <td></td>
-    </tr>
-    <tr>
-      <td>`colorPixels(data: PixelModifyData)`</td>
-      <td>
-        Allows you to color pixels on specific indices. If the index provided is
-        not in the grid, the grid first extends its grid and then colors it
-      </td>
+      <td>`changeBrushColor(color: string)`</td>
+      <td>Allows you to change the brush color</td>
       <td></td>
     </tr>
   </tbody>
@@ -237,32 +230,11 @@ With `useDotting`, you can manipulate the grid and also get information of the p
 
 ### Examples
 
-#### 1. Change Pixel Color Example `colorPixels(data: PixelModifyData)`
+#### 1. Change Brush Color Example `changeBrushColor(color: string)`
 
-With `colorPixels` method, you can change the color of specific pixels.
-The `PixelModifyData` type is defined as follows:
+With `changeBrushColor` method, you can change the color of the brush.
 
-```ts
-export type PixelModifyData = Array<PixelModifyItem>;
-
-export interface PixelModifyItem {
-  rowIndex: number;
-  columnIndex: number;
-  color: string;
-}
-```
-
-By passing an array of `PixelModifyItem` you are able to color the pixels.
-If the rowIndex and columnIndex of the pixel is not in the grid, the grid
-first extends its grid and then colors it.
-
-<ColorPixels />
-
-#### 2. Clear Example `clear()`
-
-With `clear` method, you can clear all the pixels in the grid.
-
-<Clear />
+<GridInformation />
 
 <div className="subheading">Example Source Codes</div>
 

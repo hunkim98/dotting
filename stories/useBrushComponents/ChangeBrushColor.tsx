@@ -1,15 +1,11 @@
 import React, { useCallback } from "react";
 import { useRef } from "react";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
+import useBrush from "../../src/hooks/useBrush";
 
 const ChangeBrushColor = () => {
   const ref = useRef<DottingRef>();
-  const changeBrushColor = useCallback(
-    (brushColor: string) => {
-      ref.current?.changeBrushColor(brushColor);
-    },
-    [ref]
-  );
+  const { changeBrushColor } = useBrush(ref);
   return (
     <div
       style={{

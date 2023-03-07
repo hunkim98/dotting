@@ -23,3 +23,31 @@ export interface PixelModifyItem {
   columnIndex: number;
   color: string;
 }
+
+export enum CanvasEvents {
+  DATA_CHANGE = "dataChange",
+  GRID_CHANGE = "gridChange",
+  STROKE_END = "strokeEnd",
+}
+
+export type CanvasEventHandlerType =
+  | CanvasDataChangeHandler
+  | CanvasGridChangeHandler
+  | CanvasStrokeEndHandler;
+
+export type CanvasDataChangeHandler = (data: DottingData) => void;
+
+export type CanvasGridChangeHandler = (
+  dimensions: {
+    columnCount: number;
+    rowCount: number;
+  },
+  indices: {
+    topRowIndex: number;
+    bottomRowIndex: number;
+    leftColumnIndex: number;
+    rightColumnIndex: number;
+  }
+) => void;
+
+export type CanvasStrokeEndHandler = (data: DottingData) => void;

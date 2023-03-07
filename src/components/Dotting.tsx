@@ -8,43 +8,44 @@ import React, {
 } from "react";
 import { forwardRef, useRef } from "react";
 import Canvas from "./Canvas";
-import { DottingData, PixelModifyData, PixelData } from "./Canvas/types";
+import {
+  DottingData,
+  PixelModifyData,
+  PixelData,
+  CanvasEvents,
+  CanvasDataChangeHandler,
+  CanvasGridChangeHandler,
+  CanvasStrokeEndHandler,
+  CanvasEventHandlerType,
+} from "./Canvas/types";
 
 export interface DottingProps {
   width: number | string;
   height: number | string;
-  colors?: Array<string>;
+  columnCount?: number;
+  rowCount?: number;
   ref?: ForwardedRef<DottingRef>;
 }
 
+const DefaultDottingColumnCount = 5;
+const DefaultDottingRowCount = 5;
+
 export interface DottingRef {
   clear: () => void;
-  getData: () => DottingData;
-  getDataArray: () => Array<Array<PixelData>>;
-  getGridIndices: () => {
-    topRowIndex: number;
-    bottomRowIndex: number;
-    leftColumnIndex: number;
-    rightColumnIndex: number;
-  };
-  getDimensions: () => {
-    columnCount: number;
-    rowCount: number;
-  };
   colorPixels: (data: PixelModifyData) => void;
   changeBrushColor: (color: string) => void;
+  // for useHandler
+  addDataChangeListener: (listener: CanvasDataChangeHandler) => void;
+  removeDataChangeListener: (listener: CanvasDataChangeHandler) => void;
+  addGridChangeListener: (listener: CanvasGridChangeHandler) => void;
+  removeGridChangeListener: (listener: CanvasGridChangeHandler) => void;
+  addStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
+  removeStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
+  // initial data
+  initColumnCount: number;
+  initRowCount: number;
 }
 
-const defaultColors = [
-  "#FF0000",
-  "#0000FF",
-  "#00FF00",
-  "#FF00FF",
-  "#00FFFF",
-  "#FFFF00",
-  "#000000",
-  "#FFFFFF",
-];
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
 const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   props: DottingProps,
@@ -52,10 +53,60 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
-  const colors: Array<string> = useMemo(
-    () => (colors ? colors : [...defaultColors]),
-    [props.colors]
-  );
+  const [dataChangeListeners, setDataChangeListeners] = useState<
+    CanvasDataChangeHandler[]
+  >([]);
+  const [gridChangeListeners, setGridChangeListeners] = useState<
+    CanvasGridChangeHandler[]
+  >([]);
+  const [strokeEndListeners, setStrokeEndListeners] = useState<
+    CanvasStrokeEndHandler[]
+  >([]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    gridChangeListeners.forEach((listener) => {
+      canvas.addEventListener(CanvasEvents.GRID_CHANGE, listener);
+    });
+    // The below is to emit the initial grid event
+    canvas.emitGridEvent();
+    return () => {
+      gridChangeListeners.forEach((listener) => {
+        canvas?.removeEventListener(CanvasEvents.GRID_CHANGE, listener);
+      });
+    };
+  }, [canvas, gridChangeListeners]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+
+    dataChangeListeners.forEach((listener) => {
+      canvas.addEventListener(CanvasEvents.DATA_CHANGE, listener);
+    });
+    return () => {
+      dataChangeListeners.forEach((listener) => {
+        canvas?.removeEventListener(CanvasEvents.DATA_CHANGE, listener);
+      });
+    };
+  }, [canvas, dataChangeListeners]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    strokeEndListeners.forEach((listener) => {
+      canvas.addEventListener(CanvasEvents.STROKE_END, listener);
+    });
+    return () => {
+      strokeEndListeners.forEach((listener) => {
+        canvas?.removeEventListener(CanvasEvents.STROKE_END, listener);
+      });
+    };
+  }, [canvas, strokeEndListeners]);
 
   // We put resize handler
   useEffect(() => {
@@ -82,26 +133,78 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         return;
       }
       const canvas = new Canvas(canvasRef);
-      canvas.addEventListener("dataChange", (data) => {
-        console.log(data);
-      });
       setCanvas(canvas);
     },
     [history]
   );
 
+  const addDataChangeListener = useCallback(
+    (listener: CanvasDataChangeHandler) => {
+      setDataChangeListeners((listeners) => [...listeners, listener]);
+    },
+    []
+  );
+
+  const removeDataChangeListener = useCallback(
+    (listener: CanvasDataChangeHandler) => {
+      canvas.removeEventListener(CanvasEvents.DATA_CHANGE, listener);
+      setDataChangeListeners((listeners) =>
+        listeners.filter((l) => l !== listener)
+      );
+    },
+    [canvas]
+  );
+
+  const addGridChangeListener = useCallback(
+    (listener: CanvasGridChangeHandler) => {
+      setGridChangeListeners((listeners) => [...listeners, listener]);
+    },
+    []
+  );
+
+  const removeGridChangeListener = useCallback(
+    (listener: CanvasGridChangeHandler) => {
+      canvas.removeEventListener(CanvasEvents.GRID_CHANGE, listener);
+      setGridChangeListeners((listeners) =>
+        listeners.filter((l) => l !== listener)
+      );
+    },
+    [canvas]
+  );
+
+  const addStrokeEndListener = useCallback(
+    (listener: CanvasStrokeEndHandler) => {
+      setStrokeEndListeners((listeners) => [...listeners, listener]);
+    },
+    []
+  );
+
+  const removeStrokeEndListener = useCallback(
+    (listener: CanvasStrokeEndHandler) => {
+      canvas.removeEventListener(CanvasEvents.STROKE_END, listener);
+      setStrokeEndListeners((listeners) =>
+        listeners.filter((l) => l !== listener)
+      );
+    },
+    [canvas]
+  );
+
+  const addEventListener = useCallback(
+    (type: CanvasEvents, listener: CanvasEventHandlerType) => {
+      console.log("added listener!", canvas);
+      canvas?.addEventListener(type, listener);
+    },
+    [canvas]
+  );
+
+  const removeEventListener = useCallback(
+    (type: CanvasEvents, listener: CanvasEventHandlerType) => {
+      canvas?.removeEventListener(type, listener);
+    },
+    [canvas]
+  );
+
   const clear = useCallback(() => canvas?.clear(), [canvas]);
-
-  const getData = useCallback(() => canvas?.getData(), [canvas]);
-
-  const getDataArray = useCallback(() => canvas?.getDataArray(), [canvas]);
-
-  const getGridIndices = useCallback(() => canvas?.getGridIndices(), [canvas]);
-
-  const getDimensions = useCallback(() => {
-    console.log(canvas?.getDimensions(), "hi");
-    return canvas?.getDimensions();
-  }, [canvas]);
 
   const colorPixels = useCallback(
     (
@@ -123,54 +226,36 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   useImperativeHandle(
     ref,
     () => ({
+      addEventListener,
+      removeEventListener,
       // for useDotting
       clear,
-      getData,
-      getDataArray,
-      getGridIndices,
-      getDimensions,
       colorPixels,
       // for useBrush
       changeBrushColor,
+      // for useHandler
+      addDataChangeListener,
+      removeDataChangeListener,
+      addGridChangeListener,
+      removeGridChangeListener,
+      addStrokeEndListener,
+      removeStrokeEndListener,
+      // initial Data
+      initColumnCount: props.columnCount
+        ? props.columnCount
+        : DefaultDottingColumnCount,
+      initRowCount: props.rowCount ? props.rowCount : DefaultDottingRowCount,
     }),
     [clear]
   );
 
   return (
-    // <div>
-    //   <div
-    //     style={{
-    //       display: "flex",
-    //       flexWrap: "wrap",
-    //       marginLeft: -2,
-    //       marginRight: -2,
-    //       marginTop: -2,
-    //       marginBottom: 6,
-    //       justifyContent: "center",
-    //     }}
-    //   >
-    //     {colors.map((color) => (
-    //       <div
-    //         key={color}
-    //         onClick={changeBrushColor.bind(null, color)}
-    //         style={{
-    //           width: 25,
-    //           height: 25,
-    //           margin: 2,
-    //           border: "1px solid black",
-    //           backgroundColor: color,
-    //           display: "inline-block",
-    //         }}
-    //       />
-    //     ))}
-    //   </div>
     <div
       style={{ width: props.width, height: props.height }}
       ref={containerRef}
     >
       <canvas ref={gotRef} style={{ border: "1px solid black" }} />
     </div>
-    // </div>
   );
 });
 

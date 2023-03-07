@@ -10,6 +10,7 @@ import {
 } from "../../utils/math";
 import EventDispatcher from "../../utils/eventDispatcher";
 import {
+  CanvasEvents,
   Coord,
   DottingData,
   DottingInitData,
@@ -620,6 +621,22 @@ export default class Canvas extends EventDispatcher {
     }
   }
 
+  emitGridEvent() {
+    const allRowKeys = Array.from(this.data.keys());
+    const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
+    const dimensions = {
+      columnCount: this.getColumnCount(),
+      rowCount: this.getRowCount(),
+    };
+    const indices = {
+      topRowIndex: Math.min(...allRowKeys),
+      bottomRowIndex: Math.max(...allRowKeys),
+      leftColumnIndex: Math.min(...allColumnKeys),
+      rightColumnIndex: Math.max(...allColumnKeys),
+    };
+    this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
+  }
+
   getMouseCartCoord(evt: TouchyEvent) {
     evt.preventDefault();
     const point = this.getPointFromTouchyEvent(evt);
@@ -671,12 +688,14 @@ export default class Canvas extends EventDispatcher {
   drawPixel(rowIndex: number, columnIndex: number) {
     if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
       this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
-      console.log("emitted!");
-      this.emit("dataChange", {
-        rowIndex,
-        columnIndex,
-        color: this.brushColor,
-      });
+      this.emit(
+        CanvasEvents.DATA_CHANGE,
+        {
+          rowIndex,
+          columnIndex,
+        },
+        this.brushColor
+      );
     }
 
     this.render();
@@ -854,6 +873,22 @@ export default class Canvas extends EventDispatcher {
       default:
         break;
     }
+
+    const newAllRowKeys = Array.from(this.data.keys());
+    const newAllColumnKeys = Array.from(
+      this.data.get(newAllRowKeys[0])!.keys()
+    );
+    const dimensions = {
+      columnCount: this.getColumnCount(),
+      rowCount: this.getRowCount(),
+    };
+    const indices = {
+      topRowIndex: Math.min(...newAllRowKeys),
+      bottomRowIndex: Math.max(...newAllRowKeys),
+      leftColumnIndex: Math.min(...newAllColumnKeys),
+      rightColumnIndex: Math.max(...newAllColumnKeys),
+    };
+    this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
     this.render();
   }
 
@@ -930,6 +965,21 @@ export default class Canvas extends EventDispatcher {
       default:
         break;
     }
+    const newAllRowKeys = Array.from(this.data.keys());
+    const newAllColumnKeys = Array.from(
+      this.data.get(newAllRowKeys[0])!.keys()
+    );
+    const dimensions = {
+      columnCount: this.getColumnCount(),
+      rowCount: this.getRowCount(),
+    };
+    const indices = {
+      topRowIndex: Math.min(...newAllRowKeys),
+      bottomRowIndex: Math.max(...newAllRowKeys),
+      leftColumnIndex: Math.min(...newAllColumnKeys),
+      rightColumnIndex: Math.max(...newAllColumnKeys),
+    };
+    this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
     this.render();
   }
 
