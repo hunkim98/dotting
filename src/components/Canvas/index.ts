@@ -570,6 +570,7 @@ export default class Canvas extends EventDispatcher {
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
     }
+    this.emit(CanvasEvents.DATA_CHANGE, this.data);
     this.render();
   }
 
@@ -637,6 +638,10 @@ export default class Canvas extends EventDispatcher {
     this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
   }
 
+  emitDataEvent() {
+    this.emit(CanvasEvents.DATA_CHANGE, this.data);
+  }
+
   getMouseCartCoord(evt: TouchyEvent) {
     evt.preventDefault();
     const point = this.getPointFromTouchyEvent(evt);
@@ -688,14 +693,7 @@ export default class Canvas extends EventDispatcher {
   drawPixel(rowIndex: number, columnIndex: number) {
     if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
       this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
-      this.emit(
-        CanvasEvents.DATA_CHANGE,
-        {
-          rowIndex,
-          columnIndex,
-        },
-        this.brushColor
-      );
+      this.emit(CanvasEvents.DATA_CHANGE, this.data);
     }
 
     this.render();
@@ -873,6 +871,7 @@ export default class Canvas extends EventDispatcher {
       default:
         break;
     }
+    this.emit(CanvasEvents.DATA_CHANGE, this.data);
 
     const newAllRowKeys = Array.from(this.data.keys());
     const newAllColumnKeys = Array.from(
@@ -965,6 +964,9 @@ export default class Canvas extends EventDispatcher {
       default:
         break;
     }
+
+    this.emit(CanvasEvents.DATA_CHANGE, this.data);
+
     const newAllRowKeys = Array.from(this.data.keys());
     const newAllColumnKeys = Array.from(
       this.data.get(newAllRowKeys[0])!.keys()

@@ -83,10 +83,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!canvas) {
       return;
     }
-
     dataChangeListeners.forEach((listener) => {
       canvas.addEventListener(CanvasEvents.DATA_CHANGE, listener);
     });
+    canvas.emitDataEvent();
     return () => {
       dataChangeListeners.forEach((listener) => {
         canvas?.removeEventListener(CanvasEvents.DATA_CHANGE, listener);

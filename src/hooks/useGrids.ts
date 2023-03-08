@@ -1,4 +1,5 @@
 import { MutableRefObject, useEffect, useState } from "react";
+import { CanvasGridChangeHandler } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
 import useHandlers from "./useHandlers";
 
@@ -16,7 +17,7 @@ const useGrids = (ref: MutableRefObject<DottingRef>) => {
   });
 
   useEffect(() => {
-    const listener = (
+    const listener: CanvasGridChangeHandler = (
       dimensions: {
         columnCount: number;
         rowCount: number;
