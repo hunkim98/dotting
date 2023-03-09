@@ -19,7 +19,6 @@ const useData = (ref: MutableRefObject<DottingRef>) => {
   useEffect(() => {
     const listener: CanvasDataChangeHandler = (canvasData) => {
       setData(canvasData);
-      const allRows = Array.from(canvasData.entries());
       const allRowKeys = Array.from(canvasData.keys());
       const allColumnKeys = Array.from(canvasData.get(allRowKeys[0])!.keys());
       const currentTopIndex = Math.min(...allRowKeys);

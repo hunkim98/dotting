@@ -57,7 +57,7 @@ export default class Canvas extends EventDispatcher {
 
   private hoveredButton: ButtonDirection | null = null;
 
-  private brushColor: string = "#ff0000";
+  private brushColor: string = "#FF0000";
 
   private data: DottingData = new Map<
     // this number is rowIndex
