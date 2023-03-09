@@ -222,7 +222,19 @@ With `useBrush`, you can change the brush color and mode.
     <tr>
       <td>`changeBrushColor(color: string)`</td>
       <td>Allows you to change the brush color</td>
-      <td></td>
+      <td>`string`</td>
+    </tr>
+    <tr>
+      <td>`changeBrushMode(brushMode: BrushMode)`</td>
+      <td>Allows you to change the brush mode to `DOT` or `ERASER`</td>
+      <td>
+        ```ts
+        export enum BrushMode {
+          DOT = "dot",
+          ERASER = "eraser",
+        }
+        ```
+      </td>
     </tr>
   </tbody>
 </table>

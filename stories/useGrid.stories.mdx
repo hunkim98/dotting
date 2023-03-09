@@ -11,7 +11,7 @@ import Dotting from "../src/components/Dotting";
 import { ChangeBrushColor } from "./useBrushComponents";
 import { GridInformation } from "./useGridComponents";
 
-<Meta title="Hooks/useGrid" />
+<Meta title="Hooks/useGrids" />
 
 <style>
   {`
@@ -201,11 +201,12 @@ td input:focus {
 `}
 </style>
 
-# `useBrush`
+# `useGrids`
 
-With `useBrush`, you can change the brush color and mode.
+With `useGrids`, you can get information about the the canvas columns and rows.
+You also get information about the indices of the top row, left column, bottom row, and the right column.
 
-#### Methods provided by `useBrush`
+#### Features provided by `useGrids`
 
 <table>
   <thead>
@@ -221,8 +222,17 @@ With `useBrush`, you can change the brush color and mode.
   </thead>
   <tbody>
     <tr>
-      <td>`changeBrushColor(color: string)`</td>
-      <td>Allows you to change the brush color</td>
+      <td>`dimensions`</td>
+      <td>You can get the `columnCount` and `rowCount` of the current grid</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>`indices`</td>
+      <td>
+        You can get the `topRowIndex`, `bottomRowIndex`, `leftColumnIndex`, and
+        `rightColumnIndex` of the grids. This is useful when you want to
+        implement `colorPixels` method provided by `useDotting` hook.
+      </td>
       <td></td>
     </tr>
   </tbody>
@@ -230,9 +240,9 @@ With `useBrush`, you can change the brush color and mode.
 
 ### Examples
 
-#### 1. Change Brush Color Example `changeBrushColor(color: string)`
+#### 1. Grid Information Example `dimensions`, `indices`
 
-With `changeBrushColor` method, you can change the color of the brush.
+With `dimensions` and `indices`, you can get the information about the current grid.
 
 <GridInformation />
 
