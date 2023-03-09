@@ -204,7 +204,7 @@ td input:focus {
 
 With `useData`, you can get the current status of data
 
-#### Variables provided by `useData`
+#### Features provided by `useData`
 
 <table>
   <thead>
@@ -221,14 +221,24 @@ With `useData`, you can get the current status of data
   <tbody>
     <tr>
       <td>`data`</td>
-      <td>Map of Pixel Data</td>
+      <td>
+        Allows you to know the current pixel data. The variable type is `Map<number, Map<number, PixelData>>`
+        ```ts
+        type PixelData = {
+          color: string;
+        };
+        ```
+      </td>
       <td></td>
     </tr>
     <tr>
       <td>`dataArray`</td>
-      <td>2D array version of pixel data</td>
+      <td>
+        Allows you to know the 2d array of the pixel data. If you are not fond with Maps, you may use this instead. The variable type is `<Array<Array<PixelModifyItem>>>`
+      </td>
       <td></td>
     </tr>
+
   </tbody>
 </table>
 

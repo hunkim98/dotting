@@ -12,15 +12,16 @@ const GridInformation = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        fontFamily: `'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif`,
       }}
     >
       <Dotting ref={ref} width={"100%"} height={300} />
-      <div>
-        column count: {dimensions.columnCount} / row count:{" "}
-        {dimensions.rowCount}
-      </div>
+      <div>column count: {dimensions.columnCount}</div>
+      <div>row count: {dimensions.rowCount}</div>
       <div>top row index: {indices.topRowIndex}</div>
       <div>left column index: {indices.leftColumnIndex}</div>
+      <div>bottom row index: {indices.bottomRowIndex}</div>
+      <div>right column index: {indices.rightColumnIndex}</div>
     </div>
   );
 };

@@ -22,6 +22,8 @@ const useDotting = (ref: MutableRefObject<DottingRef>) => {
     [ref]
   );
 
+  const erasePixels = useCallback((changes: PixelModifyData) => {}, [ref]);
+
   return {
     clear,
     colorPixels,
