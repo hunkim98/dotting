@@ -5,7 +5,7 @@ import useBrush from "../../src/hooks/useBrush";
 
 const ChangeBrushColor = () => {
   const ref = useRef<DottingRef>();
-  const { changeBrushColor } = useBrush(ref);
+  const { changeBrushColor, brushColor } = useBrush(ref);
   return (
     <div
       style={{
@@ -13,9 +13,29 @@ const ChangeBrushColor = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        fontFamily: `'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif`,
       }}
     >
       <Dotting ref={ref} width={"100%"} height={300} />
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: 10,
+          marginBottom: 3,
+        }}
+      >
+        <span style={{ fontSize: 13 }}>Brush Color</span>
+        <div
+          style={{
+            borderRadius: "50%",
+            width: 20,
+            height: 20,
+            marginLeft: 15,
+            backgroundColor: brushColor,
+          }}
+        ></div>
+      </div>
       <div>
         {[
           "#FF0000",

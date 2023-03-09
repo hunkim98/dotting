@@ -1,5 +1,6 @@
 import { MutableRefObject, useCallback } from "react";
 import {
+  CanvasBrushChangeHandler,
   CanvasDataChangeHandler,
   CanvasGridChangeHandler,
   CanvasStrokeEndHandler,
@@ -35,6 +36,20 @@ const useHandlers = (ref: MutableRefObject<DottingRef>) => {
     [ref]
   );
 
+  const addBrushChangeListener = useCallback(
+    (listener: CanvasBrushChangeHandler) => {
+      ref.current?.addBrushChangeListener(listener);
+    },
+    [ref]
+  );
+
+  const removeBrushChangeListener = useCallback(
+    (listener: CanvasBrushChangeHandler) => {
+      ref.current?.removeBrushChangeListener(listener);
+    },
+    [ref]
+  );
+
   const addStrokeEndListener = useCallback(
     (listener: CanvasStrokeEndHandler) => {
       ref.current?.addStrokeEndListener(listener);
@@ -54,6 +69,8 @@ const useHandlers = (ref: MutableRefObject<DottingRef>) => {
     removeDataChangeListener,
     addGridChangeListener,
     removeGridChangeListener,
+    addBrushChangeListener,
+    removeBrushChangeListener,
     addStrokeEndListener,
     removeStrokeEndListener,
   };

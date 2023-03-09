@@ -28,12 +28,19 @@ export enum CanvasEvents {
   DATA_CHANGE = "dataChange",
   GRID_CHANGE = "gridChange",
   STROKE_END = "strokeEnd",
+  BRUSH_CHANGE = "brushChange",
+}
+
+export enum BrushMode {
+  DOT = "dot",
+  ERASER = "eraser",
 }
 
 export type CanvasEventHandlerType =
   | CanvasDataChangeHandler
   | CanvasGridChangeHandler
-  | CanvasStrokeEndHandler;
+  | CanvasStrokeEndHandler
+  | CanvasBrushChangeHandler;
 
 export type CanvasDataChangeHandler = (data: DottingData) => void;
 
@@ -51,3 +58,8 @@ export type CanvasGridChangeHandler = (
 ) => void;
 
 export type CanvasStrokeEndHandler = (data: DottingData) => void;
+
+export type CanvasBrushChangeHandler = (
+  brushColor: string,
+  brushMode: BrushMode
+) => void;

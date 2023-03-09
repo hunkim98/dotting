@@ -17,6 +17,8 @@ import {
   CanvasGridChangeHandler,
   CanvasStrokeEndHandler,
   CanvasEventHandlerType,
+  BrushMode,
+  CanvasBrushChangeHandler,
 } from "./Canvas/types";
 
 export interface DottingProps {
@@ -33,12 +35,16 @@ const DefaultDottingRowCount = 5;
 export interface DottingRef {
   clear: () => void;
   colorPixels: (data: PixelModifyData) => void;
+  // for useBrush
   changeBrushColor: (color: string) => void;
+  changeBrushMode: (mode: BrushMode) => void;
   // for useHandler
   addDataChangeListener: (listener: CanvasDataChangeHandler) => void;
   removeDataChangeListener: (listener: CanvasDataChangeHandler) => void;
   addGridChangeListener: (listener: CanvasGridChangeHandler) => void;
   removeGridChangeListener: (listener: CanvasGridChangeHandler) => void;
+  addBrushChangeListener: (listener: CanvasBrushChangeHandler) => void;
+  removeBrushChangeListener: (listener: CanvasBrushChangeHandler) => void;
   addStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
   removeStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
   // initial data
@@ -61,6 +67,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   >([]);
   const [strokeEndListeners, setStrokeEndListeners] = useState<
     CanvasStrokeEndHandler[]
+  >([]);
+  const [brushChangeListeners, setBrushChangeListeners] = useState<
+    CanvasBrushChangeHandler[]
   >([]);
 
   useEffect(() => {
@@ -93,6 +102,21 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       });
     };
   }, [canvas, dataChangeListeners]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    brushChangeListeners.forEach((listener) => {
+      canvas.addEventListener(CanvasEvents.BRUSH_CHANGE, listener);
+    });
+    canvas.emitBrushChangeEvent();
+    return () => {
+      brushChangeListeners.forEach((listener) => {
+        canvas?.removeEventListener(CanvasEvents.BRUSH_CHANGE, listener);
+      });
+    };
+  }, [canvas, brushChangeListeners]);
 
   useEffect(() => {
     if (!canvas) {
@@ -172,6 +196,23 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [canvas]
   );
 
+  const addBrushChangeListener = useCallback(
+    (listener: CanvasBrushChangeHandler) => {
+      setBrushChangeListeners((listeners) => [...listeners, listener]);
+    },
+    []
+  );
+
+  const removeBrushChangeListener = useCallback(
+    (listener: CanvasBrushChangeHandler) => {
+      canvas.removeEventListener(CanvasEvents.BRUSH_CHANGE, listener);
+      setBrushChangeListeners((listeners) =>
+        listeners.filter((l) => l !== listener)
+      );
+    },
+    [canvas]
+  );
+
   const addStrokeEndListener = useCallback(
     (listener: CanvasStrokeEndHandler) => {
       setStrokeEndListeners((listeners) => [...listeners, listener]);
@@ -221,6 +262,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     },
     [canvas]
   );
+
+  const changeBrushMode = useCallback(
+    (brushMode: BrushMode) => {
+      canvas?.changeBrushMode(brushMode);
+    },
+    [canvas]
+  );
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -233,11 +282,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       colorPixels,
       // for useBrush
       changeBrushColor,
+      changeBrushMode,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,
       addGridChangeListener,
       removeGridChangeListener,
+      addBrushChangeListener,
+      removeBrushChangeListener,
       addStrokeEndListener,
       removeStrokeEndListener,
       // initial Data

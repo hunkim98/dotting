@@ -10,6 +10,7 @@ import {
 } from "../../utils/math";
 import EventDispatcher from "../../utils/eventDispatcher";
 import {
+  BrushMode,
   CanvasEvents,
   Coord,
   DottingData,
@@ -58,6 +59,8 @@ export default class Canvas extends EventDispatcher {
   private hoveredButton: ButtonDirection | null = null;
 
   private brushColor: string = "#FF0000";
+
+  private brushMode: BrushMode = BrushMode.DOT;
 
   private data: DottingData = new Map<
     // this number is rowIndex
@@ -348,36 +351,10 @@ export default class Canvas extends EventDispatcher {
       this.panZoom
     );
 
-    // ctx.translate(correctedScreenPoint.x, correctedScreenPoint.y);
-    // ctx.scale(this.panZoom.scale, this.panZoom.scale);
     const allRowKeys = Array.from(this.data.keys());
     const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
     const currentTopIndex = Math.min(...allRowKeys);
     const currentLeftIndex = Math.min(...allColumnKeys);
-
-    if (this.hoveredPixel) {
-      ctx.save();
-      const { rowIndex, columnIndex } = this.hoveredPixel;
-      const relativeRowIndex = rowIndex - currentTopIndex;
-      const relativeColumnIndex = columnIndex - currentLeftIndex;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(
-        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-        squareLength,
-        squareLength
-      );
-      ctx.globalAlpha = 0.5;
-      ctx.fillStyle = this.brushColor;
-
-      ctx.fillRect(
-        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-        squareLength,
-        squareLength
-      );
-      ctx.restore();
-    }
 
     ctx.save();
     for (let i = 0; i < this.getRowCount(); i++) {
@@ -395,25 +372,44 @@ export default class Canvas extends EventDispatcher {
           const { rowIndex, columnIndex } = this.hoveredPixel;
           const relativeRowIndex = rowIndex - currentTopIndex;
           const relativeColumnIndex = columnIndex - currentLeftIndex;
-          ctx.globalAlpha = 0.5;
-          ctx.fillStyle = this.brushColor;
-          if (color === this.brushColor) {
-            ctx.globalAlpha = 1;
+          if (this.brushMode !== BrushMode.ERASER) {
+            ctx.globalAlpha = 0.5;
+            ctx.fillStyle = this.brushColor;
+            if (color === this.brushColor) {
+              ctx.globalAlpha = 1;
+            }
+
+            ctx.fillRect(
+              relativeColumnIndex * squareLength +
+                correctedLeftTopScreenPoint.x,
+              relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+              squareLength,
+              squareLength
+            );
+            ctx.restore();
+            continue;
+          } else {
+            if (color) {
+              ctx.globalAlpha = 0.2;
+              ctx.fillStyle = color;
+              ctx.fillRect(
+                relativeColumnIndex * squareLength +
+                  correctedLeftTopScreenPoint.x,
+                relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+                squareLength,
+                squareLength
+              );
+              ctx.restore();
+              continue;
+            }
           }
-          ctx.fillRect(
-            relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-            relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-            squareLength,
-            squareLength
-          );
           ctx.restore();
-          continue;
         }
         if (!color) {
           continue;
         }
-
         ctx.fillStyle = color;
+
         ctx.fillRect(
           j * squareLength + correctedLeftTopScreenPoint.x,
           i * squareLength + correctedLeftTopScreenPoint.y,
@@ -642,6 +638,10 @@ export default class Canvas extends EventDispatcher {
     this.emit(CanvasEvents.DATA_CHANGE, this.data);
   }
 
+  emitBrushChangeEvent() {
+    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushMode);
+  }
+
   getMouseCartCoord(evt: TouchyEvent) {
     evt.preventDefault();
     const point = this.getPointFromTouchyEvent(evt);
@@ -656,6 +656,12 @@ export default class Canvas extends EventDispatcher {
 
   changeBrushColor(color: string) {
     this.brushColor = color;
+    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushMode);
+  }
+
+  changeBrushMode(brushMode: BrushMode) {
+    this.brushMode = brushMode;
+    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushMode);
   }
 
   getPixelIndexFromMouseCartCoord(mouseCartCoord: Coord) {
@@ -691,9 +697,16 @@ export default class Canvas extends EventDispatcher {
   }
 
   drawPixel(rowIndex: number, columnIndex: number) {
-    if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
-      this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+    // This erases the pixel if the brush mode is eraser
+    if (this.brushMode === BrushMode.ERASER) {
+      this.data.get(rowIndex)!.set(columnIndex, { color: "" });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
+    } else if (this.brushMode === BrushMode.DOT) {
+      // this draws the pixel if the brush mode is brush
+      if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
+        this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+        this.emit(CanvasEvents.DATA_CHANGE, this.data);
+      }
     }
 
     this.render();
