@@ -54,6 +54,10 @@ export default class Canvas extends EventDispatcher {
 
   private pinchZoomPrevDiff = 0;
 
+  private isPanZoomable: boolean;
+
+  private isGridFixed: boolean;
+
   private mouseMode: MouseMode = MouseMode.NULL;
 
   private hoveredButton: ButtonDirection | null = null;
@@ -102,16 +106,33 @@ export default class Canvas extends EventDispatcher {
 
   private ctx: CanvasRenderingContext2D;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    initData?: Array<Array<PixelData>>,
+    isPanZoomable?: boolean,
+    isGridFixed?: boolean
+  ) {
     super();
     this.element = canvas;
     this.ctx = canvas.getContext("2d")!;
+
+    this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
+    this.isGridFixed = isGridFixed ? isGridFixed : false;
     this.initialize();
   }
 
   setCanvasData(data: DottingData) {
     this.data = data;
     this.render();
+  }
+
+  setIsGridFixed(isGridFixed: boolean) {
+    this.isGridFixed = isGridFixed;
+    this.render();
+  }
+
+  setIsPanZoomable(isPanZoomable: boolean) {
+    this.isPanZoomable = isPanZoomable;
   }
 
   //http://jsfiddle.net/dX9Y3/
@@ -717,34 +738,23 @@ export default class Canvas extends EventDispatcher {
     const point = this.getPointFromTouchyEvent(evt);
     this.panPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
 
-    // if (window.TouchEvent && evt instanceof TouchEvent) {
-    //   const touchCount = evt.touches.length;
-    //   console.log("touchCount", touchCount, " mobile");
-    //   if (touchCount >= 2) {
-    //     const firstTouch = evt.touches[0];
-    //     const secondTouch = evt.touches[1];
-    //     const pinchZoomCurrentDiff =
-    //       Math.abs(firstTouch.clientX - secondTouch.clientX) +
-    //       Math.abs(firstTouch.clientY - secondTouch.clientY);
-    //     this.pinchZoomPrevDiff = pinchZoomCurrentDiff;
-    //   }
-    // }
-
     const mouseCartCoord = this.getMouseCartCoord(evt);
     const pixelIndex = this.getPixelIndexFromMouseCartCoord(mouseCartCoord);
     if (pixelIndex) {
       this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
     }
-    const buttonDirection = this.detectButtonClicked(mouseCartCoord);
-    this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
-    if (buttonDirection) {
-      this.extensionPoint.lastMousePos = {
-        x: mouseCartCoord.x,
-        y: mouseCartCoord.y,
-      };
-      this.extensionPoint.direction = buttonDirection;
-      this.mouseMode = MouseMode.EXTENDING;
-      touchy(this.element, addEvent, "mousemove", this.handleExtension);
+    if (!this.isGridFixed) {
+      const buttonDirection = this.detectButtonClicked(mouseCartCoord);
+      this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
+      if (buttonDirection) {
+        this.extensionPoint.lastMousePos = {
+          x: mouseCartCoord.x,
+          y: mouseCartCoord.y,
+        };
+        this.extensionPoint.direction = buttonDirection;
+        this.mouseMode = MouseMode.EXTENDING;
+        touchy(this.element, addEvent, "mousemove", this.handleExtension);
+      }
     }
 
     if (this.mouseMode === MouseMode.PANNING) {
@@ -1155,6 +1165,9 @@ export default class Canvas extends EventDispatcher {
   }
 
   handlePanning = (evt: TouchyEvent) => {
+    if (!this.isPanZoomable) {
+      return;
+    }
     const lastMousePos = this.panPoint.lastMousePos;
     if (window.TouchEvent && evt instanceof TouchEvent) {
       if (evt.touches.length > 1) {
@@ -1191,6 +1204,9 @@ export default class Canvas extends EventDispatcher {
 
   handleWheel = (e: WheelEvent) => {
     e.preventDefault();
+    if (!this.isPanZoomable) {
+      return;
+    }
     if (e.ctrlKey) {
       const zoom = 1 - e.deltaY / this.ZOOM_SENSITIVITY;
       let newScale = this.panZoom.scale * zoom;
@@ -1223,6 +1239,9 @@ export default class Canvas extends EventDispatcher {
   }
 
   handlePinchZoom = (evt: TouchyEvent) => {
+    if (!this.isPanZoomable) {
+      return;
+    }
     if (window.TouchEvent && evt instanceof TouchEvent) {
       const touchCount = evt.touches.length;
       if (touchCount < 2) {
@@ -1392,6 +1411,9 @@ export default class Canvas extends EventDispatcher {
     this.ctx.restore();
     this.drawRects();
     this.drawGrids();
+    if (this.isGridFixed) {
+      return;
+    }
     this.drawButtons();
   }
 

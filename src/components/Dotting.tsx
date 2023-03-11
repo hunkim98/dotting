@@ -19,13 +19,15 @@ import {
   CanvasEventHandlerType,
   BrushMode,
   CanvasBrushChangeHandler,
+  DottingInitData,
 } from "./Canvas/types";
 
 export interface DottingProps {
   width: number | string;
   height: number | string;
-  columnCount?: number;
-  rowCount?: number;
+  initData?: Array<Array<PixelData>>;
+  isPanZoomable?: boolean;
+  isGridFixed?: boolean;
   ref?: ForwardedRef<DottingRef>;
 }
 
@@ -48,8 +50,6 @@ export interface DottingRef {
   addStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
   removeStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
   // initial data
-  initColumnCount: number;
-  initRowCount: number;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -71,6 +71,20 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   const [brushChangeListeners, setBrushChangeListeners] = useState<
     CanvasBrushChangeHandler[]
   >([]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    canvas.setIsGridFixed(props.isGridFixed);
+  }, [canvas, props.isGridFixed]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    canvas.setIsPanZoomable(props.isPanZoomable);
+  }, [canvas, props.isPanZoomable]);
 
   useEffect(() => {
     if (!canvas) {
@@ -156,7 +170,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       if (!canvasRef) {
         return;
       }
-      const canvas = new Canvas(canvasRef);
+      const canvas = new Canvas(
+        canvasRef,
+        props.initData,
+        props.isPanZoomable,
+        props.isGridFixed
+      );
       setCanvas(canvas);
     },
     [history]
@@ -232,7 +251,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const addEventListener = useCallback(
     (type: CanvasEvents, listener: CanvasEventHandlerType) => {
-      console.log("added listener!", canvas);
       canvas?.addEventListener(type, listener);
     },
     [canvas]
@@ -293,10 +311,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       addStrokeEndListener,
       removeStrokeEndListener,
       // initial Data
-      initColumnCount: props.columnCount
-        ? props.columnCount
-        : DefaultDottingColumnCount,
-      initRowCount: props.rowCount ? props.rowCount : DefaultDottingRowCount,
     }),
     [clear]
   );

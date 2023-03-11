@@ -13,20 +13,34 @@ export default {
   argTypes: {
     width: {
       defaultValue: 300,
-      table: {
-        defaultValue: 300,
-      },
     },
     height: {
       defaultValue: 300,
-      table: {
-        defaultValue: 300,
-      },
     },
     ref: { control: { disable: true } },
+    initData: { control: { disable: true } },
+    isPanZoomable: {
+      defaultValue: true,
+      table: {
+        defaultValue: { summary: true },
+      },
+    },
+    isGridFixed: {
+      defaultValue: false,
+      table: {
+        defaultValue: { summary: false },
+      },
+    },
   },
 };
 
 export const Dotting = (args: DottingProps) => {
-  return <DottingComponent width={args.width} height={args.height} />;
+  return (
+    <DottingComponent
+      width={args.width}
+      height={args.height}
+      isPanZoomable={args.isPanZoomable}
+      isGridFixed={args.isGridFixed}
+    />
+  );
 };
