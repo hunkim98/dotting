@@ -225,12 +225,22 @@ With `useDotting`, you can manipulate the grids.
       <td></td>
     </tr>
     <tr>
-      <td>`colorPixels(data: PixelModifyData)`</td>
+      <td>`colorPixels(data: Array<PixelModifyItem>)`</td>
       <td>
         Allows you to color pixels on specific indices. If the index provided is
         not in the grid, the grid first extends its grid and then colors it
       </td>
-      <td></td>
+      <td>
+        `Array<PixelModifyItem>`
+        `PixelModifyItem` is defined as follows:
+        ```ts
+        export interface PixelModifyItem {
+          rowIndex: number;
+          columnIndex: number;
+          color: string;
+        }
+        ```
+      </td>
     </tr>
     <tr>
       <td>`erasePixels(data: Array<{rowIndex: number; columnIndex: number}>)`</td>
@@ -238,8 +248,9 @@ With `useDotting`, you can manipulate the grids.
         Allows you to erase pixels on specific indices. If the index provided is
         not in the grid, that data is ignored
       </td>
-      <td></td>
+      <td>`Array<{rowIndex: number; columnIndex: number}`</td>
     </tr>
+
   </tbody>
 </table>
 

@@ -228,6 +228,9 @@ The events that you can listen to are:
       <td>`addDataChangeListener(listener: CanvasDataChangeHandler)`</td>
       <td>
         Allows you to listen to data change events.
+      </td>
+      <td> 
+        `CanvasDataChangeHandler`
         ```ts
         export type CanvasDataChangeHandler = (data: DottingData) => void;
         export type DottingData = Map<number, Map<number, PixelData>>;
@@ -236,7 +239,6 @@ The events that you can listen to are:
         };
         ```
       </td>
-      <td></td>
     </tr>
     <tr>
       <td>`removeDataChangeListener(listener: CanvasDataChangeHandler)`</td>
@@ -249,6 +251,9 @@ The events that you can listen to are:
       <td>`addGridChangeListener(listener: CanvasGridChangeHandler)`</td>
       <td>
         Allows you the listen to the grid change event.
+      </td>
+      <td>
+        `CanvasGridChangeHandler`
         ```ts
         export type CanvasGridChangeHandler = (
             dimensions: {
@@ -264,7 +269,6 @@ The events that you can listen to are:
         ) => void;
         ```
       </td>
-      <td></td>
     </tr>
     <tr>
       <td>`removeGridChangeListener(listener: CanvasGridChangeHandler)`</td>
@@ -277,6 +281,9 @@ The events that you can listen to are:
       <td>`addBrushChangeListener(listener: CanvasBrushChangeHandler)`</td>
       <td>
         Allows you to listen to brush change events
+      </td>
+      <td>
+        `CanvasBrushChangeHandler`
         ```ts
         export type CanvasBrushChangeHandler = (
             brushColor: string,
@@ -288,7 +295,6 @@ The events that you can listen to are:
         }
         ```
       </td>
-      <td></td>
     </tr>
     <tr>
       <td>`removeBrushChangeListener(listener: CanvasBrushChangeHandler)`</td>
@@ -301,6 +307,9 @@ The events that you can listen to are:
       <td>`addStrokeEndListener(listener: CanvasStrokeEndHandler)`</td>
       <td>
         Allows you the the attached listener to the grid change event.
+      </td>
+      <td>
+        `CanvasStrokeEndHandler`
         ```ts
         export type CanvasStrokeEndHandler = (
             strokedPixels: Array<PixelModifyItem>,
@@ -317,7 +326,6 @@ The events that you can listen to are:
         };
         ```
       </td>
-      <td></td>
     </tr>
     <tr>
       <td>`removeStrokeEndListener(listener: CanvasStrokeEndHandler)`</td>
