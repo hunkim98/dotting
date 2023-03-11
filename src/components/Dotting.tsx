@@ -9,8 +9,6 @@ import React, {
 import { forwardRef, useRef } from "react";
 import Canvas from "./Canvas";
 import {
-  DottingData,
-  PixelModifyData,
   PixelData,
   CanvasEvents,
   CanvasDataChangeHandler,
@@ -19,7 +17,7 @@ import {
   CanvasEventHandlerType,
   BrushMode,
   CanvasBrushChangeHandler,
-  DottingInitData,
+  PixelModifyItem,
 } from "./Canvas/types";
 
 export interface DottingProps {
@@ -31,12 +29,9 @@ export interface DottingProps {
   ref?: ForwardedRef<DottingRef>;
 }
 
-const DefaultDottingColumnCount = 5;
-const DefaultDottingRowCount = 5;
-
 export interface DottingRef {
   clear: () => void;
-  colorPixels: (data: PixelModifyData) => void;
+  colorPixels: (data: Array<PixelModifyItem>) => void;
   // for useBrush
   changeBrushColor: (color: string) => void;
   changeBrushMode: (mode: BrushMode) => void;

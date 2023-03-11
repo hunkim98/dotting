@@ -14,10 +14,6 @@ export type PixelData = {
 
 export type DottingData = Map<number, Map<number, PixelData>>;
 
-export type DottingInitData = Array<Array<PixelData>>;
-
-export type PixelModifyData = Array<PixelModifyItem>;
-
 export interface PixelModifyItem {
   rowIndex: number;
   columnIndex: number;

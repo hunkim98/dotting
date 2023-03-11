@@ -14,10 +14,8 @@ import {
   CanvasEvents,
   Coord,
   DottingData,
-  DottingInitData,
   PanZoom,
   PixelData,
-  PixelModifyData,
   PixelModifyItem,
 } from "./types";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
@@ -648,7 +646,7 @@ export default class Canvas extends EventDispatcher {
    * This changes the color in the grid.
    * @param data An array of data about position of change and wanted color
    */
-  colorPixels(data: PixelModifyData) {
+  colorPixels(data: Array<PixelModifyItem>) {
     const rowIndices = data.map((change) => change.rowIndex);
     const columnIndices = data.map((change) => change.columnIndex);
     const minRowIndex = Math.min(...rowIndices);
