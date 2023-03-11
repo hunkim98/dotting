@@ -116,12 +116,35 @@ export default class Canvas extends EventDispatcher {
     isGridFixed?: boolean
   ) {
     super();
+
     this.element = canvas;
     this.ctx = canvas.getContext("2d")!;
 
     this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
     this.isGridFixed = isGridFixed ? isGridFixed : false;
-    this.initialize();
+
+    let isInitDataValid = true;
+    if (initData) {
+      const initRowCount = initData.length;
+      if (initRowCount < 2) {
+        isInitDataValid = false;
+      } else {
+        const initColumnCount = initData[0].length;
+        if (initColumnCount < 2) {
+          isInitDataValid = false;
+        } else {
+          for (let i = 0; i < initRowCount; i++) {
+            if (initData[i].length !== initColumnCount) {
+              isInitDataValid = false;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // we will apply the initData only when the rowCount and columnCount are valid
+    this.initialize(isInitDataValid ? initData : undefined);
   }
 
   setCanvasData(data: DottingData) {
@@ -619,7 +642,7 @@ export default class Canvas extends EventDispatcher {
     return this.dpr;
   }
 
-  initialize() {
+  initialize(initData?: Array<Array<PixelData>>) {
     this.emit = this.emit.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
     this.onMouseOut = this.onMouseOut.bind(this);
@@ -633,11 +656,19 @@ export default class Canvas extends EventDispatcher {
     touchy(this.element, addEvent, "mousemove", this.onMouseMove);
     this.element.addEventListener("wheel", this.handleWheel);
 
-    //initialize data
-    for (let i = 0; i < 6; i++) {
-      this.data.set(i, new Map());
-      for (let j = 0; j < 8; j++) {
-        this.data.get(i)!.set(j, { color: "" });
+    if (initData) {
+      for (let i = 0; i < initData.length; i++) {
+        this.data.set(i, new Map());
+        for (let j = 0; j < initData[i].length; j++) {
+          this.data.get(i)!.set(j, { color: initData[i][j].color });
+        }
+      }
+    } else {
+      for (let i = 0; i < 6; i++) {
+        this.data.set(i, new Map());
+        for (let j = 0; j < 8; j++) {
+          this.data.get(i)!.set(j, { color: "" });
+        }
       }
     }
   }
@@ -1169,11 +1200,6 @@ export default class Canvas extends EventDispatcher {
     this.render();
     //reset the offset
     // this.panZoom.offset = [0, 0];
-  }
-
-  async startResetPanZoom() {
-    this.destroy();
-    this.initialize();
   }
 
   handlePanning = (evt: TouchyEvent) => {
