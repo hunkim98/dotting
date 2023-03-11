@@ -326,7 +326,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       style={{ width: props.width, height: props.height }}
       ref={containerRef}
     >
-      <canvas ref={gotRef} style={{ border: "1px solid black" }} />
+      <canvas
+        ref={gotRef}
+        style={{ border: "1px solid black", touchAction: "none" }}
+      />
     </div>
   );
 });
