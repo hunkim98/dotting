@@ -18,6 +18,7 @@ import {
   PanZoom,
   PixelData,
   PixelModifyData,
+  PixelModifyItem,
 } from "./types";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
 
@@ -57,6 +58,8 @@ export default class Canvas extends EventDispatcher {
   private isPanZoomable: boolean;
 
   private isGridFixed: boolean;
+
+  private strokedPixels: Array<PixelModifyItem> = [];
 
   private mouseMode: MouseMode = MouseMode.NULL;
 
@@ -726,6 +729,11 @@ export default class Canvas extends EventDispatcher {
       // this draws the pixel if the brush mode is brush
       if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
         this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+        this.strokedPixels.push({
+          rowIndex,
+          columnIndex,
+          color: this.brushColor,
+        });
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
     }
@@ -1045,6 +1053,10 @@ export default class Canvas extends EventDispatcher {
 
   onMouseUp() {
     this.mouseMode = MouseMode.NULL;
+    if (this.strokedPixels.length !== 0) {
+      this.emit(CanvasEvents.STROKE_END, this.strokedPixels, this.data);
+      this.strokedPixels = [];
+    }
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
     touchy(this.element, removeEvent, "mousemove", this.handleExtension);

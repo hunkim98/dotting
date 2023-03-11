@@ -57,7 +57,10 @@ export type CanvasGridChangeHandler = (
   }
 ) => void;
 
-export type CanvasStrokeEndHandler = (data: DottingData) => void;
+export type CanvasStrokeEndHandler = (
+  strokedPixels: Array<PixelModifyItem>,
+  data: DottingData
+) => void;
 
 export type CanvasBrushChangeHandler = (
   brushColor: string,
