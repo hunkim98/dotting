@@ -645,6 +645,28 @@ export default class Canvas extends EventDispatcher {
   }
 
   /**
+   * This erases the pixels in the grid.
+   * @param data An array of data about position of change
+   */
+  erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
+    const currentCanvasIndices = this.getGridIndices();
+    const validData = data.filter((change) => {
+      const { rowIndex, columnIndex } = change;
+      return (
+        rowIndex >= currentCanvasIndices.topRowIndex &&
+        rowIndex <= currentCanvasIndices.bottomRowIndex &&
+        columnIndex >= currentCanvasIndices.leftColumnIndex &&
+        columnIndex <= currentCanvasIndices.rightColumnIndex
+      );
+    });
+
+    for (let i = 0; i < validData.length; i++) {
+      const { rowIndex, columnIndex } = validData[i];
+      this.data.get(rowIndex)!.set(columnIndex, { color: "" });
+    }
+    this.render();
+  }
+  /**
    * This changes the color in the grid.
    * @param data An array of data about position of change and wanted color
    */

@@ -33,6 +33,7 @@ export interface DottingProps {
 export interface DottingRef {
   clear: () => void;
   colorPixels: (data: Array<PixelModifyItem>) => void;
+  erasePixels: (data: Array<{ rowIndex: number; columnIndex: number }>) => void;
   // for useBrush
   changeBrushColor: (color: string) => void;
   changeBrushMode: (mode: BrushMode) => void;
@@ -271,6 +272,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [canvas]
   );
 
+  const erasePixels = useCallback(
+    (changes: Array<{ rowIndex: number; columnIndex: number }>) => {
+      canvas?.erasePixels(changes);
+    },
+    [canvas]
+  );
+
   const changeBrushColor = useCallback(
     (color: string) => {
       canvas?.changeBrushColor(color);
@@ -295,6 +303,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       // for useDotting
       clear,
       colorPixels,
+      erasePixels,
       // for useBrush
       changeBrushColor,
       changeBrushMode,

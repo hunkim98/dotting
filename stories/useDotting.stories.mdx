@@ -232,12 +232,20 @@ With `useDotting`, you can manipulate the grids.
       </td>
       <td></td>
     </tr>
+    <tr>
+      <td>`erasePixels(data: Array<{rowIndex: number; columnIndex: number}>)`</td>
+      <td>
+        Allows you to erase pixels on specific indices. If the index provided is
+        not in the grid, that data is ignored
+      </td>
+      <td></td>
+    </tr>
   </tbody>
 </table>
 
 ### Examples
 
-#### 1. Change Pixel Color Example `colorPixels(data: PixelModifyData)`
+#### 1. Change Pixel Color Example `colorPixels(data: PixelModifyData)`, `erasePixels(data: Array<{rowIndex: number; columnIndex: number}>)`
 
 With `colorPixels` method, you can change the color of specific pixels.
 The `PixelModifyData` type is defined as follows:
@@ -255,6 +263,10 @@ export interface PixelModifyItem {
 By passing an array of `PixelModifyItem` you are able to color the pixels.
 If the rowIndex and columnIndex of the pixel is not in the grid, the grid
 first extends its grid and then colors it.
+
+You can also erase pixels using `erasePixels` method. The `erasePixels` method
+takes an array of `{rowIndex: number; columnIndex: number}` as a parameter. If the rowIndex and
+columnIndex of the pixel is not in the grid, that data is ignored.
 
 <ColorPixels />
 

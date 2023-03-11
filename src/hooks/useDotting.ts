@@ -7,7 +7,7 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { PixelModifyData } from "../components/Canvas/types";
+import { PixelModifyItem } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
 
 const useDotting = (ref: MutableRefObject<DottingRef>) => {
@@ -16,17 +16,23 @@ const useDotting = (ref: MutableRefObject<DottingRef>) => {
   }, [ref]);
 
   const colorPixels = useCallback(
-    (changes: PixelModifyData) => {
+    (changes: Array<PixelModifyItem>) => {
       ref.current?.colorPixels(changes);
     },
     [ref]
   );
 
-  const erasePixels = useCallback((changes: PixelModifyData) => {}, [ref]);
+  const erasePixels = useCallback(
+    (changes: Array<{ rowIndex: number; columnIndex: number }>) => {
+      ref.current?.erasePixels(changes);
+    },
+    [ref]
+  );
 
   return {
     clear,
     colorPixels,
+    erasePixels,
   };
 };
 
