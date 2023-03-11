@@ -36,6 +36,8 @@ export enum ButtonDirection {
   RIGHT = "RIGHT",
   NULL = "NULL",
 }
+
+const sizeControlSvg = `<svg id="a" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20.6 27.35"><g opacity=".8"><line x1="10.3" y1="22.36" x2="10.3" y2="4.98" fill="none" stroke="#231f20" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><polygon points="0 20.84 10.3 27.35 20.6 20.84 20.6 20.77 0 20.77 0 20.84" fill="#231f20"/><polygon points="0 6.5 10.3 0 20.6 6.5 20.6 6.57 0 6.57 0 6.5" fill="#231f20"/></g></svg>`;
 export default class Canvas extends EventDispatcher {
   private MAX_SCALE = 1.5;
 
@@ -153,12 +155,16 @@ export default class Canvas extends EventDispatcher {
   }
 
   setIsGridFixed(isGridFixed: boolean) {
-    this.isGridFixed = isGridFixed;
+    if (isGridFixed !== undefined) {
+      this.isGridFixed = isGridFixed;
+    }
     this.render();
   }
 
   setIsPanZoomable(isPanZoomable: boolean) {
-    this.isPanZoomable = isPanZoomable;
+    if (isPanZoomable !== undefined) {
+      this.isPanZoomable = isPanZoomable;
+    }
   }
 
   //http://jsfiddle.net/dX9Y3/
@@ -277,6 +283,22 @@ export default class Canvas extends EventDispatcher {
       this.buttonHeight * this.panZoom.scale
     );
     ctx.restore();
+    this.drawArrowHead(
+      ctx,
+      correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
+      correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
+      Math.PI * 2,
+      this.panZoom.scale,
+      opacity
+    );
+    this.drawArrowHead(
+      ctx,
+      correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
+      correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
+      Math.PI,
+      this.panZoom.scale,
+      opacity
+    );
   }
 
   drawBottomButton(opacity: number) {
@@ -306,6 +328,36 @@ export default class Canvas extends EventDispatcher {
       this.buttonHeight * this.panZoom.scale
     );
     ctx.restore();
+    this.drawArrowHead(
+      ctx,
+      correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
+      correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
+      Math.PI * 2,
+      this.panZoom.scale,
+      opacity
+    );
+    this.drawArrowHead(
+      ctx,
+      correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
+      correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
+      Math.PI,
+      this.panZoom.scale,
+      opacity
+    );
+  }
+  drawArrowHead(ctx, x, y, radians, scale, opacity) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.translate(x, y);
+    ctx.rotate(radians);
+    ctx.moveTo(0, 0);
+    ctx.lineTo(10 * scale, 6 * scale);
+    ctx.lineTo(-10 * scale, 6 * scale);
+    ctx.closePath();
+    ctx.globalAlpha = opacity;
+    ctx.fillStyle = "#bbbbbb";
+    ctx.fill();
+    ctx.restore();
   }
 
   drawLeftButton(opacity: number) {
@@ -327,6 +379,7 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom
     );
+
     ctx.fillStyle = "#E1DFE1";
     ctx.globalAlpha = opacity;
     ctx.fillRect(
@@ -336,6 +389,22 @@ export default class Canvas extends EventDispatcher {
       gridsHeight * this.panZoom.scale
     );
     ctx.restore();
+    this.drawArrowHead(
+      ctx,
+      correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
+      -Math.PI / 2,
+      this.panZoom.scale,
+      opacity
+    );
+    this.drawArrowHead(
+      ctx,
+      correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
+      Math.PI / 2,
+      this.panZoom.scale,
+      opacity
+    );
   }
 
   drawRightButton(opacity: number) {
@@ -365,6 +434,22 @@ export default class Canvas extends EventDispatcher {
       gridsHeight * this.panZoom.scale
     );
     ctx.restore();
+    this.drawArrowHead(
+      ctx,
+      correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
+      -Math.PI / 2,
+      this.panZoom.scale,
+      opacity
+    );
+    this.drawArrowHead(
+      ctx,
+      correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
+      Math.PI / 2,
+      this.panZoom.scale,
+      opacity
+    );
   }
 
   drawButtons() {
@@ -1277,6 +1362,7 @@ export default class Canvas extends EventDispatcher {
   }
 
   handlePinchZoom = (evt: TouchyEvent) => {
+    evt.preventDefault();
     if (!this.isPanZoomable) {
       return;
     }
