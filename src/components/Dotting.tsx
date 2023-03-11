@@ -27,6 +27,7 @@ export interface DottingProps {
   isPanZoomable?: boolean;
   isGridFixed?: boolean;
   ref?: ForwardedRef<DottingRef>;
+  initBrushColor?: string;
 }
 
 export interface DottingRef {
@@ -169,7 +170,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         canvasRef,
         props.initData,
         props.isPanZoomable,
-        props.isGridFixed
+        props.isGridFixed,
+        props.initBrushColor
       );
       setCanvas(canvas);
     },

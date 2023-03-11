@@ -65,7 +65,7 @@ export default class Canvas extends EventDispatcher {
 
   private hoveredButton: ButtonDirection | null = null;
 
-  private brushColor: string = "#FF0000";
+  private brushColor: string;
 
   private brushMode: BrushMode = BrushMode.DOT;
 
@@ -113,7 +113,8 @@ export default class Canvas extends EventDispatcher {
     canvas: HTMLCanvasElement,
     initData?: Array<Array<PixelData>>,
     isPanZoomable?: boolean,
-    isGridFixed?: boolean
+    isGridFixed?: boolean,
+    initBrushColor?: string
   ) {
     super();
 
@@ -122,6 +123,7 @@ export default class Canvas extends EventDispatcher {
 
     this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
     this.isGridFixed = isGridFixed ? isGridFixed : false;
+    this.brushColor = initBrushColor ? initBrushColor : "#FF0000";
 
     let isInitDataValid = true;
     if (initData) {

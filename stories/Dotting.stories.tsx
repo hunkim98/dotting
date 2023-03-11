@@ -31,6 +31,15 @@ export default {
         defaultValue: { summary: false },
       },
     },
+    initBrushColor: {
+      defaultValue: "#FF0000",
+      control: {
+        disable: true,
+      },
+      table: {
+        defaultValue: { summary: "#FF0000" },
+      },
+    },
   },
 };
 
