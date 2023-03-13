@@ -524,6 +524,7 @@ export default class Canvas extends EventDispatcher {
           if (indicator) {
             const relativeRowIndex = rowIndex - currentTopIndex;
             const relativeColumnIndex = columnIndex - currentLeftIndex;
+            ctx.save();
             ctx.fillStyle = indicator.color;
             ctx.globalAlpha = 0.5;
             ctx.fillRect(
@@ -533,6 +534,7 @@ export default class Canvas extends EventDispatcher {
               squareLength,
               squareLength
             );
+            ctx.restore();
           }
         }
         if (

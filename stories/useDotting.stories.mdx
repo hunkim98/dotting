@@ -265,7 +265,7 @@ With `useDotting`, you can manipulate the grids.
         Allows you to erase pixels on specific indices. If the index provided is
         not in the grid, that data is ignored
       </td>
-      <td>`Array<{rowIndex: number; columnIndex: number}`</td>
+      <td>`Array<{rowIndex: number; columnIndex: number}>`</td>
     </tr>
     <tr>
       <td>`setIndicatorPixels(indicators: Array<PixelModifyItem>)`</td>
@@ -326,7 +326,7 @@ They do not affect the data of the grid.
 
 By the way, if you want to initially have the indicator pixels before the canvas mounts,
 you need to pass the `initIndicatorData` prop to the `Dotting` component.
-The data type of the `initIndicatorData` is the `Array<PixelModifyItem>`
+The data type of the `initIndicatorData` is the `Array<PixelModifyItem>`.
 
 <SetIndicatorPixels />
 
