@@ -39,11 +39,19 @@ const useDotting = (ref: MutableRefObject<DottingRef>) => {
     [ref]
   );
 
+  const setIndicatorPixels = useCallback(
+    (indicators: Array<PixelModifyItem>) => {
+      ref.current?.setIndicatorPixels(indicators);
+    },
+    [ref]
+  );
+
   return {
     clear,
     colorPixels,
     erasePixels,
     downloadImage,
+    setIndicatorPixels,
   };
 };
 

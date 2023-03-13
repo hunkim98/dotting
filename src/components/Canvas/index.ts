@@ -63,6 +63,8 @@ export default class Canvas extends EventDispatcher {
 
   private strokedPixels: Array<PixelModifyItem> = [];
 
+  private indicatorPixels: Array<PixelModifyItem> = [];
+
   private mouseMode: MouseMode = MouseMode.NULL;
 
   private hoveredButton: ButtonDirection | null = null;
@@ -117,7 +119,8 @@ export default class Canvas extends EventDispatcher {
     isPanZoomable?: boolean,
     isGridVisible?: boolean,
     isGridFixed?: boolean,
-    initBrushColor?: string
+    initBrushColor?: string,
+    initIndicatorData?: Array<PixelModifyItem>
   ) {
     super();
 
@@ -128,6 +131,7 @@ export default class Canvas extends EventDispatcher {
     this.isGridFixed = isGridFixed ? isGridFixed : false;
     this.isGridVisible = isGridVisible ? isGridVisible : true;
     this.brushColor = initBrushColor ? initBrushColor : "#FF0000";
+    this.indicatorPixels = initIndicatorData ? initIndicatorData : [];
 
     let isInitDataValid = true;
     if (initData) {
@@ -155,6 +159,11 @@ export default class Canvas extends EventDispatcher {
 
   setCanvasData(data: DottingData) {
     this.data = data;
+    this.render();
+  }
+
+  setIndicatorPixels(indicatorPixels: Array<PixelModifyItem>) {
+    this.indicatorPixels = indicatorPixels;
     this.render();
   }
 
@@ -505,7 +514,27 @@ export default class Canvas extends EventDispatcher {
         // console.log(i, j, this.data.get(i)?.get(j)?.color);
         const rowIndex = i + currentTopIndex;
         const columnIndex = j + currentLeftIndex;
+
         const color = this.data.get(rowIndex)?.get(columnIndex)?.color;
+        if (this.indicatorPixels.length !== 0) {
+          const indicator = this.indicatorPixels.find(
+            (pixel) =>
+              pixel.rowIndex === rowIndex && pixel.columnIndex === columnIndex
+          );
+          if (indicator) {
+            const relativeRowIndex = rowIndex - currentTopIndex;
+            const relativeColumnIndex = columnIndex - currentLeftIndex;
+            ctx.fillStyle = indicator.color;
+            ctx.globalAlpha = 0.5;
+            ctx.fillRect(
+              relativeColumnIndex * squareLength +
+                correctedLeftTopScreenPoint.x,
+              relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+              squareLength,
+              squareLength
+            );
+          }
+        }
         if (
           this.hoveredPixel &&
           this.hoveredPixel.rowIndex === rowIndex &&

@@ -8,7 +8,12 @@ import Plugin from "./assets/plugin.svg";
 import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
-import { Clear, ColorPixels, DownloadImage } from "./useDottingComponents";
+import {
+  Clear,
+  ColorPixels,
+  DownloadImage,
+  SetIndicatorPixels,
+} from "./useDottingComponents";
 
 <Meta title="Hooks/useDotting" />
 
@@ -304,6 +309,14 @@ columnIndex of the pixel is not in the grid, that data is ignored.
 With `clear` method, you can clear all the pixels in the grid.
 
 <Clear />
+
+#### 4. Set Indicator Pixels `setIndicatorPixels(data: Array<PixelModifyItem>)`
+
+With `setIndicatorPixels` method, you can set the indicator pixels. The indicator pixels are
+the pixels that are shwon as indicators in the grid. Their opacity is lower than the real pixel data.
+They do not affect the data of the grid.
+
+<SetIndicatorPixels />
 
 <div className="subheading">Example Source Codes</div>
 
