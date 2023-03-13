@@ -14,6 +14,7 @@ import {
   CanvasEvents,
   Coord,
   DottingData,
+  ImageDownloadOptions,
   PanZoom,
   PixelData,
   PixelModifyItem,
@@ -35,7 +36,6 @@ export enum ButtonDirection {
   NULL = "NULL",
 }
 
-const sizeControlSvg = `<svg id="a" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20.6 27.35"><g opacity=".8"><line x1="10.3" y1="22.36" x2="10.3" y2="4.98" fill="none" stroke="#231f20" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2"/><polygon points="0 20.84 10.3 27.35 20.6 20.84 20.6 20.77 0 20.77 0 20.84" fill="#231f20"/><polygon points="0 6.5 10.3 0 20.6 6.5 20.6 6.57 0 6.57 0 6.5" fill="#231f20"/></g></svg>`;
 export default class Canvas extends EventDispatcher {
   private MAX_SCALE = 1.5;
 
@@ -58,6 +58,8 @@ export default class Canvas extends EventDispatcher {
   private isPanZoomable: boolean;
 
   private isGridFixed: boolean;
+
+  private isGridVisible: boolean;
 
   private strokedPixels: Array<PixelModifyItem> = [];
 
@@ -113,6 +115,7 @@ export default class Canvas extends EventDispatcher {
     canvas: HTMLCanvasElement,
     initData?: Array<Array<PixelData>>,
     isPanZoomable?: boolean,
+    isGridVisible?: boolean,
     isGridFixed?: boolean,
     initBrushColor?: string
   ) {
@@ -123,6 +126,7 @@ export default class Canvas extends EventDispatcher {
 
     this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
     this.isGridFixed = isGridFixed ? isGridFixed : false;
+    this.isGridVisible = isGridVisible ? isGridVisible : true;
     this.brushColor = initBrushColor ? initBrushColor : "#FF0000";
 
     let isInitDataValid = true;
@@ -151,6 +155,13 @@ export default class Canvas extends EventDispatcher {
 
   setCanvasData(data: DottingData) {
     this.data = data;
+    this.render();
+  }
+
+  setIsGridVisible(isGridVisible: boolean) {
+    if (isGridVisible !== undefined) {
+      this.isGridVisible = isGridVisible;
+    }
     this.render();
   }
 
@@ -856,6 +867,71 @@ export default class Canvas extends EventDispatcher {
       };
     }
     return null;
+  }
+
+  downloadImage(props?: ImageDownloadOptions) {
+    const imageCanvas = document.createElement("canvas");
+    const columnCount = this.getColumnCount();
+    const rowCount = this.getRowCount();
+    imageCanvas.width = columnCount * this.gridSquareLength;
+    imageCanvas.height = rowCount * this.gridSquareLength;
+    const imageContext = imageCanvas.getContext("2d")!;
+    const allRowKeys = Array.from(this.data.keys());
+    const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
+    const currentTopIndex = Math.min(...allRowKeys);
+    const currentLeftIndex = Math.min(...allColumnKeys);
+    for (let i = 0; i < rowCount; i++) {
+      for (let j = 0; j < columnCount; j++) {
+        const rowIndex = i + currentTopIndex;
+        const columnIndex = j + currentLeftIndex;
+        const pixel = this.data.get(rowIndex)!.get(columnIndex);
+        if (pixel && pixel.color) {
+          const pixelCoord = {
+            x: j * this.gridSquareLength,
+            y: i * this.gridSquareLength,
+          };
+          imageContext.save();
+          imageContext.fillStyle = pixel.color;
+          imageContext.fillRect(
+            pixelCoord.x,
+            pixelCoord.y,
+            this.gridSquareLength,
+            this.gridSquareLength
+          );
+          imageContext.restore();
+        }
+      }
+      imageContext.save();
+      imageContext.strokeStyle = "#000000";
+      imageContext.lineWidth = 1;
+      if (props && props.isGridVisible) {
+        for (let i = 0; i <= this.getColumnCount(); i++) {
+          imageContext.beginPath();
+          imageContext.moveTo(i * this.gridSquareLength, 0);
+          imageContext.lineTo(
+            i * this.gridSquareLength,
+            rowCount * this.gridSquareLength
+          );
+          imageContext.stroke();
+          imageContext.closePath();
+        }
+        for (let j = 0; j <= this.getRowCount(); j++) {
+          imageContext.beginPath();
+          imageContext.moveTo(0, j * this.gridSquareLength);
+          imageContext.lineTo(
+            columnCount * this.gridSquareLength,
+            j * this.gridSquareLength
+          );
+          imageContext.stroke();
+          imageContext.closePath();
+        }
+      }
+      imageContext.restore();
+    }
+    const anchor = document.createElement("a");
+    anchor.href = imageCanvas.toDataURL("image/png");
+    anchor.download = "dotting.png";
+    anchor.click();
   }
 
   /**
@@ -1576,7 +1652,9 @@ export default class Canvas extends EventDispatcher {
     this.ctx.fillRect(0, 0, this.width, this.height);
     this.ctx.restore();
     this.drawRects();
-    this.drawGrids();
+    if (this.isGridVisible) {
+      this.drawGrids();
+    }
     if (this.isGridFixed) {
       return;
     }

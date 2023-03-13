@@ -1,0 +1,34 @@
+import React from "react";
+import { useRef } from "react";
+import Dotting, { DottingRef } from "../../src/components/Dotting";
+import useDotting from "../../src/hooks/useDotting";
+
+const DownloadImage = () => {
+  const ref = useRef<DottingRef>();
+  const { downloadImage } = useDotting(ref);
+  return (
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <Dotting ref={ref} width={"100%"} height={300} />
+      <button
+        style={{
+          padding: "5px 10px",
+          background: "none",
+          marginTop: 10,
+          marginBottom: 50,
+        }}
+        onClick={() => downloadImage()}
+      >
+        Download
+      </button>
+    </div>
+  );
+};
+
+export default DownloadImage;

@@ -8,7 +8,7 @@ import Plugin from "./assets/plugin.svg";
 import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
-import { Clear, ColorPixels, GridInformation } from "./useDottingComponents";
+import { Clear, ColorPixels, DownloadImage } from "./useDottingComponents";
 
 <Meta title="Hooks/useDotting" />
 
@@ -220,6 +220,18 @@ With `useDotting`, you can manipulate the grids.
   </thead>
   <tbody>
     <tr>
+      <td>`downloadImage(options?: ImageDownloadOptions)`</td>
+      <td>Allows you to download the pixel image</td>
+      <td>
+        `ImageDownloadOptions`
+        ```ts
+        export interface ImageDownloadOptions {
+          isGridVisible?: boolean;
+        }
+        ```
+      </td>
+    </tr>
+    <tr>
       <td>`clear()`</td>
       <td>Allows you to clear the canvas</td>
       <td></td>
@@ -227,7 +239,7 @@ With `useDotting`, you can manipulate the grids.
     <tr>
       <td>`colorPixels(data: Array<PixelModifyItem>)`</td>
       <td>
-        Allows you to color pixels on specific indices. If the index provided is
+        Allows you to color pixels on specific indices. If the index provided is 
         not in the grid, the grid first extends its grid and then colors it
       </td>
       <td>
@@ -256,7 +268,13 @@ With `useDotting`, you can manipulate the grids.
 
 ### Examples
 
-#### 1. Change Pixel Color Example `colorPixels(data: PixelModifyData)`, `erasePixels(data: Array<{rowIndex: number; columnIndex: number}>)`
+#### 1. Download Image Example `downloadImage()`
+
+With `downloadImage` method, you can download the image of the grid.
+
+<DownloadImage />
+
+#### 2. Change Pixel Color Example `colorPixels(data: PixelModifyData)`, `erasePixels(data: Array<{rowIndex: number; columnIndex: number}>)`
 
 With `colorPixels` method, you can change the color of specific pixels.
 The `PixelModifyData` type is defined as follows:
@@ -281,7 +299,7 @@ columnIndex of the pixel is not in the grid, that data is ignored.
 
 <ColorPixels />
 
-#### 2. Clear Example `clear()`
+#### 3. Clear Example `clear()`
 
 With `clear` method, you can clear all the pixels in the grid.
 

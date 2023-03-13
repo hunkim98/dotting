@@ -7,7 +7,10 @@ import {
   useMemo,
   useRef,
 } from "react";
-import { PixelModifyItem } from "../components/Canvas/types";
+import {
+  ImageDownloadOptions,
+  PixelModifyItem,
+} from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
 
 const useDotting = (ref: MutableRefObject<DottingRef>) => {
@@ -29,10 +32,18 @@ const useDotting = (ref: MutableRefObject<DottingRef>) => {
     [ref]
   );
 
+  const downloadImage = useCallback(
+    (options?: ImageDownloadOptions) => {
+      ref.current?.downloadImage(options);
+    },
+    [ref]
+  );
+
   return {
     clear,
     colorPixels,
     erasePixels,
+    downloadImage,
   };
 };
 

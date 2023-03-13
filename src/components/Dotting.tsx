@@ -18,11 +18,13 @@ import {
   BrushMode,
   CanvasBrushChangeHandler,
   PixelModifyItem,
+  ImageDownloadOptions,
 } from "./Canvas/types";
 
 export interface DottingProps {
   width: number | string;
   height: number | string;
+  isGridVisible?: boolean;
   initData?: Array<Array<PixelData>>;
   isPanZoomable?: boolean;
   isGridFixed?: boolean;
@@ -31,9 +33,11 @@ export interface DottingProps {
 }
 
 export interface DottingRef {
+  // for useDotting
   clear: () => void;
   colorPixels: (data: Array<PixelModifyItem>) => void;
   erasePixels: (data: Array<{ rowIndex: number; columnIndex: number }>) => void;
+  downloadImage: (options?: ImageDownloadOptions) => void;
   // for useBrush
   changeBrushColor: (color: string) => void;
   changeBrushMode: (mode: BrushMode) => void;
@@ -75,6 +79,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     }
     canvas.setIsGridFixed(props.isGridFixed);
   }, [canvas, props.isGridFixed]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    canvas.setIsGridVisible(props.isGridVisible);
+  }, [canvas, props.isGridVisible]);
 
   useEffect(() => {
     if (!canvas) {
@@ -171,6 +182,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         canvasRef,
         props.initData,
         props.isPanZoomable,
+        props.isGridVisible,
         props.isGridFixed,
         props.initBrushColor
       );
@@ -279,6 +291,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [canvas]
   );
 
+  const downloadImage = useCallback(
+    (options?: ImageDownloadOptions) => {
+      canvas?.downloadImage(options);
+    },
+    [canvas]
+  );
+
   const changeBrushColor = useCallback(
     (color: string) => {
       canvas?.changeBrushColor(color);
@@ -304,6 +323,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       clear,
       colorPixels,
       erasePixels,
+      downloadImage,
       // for useBrush
       changeBrushColor,
       changeBrushMode,

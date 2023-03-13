@@ -12,6 +12,10 @@ export type PixelData = {
   color: string;
 };
 
+export interface ImageDownloadOptions {
+  isGridVisible?: boolean;
+}
+
 export type DottingData = Map<number, Map<number, PixelData>>;
 
 export interface PixelModifyItem {

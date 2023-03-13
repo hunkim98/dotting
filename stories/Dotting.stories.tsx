@@ -25,6 +25,12 @@ export default {
         defaultValue: { summary: true },
       },
     },
+    isGridVisible: {
+      defaultValue: true,
+      table: {
+        defaultValue: { summary: true },
+      },
+    },
     isGridFixed: {
       defaultValue: false,
       table: {
@@ -49,6 +55,7 @@ export const Dotting = (args: DottingProps) => {
       width={args.width}
       height={args.height}
       isPanZoomable={args.isPanZoomable}
+      isGridVisible={args.isGridVisible}
       isGridFixed={args.isGridFixed}
     />
   );
