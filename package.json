@@ -32,7 +32,7 @@
   "bugs": {
     "url": "https://github.com/hunkim98/dotting/issues"
   },
-  "homepage": "https://github.com/hunkim98/dotting",
+  "homepage": "https://hunkim98.github.io/dotting",
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
