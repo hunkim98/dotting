@@ -2,6 +2,7 @@ import Dotting from "./components/Dotting";
 import {
   Coord,
   PixelData,
+  ImageDownloadOptions,
   DottingData,
   PixelModifyItem,
   CanvasEvents,
@@ -16,6 +17,7 @@ export {
   Dotting,
   Coord,
   PixelData,
+  ImageDownloadOptions,
   DottingData,
   PixelModifyItem,
   CanvasEvents,
