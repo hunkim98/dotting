@@ -985,9 +985,9 @@ export default class Canvas extends EventDispatcher {
     if (pixelIndex) {
       this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
     }
+    this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
     if (!this.isGridFixed) {
       const buttonDirection = this.detectButtonClicked(mouseCartCoord);
-      this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
       if (buttonDirection) {
         this.extensionPoint.lastMousePos = {
           x: mouseCartCoord.x,
