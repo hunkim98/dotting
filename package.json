@@ -13,7 +13,8 @@
     "dev": "start-storybook -p 6005",
     "storybook:build": "build-storybook",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "prepublishOnly": "yarn build"
   },
   "repository": {
     "type": "git",

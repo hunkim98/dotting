@@ -858,6 +858,11 @@ export default class Canvas extends EventDispatcher {
     return null;
   }
 
+  /**
+   * This function colors the pixel in the grid
+   * @param rowIndex
+   * @param columnIndex
+   */
   drawPixel(rowIndex: number, columnIndex: number) {
     // This erases the pixel if the brush mode is eraser
     if (this.brushMode === BrushMode.ERASER) {
@@ -865,13 +870,28 @@ export default class Canvas extends EventDispatcher {
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
     } else if (this.brushMode === BrushMode.DOT) {
       // this draws the pixel if the brush mode is brush
-      if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
-        this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+
+      if (
+        // draw Pixel can be called multiple times for the same pixel
+        // we only want to add the pixel to the strokedPixels array if it is a new pixel
+        // the first condition is to push the array if it is empty
+        this.strokedPixels.length === 0 ||
+        this.strokedPixels[this.strokedPixels.length - 1].rowIndex !==
+          rowIndex ||
+        this.strokedPixels[this.strokedPixels.length - 1].columnIndex !==
+          columnIndex
+      ) {
+        // we preserve the intention of the user coloring the same pixel twice
+        // remember that the strokedPixels array is stored in order
         this.strokedPixels.push({
           rowIndex,
           columnIndex,
           color: this.brushColor,
         });
+      }
+
+      if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
+        this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
     }
