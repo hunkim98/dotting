@@ -91,7 +91,7 @@ export const Component = () => {
 };
 ```
 
-For more details on how to use `Dotting` please check the [documentation](https://hunkim98.github.io/dotting)
+For more details on how to use hooks, please check the [documentation](https://hunkim98.github.io/dotting/?path=/story/hooks-setup--page)
 
 <br/>
 
