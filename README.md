@@ -60,6 +60,8 @@ const Clear = () => {
 };
 ```
 
+<br/>
+
 ## Components
 
 To use the canvas component, you should first use the `<Dotting/>` component. You must set the `width` and `height` to use it.
@@ -68,6 +70,7 @@ To use the canvas component, you should first use the `<Dotting/>` component. Yo
 <Dotting width={300} height={300}/>
 ```
 
+<br/>
 
 ## Hooks
 
@@ -89,6 +92,8 @@ export const Component = () => {
 ```
 
 For more details on how to use `Dotting` please check the [documentation](https://hunkim98.github.io/dotting)
+
+<br/>
 
 ## For contributing
 
