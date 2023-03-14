@@ -1,18 +1,42 @@
 ![dotting_github](https://user-images.githubusercontent.com/57612141/225073544-94a2f8b4-187c-475f-a079-3b427efbdd02.png)
 
-## Dotting: Flexible Pixel Art Editor for React
+<br/>
+
+<h2 align="center"> Dotting: Flexible Pixel Art Editor for React </h2>
+
+<p align="center">Dotting is a <strong>Pixel art drawing component</strong> for React for creators who want to  implement a pixel canvas editor to their websites.</p>
+
+<br/>
 
 
-Dotting is a **Pixel art drawing component** for React for creators who want to implement a pixel canvas editor to their websites.
 
-![dotting_ver1](https://user-images.githubusercontent.com/57612141/225075775-78281b37-864b-407d-947b-fdafcc544fa5.gif)
 
-[Documentation](https://hunkim98.github.io/dotting)
 
-### Why Dotting?
-- Dotting works for both PC 💻 and moible 📱 environments. 
-- You can freely pan & zoom around the using your mouse🖱 or your fingers👌.
-- The canvas grid size is changeable⬆️⬅️⬇️➡️. You can extend your canvas grid to any size by extending the grid from any edges. 
+
+<br/>
+
+<h3 align="center">Why Dotting?</h3>
+<p align="center">1. Dotting works for both PC 💻 and moible 📱 environments.</p>
+<p align="center">2. You can freely pan & zoom around the using your mouse🖱 or your fingers👌.</p>
+<p align="center">3. You can extend your canvas grid to any sizee⬆️⬅️⬇️➡️.</p>
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/57612141/225075775-78281b37-864b-407d-947b-fdafcc544fa5.gif"/>
+</p>
+
+</br>
+
+<p align="center">
+  <a href="https://hunkim98.github.io/dotting">
+    Documentation
+  </a>
+</p>
+
+</br>
+
+
+  
+
 
 ## Quick Start
 
