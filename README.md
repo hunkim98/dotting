@@ -49,7 +49,7 @@ $ yarn add dotting
 Step2. Place `Dotting` component in your project
 
 ```jsx
-import Dotting from "dotting";
+import { Dotting } from "dotting";
 
 const Clear = () => {
   return (
