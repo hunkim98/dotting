@@ -71,7 +71,7 @@ To manipulate the pixel grids programatically, you can use hooks. The provided h
 import { Dotting, DottingRef, useDotting } from "dotting"
 
 export const Component = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { clear } = useDotting(ref);
   return (
     <div>
