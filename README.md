@@ -4,7 +4,7 @@
 
 <h2 align="center"> Dotting: Flexible Pixel Art Editor for React </h2>
 
-<p align="center">Dotting is a <strong>Pixel art drawing component</strong> for React for creators who want to  implement a pixel canvas editor to their websites.</p>
+<p align="center">Dotting is a <strong>Pixel art drawing component</strong> for React developers who want to implement a pixel canvas editor in their websites.</p>
 
 <br/>
 
