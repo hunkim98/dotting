@@ -8,7 +8,11 @@ import Plugin from "./assets/plugin.svg";
 import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
-import { StrokeListener, HoverPixelListener } from "./useHandlersComponents";
+import {
+  StrokeListener,
+  HoverPixelListener,
+  CanvasElementEvents,
+} from "./useHandlersComponents";
 
 <Meta title="Hooks/useHandlers" />
 
@@ -391,6 +395,13 @@ With the hover pixel change listener, you can observe the changes when the user 
 When there is no hovered pixel, the return value will be `null`
 
 <HoverPixelListener />
+
+#### 3. Canvas Element Custom Event Listener `addCanvasElementEventListener`, `removeCanvasElementEventListener`
+
+You can also directly add event listeners to the canvas element.
+This is useful when you want to listen to events that are not provided by the library.
+
+<CanvasElementEvents />
 
 <div className="subheading">Example Source Codes</div>
 

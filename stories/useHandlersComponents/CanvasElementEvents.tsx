@@ -8,22 +8,24 @@ import {
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useHandlers from "../../src/hooks/useHandlers";
 
-const HoverPixelListener = () => {
+const CanvasElementEvents = () => {
   const ref = useRef<DottingRef>();
-  const { addHoverPixelChangeListener, removeHoverPixelChangeListener } =
+  const { addCanvasElementEventListener, removeCanvasElementEventListener } =
     useHandlers(ref);
-  const [hoveredPixel, setHoveredPixel] =
-    useState<{ rowIndex: number; columnIndex: number } | null>(null);
-  const handleHoverPixelChangeHandler: CanvasHoverPixelChangeHandler = (
-    indices
-  ) => {
-    setHoveredPixel(indices);
-  };
+  const [isMouseDown, setIsMouseDown] = useState(false);
 
   useEffect(() => {
-    addHoverPixelChangeListener(handleHoverPixelChangeHandler);
+    const handleMouseDown = () => {
+      setIsMouseDown(true);
+    };
+    const handleMouseUp = () => {
+      setIsMouseDown(false);
+    };
+    addCanvasElementEventListener("mousedown", handleMouseDown);
+    addCanvasElementEventListener("mouseup", handleMouseUp);
     return () => {
-      removeHoverPixelChangeListener(handleHoverPixelChangeHandler);
+      removeCanvasElementEventListener("mousedown", handleMouseDown);
+      removeCanvasElementEventListener("mouseup", handleMouseUp);
     };
   }, []);
   return (
@@ -46,16 +48,11 @@ const HoverPixelListener = () => {
           marginBottom: 50,
         }}
       >
-        <strong>Hovered Pixel</strong>
-        {hoveredPixel && (
-          <div>
-            rowIndex: {hoveredPixel.rowIndex}, columnIndex:{" "}
-            {hoveredPixel.columnIndex}
-          </div>
-        )}
+        <strong>Is Mouse Down?</strong>
+        <div>{isMouseDown ? "Yes" : "No"}</div>
       </div>
     </div>
   );
 };
 
-export default HoverPixelListener;
+export default CanvasElementEvents;

@@ -202,11 +202,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       return;
     }
     canvasElementEventListeners.forEach(({ type, listener }) => {
-      addCanvasElementEventListener(type, listener);
+      const canvasElement = canvas.getCanvasElement();
+      canvasElement.addEventListener(type, listener);
     });
     return () => {
       canvasElementEventListeners.forEach(({ type, listener }) => {
-        removeCanvasElementEventListener(type, listener);
+        const canvasElement = canvas.getCanvasElement();
+        canvasElement.removeEventListener(type, listener);
       });
     };
   }, [canvas, canvasElementEventListeners]);
