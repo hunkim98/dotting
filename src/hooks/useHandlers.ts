@@ -79,6 +79,20 @@ const useHandlers = (ref: MutableRefObject<DottingRef>) => {
     [ref]
   );
 
+  const addCanvasElementEventListener = useCallback(
+    (event: string, listener: EventListenerOrEventListenerObject) => {
+      ref.current?.addCanvasElementEventListener(event, listener);
+    },
+    [ref]
+  );
+
+  const removeCanvasElementEventListener = useCallback(
+    (event: string, listener: EventListenerOrEventListenerObject) => {
+      ref.current?.removeCanvasElementEventListener(event, listener);
+    },
+    [ref]
+  );
+
   return {
     addDataChangeListener,
     removeDataChangeListener,
@@ -90,6 +104,9 @@ const useHandlers = (ref: MutableRefObject<DottingRef>) => {
     removeStrokeEndListener,
     addHoverPixelChangeListener,
     removeHoverPixelChangeListener,
+    // Below are for canvas element listener
+    addCanvasElementEventListener,
+    removeCanvasElementEventListener,
   };
 };
 

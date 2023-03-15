@@ -352,12 +352,26 @@ The events that you can listen to are:
         ```
       </td>
     </tr>
-        <tr>
+    <tr>
       <td>`removeHoverPixelChangeListener(listener: CanvasHoverPixelChangeHandler)`</td>
       <td>
         Allows you to remove pixel change listener
       </td>
       <td>`CanvasHoverPixelChangeHandler`</td>
+    </tr>
+     <tr>
+      <td>`addCanvasElementEventListener(event: string, listener: EventListenerOrEventListenerObject) `</td>
+      <td>
+        Allows you to directly add event listeners to the canvas element (E.g. `mousemove`)
+      </td>
+      <td>`string`, `EventListenerOrEventListenerObject`</td>
+    </tr>
+     <tr>
+      <td>`removeCanvasElementEventListener(event: string, listener: EventListenerOrEventListenerObject)`</td>
+      <td>
+        Allows you to directly remove event listeners from the canvas element
+      </td>
+      <td>`string`, `EventListenerOrEventListenerObject`</td>
     </tr>
  
   </tbody>

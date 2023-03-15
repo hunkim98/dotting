@@ -43,6 +43,7 @@ const StrokeListener = () => {
           display: "flex",
           alignItems: "center",
           flexDirection: "column",
+          marginBottom: 50,
         }}
       >
         <div>

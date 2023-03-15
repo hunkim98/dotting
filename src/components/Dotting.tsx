@@ -59,6 +59,15 @@ export interface DottingRef {
   removeHoverPixelChangeListener: (
     listener: CanvasHoverPixelChangeHandler
   ) => void;
+  // for canvas element event listeners
+  addCanvasElementEventListener: (
+    type: string,
+    listener: EventListenerOrEventListenerObject
+  ) => void;
+  removeCanvasElementEventListener: (
+    type: string,
+    listener: EventListenerOrEventListenerObject
+  ) => void;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -83,6 +92,11 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   const [hoverPixelChangeListeners, setHoverPixelChangeListeners] = useState<
     CanvasHoverPixelChangeHandler[]
   >([]);
+
+  const [canvasElementEventListeners, setCanvasElementEventListeners] =
+    useState<
+      Array<{ type: string; listener: EventListenerOrEventListenerObject }>
+    >([]);
 
   useEffect(() => {
     if (!canvas) {
@@ -180,6 +194,22 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       });
     };
   }, [canvas, hoverPixelChangeListeners]);
+
+  // The below is to add event listeners directly to the canvas element
+  // E.g. for mousemove, mousedown, mouseup, etc.
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    canvasElementEventListeners.forEach(({ type, listener }) => {
+      addCanvasElementEventListener(type, listener);
+    });
+    return () => {
+      canvasElementEventListeners.forEach(({ type, listener }) => {
+        removeCanvasElementEventListener(type, listener);
+      });
+    };
+  }, [canvas, canvasElementEventListeners]);
 
   // We put resize handler
   useEffect(() => {
@@ -304,16 +334,26 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [canvas]
   );
 
-  const addEventListener = useCallback(
-    (type: CanvasEvents, listener: CanvasEventHandlerType) => {
-      canvas?.addEventListener(type, listener);
+  const addCanvasElementEventListener = useCallback(
+    (type: string, listener: EventListenerOrEventListenerObject) => {
+      setCanvasElementEventListeners((listeners) => [
+        ...listeners,
+        { type, listener },
+      ]);
     },
     [canvas]
   );
 
-  const removeEventListener = useCallback(
-    (type: CanvasEvents, listener: CanvasEventHandlerType) => {
-      canvas?.removeEventListener(type, listener);
+  const removeCanvasElementEventListener = useCallback(
+    (type: string, listener: EventListenerOrEventListenerObject) => {
+      if (!canvas) {
+        return;
+      }
+      const canvasElement = canvas.getCanvasElement();
+      canvasElement.removeEventListener(type, listener);
+      setCanvasElementEventListeners((listeners) =>
+        listeners.filter((l) => l.type !== type && l.listener !== listener)
+      );
     },
     [canvas]
   );
@@ -391,6 +431,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       removeStrokeEndListener,
       addHoverPixelChangeListener,
       removeHoverPixelChangeListener,
+      // for canvas element listener
+      addCanvasElementEventListener,
+      removeCanvasElementEventListener,
     }),
     [clear]
   );
