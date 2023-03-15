@@ -8,11 +8,6 @@
 
 <br/>
 
-
-
-
-
-
 <br/>
 
 <h3 align="center">Why Dotting?</h3>
@@ -34,19 +29,15 @@
 
 </br>
 
-
-  
-
-
 ## Quick Start
 
-Step1. Install the package
+**Step1. Install the package**
 
 ```bash
 $ yarn add dotting
 ```
 
-Step2. Place `Dotting` component in your project
+**Step2. Place `Dotting` component in your project**
 
 ```jsx
 import { Dotting } from "dotting";
@@ -67,7 +58,7 @@ const Clear = () => {
 To use the canvas component, you should first use the `<Dotting/>` component. You must set the `width` and `height` to use it.
 
 ```jsx
-<Dotting width={300} height={300}/>
+<Dotting width={300} height={300} />
 ```
 
 <br/>
@@ -92,6 +83,49 @@ export const Component = () => {
 ```
 
 For more details on how to use hooks, please check the [documentation](https://hunkim98.github.io/dotting/?path=/story/hooks-setup--page)
+
+<br/>
+
+## IMPORTANT: Setup for Next.js
+
+When using `<Dotting/>` in a **Next.js** project, due to server side rendering, Dotting will not work as expected.
+If you wish to use `<Dotting/>` in a Next.js project, you must **dynamically import** the component that uses `<Dotting/>`.
+
+**Step 1. Create a component that uses `<Dotting/>`**
+
+```tsx
+// File Name: DottingComponent.tsx
+import { Dotting } from "dotting";
+import React from "react";
+
+function DottingComponent() {
+  return <Dotting width={300} height={300} />;
+}
+
+export default DottingComponent;
+```
+
+**Step 2. Dynamically import the component that uses `<Dotting/>`**
+
+```tsx
+// This file should be in the same directory as DottingComponent.tsx
+import React from "react";
+import dynamic from "next/dynamic";
+
+const DynamicComponentWithNoSSR = dynamic(() => import("./DottingComponent"), {
+  ssr: false,
+});
+
+const Canvas = () => {
+  return (
+    <div>
+      <DynamicComponentWithNoSSR />
+    </div>
+  );
+};
+
+export default Canvas;
+```
 
 <br/>
 

@@ -133,13 +133,13 @@ If you are interested in contributing, visit [**Dotting Github**](https://github
 
 # Quick Start
 
-Step 1. Install the package
+**Step 1. Install the package**
 
 ```bash
 $ yarn add dotting
 ```
 
-Step 2. Implement the component in your React project
+**Step 2. Implement the component in your React project**
 
 ```jsx
 import { Dotting } from "dotting";
@@ -151,6 +151,47 @@ const DottingExample = () => {
     </div>
   );
 };
+```
+
+# IMPORTANT: Setup for Next.js
+
+When using `<Dotting/>` in a **Next.js** project, due to server side rendering, Dotting will not work as expected.
+If you wish to use `<Dotting/>` in a Next.js project, you must **dynamically import** the component that uses `<Dotting/>`.
+
+**Step 1. Create a component that uses `<Dotting/>`**
+
+```tsx
+// File Name: DottingComponent.tsx
+import { Dotting } from "dotting";
+import React from "react";
+
+function DottingComponent() {
+  return <Dotting width={300} height={300} />;
+}
+
+export default DottingComponent;
+```
+
+**Step 2. Dynamically import the component that uses `<Dotting/>`**
+
+```tsx
+// This file should be in the same directory as DottingComponent.tsx
+import React from "react";
+import dynamic from "next/dynamic";
+
+const DynamicComponentWithNoSSR = dynamic(() => import("./DottingComponent"), {
+  ssr: false,
+});
+
+const Canvas = () => {
+  return (
+    <div>
+      <DynamicComponentWithNoSSR />
+    </div>
+  );
+};
+
+export default Canvas;
 ```
 
 <div className="subheading">Resources</div>
@@ -175,3 +216,4 @@ const DottingExample = () => {
   {/* <span className="tip">Tip</span>Edit the Markdown in{" "}
   <code>src/stories/Introduction.stories.mdx</code> */}
 </div>
+```
