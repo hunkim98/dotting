@@ -1,21 +1,21 @@
 {
   "name": "dotting",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "build/index.js",
   "module": "build/index.esm.js",
   "files": [
     "build"
   ],
-  "types": "build/index.d.ts",
+  "types": "build/src/index.d.ts",
   "description": "Dotting is a pixel art editor component library for react",
   "scripts": {
-    "build": "rollup -c",
+    "clean": "rm -rf build/*",
+    "build": "yarn clean && rollup -c",
     "dev": "start-storybook -p 6005",
     "storybook:build": "build-storybook",
     "test": "jest",
     "test:watch": "jest --watch",
-    "prepublishOnly": "yarn build",
-    "publish": "yarn publish"
+    "prepublishOnly": "yarn clean && yarn build"
   },
   "repository": {
     "type": "git",
@@ -34,10 +34,6 @@
     "url": "https://github.com/hunkim98/dotting/issues"
   },
   "homepage": "https://hunkim98.github.io/dotting",
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
-  },
   "devDependencies": {
     "@babel/core": "^7.21.0",
     "@rollup/plugin-commonjs": "^24.0.1",
@@ -53,12 +49,14 @@
     "@testing-library/react": "^14.0.0",
     "@types/jest": "^29.4.0",
     "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
     "babel-loader": "^8.2.2",
     "babel-preset-react-app": "^10.0.1",
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.5.0",
     "jest-canvas-mock": "^2.4.0",
     "jest-environment-jsdom": "^29.5.0",
+    "microbundle": "^0.15.1",
     "node-sass": "^8.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -69,5 +67,9 @@
     "sass-loader": "^10.1.1",
     "ts-jest": "^29.0.5",
     "typescript": "^4.9.5"
+  },
+  "peerDependencies": {
+    "react": ">=17.2.0",
+    "react-dom": ">=17.2.0"
   }
 }
