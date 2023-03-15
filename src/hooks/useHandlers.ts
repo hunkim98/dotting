@@ -3,6 +3,7 @@ import {
   CanvasBrushChangeHandler,
   CanvasDataChangeHandler,
   CanvasGridChangeHandler,
+  CanvasHoverPixelChangeHandler,
   CanvasStrokeEndHandler,
 } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
@@ -64,6 +65,20 @@ const useHandlers = (ref: MutableRefObject<DottingRef>) => {
     [ref]
   );
 
+  const addHoverPixelChangeListener = useCallback(
+    (listener: CanvasHoverPixelChangeHandler) => {
+      ref.current?.addHoverPixelChangeListener(listener);
+    },
+    [ref]
+  );
+
+  const removeHoverPixelChangeListener = useCallback(
+    (listener: CanvasHoverPixelChangeHandler) => {
+      ref.current?.removeHoverPixelChangeListener(listener);
+    },
+    [ref]
+  );
+
   return {
     addDataChangeListener,
     removeDataChangeListener,
@@ -73,6 +88,8 @@ const useHandlers = (ref: MutableRefObject<DottingRef>) => {
     removeBrushChangeListener,
     addStrokeEndListener,
     removeStrokeEndListener,
+    addHoverPixelChangeListener,
+    removeHoverPixelChangeListener,
   };
 };
 

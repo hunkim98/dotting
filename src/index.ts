@@ -11,6 +11,7 @@ import {
   CanvasGridChangeHandler,
   CanvasStrokeEndHandler,
   CanvasBrushChangeHandler,
+  CanvasHoverPixelChangeHandler,
 } from "./components/Canvas/types";
 
 export {
@@ -26,4 +27,5 @@ export {
   CanvasGridChangeHandler,
   CanvasStrokeEndHandler,
   CanvasBrushChangeHandler,
+  CanvasHoverPixelChangeHandler as CanvasHoverPixelHandler,
 };

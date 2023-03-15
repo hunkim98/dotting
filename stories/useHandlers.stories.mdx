@@ -8,7 +8,7 @@ import Plugin from "./assets/plugin.svg";
 import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
-import { StrokeListener } from "./useHandlersComponent";
+import { StrokeListener, HoverPixelListener } from "./useHandlersComponents";
 
 <Meta title="Hooks/useHandlers" />
 
@@ -208,6 +208,7 @@ The events that you can listen to are:
 - `data change`
 - `grid change`
 - `stroke end`
+- `hover pixel change`
 
 #### Features provided by `useHandlers`
 
@@ -243,14 +244,14 @@ The events that you can listen to are:
     <tr>
       <td>`removeDataChangeListener(listener: CanvasDataChangeHandler)`</td>
       <td>
-        Allows you the remove the attached listener to the data change event.
+        Allows you to remove a data change listener
       </td>
-      <td></td>
+      <td>`CanvasDataChangeHandler`</td>
     </tr>
     <tr>
       <td>`addGridChangeListener(listener: CanvasGridChangeHandler)`</td>
       <td>
-        Allows you the listen to the grid change event.
+        Allows you to the listen to grid change events.
       </td>
       <td>
         `CanvasGridChangeHandler`
@@ -273,9 +274,9 @@ The events that you can listen to are:
     <tr>
       <td>`removeGridChangeListener(listener: CanvasGridChangeHandler)`</td>
       <td>
-        Allows you the remove the attached listener to the grid change event.
+        Allows you to remove a grid change listener
       </td>
-      <td></td>
+      <td>`CanvasGridChangeHandler`</td>
     </tr>
     <tr>
       <td>`addBrushChangeListener(listener: CanvasBrushChangeHandler)`</td>
@@ -299,14 +300,14 @@ The events that you can listen to are:
     <tr>
       <td>`removeBrushChangeListener(listener: CanvasBrushChangeHandler)`</td>
       <td>
-        Allows you the remove the attached listener to the brush change event.
+        Allows you to remove a brush change listener
       </td>
-      <td></td>
+      <td>`CanvasBrushChangeHandler`</td>
     </tr>
     <tr>
       <td>`addStrokeEndListener(listener: CanvasStrokeEndHandler)`</td>
       <td>
-        Allows you the the attached listener to the grid change event.
+        Allows you to add a listener to stroke end events
       </td>
       <td>
         `CanvasStrokeEndHandler`
@@ -330,9 +331,33 @@ The events that you can listen to are:
     <tr>
       <td>`removeStrokeEndListener(listener: CanvasStrokeEndHandler)`</td>
       <td>
-        Allows you the remove the attached listener to the brush change event.
+        Allows you to remove a stroke end listener
       </td>
-      <td></td>
+      <td>`CanvasStrokeEndHandler`</td>
+    </tr>
+    <tr>
+      <td>`addHoverPixelChangeListener(listener: CanvasHoverPixelChangeHandler)`</td>
+      <td>
+        Allows you to listen to hover pixel change events 
+      </td>
+      <td>
+        `CanvasHoverPixelChangeHandler`
+        ```ts
+        export type CanvasHoverPixelChangeHandler = (
+          indices: {
+            rowIndex: number;
+            columnIndex: number;
+          } | null
+        ) => void;
+        ```
+      </td>
+    </tr>
+        <tr>
+      <td>`removeHoverPixelChangeListener(listener: CanvasHoverPixelChangeHandler)`</td>
+      <td>
+        Allows you to remove pixel change listener
+      </td>
+      <td>`CanvasHoverPixelChangeHandler`</td>
     </tr>
  
   </tbody>
@@ -345,6 +370,13 @@ The events that you can listen to are:
 With stroke end related listeners, you can observer the changes when the user ends the stroke.
 
 <StrokeListener />
+
+#### 2. Hover Pixel Change Listener `addHoverPixelChangeListener`, `removeHoverPixelChangeListener`
+
+With the hover pixel change listener, you can observe the changes when the user hovers over the canvas.
+When there is no hovered pixel, the return value will be `null`
+
+<HoverPixelListener />
 
 <div className="subheading">Example Source Codes</div>
 

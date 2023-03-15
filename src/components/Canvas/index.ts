@@ -838,6 +838,10 @@ export default class Canvas extends EventDispatcher {
     this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
   }
 
+  emitHoverPixelChangeEvent() {
+    this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, this.hoveredPixel);
+  }
+
   emitDataEvent() {
     this.emit(CanvasEvents.DATA_CHANGE, this.data);
   }
@@ -1014,6 +1018,7 @@ export default class Canvas extends EventDispatcher {
     const mouseCartCoord = this.getMouseCartCoord(evt);
     const pixelIndex = this.getPixelIndexFromMouseCartCoord(mouseCartCoord);
     if (pixelIndex) {
+      this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
       this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
     }
     this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
@@ -1290,10 +1295,24 @@ export default class Canvas extends EventDispatcher {
       if (this.mouseMode === MouseMode.DRAWING) {
         this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
       } else {
+        // if previous hovered pixel has an outdated index, emit new index
+        if (
+          // We should also consider when the hovered pixel is null
+          !this.hoveredPixel ||
+          this.hoveredPixel.rowIndex !== pixelIndex.rowIndex ||
+          this.hoveredPixel.columnIndex !== pixelIndex.columnIndex
+        ) {
+          this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, pixelIndex);
+        }
         this.hoveredPixel = pixelIndex;
+
         this.render();
       }
     } else {
+      // if previous hovered pixel was not null, emit null
+      if (this.hoveredPixel !== null) {
+        this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
+      }
       this.hoveredPixel = null;
       this.render();
     }
@@ -1336,6 +1355,9 @@ export default class Canvas extends EventDispatcher {
     touchy(this.element, removeEvent, "mousemove", this.handleExtension);
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
+    if (this.hoveredPixel !== null) {
+      this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
+    }
     this.hoveredButton = null;
   }
 
@@ -1690,16 +1712,6 @@ export default class Canvas extends EventDispatcher {
       return;
     }
     this.drawButtons();
-  }
-
-  drawHoveredPixel() {
-    if (this.hoveredPixel) {
-      const { rowIndex, columnIndex } = this.hoveredPixel;
-      this.ctx.save();
-      this.ctx.fillStyle = this.brushColor;
-      this.ctx.globalAlpha = 0.5;
-      this.ctx.restore();
-    }
   }
 
   clear() {

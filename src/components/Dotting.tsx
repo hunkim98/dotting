@@ -19,6 +19,7 @@ import {
   CanvasBrushChangeHandler,
   PixelModifyItem,
   ImageDownloadOptions,
+  CanvasHoverPixelChangeHandler,
 } from "./Canvas/types";
 
 export interface DottingProps {
@@ -52,7 +53,12 @@ export interface DottingRef {
   removeBrushChangeListener: (listener: CanvasBrushChangeHandler) => void;
   addStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
   removeStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
-  // initial data
+  addHoverPixelChangeListener: (
+    listener: CanvasHoverPixelChangeHandler
+  ) => void;
+  removeHoverPixelChangeListener: (
+    listener: CanvasHoverPixelChangeHandler
+  ) => void;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -73,6 +79,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   >([]);
   const [brushChangeListeners, setBrushChangeListeners] = useState<
     CanvasBrushChangeHandler[]
+  >([]);
+  const [hoverPixelChangeListeners, setHoverPixelChangeListeners] = useState<
+    CanvasHoverPixelChangeHandler[]
   >([]);
 
   useEffect(() => {
@@ -149,12 +158,28 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     strokeEndListeners.forEach((listener) => {
       canvas.addEventListener(CanvasEvents.STROKE_END, listener);
     });
+    // Emitting initial strokeEnd listener is not necessary!
     return () => {
       strokeEndListeners.forEach((listener) => {
         canvas?.removeEventListener(CanvasEvents.STROKE_END, listener);
       });
     };
   }, [canvas, strokeEndListeners]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    hoverPixelChangeListeners.forEach((listener) => {
+      canvas.addEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
+    });
+    canvas.emitHoverPixelChangeEvent();
+    return () => {
+      hoverPixelChangeListeners.forEach((listener) => {
+        canvas?.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
+      });
+    };
+  }, [canvas, hoverPixelChangeListeners]);
 
   // We put resize handler
   useEffect(() => {
@@ -262,6 +287,23 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [canvas]
   );
 
+  const addHoverPixelChangeListener = useCallback(
+    (listener: CanvasHoverPixelChangeHandler) => {
+      setHoverPixelChangeListeners((listeners) => [...listeners, listener]);
+    },
+    []
+  );
+
+  const removeHoverPixelChangeListener = useCallback(
+    (listener: CanvasHoverPixelChangeHandler) => {
+      canvas.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
+      setHoverPixelChangeListeners((listeners) =>
+        listeners.filter((l) => l !== listener)
+      );
+    },
+    [canvas]
+  );
+
   const addEventListener = useCallback(
     (type: CanvasEvents, listener: CanvasEventHandlerType) => {
       canvas?.addEventListener(type, listener);
@@ -347,7 +389,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       removeBrushChangeListener,
       addStrokeEndListener,
       removeStrokeEndListener,
-      // initial Data
+      addHoverPixelChangeListener,
+      removeHoverPixelChangeListener,
     }),
     [clear]
   );
