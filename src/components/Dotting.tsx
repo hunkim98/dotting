@@ -14,7 +14,6 @@ import {
   CanvasDataChangeHandler,
   CanvasGridChangeHandler,
   CanvasStrokeEndHandler,
-  CanvasEventHandlerType,
   BrushMode,
   CanvasBrushChangeHandler,
   PixelModifyItem,

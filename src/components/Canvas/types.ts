@@ -37,13 +37,6 @@ export enum BrushMode {
   ERASER = "eraser",
 }
 
-export type CanvasEventHandlerType =
-  | CanvasDataChangeHandler
-  | CanvasGridChangeHandler
-  | CanvasStrokeEndHandler
-  | CanvasBrushChangeHandler
-  | CanvasHoverPixelChangeHandler;
-
 export type CanvasDataChangeHandler = (data: DottingData) => void;
 
 export type CanvasGridChangeHandler = (

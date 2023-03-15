@@ -1,31 +1,5 @@
-import Dotting from "./components/Dotting";
-import {
-  Coord,
-  PixelData,
-  ImageDownloadOptions,
-  DottingData,
-  PixelModifyItem,
-  CanvasEvents,
-  BrushMode,
-  CanvasDataChangeHandler,
-  CanvasGridChangeHandler,
-  CanvasStrokeEndHandler,
-  CanvasBrushChangeHandler,
-  CanvasHoverPixelChangeHandler,
-} from "./components/Canvas/types";
+import Dotting, { DottingRef } from "./components/Dotting";
+export * from "./components/Canvas/types";
+export * from "./hooks";
 
-export {
-  Dotting,
-  Coord,
-  PixelData,
-  ImageDownloadOptions,
-  DottingData,
-  PixelModifyItem,
-  CanvasEvents,
-  BrushMode,
-  CanvasDataChangeHandler,
-  CanvasGridChangeHandler,
-  CanvasStrokeEndHandler,
-  CanvasBrushChangeHandler,
-  CanvasHoverPixelChangeHandler as CanvasHoverPixelHandler,
-};
+export { Dotting, DottingRef };
