@@ -8,7 +8,7 @@ import {
 } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
 
-const useHandlers = (ref: MutableRefObject<DottingRef>) => {
+const useHandlers = (ref: MutableRefObject<DottingRef | null>) => {
   const addDataChangeListener = useCallback(
     (listener: CanvasDataChangeHandler) => {
       ref.current?.addDataChangeListener(listener);

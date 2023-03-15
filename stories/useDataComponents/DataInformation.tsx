@@ -5,7 +5,7 @@ import useBrush from "../../src/hooks/useBrush";
 import useData from "../../src/hooks/useData";
 
 const DataInformation = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { dataArray } = useData(ref);
   const { changeBrushColor } = useBrush(ref);
   const [groupData, setGroupData] = useState<Map<string, number>>(new Map());

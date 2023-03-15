@@ -13,7 +13,7 @@ import {
 } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
 
-const useDotting = (ref: MutableRefObject<DottingRef>) => {
+const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
   const clear = useCallback(() => {
     ref.current?.clear();
   }, [ref]);

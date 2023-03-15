@@ -3,7 +3,7 @@ import { BrushMode } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
 import useHandlers from "./useHandlers";
 
-const useBrush = (ref: MutableRefObject<DottingRef>) => {
+const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
   const [brushMode, setBrushMode] = useState<BrushMode>(BrushMode.DOT);
   const [brushColor, setBrushColor] = useState<string>("");
   const { addBrushChangeListener, removeBrushChangeListener } =

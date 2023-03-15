@@ -132,7 +132,7 @@ The example below shows how you can clear the canvas.
 
 ```ts
 export const Component = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { clear } = useDotting(ref);
   return (
     <div>

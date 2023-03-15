@@ -3,7 +3,7 @@ import { useRef } from "react";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 
 const CustomExample = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const changeBrushColor = useCallback(
     (brushColor: string) => {
       ref.current?.changeBrushColor(brushColor);

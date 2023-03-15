@@ -3,7 +3,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useGrids from "../../src/hooks/useGrids";
 
 const GridInformation = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { dimensions, indices } = useGrids(ref);
   return (
     <div

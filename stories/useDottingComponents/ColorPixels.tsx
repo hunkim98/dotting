@@ -4,7 +4,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useDotting from "../../src/hooks/useDotting";
 
 const ChangePixelColor = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { colorPixels, erasePixels } = useDotting(ref);
   const [rowIndex, setRowIndex] = React.useState(0);
   const [columnIndex, setColumnIndex] = React.useState(0);

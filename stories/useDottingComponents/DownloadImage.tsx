@@ -4,7 +4,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useDotting from "../../src/hooks/useDotting";
 
 const DownloadImage = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { downloadImage } = useDotting(ref);
   return (
     <div

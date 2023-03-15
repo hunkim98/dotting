@@ -8,7 +8,7 @@ import {
 import { DottingRef } from "../components/Dotting";
 import useHandlers from "./useHandlers";
 
-const useData = (ref: MutableRefObject<DottingRef>) => {
+const useData = (ref: MutableRefObject<DottingRef | null>) => {
   const { addDataChangeListener, removeDataChangeListener } = useHandlers(ref);
   const [data, setData] = useState<DottingData>(
     new Map<number, Map<number, PixelData>>()

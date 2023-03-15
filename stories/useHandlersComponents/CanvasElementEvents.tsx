@@ -9,7 +9,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useHandlers from "../../src/hooks/useHandlers";
 
 const CanvasElementEvents = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { addCanvasElementEventListener, removeCanvasElementEventListener } =
     useHandlers(ref);
   const [isMouseDown, setIsMouseDown] = useState(false);

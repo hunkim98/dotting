@@ -5,7 +5,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useBrush from "../../src/hooks/useBrush";
 
 const ChangeBrushMode = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { changeBrushColor, changeBrushMode, brushMode } = useBrush(ref);
   return (
     <div

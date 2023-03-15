@@ -9,7 +9,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useHandlers from "../../src/hooks/useHandlers";
 
 const HoverPixelListener = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { addHoverPixelChangeListener, removeHoverPixelChangeListener } =
     useHandlers(ref);
   const [hoveredPixel, setHoveredPixel] =

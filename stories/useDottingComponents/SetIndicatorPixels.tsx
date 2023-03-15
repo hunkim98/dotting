@@ -4,7 +4,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useDotting from "../../src/hooks/useDotting";
 
 const SetIndicatorPixels = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { setIndicatorPixels } = useDotting(ref);
   const [areIndicatorsShown, setAreIndicatorsShown] = React.useState(false);
   const showIndicators = useCallback(() => {

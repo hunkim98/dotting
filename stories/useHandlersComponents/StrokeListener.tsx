@@ -8,7 +8,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useHandlers from "../../src/hooks/useHandlers";
 
 const StrokeListener = () => {
-  const ref = useRef<DottingRef>();
+  const ref = useRef<DottingRef>(null);
   const { addStrokeEndListener, removeStrokeEndListener } = useHandlers(ref);
   const [strokedPixels, setStrokedPixels] = useState<Array<PixelModifyItem>>(
     []
