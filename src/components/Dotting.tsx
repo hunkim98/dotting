@@ -407,14 +407,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   useImperativeHandle(
     ref,
     () => ({
-      addEventListener,
-      removeEventListener,
-      setIndicatorPixels,
       // for useDotting
       clear,
       colorPixels,
       erasePixels,
       downloadImage,
+      setIndicatorPixels,
       // for useBrush
       changeBrushColor,
       changeBrushMode,
@@ -434,14 +432,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       removeCanvasElementEventListener,
     }),
     [
-      addEventListener,
-      removeEventListener,
-      setIndicatorPixels,
       // for useDotting
       clear,
       colorPixels,
       erasePixels,
       downloadImage,
+      setIndicatorPixels,
       // for useBrush
       changeBrushColor,
       changeBrushMode,
