@@ -433,7 +433,33 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       addCanvasElementEventListener,
       removeCanvasElementEventListener,
     }),
-    [clear]
+    [
+      addEventListener,
+      removeEventListener,
+      setIndicatorPixels,
+      // for useDotting
+      clear,
+      colorPixels,
+      erasePixels,
+      downloadImage,
+      // for useBrush
+      changeBrushColor,
+      changeBrushMode,
+      // for useHandler
+      addDataChangeListener,
+      removeDataChangeListener,
+      addGridChangeListener,
+      removeGridChangeListener,
+      addBrushChangeListener,
+      removeBrushChangeListener,
+      addStrokeEndListener,
+      removeStrokeEndListener,
+      addHoverPixelChangeListener,
+      removeHoverPixelChangeListener,
+      // for canvas element listener
+      addCanvasElementEventListener,
+      removeCanvasElementEventListener,
+    ]
   );
 
   return (
