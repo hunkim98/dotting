@@ -231,24 +231,21 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   }, [canvas, containerRef, props.height, props.width]);
 
   // Reference: https://github.com/ascorbic/react-artboard/blob/main/src/components/Artboard.tsx
-  const gotRef = useCallback(
-    (canvasRef: HTMLCanvasElement) => {
-      if (!canvasRef) {
-        return;
-      }
-      const canvas = new Canvas(
-        canvasRef,
-        props.initData,
-        props.isPanZoomable,
-        props.isGridVisible,
-        props.isGridFixed,
-        props.initBrushColor,
-        props.initIndicatorData
-      );
-      setCanvas(canvas);
-    },
-    [history]
-  );
+  const gotRef = useCallback((canvasRef: HTMLCanvasElement) => {
+    if (!canvasRef) {
+      return;
+    }
+    const canvas = new Canvas(
+      canvasRef,
+      props.initData,
+      props.isPanZoomable,
+      props.isGridVisible,
+      props.isGridFixed,
+      props.initBrushColor,
+      props.initIndicatorData
+    );
+    setCanvas(canvas);
+  }, []);
 
   const addDataChangeListener = useCallback(
     (listener: CanvasDataChangeHandler) => {
