@@ -68,10 +68,10 @@ To use the canvas component, you should first use the `<Dotting/>` component. Yo
 To manipulate the pixel grids programatically, you can use hooks. The provided hooks are `useBrush`, `useData`, `useDotting`, `useGrids`, `useHandlers`. Below is an example using the `useDotting` hook for clearing the pixels when button is clicked
 
 ```jsx
-import { Dotting, DottingRef, useDotting } from "dotting"
+import { Dotting, DottingRef, useDotting } from "dotting";
 
 export const Component = () => {
-  const ref = useRef<DottingRef>(null);
+  const ref = useRef < DottingRef > null;
   const { clear } = useDotting(ref);
   return (
     <div>
@@ -83,49 +83,6 @@ export const Component = () => {
 ```
 
 For more details on how to use hooks, please check the [documentation](https://hunkim98.github.io/dotting/?path=/story/hooks-setup--page)
-
-<br/>
-
-## IMPORTANT: Setup for Next.js
-
-When using `<Dotting/>` in a **Next.js** project, due to server side rendering, Dotting will not work as expected.
-If you wish to use `<Dotting/>` in a Next.js project, you must **dynamically import** the component that uses `<Dotting/>`.
-
-**Step 1. Create a component that uses `<Dotting/>`**
-
-```tsx
-// File Name: DottingComponent.tsx
-import { Dotting } from "dotting";
-import React from "react";
-
-function DottingComponent() {
-  return <Dotting width={300} height={300} />;
-}
-
-export default DottingComponent;
-```
-
-**Step 2. Dynamically import the component that uses `<Dotting/>`**
-
-```tsx
-// This file should be in the same directory as DottingComponent.tsx
-import React from "react";
-import dynamic from "next/dynamic";
-
-const DynamicComponentWithNoSSR = dynamic(() => import("./DottingComponent"), {
-  ssr: false,
-});
-
-const Canvas = () => {
-  return (
-    <div>
-      <DynamicComponentWithNoSSR />
-    </div>
-  );
-};
-
-export default Canvas;
-```
 
 <br/>
 

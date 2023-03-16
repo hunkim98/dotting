@@ -153,47 +153,6 @@ const DottingExample = () => {
 };
 ```
 
-# IMPORTANT: Setup for Next.js
-
-When using `<Dotting/>` in a **Next.js** project, due to server side rendering, Dotting will not work as expected.
-If you wish to use `<Dotting/>` in a Next.js project, you must **dynamically import** the component that uses `<Dotting/>`.
-
-**Step 1. Create a component that uses `<Dotting/>`**
-
-```tsx
-// File Name: DottingComponent.tsx
-import { Dotting } from "dotting";
-import React from "react";
-
-function DottingComponent() {
-  return <Dotting width={300} height={300} />;
-}
-
-export default DottingComponent;
-```
-
-**Step 2. Dynamically import the component that uses `<Dotting/>`**
-
-```tsx
-// This file should be in the same directory as DottingComponent.tsx
-import React from "react";
-import dynamic from "next/dynamic";
-
-const DynamicComponentWithNoSSR = dynamic(() => import("./DottingComponent"), {
-  ssr: false,
-});
-
-const Canvas = () => {
-  return (
-    <div>
-      <DynamicComponentWithNoSSR />
-    </div>
-  );
-};
-
-export default Canvas;
-```
-
 <div className="subheading">Resources</div>
 
 <div className="link-list">
