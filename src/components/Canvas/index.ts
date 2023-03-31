@@ -1053,6 +1053,11 @@ export default class Canvas extends EventDispatcher {
       }
 
       this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+      this.strokedPixels.push({
+        rowIndex,
+        columnIndex,
+        color: this.brushColor,
+      });
       [
         { rowIndex: rowIndex - 1, columnIndex },
         { rowIndex: rowIndex + 1, columnIndex },
