@@ -21,7 +21,7 @@ import {
   PixelModifyItem,
 } from "./types";
 import { Indices } from "../../utils/types";
-import { validIndicesRange } from "../../utils/validation";
+import { isValidIndicesRange } from "../../utils/validation";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
 
 export enum MouseMode {
@@ -1012,7 +1012,7 @@ export default class Canvas extends EventDispatcher {
       /* 🪣 this paints same color area / with selected brush color. */
 
       const gridIndices = this.getGridIndices();
-      if (!validIndicesRange(rowIndex, columnIndex, gridIndices)) {
+      if (!isValidIndicesRange(rowIndex, columnIndex, gridIndices)) {
         return;
       }
 
@@ -1028,8 +1028,8 @@ export default class Canvas extends EventDispatcher {
         columnIndex,
       });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
+      this.emit(CanvasEvents.STROKE_END, this.strokedPixels, this.data);
     }
-
     this.render();
   }
 
@@ -1043,7 +1043,7 @@ export default class Canvas extends EventDispatcher {
 
     while (indicesQueue.size() > 0) {
       const { rowIndex, columnIndex } = indicesQueue.dequeue()!;
-      if (!validIndicesRange(rowIndex, columnIndex, gridIndices)) {
+      if (!isValidIndicesRange(rowIndex, columnIndex, gridIndices)) {
         continue;
       }
 

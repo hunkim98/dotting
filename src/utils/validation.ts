@@ -1,6 +1,6 @@
 import { Indices } from "./types";
 
-export function validIndicesRange(
+export function isValidIndicesRange(
   rowIndex: number,
   columnIndex: number,
   indices: Indices
