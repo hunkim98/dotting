@@ -8,6 +8,7 @@ import {
   getWorldPoint,
   gradientPoints,
 } from "../../utils/math";
+import Queue from "../../utils/queue";
 import EventDispatcher from "../../utils/eventDispatcher";
 import {
   BrushMode,
@@ -19,6 +20,8 @@ import {
   PixelData,
   PixelModifyItem,
 } from "./types";
+import { Indices } from "../../utils/types";
+import { isValidIndicesRange } from "../../utils/validation";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
 
 export enum MouseMode {
@@ -1005,9 +1008,65 @@ export default class Canvas extends EventDispatcher {
         this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
-    }
+    } else if (this.brushMode === BrushMode.PAINT_BUCKET) {
+      /* 🪣 this paints same color area / with selected brush color. */
 
+      const gridIndices = this.getGridIndices();
+      if (!isValidIndicesRange(rowIndex, columnIndex, gridIndices)) {
+        return;
+      }
+
+      const initialSelectedColor = this.data
+        .get(rowIndex)
+        ?.get(columnIndex)?.color;
+      if (initialSelectedColor === this.brushColor) {
+        return;
+      }
+
+      this.paintSameColorRegion(initialSelectedColor, gridIndices, {
+        rowIndex,
+        columnIndex,
+      });
+      this.emit(CanvasEvents.DATA_CHANGE, this.data);
+      this.emit(CanvasEvents.STROKE_END, this.strokedPixels, this.data);
+    }
     this.render();
+  }
+
+  paintSameColorRegion(
+    initialColor: string,
+    gridIndices: Indices,
+    currentIndices: { rowIndex: number; columnIndex: number }
+  ): void {
+    const indicesQueue = new Queue<{ rowIndex: number; columnIndex: number }>();
+    indicesQueue.enqueue(currentIndices);
+
+    while (indicesQueue.size() > 0) {
+      const { rowIndex, columnIndex } = indicesQueue.dequeue()!;
+      if (!isValidIndicesRange(rowIndex, columnIndex, gridIndices)) {
+        continue;
+      }
+
+      const currentPixel = this.data.get(rowIndex)?.get(columnIndex);
+      if (!currentPixel || currentPixel?.color !== initialColor) {
+        continue;
+      }
+
+      this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+      this.strokedPixels.push({
+        rowIndex,
+        columnIndex,
+        color: this.brushColor,
+      });
+      [
+        { rowIndex: rowIndex - 1, columnIndex },
+        { rowIndex: rowIndex + 1, columnIndex },
+        { rowIndex, columnIndex: columnIndex - 1 },
+        { rowIndex, columnIndex: columnIndex + 1 },
+      ].forEach(({ rowIndex, columnIndex }) => {
+        indicesQueue.enqueue({ rowIndex, columnIndex });
+      });
+    }
   }
 
   onMouseDown(evt: TouchyEvent) {
