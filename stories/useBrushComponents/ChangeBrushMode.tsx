@@ -6,7 +6,16 @@ import useBrush from "../../src/hooks/useBrush";
 
 const ChangeBrushMode = () => {
   const ref = useRef<DottingRef>(null);
-  const { changeBrushColor, changeBrushMode, brushMode } = useBrush(ref);
+  const { changeBrushColor, changeBrushMode, brushMode, brushColor } =
+    useBrush(ref);
+
+  const handleColorChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      changeBrushColor.bind(null, e.target.value)();
+    },
+    []
+  );
+
   return (
     <div
       style={{
@@ -39,7 +48,31 @@ const ChangeBrushMode = () => {
         >
           <option value={BrushMode.DOT}>{BrushMode.DOT}</option>
           <option value={BrushMode.ERASER}>{BrushMode.ERASER}</option>
+          <option value={BrushMode.PAINT_BUCKET}>
+            {BrushMode.PAINT_BUCKET}
+          </option>
         </select>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: 10,
+          marginBottom: 3,
+        }}
+      >
+        <span style={{ fontSize: 13 }}>Brush Color</span>
+        <div
+          style={{
+            borderRadius: "50%",
+            width: 20,
+            height: 20,
+            marginLeft: 15,
+            marginRight: 15,
+            backgroundColor: brushColor,
+          }}
+        ></div>
+        <input type="color" value={brushColor} onChange={handleColorChange} />
       </div>
       <div></div>
     </div>
