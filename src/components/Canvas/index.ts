@@ -649,6 +649,21 @@ export default class Canvas extends EventDispatcher {
     ctx.strokeStyle = this.gridStrokeColor;
 
     for (let i = 0; i <= this.getColumnCount(); i++) {
+      if (i === 0 || i === this.getColumnCount()) {
+        ctx.beginPath();
+        ctx.moveTo(
+          correctedScreenPoint.x + i * squareLength,
+          correctedScreenPoint.y - this.gridStrokeWidth / 2
+        );
+        ctx.lineTo(
+          correctedScreenPoint.x + i * squareLength,
+          correctedScreenPoint.y +
+            this.getRowCount() * squareLength +
+            this.gridStrokeWidth / 2
+        );
+        ctx.stroke();
+        ctx.closePath();
+      }
       ctx.beginPath();
       ctx.moveTo(
         correctedScreenPoint.x + i * squareLength,
@@ -662,6 +677,21 @@ export default class Canvas extends EventDispatcher {
       ctx.closePath();
     }
     for (let j = 0; j <= this.getRowCount(); j++) {
+      if (j === 0 || j === this.getRowCount()) {
+        ctx.beginPath();
+        ctx.moveTo(
+          correctedScreenPoint.x - this.gridStrokeWidth / 2,
+          correctedScreenPoint.y + j * squareLength
+        );
+        ctx.lineTo(
+          correctedScreenPoint.x +
+            this.getColumnCount() * squareLength +
+            this.gridStrokeWidth / 2,
+          correctedScreenPoint.y + j * squareLength
+        );
+        ctx.stroke();
+        ctx.closePath();
+      }
       ctx.beginPath();
       ctx.moveTo(
         correctedScreenPoint.x,
