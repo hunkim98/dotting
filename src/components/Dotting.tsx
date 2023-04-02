@@ -252,6 +252,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!canvasRef) {
       return;
     }
+    canvasRef.style["touchAction"] = "none";
     const canvas = new Canvas(
       canvasRef,
       props.initData,
@@ -486,7 +487,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         ref={gotRef}
         style={{
           border: "1px solid black",
-          touchAction: "none",
           ...props.style,
         }}
       />
