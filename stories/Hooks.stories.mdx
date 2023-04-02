@@ -8,7 +8,7 @@ import Plugin from "./assets/plugin.svg";
 import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
-import { Clear, ColorPixels } from "./useDottingComponents";
+import { Clear, ColorPixels, GridStyling } from "./useDottingComponents";
 
 <Meta title="Hooks/Setup" />
 
@@ -144,3 +144,23 @@ export const Component = () => {
 ```
 
 <Clear />
+
+#### Styling
+
+You can add styles to Dotting component via `React.CSSProperties` and use `gridStroke` props to control grid's appearances
+
+```ts
+export const Component = () => {
+  return (
+    <div>
+      <Dotting
+        gridStrokeColor={gridStrokeColor}
+        gridStrokeWidth={gridStrokeWidth}
+        style={{ borderColor: "red" }}
+      />
+    </div>
+  );
+};
+```
+
+<GridStyling />

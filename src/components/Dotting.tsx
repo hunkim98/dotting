@@ -24,6 +24,9 @@ import {
 export interface DottingProps {
   width: number | string;
   height: number | string;
+  style?: React.CSSProperties;
+  gridStrokeColor?: string;
+  gridStrokeWidth?: number;
   isGridVisible?: boolean;
   initData?: Array<Array<PixelData>>;
   initIndicatorData?: Array<PixelModifyItem>;
@@ -103,6 +106,20 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     }
     canvas.setIsGridFixed(props.isGridFixed);
   }, [canvas, props.isGridFixed]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    canvas.setGridStrokeColor(props.gridStrokeColor);
+  }, [canvas, props.gridStrokeColor]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
+    canvas.setGridStrokeWidth(props.gridStrokeWidth);
+  }, [canvas, props.gridStrokeWidth]);
 
   useEffect(() => {
     if (!canvas) {
@@ -235,10 +252,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!canvasRef) {
       return;
     }
+    canvasRef.style["touchAction"] = "none";
     const canvas = new Canvas(
       canvasRef,
       props.initData,
       props.isPanZoomable,
+      props.gridStrokeColor,
+      props.gridStrokeWidth,
       props.isGridVisible,
       props.isGridFixed,
       props.initBrushColor,
@@ -465,7 +485,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     >
       <canvas
         ref={gotRef}
-        style={{ border: "1px solid black", touchAction: "none" }}
+        style={{
+          border: "1px solid black",
+          ...props.style,
+        }}
       />
     </div>
   );
