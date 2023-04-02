@@ -24,6 +24,7 @@ import {
 export interface DottingProps {
   width: number | string;
   height: number | string;
+  style?: React.CSSProperties;
   gridStrokeColor?: string;
   gridStrokeWidth?: number;
   isGridVisible?: boolean;
@@ -483,7 +484,11 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     >
       <canvas
         ref={gotRef}
-        style={{ border: "1px solid black", touchAction: "none" }}
+        style={{
+          border: "1px solid black",
+          touchAction: "none",
+          ...props.style,
+        }}
       />
     </div>
   );

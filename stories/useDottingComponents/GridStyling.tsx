@@ -4,7 +4,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 
 const GridStyling = () => {
   const ref = useRef<DottingRef>(null);
-  const [gridStrokeColor, setGridStrokeColor] = useState<string>("");
+  const [gridStrokeColor, setGridStrokeColor] = useState<string>("#000");
   const [gridStrokeWidth, setGridStrokeWidth] = useState<number>(1);
 
   return (
@@ -22,6 +22,7 @@ const GridStyling = () => {
         height={300}
         gridStrokeColor={gridStrokeColor}
         gridStrokeWidth={gridStrokeWidth}
+        style={{ borderColor: "red" }}
       />
       <div
         style={{
@@ -53,7 +54,7 @@ const GridStyling = () => {
           marginBottom: 3,
         }}
       >
-        <span style={{ fontSize: 13 }}>Brush Color</span>
+        <span style={{ fontSize: 13 }}>Grid Stroke Color</span>
         <div
           style={{
             borderRadius: "50%",
