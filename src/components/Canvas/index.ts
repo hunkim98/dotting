@@ -62,6 +62,10 @@ export default class Canvas extends EventDispatcher {
 
   private isGridFixed: boolean;
 
+  private gridStrokeColor: string;
+
+  private gridStrokeWidth: number;
+
   private isGridVisible: boolean;
 
   private strokedPixels: Array<PixelModifyItem> = [];
@@ -120,6 +124,8 @@ export default class Canvas extends EventDispatcher {
     canvas: HTMLCanvasElement,
     initData?: Array<Array<PixelData>>,
     isPanZoomable?: boolean,
+    gridStrokeColor?: string,
+    gridStrokeWidth?: number,
     isGridVisible?: boolean,
     isGridFixed?: boolean,
     initBrushColor?: string,
@@ -132,6 +138,8 @@ export default class Canvas extends EventDispatcher {
 
     this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
     this.isGridFixed = isGridFixed ? isGridFixed : false;
+    this.gridStrokeColor = gridStrokeColor ? gridStrokeColor : "#000";
+    this.gridStrokeWidth = gridStrokeWidth ? gridStrokeWidth : 1;
     this.isGridVisible = isGridVisible ? isGridVisible : true;
     this.brushColor = initBrushColor ? initBrushColor : "#FF0000";
     this.indicatorPixels = initIndicatorData ? initIndicatorData : [];
@@ -167,6 +175,20 @@ export default class Canvas extends EventDispatcher {
 
   setIndicatorPixels(indicatorPixels: Array<PixelModifyItem>) {
     this.indicatorPixels = indicatorPixels;
+    this.render();
+  }
+
+  setGridStrokeColor(gridStrokeColor: string) {
+    if (gridStrokeColor !== "" || gridStrokeColor !== undefined) {
+      this.gridStrokeColor = gridStrokeColor;
+    }
+    this.render();
+  }
+
+  setGridStrokeWidth(gridStrokeWidth: number) {
+    if (gridStrokeWidth !== 0 || gridStrokeWidth !== undefined) {
+      this.gridStrokeWidth = gridStrokeWidth;
+    }
     this.render();
   }
 
@@ -623,7 +645,8 @@ export default class Canvas extends EventDispatcher {
     // );
 
     ctx.save();
-    ctx.lineWidth = 1;
+    ctx.lineWidth = this.gridStrokeWidth;
+    ctx.strokeStyle = this.gridStrokeColor;
 
     for (let i = 0; i <= this.getColumnCount(); i++) {
       ctx.beginPath();
