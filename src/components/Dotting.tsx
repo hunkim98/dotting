@@ -28,6 +28,9 @@ export interface DottingProps {
   gridStrokeColor?: string;
   gridStrokeWidth?: number;
   isGridVisible?: boolean;
+  checkerboard?: boolean;
+  checkerboardColor?: React.CSSProperties["color"];
+  checkerboardAlpha?: number;
   initData?: Array<Array<PixelData>>;
   initIndicatorData?: Array<PixelModifyItem>;
   isPanZoomable?: boolean;
@@ -256,6 +259,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     const canvas = new Canvas(
       canvasRef,
       props.initData,
+      props.checkerboard,
+      props.checkerboardColor,
+      props.checkerboardAlpha,
       props.isPanZoomable,
       props.gridStrokeColor,
       props.gridStrokeWidth,

@@ -4,7 +4,7 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 
 const GridStyling = () => {
   const ref = useRef<DottingRef>(null);
-  const [gridStrokeColor, setGridStrokeColor] = useState<string>("#000");
+  const [gridStrokeColor, setGridStrokeColor] = useState<string>("#000000");
   const [gridStrokeWidth, setGridStrokeWidth] = useState<number>(1);
 
   return (
@@ -23,6 +23,9 @@ const GridStyling = () => {
         gridStrokeColor={gridStrokeColor}
         gridStrokeWidth={gridStrokeWidth}
         style={{ borderColor: "red" }}
+        checkerboard
+        checkerboardAlpha={0.2}
+        checkerboardColor="red"
       />
       <div
         style={{

@@ -58,6 +58,12 @@ export default class Canvas extends EventDispatcher {
 
   private pinchZoomPrevDiff = 0;
 
+  private checkerboard: boolean;
+
+  private checkerboardColor: React.CSSProperties["color"];
+
+  private checkerboardAlpha: number;
+
   private isPanZoomable: boolean;
 
   private isGridFixed: boolean;
@@ -123,6 +129,9 @@ export default class Canvas extends EventDispatcher {
   constructor(
     canvas: HTMLCanvasElement,
     initData?: Array<Array<PixelData>>,
+    checkerboard?: boolean,
+    checkerboardColor?: React.CSSProperties["color"],
+    checkerboardAlpha?: number,
     isPanZoomable?: boolean,
     gridStrokeColor?: string,
     gridStrokeWidth?: number,
@@ -135,7 +144,9 @@ export default class Canvas extends EventDispatcher {
 
     this.element = canvas;
     this.ctx = canvas.getContext("2d")!;
-
+    this.checkerboard = checkerboard ? checkerboard : false;
+    this.checkerboardColor = checkerboardColor ? checkerboardColor : "#E1DFE1";
+    this.checkerboardAlpha = checkerboardAlpha ? checkerboardAlpha : 1;
     this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
     this.isGridFixed = isGridFixed ? isGridFixed : false;
     this.gridStrokeColor = gridStrokeColor ? gridStrokeColor : "#000";
@@ -508,6 +519,54 @@ export default class Canvas extends EventDispatcher {
     this.drawRightButton(
       this.hoveredButton === ButtonDirection.RIGHT ? 0.8 : 0.4
     );
+  }
+
+  drawCheckerboard() {
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    // leftTopPoint is a cartesian coordinate
+    const leftTopPoint: Coord = {
+      x: -((this.getColumnCount() / 2) * this.gridSquareLength),
+      y: -((this.getRowCount() / 2) * this.gridSquareLength),
+    };
+    const ctx = this.ctx;
+    let convertedLetTopScreenPoint = convertCartesianToScreen(
+      this.element,
+      leftTopPoint,
+      this.dpr
+    );
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLetTopScreenPoint,
+      this.panZoom
+    );
+
+    for (let i = 0; i < this.getRowCount(); i++) {
+      for (let j = 0; j < this.getColumnCount(); j++) {
+        const isEvenRow = i % 2 === 0;
+        const isEvenCol = j % 2 === 0;
+
+        const color = isEvenRow
+          ? isEvenCol
+            ? "white"
+            : this.checkerboardColor
+          : isEvenCol
+          ? this.checkerboardColor
+          : "white";
+        const alpha = this.checkerboardAlpha;
+
+        if (color) {
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.fillStyle = color;
+          ctx.fillRect(
+            j * squareLength + correctedLeftTopScreenPoint.x,
+            i * squareLength + correctedLeftTopScreenPoint.y,
+            squareLength,
+            squareLength
+          );
+          ctx.restore();
+        }
+      }
+    }
   }
 
   drawRects() {
@@ -1816,6 +1875,9 @@ export default class Canvas extends EventDispatcher {
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(0, 0, this.width, this.height);
     this.ctx.restore();
+    if (this.checkerboard) {
+      this.drawCheckerboard();
+    }
     this.drawRects();
     if (this.isGridVisible) {
       this.drawGrids();
