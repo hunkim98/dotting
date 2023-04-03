@@ -146,7 +146,13 @@ export default class Canvas extends EventDispatcher {
     this.ctx = canvas.getContext("2d")!;
     this.checkerboard = checkerboard ? checkerboard : false;
     this.checkerboardColor = checkerboardColor ? checkerboardColor : "#E1DFE1";
-    this.checkerboardAlpha = checkerboardAlpha ? checkerboardAlpha : 1;
+    this.checkerboardAlpha = checkerboardAlpha
+      ? checkerboardAlpha >= 1
+        ? 1
+        : checkerboardAlpha < 0
+        ? 0
+        : checkerboardAlpha
+      : 1;
     this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
     this.isGridFixed = isGridFixed ? isGridFixed : false;
     this.gridStrokeColor = gridStrokeColor ? gridStrokeColor : "#000";
