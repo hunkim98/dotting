@@ -89,3 +89,15 @@ For more details on how to use hooks, please check the [documentation](https://h
 ## For contributing
 
 Dotting welcomes contributors! If you are interested, contact me through [twitter](https://twitter.com/hunkim98)!
+
+<br/>
+
+## Contributors ✨
+
+Thanks goes to these incredible people!!
+
+<a href="https://github.com/hunkim98/dotting/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=hunkim98/dotting" />
+</a>
+
+
