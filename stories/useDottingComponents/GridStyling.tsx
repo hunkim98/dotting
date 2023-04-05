@@ -23,9 +23,9 @@ const GridStyling = () => {
         gridStrokeColor={gridStrokeColor}
         gridStrokeWidth={gridStrokeWidth}
         style={{ borderColor: "red" }}
-        checkerboard
-        checkerboardAlpha={0.2}
-        checkerboardColor="red"
+        backgroundMode="color"
+        backgroundAlpha={0.1}
+        backgroundColor="red"
       />
       <div
         style={{

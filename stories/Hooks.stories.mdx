@@ -149,7 +149,8 @@ export const Component = () => {
 
 You can add styles to Dotting component via `React.CSSProperties` <br/>
 `gridStroke` props to control grid's appearances <br/>
-`checkerboard` props to control base layer's appearances
+`background` props to control base layer's appearances <br/>
+`backgroundMode` **checkerboard** is default you can use plain background if you change to **color** mode
 
 ```ts
 export const Component = () => {
@@ -159,9 +160,9 @@ export const Component = () => {
         gridStrokeColor={gridStrokeColor}
         gridStrokeWidth={gridStrokeWidth}
         style={{ borderColor: "red" }}
-        checkerboard
-        checkerboardColor="red"
-        checkerboardAlpha=0.2
+        backgroundMode="color"
+        backgroundAlpha=0.2
+        backgroundColor="red"
       />
     </div>
   );
