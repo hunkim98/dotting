@@ -7,7 +7,6 @@ import {
   getScreenPoint,
   getWorldPoint,
   gradientPoints,
-  linearInterpolate,
 } from "../../utils/math";
 import Queue from "../../utils/queue";
 import EventDispatcher from "../../utils/eventDispatcher";
@@ -530,53 +529,35 @@ export default class Canvas extends EventDispatcher {
 
   drawCheckerboard() {
     const ctx = this.ctx;
-    const squareLength = this.gridSquareLength * this.panZoom.scale;
-    const { offset, scale } = this.panZoom;
 
-    let fixedWidth = linearInterpolate(
-      scale + offset.x,
-      1,
-      this.width * 1.3,
-      1.5,
-      this.width * 0.5
-    );
-    let fixedHeight = linearInterpolate(
-      scale + offset.y,
-      1,
-      this.height * 1.3,
-      1.5,
-      this.height * 0.5
-    );
+    const cellWidth = 12;
 
-    if (fixedWidth < this.width) {
-      fixedWidth = this.width;
-    }
-    if (fixedHeight < this.height) {
-      fixedHeight = this.height;
-    }
+    const cellCount = {
+      x: this.width / cellWidth,
+      y: this.height / cellWidth,
+    };
 
-    const evenColor = "white";
-    const oddColor = this.checkerboardColor;
     const alpha = this.checkerboardAlpha;
+    ctx.globalAlpha = alpha;
+    for (let i = 0; i < cellCount.x; i++) {
+      for (let j = 0; j < cellCount.y; j++) {
+        const isEvenRow = i % 2 === 0;
+        const isEvenCol = j % 2 === 0;
 
-    const patternCanvas = document.createElement("canvas");
-    patternCanvas.width = squareLength * 2;
-    patternCanvas.height = squareLength * 2;
+        const color = isEvenRow
+          ? isEvenCol
+            ? "white"
+            : this.checkerboardColor
+          : isEvenCol
+          ? this.checkerboardColor
+          : "white";
+        ctx.fillStyle = color;
 
-    const patternCtx = patternCanvas.getContext("2d");
-    patternCtx.globalAlpha = alpha;
-    patternCtx.fillStyle = evenColor;
-    // white background
-    patternCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height);
-    patternCtx.fillStyle = oddColor;
-
-    patternCtx.fillRect(squareLength, 0, squareLength, squareLength);
-    patternCtx.fillRect(0, squareLength, squareLength, squareLength);
-
-    const pattern = ctx.createPattern(patternCanvas, "repeat");
-
-    ctx.fillStyle = pattern;
-    ctx.fillRect(0, 0, fixedWidth, fixedHeight);
+        if (color) {
+          ctx.fillRect(i * cellWidth, j * cellWidth, cellWidth, cellWidth);
+        }
+      }
+    }
   }
 
   drawRects() {
