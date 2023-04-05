@@ -492,7 +492,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       <canvas
         ref={gotRef}
         style={{
-          border: "1px solid black",
+          border: "1px solid #555555",
           ...props.style,
         }}
       />

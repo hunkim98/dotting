@@ -145,7 +145,7 @@ export default class Canvas extends EventDispatcher {
     this.element = canvas;
     this.ctx = canvas.getContext("2d")!;
     this.backgroundMode = backgroundMode ? backgroundMode : "checkerboard";
-    this.backgroundColor = backgroundColor ? backgroundColor : "#E1DFE1";
+    this.backgroundColor = backgroundColor ? backgroundColor : "#c9c9c9";
     this.backgroundAlpha = backgroundAlpha
       ? backgroundAlpha >= 1
         ? 1
@@ -155,7 +155,7 @@ export default class Canvas extends EventDispatcher {
       : 1;
     this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
     this.isGridFixed = isGridFixed ? isGridFixed : false;
-    this.gridStrokeColor = gridStrokeColor ? gridStrokeColor : "#000";
+    this.gridStrokeColor = gridStrokeColor ? gridStrokeColor : "#555555";
     this.gridStrokeWidth = gridStrokeWidth ? gridStrokeWidth : 1;
     this.isGridVisible = isGridVisible ? isGridVisible : true;
     this.brushColor = initBrushColor ? initBrushColor : "#FF0000";
@@ -317,7 +317,7 @@ export default class Canvas extends EventDispatcher {
     return this.detectMouseOnButton(coord);
   }
 
-  drawTopButton(opacity: number) {
+  drawTopButton(opacity: number, color: string) {
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
 
@@ -336,7 +336,7 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom
     );
-    ctx.fillStyle = "#E1DFE1";
+    ctx.fillStyle = color;
     ctx.globalAlpha = opacity;
     ctx.fillRect(
       correctedScreenPoint.x,
@@ -363,7 +363,7 @@ export default class Canvas extends EventDispatcher {
     );
   }
 
-  drawBottomButton(opacity: number) {
+  drawBottomButton(opacity: number, color: string) {
     const ctx = this.ctx;
     ctx.save();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
@@ -381,7 +381,7 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom
     );
-    ctx.fillStyle = "#E1DFE1";
+    ctx.fillStyle = color;
     ctx.globalAlpha = opacity;
     ctx.fillRect(
       correctedScreenPoint.x,
@@ -417,12 +417,12 @@ export default class Canvas extends EventDispatcher {
     ctx.lineTo(-10 * scale, 6 * scale);
     ctx.closePath();
     ctx.globalAlpha = opacity;
-    ctx.fillStyle = "#bbbbbb";
+    ctx.fillStyle = "#777777";
     ctx.fill();
     ctx.restore();
   }
 
-  drawLeftButton(opacity: number) {
+  drawLeftButton(opacity: number, color: string) {
     const ctx = this.ctx;
 
     ctx.save();
@@ -442,7 +442,7 @@ export default class Canvas extends EventDispatcher {
       this.panZoom
     );
 
-    ctx.fillStyle = "#E1DFE1";
+    ctx.fillStyle = color;
     ctx.globalAlpha = opacity;
     ctx.fillRect(
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
@@ -469,7 +469,7 @@ export default class Canvas extends EventDispatcher {
     );
   }
 
-  drawRightButton(opacity: number) {
+  drawRightButton(opacity: number, color: string) {
     const ctx = this.ctx;
     ctx.save();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
@@ -487,7 +487,7 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom
     );
-    ctx.fillStyle = "#E1DFE1";
+    ctx.fillStyle = color;
     ctx.globalAlpha = opacity;
     ctx.fillRect(
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
@@ -515,15 +515,22 @@ export default class Canvas extends EventDispatcher {
   }
 
   drawButtons() {
-    this.drawTopButton(this.hoveredButton === ButtonDirection.TOP ? 0.8 : 0.4);
+    const buttonBackgroundColor = "#555555";
+    this.drawTopButton(
+      this.hoveredButton === ButtonDirection.TOP ? 0.8 : 1,
+      buttonBackgroundColor
+    );
     this.drawBottomButton(
-      this.hoveredButton === ButtonDirection.BOTTOM ? 0.8 : 0.4
+      this.hoveredButton === ButtonDirection.BOTTOM ? 0.8 : 1,
+      buttonBackgroundColor
     );
     this.drawLeftButton(
-      this.hoveredButton === ButtonDirection.LEFT ? 0.8 : 0.4
+      this.hoveredButton === ButtonDirection.LEFT ? 0.8 : 1,
+      buttonBackgroundColor
     );
     this.drawRightButton(
-      this.hoveredButton === ButtonDirection.RIGHT ? 0.8 : 0.4
+      this.hoveredButton === ButtonDirection.RIGHT ? 0.8 : 1,
+      buttonBackgroundColor
     );
   }
 
