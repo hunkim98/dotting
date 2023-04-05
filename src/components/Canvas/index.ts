@@ -317,7 +317,7 @@ export default class Canvas extends EventDispatcher {
     return this.detectMouseOnButton(coord);
   }
 
-  drawTopButton(opacity: number, color: string) {
+  drawTopButton(color: string) {
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
 
@@ -337,7 +337,6 @@ export default class Canvas extends EventDispatcher {
       this.panZoom
     );
     ctx.fillStyle = color;
-    ctx.globalAlpha = opacity;
     ctx.fillRect(
       correctedScreenPoint.x,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
@@ -350,20 +349,18 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI * 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
   }
 
-  drawBottomButton(opacity: number, color: string) {
+  drawBottomButton(color: string) {
     const ctx = this.ctx;
     ctx.save();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
@@ -382,7 +379,6 @@ export default class Canvas extends EventDispatcher {
       this.panZoom
     );
     ctx.fillStyle = color;
-    ctx.globalAlpha = opacity;
     ctx.fillRect(
       correctedScreenPoint.x,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
@@ -395,34 +391,31 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI * 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
   }
-  drawArrowHead(ctx, x, y, radians, scale, opacity) {
+  drawArrowHead(ctx, x, y, radians, scale) {
     ctx.save();
     ctx.beginPath();
     ctx.translate(x, y);
     ctx.rotate(radians);
     ctx.moveTo(0, 0);
-    ctx.lineTo(10 * scale, 6 * scale);
-    ctx.lineTo(-10 * scale, 6 * scale);
+    ctx.lineTo(7 * scale, 5 * scale);
+    ctx.lineTo(-7 * scale, 5 * scale);
     ctx.closePath();
-    ctx.globalAlpha = opacity;
-    ctx.fillStyle = "#777777";
+    ctx.fillStyle = "#c4c4c4";
     ctx.fill();
     ctx.restore();
   }
 
-  drawLeftButton(opacity: number, color: string) {
+  drawLeftButton(color: string) {
     const ctx = this.ctx;
 
     ctx.save();
@@ -443,7 +436,6 @@ export default class Canvas extends EventDispatcher {
     );
 
     ctx.fillStyle = color;
-    ctx.globalAlpha = opacity;
     ctx.fillRect(
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
@@ -456,20 +448,18 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       -Math.PI / 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       Math.PI / 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
   }
 
-  drawRightButton(opacity: number, color: string) {
+  drawRightButton(color: string) {
     const ctx = this.ctx;
     ctx.save();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
@@ -488,7 +478,6 @@ export default class Canvas extends EventDispatcher {
       this.panZoom
     );
     ctx.fillStyle = color;
-    ctx.globalAlpha = opacity;
     ctx.fillRect(
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
@@ -501,36 +490,39 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       -Math.PI / 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       Math.PI / 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
   }
 
   drawButtons() {
-    const buttonBackgroundColor = "#555555";
+    const buttonBackgroundColor = "#525252";
+    const onHoverbuttonBackgroundColor = "#474747";
     this.drawTopButton(
-      this.hoveredButton === ButtonDirection.TOP ? 0.8 : 1,
-      buttonBackgroundColor
+      this.hoveredButton === ButtonDirection.TOP
+        ? onHoverbuttonBackgroundColor
+        : buttonBackgroundColor
     );
     this.drawBottomButton(
-      this.hoveredButton === ButtonDirection.BOTTOM ? 0.8 : 1,
-      buttonBackgroundColor
+      this.hoveredButton === ButtonDirection.BOTTOM
+        ? onHoverbuttonBackgroundColor
+        : buttonBackgroundColor
     );
     this.drawLeftButton(
-      this.hoveredButton === ButtonDirection.LEFT ? 0.8 : 1,
-      buttonBackgroundColor
+      this.hoveredButton === ButtonDirection.LEFT
+        ? onHoverbuttonBackgroundColor
+        : buttonBackgroundColor
     );
     this.drawRightButton(
-      this.hoveredButton === ButtonDirection.RIGHT ? 0.8 : 1,
-      buttonBackgroundColor
+      this.hoveredButton === ButtonDirection.RIGHT
+        ? onHoverbuttonBackgroundColor
+        : buttonBackgroundColor
     );
   }
 
