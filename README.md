@@ -11,7 +11,7 @@
 <br/>
 
 <h3 align="center">Why Dotting?</h3>
-<p align="center">1. Dotting works for both PC 💻 and moible 📱 environments.</p>
+<p align="center">1. Dotting works for both PC 💻 and mobile 📱 environments.</p>
 <p align="center">2. You can freely pan & zoom around the using your mouse🖱 or your fingers👌.</p>
 <p align="center">3. You can extend your canvas grid to any size⬆️⬅️⬇️➡️.</p>
 
