@@ -925,6 +925,7 @@ export default class Canvas extends EventDispatcher {
 
   changeBrushMode(brushMode: BrushMode) {
     this.brushMode = brushMode;
+    this.element.style.cursor = `url(/cursor/${this.brushMode}.cur), auto`;
     this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushMode);
   }
 
