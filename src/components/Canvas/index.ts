@@ -152,7 +152,7 @@ export default class Canvas extends EventDispatcher {
         : backgroundAlpha < 0
         ? 0
         : backgroundAlpha
-      : 1;
+      : 0.5;
     this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
     this.isGridFixed = isGridFixed ? isGridFixed : false;
     this.gridStrokeColor = gridStrokeColor ? gridStrokeColor : "#555555";
@@ -410,7 +410,7 @@ export default class Canvas extends EventDispatcher {
     ctx.lineTo(7 * scale, 5 * scale);
     ctx.lineTo(-7 * scale, 5 * scale);
     ctx.closePath();
-    ctx.fillStyle = "#c4c4c4";
+    ctx.fillStyle = "#949494";
     ctx.fill();
     ctx.restore();
   }
@@ -502,8 +502,8 @@ export default class Canvas extends EventDispatcher {
   }
 
   drawButtons() {
-    const buttonBackgroundColor = "#525252";
-    const onHoverbuttonBackgroundColor = "#474747";
+    const buttonBackgroundColor = "#c8c8c8";
+    const onHoverbuttonBackgroundColor = "#b2b2b2";
     this.drawTopButton(
       this.hoveredButton === ButtonDirection.TOP
         ? onHoverbuttonBackgroundColor
