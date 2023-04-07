@@ -58,6 +58,12 @@ export default class Canvas extends EventDispatcher {
 
   private pinchZoomPrevDiff = 0;
 
+  private backgroundMode: "checkerboard" | "color";
+
+  private backgroundColor: React.CSSProperties["color"];
+
+  private backgroundAlpha: number;
+
   private isPanZoomable: boolean;
 
   private isGridFixed: boolean;
@@ -123,6 +129,9 @@ export default class Canvas extends EventDispatcher {
   constructor(
     canvas: HTMLCanvasElement,
     initData?: Array<Array<PixelData>>,
+    backgroundMode?: "color" | "checkerboard",
+    backgroundColor?: React.CSSProperties["color"],
+    backgroundAlpha?: number,
     isPanZoomable?: boolean,
     gridStrokeColor?: string,
     gridStrokeWidth?: number,
@@ -135,10 +144,18 @@ export default class Canvas extends EventDispatcher {
 
     this.element = canvas;
     this.ctx = canvas.getContext("2d")!;
-
+    this.backgroundMode = backgroundMode ? backgroundMode : "checkerboard";
+    this.backgroundColor = backgroundColor ? backgroundColor : "#c9c9c9";
+    this.backgroundAlpha = backgroundAlpha
+      ? backgroundAlpha >= 1
+        ? 1
+        : backgroundAlpha < 0
+        ? 0
+        : backgroundAlpha
+      : 0.5;
     this.isPanZoomable = isPanZoomable ? isPanZoomable : true;
     this.isGridFixed = isGridFixed ? isGridFixed : false;
-    this.gridStrokeColor = gridStrokeColor ? gridStrokeColor : "#000";
+    this.gridStrokeColor = gridStrokeColor ? gridStrokeColor : "#555555";
     this.gridStrokeWidth = gridStrokeWidth ? gridStrokeWidth : 1;
     this.isGridVisible = isGridVisible ? isGridVisible : true;
     this.brushColor = initBrushColor ? initBrushColor : "#FF0000";
@@ -300,7 +317,7 @@ export default class Canvas extends EventDispatcher {
     return this.detectMouseOnButton(coord);
   }
 
-  drawTopButton(opacity: number) {
+  drawTopButton(color: string) {
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
 
@@ -319,8 +336,7 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom
     );
-    ctx.fillStyle = "#E1DFE1";
-    ctx.globalAlpha = opacity;
+    ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
@@ -333,20 +349,18 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI * 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
   }
 
-  drawBottomButton(opacity: number) {
+  drawBottomButton(color: string) {
     const ctx = this.ctx;
     ctx.save();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
@@ -364,8 +378,7 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom
     );
-    ctx.fillStyle = "#E1DFE1";
-    ctx.globalAlpha = opacity;
+    ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
@@ -378,34 +391,31 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI * 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
   }
-  drawArrowHead(ctx, x, y, radians, scale, opacity) {
+  drawArrowHead(ctx, x, y, radians, scale) {
     ctx.save();
     ctx.beginPath();
     ctx.translate(x, y);
     ctx.rotate(radians);
     ctx.moveTo(0, 0);
-    ctx.lineTo(10 * scale, 6 * scale);
-    ctx.lineTo(-10 * scale, 6 * scale);
+    ctx.lineTo(7 * scale, 5 * scale);
+    ctx.lineTo(-7 * scale, 5 * scale);
     ctx.closePath();
-    ctx.globalAlpha = opacity;
-    ctx.fillStyle = "#bbbbbb";
+    ctx.fillStyle = "#949494";
     ctx.fill();
     ctx.restore();
   }
 
-  drawLeftButton(opacity: number) {
+  drawLeftButton(color: string) {
     const ctx = this.ctx;
 
     ctx.save();
@@ -425,8 +435,7 @@ export default class Canvas extends EventDispatcher {
       this.panZoom
     );
 
-    ctx.fillStyle = "#E1DFE1";
-    ctx.globalAlpha = opacity;
+    ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
@@ -439,20 +448,18 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       -Math.PI / 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       Math.PI / 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
   }
 
-  drawRightButton(opacity: number) {
+  drawRightButton(color: string) {
     const ctx = this.ctx;
     ctx.save();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
@@ -470,8 +477,7 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom
     );
-    ctx.fillStyle = "#E1DFE1";
-    ctx.globalAlpha = opacity;
+    ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
@@ -484,30 +490,80 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       -Math.PI / 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       Math.PI / 2,
-      this.panZoom.scale,
-      opacity
+      this.panZoom.scale
     );
   }
 
   drawButtons() {
-    this.drawTopButton(this.hoveredButton === ButtonDirection.TOP ? 0.8 : 0.4);
+    const buttonBackgroundColor = "#c8c8c8";
+    const onHoverbuttonBackgroundColor = "#b2b2b2";
+    this.drawTopButton(
+      this.hoveredButton === ButtonDirection.TOP
+        ? onHoverbuttonBackgroundColor
+        : buttonBackgroundColor
+    );
     this.drawBottomButton(
-      this.hoveredButton === ButtonDirection.BOTTOM ? 0.8 : 0.4
+      this.hoveredButton === ButtonDirection.BOTTOM
+        ? onHoverbuttonBackgroundColor
+        : buttonBackgroundColor
     );
     this.drawLeftButton(
-      this.hoveredButton === ButtonDirection.LEFT ? 0.8 : 0.4
+      this.hoveredButton === ButtonDirection.LEFT
+        ? onHoverbuttonBackgroundColor
+        : buttonBackgroundColor
     );
     this.drawRightButton(
-      this.hoveredButton === ButtonDirection.RIGHT ? 0.8 : 0.4
+      this.hoveredButton === ButtonDirection.RIGHT
+        ? onHoverbuttonBackgroundColor
+        : buttonBackgroundColor
     );
+  }
+
+  drawBackground() {
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.width, this.height);
+    ctx.save();
+
+    ctx.globalAlpha = this.backgroundAlpha;
+
+    if (this.backgroundMode === "color") {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(0, 0, this.width, this.height);
+    } else {
+      const cellWidth = 12;
+      const cellCount = {
+        x: this.width / cellWidth,
+        y: this.height / cellWidth,
+      };
+
+      for (let i = 0; i < cellCount.x; i++) {
+        for (let j = 0; j < cellCount.y; j++) {
+          const isEvenRow = i % 2 === 0;
+          const isEvenCol = j % 2 === 0;
+
+          const color = isEvenRow
+            ? isEvenCol
+              ? "white"
+              : this.backgroundColor
+            : isEvenCol
+            ? this.backgroundColor
+            : "white";
+
+          if (color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(i * cellWidth, j * cellWidth, cellWidth, cellWidth);
+          }
+        }
+      }
+    }
+    ctx.restore();
   }
 
   drawRects() {
@@ -637,12 +693,6 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom
     );
-
-    // const leftTopScreenPoint = convertCartesianToScreen(
-    //   this.element,
-    //   correctedPosition,
-    //   this.dpr
-    // );
 
     ctx.save();
     ctx.lineWidth = this.gridStrokeWidth;
@@ -1811,11 +1861,8 @@ export default class Canvas extends EventDispatcher {
   }
 
   render() {
-    this.ctx.clearRect(0, 0, this.width, this.height);
-    this.ctx.save();
-    this.ctx.fillStyle = "white";
-    this.ctx.fillRect(0, 0, this.width, this.height);
-    this.ctx.restore();
+    this.drawBackground();
+
     this.drawRects();
     if (this.isGridVisible) {
       this.drawGrids();

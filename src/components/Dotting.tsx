@@ -28,6 +28,9 @@ export interface DottingProps {
   gridStrokeColor?: string;
   gridStrokeWidth?: number;
   isGridVisible?: boolean;
+  backgroundMode?: "checkerboard" | "color";
+  backgroundColor?: React.CSSProperties["color"];
+  backgroundAlpha?: number;
   initData?: Array<Array<PixelData>>;
   initIndicatorData?: Array<PixelModifyItem>;
   isPanZoomable?: boolean;
@@ -256,6 +259,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     const canvas = new Canvas(
       canvasRef,
       props.initData,
+      props.backgroundMode,
+      props.backgroundColor,
+      props.backgroundAlpha,
       props.isPanZoomable,
       props.gridStrokeColor,
       props.gridStrokeWidth,
@@ -486,7 +492,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       <canvas
         ref={gotRef}
         style={{
-          border: "1px solid black",
+          border: "1px solid #555555",
           ...props.style,
         }}
       />
