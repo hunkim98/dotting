@@ -107,6 +107,23 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!canvas) {
       return;
     }
+    console.log("hi from event listner");
+    const undoListener = (e: KeyboardEvent) => {
+      console.log(e);
+      if (e.key === "z") {
+        canvas?.undo();
+      }
+    };
+    document.addEventListener("keydown", undoListener);
+    return () => {
+      document.removeEventListener("keydown", undoListener);
+    };
+  }, [canvas]);
+
+  useEffect(() => {
+    if (!canvas) {
+      return;
+    }
     canvas.setIsGridFixed(props.isGridFixed);
   }, [canvas, props.isGridFixed]);
 
@@ -489,6 +506,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       style={{ width: props.width, height: props.height }}
       ref={containerRef}
     >
+      <button
+        onClick={() => {
+          canvas?.undo();
+        }}
+      >
+        undo
+      </button>
       <canvas
         ref={gotRef}
         style={{

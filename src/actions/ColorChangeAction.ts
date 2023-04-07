@@ -15,14 +15,17 @@ export class ColorChangeAction extends Action {
     super();
     this.mode = mode;
     this.data = data;
+    // below are functions to manipulate the canvas
   }
 
-  undo(): void {
-    throw new Error("Method not implemented.");
-  }
-
-  redo(): void {
-    throw new Error("Method not implemented.");
+  createInverseAction(): Action {
+    if (this.mode === ColorChangeMode.Fill) {
+      return new ColorChangeAction(ColorChangeMode.Erase, this.data);
+    } else if (this.mode === ColorChangeMode.Erase) {
+      return new ColorChangeAction(ColorChangeMode.Fill, this.data);
+    } else {
+      throw new Error("Unable to create inverse action for color change");
+    }
   }
 
   getType(): string {

@@ -8,9 +8,7 @@ export abstract class Action {
 
   abstract type: ActionType;
 
-  abstract undo(): void;
-
-  abstract redo(): void;
+  abstract createInverseAction(): Action;
 
   abstract getType(): string;
 }

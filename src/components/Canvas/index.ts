@@ -24,12 +24,13 @@ import {
 import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
-import { Action } from "../../actions/Action";
+import { Action, ActionType } from "../../actions/Action";
 import {
   ColorChangeMode,
   ColorChangeAction,
 } from "../../actions/ColorChangeAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
+import Stack from "../../utils/stack";
 
 export enum MouseMode {
   DRAWING = "DRAWING",
@@ -141,7 +142,7 @@ export default class Canvas extends EventDispatcher {
 
   private dpr = 1;
 
-  private undoHistory: Queue<Action> = new Queue();
+  private undoHistory: Stack<Action> = new Stack();
 
   private redoHistory: Queue<Action> = new Queue();
 
@@ -206,8 +207,56 @@ export default class Canvas extends EventDispatcher {
     this.initialize(isInitDataValid ? initData : undefined);
   }
 
-  setCursorStyle(cursorStyle: string) {
-    this.cursorStyle = cursorStyle;
+  undo() {
+    if (this.undoHistory.isEmpty()) {
+      return;
+    }
+    const action = this.undoHistory.pop()!;
+    const inverseAction = action.createInverseAction();
+    this.commitAction(inverseAction);
+    this.redoHistory.enqueue(action);
+    this.render();
+  }
+
+  commitAction(action: Action) {
+    const type = action.getType();
+    switch (type) {
+      case ActionType.ColorChange:
+        const colorChangeAction = action as ColorChangeAction;
+        if (colorChangeAction.mode === ColorChangeMode.Erase) {
+          const pixelsToErase = colorChangeAction.data;
+          for (let i = 0; i < pixelsToErase.length; i++) {
+            const pixel = pixelsToErase[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, "");
+          }
+        } else if (colorChangeAction.mode === ColorChangeMode.Fill) {
+          const pixelsToFill = colorChangeAction.data;
+          for (let i = 0; i < pixelsToFill.length; i++) {
+            const pixel = pixelsToFill[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
+          }
+        }
+        break;
+
+      case ActionType.SizeChange:
+        const sizeChangeAction = action as SizeChangeAction;
+        const isExtendAction = sizeChangeAction.changeAmount > 0;
+        if (isExtendAction) {
+          for (let i = 0; i < sizeChangeAction.changeAmount; i++) {
+            this.extendGrid(sizeChangeAction.direction);
+          }
+        } else {
+          for (let i = 0; i < -sizeChangeAction.changeAmount; i++) {
+            this.shortenGrid(sizeChangeAction.direction);
+          }
+        }
+        const pixelsToFill = sizeChangeAction.data;
+        for (let i = 0; i < pixelsToFill.length; i++) {
+          const pixel = pixelsToFill[i];
+          this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
+        }
+        break;
+    }
   }
 
   setCanvasData(data: DottingData) {
@@ -254,8 +303,8 @@ export default class Canvas extends EventDispatcher {
     }
   }
 
-  commitAction(action: Action) {
-    this.undoHistory.enqueue(action);
+  recordAction(action: Action) {
+    this.undoHistory.push(action);
     this.redoHistory.clear();
   }
 
@@ -1105,6 +1154,10 @@ export default class Canvas extends EventDispatcher {
     anchor.click();
   }
 
+  fillPixelColor(rowIndex: number, columnIndex: number, color: string) {
+    this.data.get(rowIndex)!.set(columnIndex, { color });
+  }
+
   /**
    * This function colors the pixel in the grid
    * @param rowIndex
@@ -1143,7 +1196,7 @@ export default class Canvas extends EventDispatcher {
       }
 
       if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
-        this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+        this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
     } else if (this.brushMode === BrushMode.PAINT_BUCKET) {
@@ -1189,8 +1242,7 @@ export default class Canvas extends EventDispatcher {
       if (!currentPixel || currentPixel?.color !== initialColor) {
         continue;
       }
-
-      this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+      this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
       this.strokedPixels.push({
         rowIndex,
         columnIndex,
@@ -1408,12 +1460,13 @@ export default class Canvas extends EventDispatcher {
         }
         const topRowPixelMap = this.data.get(currentTopIndex)!;
         const topRowPixelModifyItems: Array<PixelModifyItem> = [];
-        Array.from(topRowPixelMap.values()).forEach((pixel, index) => {
+        Array.from(topRowPixelMap.entries()).forEach((columnData) => {
+          const [key, pixel] = columnData;
           if (pixel.color) {
             topRowPixelModifyItems.push({
               color: pixel.color,
               rowIndex: currentTopIndex,
-              columnIndex: currentLeftIndex + index,
+              columnIndex: key,
             });
           }
         });
@@ -1436,12 +1489,13 @@ export default class Canvas extends EventDispatcher {
         }
         const bottomRowPixelMap = this.data.get(currentBottomIndex)!;
         const bottomRowPixelModifyItems: Array<PixelModifyItem> = [];
-        Array.from(bottomRowPixelMap.values()).forEach((pixel, index) => {
+        Array.from(bottomRowPixelMap.entries()).forEach((columnData) => {
+          const [key, pixel] = columnData;
           if (pixel.color) {
             bottomRowPixelModifyItems.push({
               color: pixel.color,
               rowIndex: currentBottomIndex,
-              columnIndex: currentLeftIndex + index,
+              columnIndex: key,
             });
           }
         });
@@ -1464,13 +1518,14 @@ export default class Canvas extends EventDispatcher {
           break;
         }
         const leftColumnPixelModifyItems: Array<PixelModifyItem> = [];
-        Array.from(this.data.values()).map((row, index) =>
+        Array.from(this.data.entries()).map((rowData, key) => {
+          const row = rowData[1];
           leftColumnPixelModifyItems.push({
-            rowIndex: currentTopIndex + index,
+            rowIndex: key,
             columnIndex: currentLeftIndex,
             color: row.get(currentLeftIndex)!.color,
-          })
-        );
+          });
+        });
         if (leftColumnPixelModifyItems.length > 0) {
           this.swipedPixels.push(...leftColumnPixelModifyItems);
         }
@@ -1492,13 +1547,14 @@ export default class Canvas extends EventDispatcher {
           break;
         }
         const rightColumnPixelModifyItems: Array<PixelModifyItem> = [];
-        Array.from(this.data.values()).map((row, index) =>
+        Array.from(this.data.entries()).map((rowData, key) => {
+          const row = rowData[1];
           rightColumnPixelModifyItems.push({
-            rowIndex: currentTopIndex + index,
+            rowIndex: key,
             columnIndex: currentRightIndex,
             color: row.get(currentRightIndex)!.color,
-          })
-        );
+          });
+        });
         if (rightColumnPixelModifyItems.length > 0) {
           this.swipedPixels.push(...rightColumnPixelModifyItems);
         }
@@ -1610,39 +1666,40 @@ export default class Canvas extends EventDispatcher {
       const currentGridIndices = this.getGridIndices();
       if (extensionDirection === ButtonDirection.TOP) {
         sizeChangeAmount =
-          currentGridIndices.topRowIndex -
-          this.mouseDownGridInfo!.indices.topRowIndex;
+          this.mouseDownGridInfo!.indices.topRowIndex -
+          currentGridIndices.topRowIndex;
       } else if (extensionDirection === ButtonDirection.BOTTOM) {
         sizeChangeAmount =
           currentGridIndices.bottomRowIndex -
           this.mouseDownGridInfo!.indices.bottomRowIndex;
       } else if (extensionDirection === ButtonDirection.LEFT) {
         sizeChangeAmount =
-          currentGridIndices.leftColumnIndex -
-          this.mouseDownGridInfo!.indices.leftColumnIndex;
+          this.mouseDownGridInfo!.indices.leftColumnIndex -
+          currentGridIndices.leftColumnIndex;
       } else {
         sizeChangeAmount =
           currentGridIndices.rightColumnIndex -
           this.mouseDownGridInfo!.indices.rightColumnIndex;
       }
-      this.commitAction(
+      this.recordAction(
         new SizeChangeAction(
           deletedPixels,
           extensionDirection,
           sizeChangeAmount
         )
       );
+      this.swipedPixels = [];
     }
     this.mouseMode = MouseMode.NULL;
     if (this.strokedPixels.length !== 0) {
       this.emit(CanvasEvents.STROKE_END, this.strokedPixels, this.data);
-      this.commitAction(
+      this.recordAction(
         new ColorChangeAction(ColorChangeMode.Fill, this.strokedPixels)
       );
       this.strokedPixels = [];
     }
     if (this.erasedPixels.length !== 0) {
-      this.commitAction(
+      this.recordAction(
         new ColorChangeAction(ColorChangeMode.Erase, this.erasedPixels)
       );
     }
