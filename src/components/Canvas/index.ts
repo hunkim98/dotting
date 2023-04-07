@@ -23,6 +23,7 @@ import {
 import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
+import { Action } from "../../history/Action";
 
 export enum MouseMode {
   DRAWING = "DRAWING",
@@ -125,6 +126,10 @@ export default class Canvas extends EventDispatcher {
   private height = 0;
 
   private dpr = 1;
+
+  private undoHistory: Queue<Action> = new Queue();
+
+  private redoHistory: Queue<Action> = new Queue();
 
   private ctx: CanvasRenderingContext2D;
 
@@ -234,6 +239,8 @@ export default class Canvas extends EventDispatcher {
       this.isPanZoomable = isPanZoomable;
     }
   }
+
+  undo() {}
 
   //http://jsfiddle.net/dX9Y3/
 

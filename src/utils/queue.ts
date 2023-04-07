@@ -44,4 +44,8 @@ export default class Queue<T> {
   size(): number {
     return this.length;
   }
+
+  isEmpty(): boolean {
+    return this.length === 0;
+  }
 }
