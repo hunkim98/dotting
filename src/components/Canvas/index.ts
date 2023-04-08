@@ -1056,7 +1056,6 @@ export default class Canvas extends EventDispatcher {
     this.onMouseOut = this.onMouseOut.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
-    this.onKeyDown = this.onKeyDown.bind(this);
 
     // add event listeners
     touchy(this.element, addEvent, "mousedown", this.onMouseDown);
