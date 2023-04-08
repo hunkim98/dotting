@@ -69,3 +69,10 @@ export type CanvasHoverPixelChangeHandler = (
     columnIndex: number;
   } | null
 ) => void;
+
+export type GridIndices = {
+  topRowIndex: number;
+  bottomRowIndex: number;
+  leftColumnIndex: number;
+  rightColumnIndex: number;
+};

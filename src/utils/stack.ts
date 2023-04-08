@@ -1,6 +1,6 @@
-class QueueNode<T> {
+class StackNode<T> {
   data: T;
-  next: QueueNode<T> | null;
+  next: StackNode<T> | null;
 
   constructor(data: T) {
     this.data = data;
@@ -8,10 +8,10 @@ class QueueNode<T> {
   }
 }
 
-export default class Queue<T> {
+export default class Stack<T> {
   private length: number;
-  private head: QueueNode<T> | null;
-  private tail: QueueNode<T> | null;
+  private head: StackNode<T> | null;
+  private tail: StackNode<T> | null;
 
   constructor() {
     this.head = null;
@@ -19,25 +19,25 @@ export default class Queue<T> {
     this.length = 0;
   }
 
-  enqueue(data: T): void {
-    const node = new QueueNode(data);
+  push(data: T): void {
+    const node = new StackNode(data);
     if (this.length === 0) {
       this.head = node;
+      this.tail = node;
     } else {
-      this.tail!.next = node;
+      node.next = this.head;
+      this.head = node;
     }
-    this.tail = node;
     this.length++;
   }
 
-  dequeue(): T | null {
+  pop(): T | null {
     if (this.length === 0) {
       return null;
     }
     const data = this.head.data;
     this.head = this.head.next;
     this.length--;
-
     return data;
   }
 

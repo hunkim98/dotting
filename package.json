@@ -15,7 +15,9 @@
     "storybook:build": "build-storybook",
     "test": "jest",
     "test:watch": "jest --watch",
-    "prepublishOnly": "yarn clean && yarn build"
+    "prepublishOnly": "yarn clean && yarn build",
+    "link-local": "yarn link && cd node_modules/react && yarn link && cd ../react-dom && yarn link",
+    "unlink-local": "yarn unlink && cd node_modules/react && yarn unlink && cd ../react-dom && yarn unlink"
   },
   "repository": {
     "type": "git",

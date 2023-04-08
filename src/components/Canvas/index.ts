@@ -15,6 +15,7 @@ import {
   CanvasEvents,
   Coord,
   DottingData,
+  GridIndices,
   ImageDownloadOptions,
   PanZoom,
   PixelData,
@@ -23,6 +24,14 @@ import {
 import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
+import { Action, ActionType } from "../../actions/Action";
+import {
+  ColorChangeMode,
+  ColorChangeAction,
+} from "../../actions/ColorChangeAction";
+import { SizeChangeAction } from "../../actions/SizeChangeAction";
+import Stack from "../../utils/stack";
+import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 
 export enum MouseMode {
   DRAWING = "DRAWING",
@@ -36,7 +45,6 @@ export enum ButtonDirection {
   BOTTOM = "BOTTOM",
   LEFT = "LEFT",
   RIGHT = "RIGHT",
-  NULL = "NULL",
 }
 
 export default class Canvas extends EventDispatcher {
@@ -75,6 +83,10 @@ export default class Canvas extends EventDispatcher {
   private isGridVisible: boolean;
 
   private strokedPixels: Array<PixelModifyItem> = [];
+
+  private erasedPixels: Array<PixelModifyItem> = [];
+
+  private swipedPixels: Array<PixelModifyItem> = [];
 
   private indicatorPixels: Array<PixelModifyItem> = [];
 
@@ -120,11 +132,20 @@ export default class Canvas extends EventDispatcher {
     direction: null,
   };
 
+  private mouseDownGridInfo: {
+    direction: ButtonDirection;
+    indices: GridIndices;
+  } | null = null;
+
   private width = 0;
 
   private height = 0;
 
   private dpr = 1;
+
+  private undoHistory: Stack<Action> = new Stack();
+
+  private redoHistory: Stack<Action> = new Stack();
 
   private ctx: CanvasRenderingContext2D;
 
@@ -187,8 +208,94 @@ export default class Canvas extends EventDispatcher {
     this.initialize(isInitDataValid ? initData : undefined);
   }
 
-  setCursorStyle(cursorStyle: string) {
-    this.cursorStyle = cursorStyle;
+  undo() {
+    if (this.undoHistory.isEmpty()) {
+      return;
+    }
+    const action = this.undoHistory.pop()!;
+    const inverseAction = action.createInverseAction();
+    this.commitAction(inverseAction);
+    this.redoHistory.push(action);
+    this.render();
+  }
+
+  redo() {
+    if (this.redoHistory.isEmpty()) {
+      return;
+    }
+    const action = this.redoHistory.pop()!;
+    this.commitAction(action);
+    this.undoHistory.push(action);
+    this.render();
+  }
+
+  commitAction(action: Action) {
+    const type = action.getType();
+    switch (type) {
+      case ActionType.ColorChange:
+        const colorChangeAction = action as ColorChangeAction;
+        if (colorChangeAction.mode === ColorChangeMode.Erase) {
+          const pixelsToErase = colorChangeAction.data;
+          for (let i = 0; i < pixelsToErase.length; i++) {
+            const pixel = pixelsToErase[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, "");
+          }
+        } else if (colorChangeAction.mode === ColorChangeMode.Fill) {
+          const pixelsToFill = colorChangeAction.data;
+          for (let i = 0; i < pixelsToFill.length; i++) {
+            const pixel = pixelsToFill[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
+          }
+        }
+        break;
+
+      case ActionType.SizeChange:
+        const sizeChangeAction = action as SizeChangeAction;
+        for (let i = 0; i < sizeChangeAction.changeAmounts.length; i++) {
+          const change = sizeChangeAction.changeAmounts[i];
+          const isExtendAction = change.amount > 0;
+          if (isExtendAction) {
+            for (let i = 0; i < change.amount; i++) {
+              this.extendGrid(change.direction);
+            }
+          } else {
+            for (let i = 0; i < -change.amount; i++) {
+              this.shortenGrid(change.direction);
+            }
+          }
+          const pixelsToFill = sizeChangeAction.data;
+          for (let i = 0; i < pixelsToFill.length; i++) {
+            const pixel = pixelsToFill[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
+          }
+        }
+        break;
+
+      case ActionType.ColorSizeChange:
+        const colorSizeChangeAction = action as ColorSizeChangeAction;
+        for (let i = 0; i < colorSizeChangeAction.changeAmounts.length; i++) {
+          const change = colorSizeChangeAction.changeAmounts[i];
+          const isExtendAction = change.amount > 0;
+          if (isExtendAction) {
+            for (let i = 0; i < change.amount; i++) {
+              this.extendGrid(change.direction);
+            }
+          } else {
+            for (let i = 0; i < -change.amount; i++) {
+              this.shortenGrid(change.direction);
+            }
+          }
+        }
+        // we do not need to care for colorchangemode.Erase since the grids are already deleted
+        if (colorSizeChangeAction.mode === ColorChangeMode.Fill) {
+          const pixelsToFill = colorSizeChangeAction.data;
+          for (let i = 0; i < pixelsToFill.length; i++) {
+            const pixel = pixelsToFill[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
+          }
+        }
+        break;
+    }
   }
 
   setCanvasData(data: DottingData) {
@@ -233,6 +340,11 @@ export default class Canvas extends EventDispatcher {
     if (isPanZoomable !== undefined) {
       this.isPanZoomable = isPanZoomable;
     }
+  }
+
+  recordAction(action: Action) {
+    this.undoHistory.push(action);
+    this.redoHistory.clear();
   }
 
   //http://jsfiddle.net/dX9Y3/
@@ -598,7 +710,6 @@ export default class Canvas extends EventDispatcher {
     ctx.save();
     for (let i = 0; i < this.getRowCount(); i++) {
       for (let j = 0; j < this.getColumnCount(); j++) {
-        // console.log(i, j, this.data.get(i)?.get(j)?.color);
         const rowIndex = i + currentTopIndex;
         const columnIndex = j + currentLeftIndex;
 
@@ -778,7 +889,7 @@ export default class Canvas extends EventDispatcher {
     return dataArray;
   }
 
-  getGridIndices() {
+  getGridIndices(): GridIndices {
     const allRowKeys = Array.from(this.data.keys());
     const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
     const currentTopIndex = Math.min(...allRowKeys);
@@ -818,6 +929,14 @@ export default class Canvas extends EventDispatcher {
       const { rowIndex, columnIndex } = validData[i];
       this.data.get(rowIndex)!.set(columnIndex, { color: "" });
     }
+    if (validData.length > 0) {
+      this.recordAction(
+        new ColorChangeAction(
+          ColorChangeMode.Erase,
+          validData.map((item) => ({ ...item, color: "" }))
+        )
+      );
+    }
     this.render();
   }
   /**
@@ -832,41 +951,66 @@ export default class Canvas extends EventDispatcher {
     const minColumnIndex = Math.min(...columnIndices);
     const maxColumnIndex = Math.min(...columnIndices);
     const currentCanvasIndices = this.getGridIndices();
+    const changeAmounts = [];
     if (minRowIndex < currentCanvasIndices.topRowIndex) {
+      let amount = 0;
       for (
         let index = currentCanvasIndices.topRowIndex - 1;
         minRowIndex <= index;
         index--
       ) {
+        amount++;
         this.extendGrid(ButtonDirection.TOP);
       }
+      changeAmounts.push({
+        direction: ButtonDirection.TOP,
+        amount,
+      });
     }
     if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
+      let amount = 0;
       for (
         let index = currentCanvasIndices.bottomRowIndex + 1;
         maxRowIndex >= index;
         index++
       ) {
+        amount++;
         this.extendGrid(ButtonDirection.BOTTOM);
       }
+      changeAmounts.push({
+        direction: ButtonDirection.BOTTOM,
+        amount,
+      });
     }
     if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
+      let amount = 0;
       for (
         let index = currentCanvasIndices.leftColumnIndex - 1;
         minColumnIndex <= index;
         index--
       ) {
+        amount++;
         this.extendGrid(ButtonDirection.LEFT);
       }
+      changeAmounts.push({
+        direction: ButtonDirection.LEFT,
+        amount,
+      });
     }
     if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
+      let amount = 0;
       for (
         let index = currentCanvasIndices.rightColumnIndex + 1;
         maxColumnIndex >= index;
         index++
       ) {
+        amount++;
         this.extendGrid(ButtonDirection.RIGHT);
       }
+      changeAmounts.push({
+        direction: ButtonDirection.RIGHT,
+        amount,
+      });
     }
 
     for (const change of data) {
@@ -874,6 +1018,9 @@ export default class Canvas extends EventDispatcher {
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
     }
+    this.recordAction(
+      new ColorSizeChangeAction(ColorChangeMode.Fill, data, changeAmounts)
+    );
     this.emit(CanvasEvents.DATA_CHANGE, this.data);
     this.render();
   }
@@ -1081,6 +1228,12 @@ export default class Canvas extends EventDispatcher {
     anchor.click();
   }
 
+  fillPixelColor(rowIndex: number, columnIndex: number, color: string) {
+    if (this.data.get(rowIndex) && this.data.get(rowIndex)!.get(columnIndex)) {
+      this.data.get(rowIndex)!.set(columnIndex, { color });
+    }
+  }
+
   /**
    * This function colors the pixel in the grid
    * @param rowIndex
@@ -1091,6 +1244,11 @@ export default class Canvas extends EventDispatcher {
     if (this.brushMode === BrushMode.ERASER) {
       this.data.get(rowIndex)!.set(columnIndex, { color: "" });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
+      this.erasedPixels.push({
+        rowIndex,
+        columnIndex,
+        color: "",
+      });
     } else if (this.brushMode === BrushMode.DOT) {
       // this draws the pixel if the brush mode is brush
 
@@ -1114,7 +1272,7 @@ export default class Canvas extends EventDispatcher {
       }
 
       if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
-        this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+        this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
     } else if (this.brushMode === BrushMode.PAINT_BUCKET) {
@@ -1160,8 +1318,7 @@ export default class Canvas extends EventDispatcher {
       if (!currentPixel || currentPixel?.color !== initialColor) {
         continue;
       }
-
-      this.data.get(rowIndex)!.set(columnIndex, { color: this.brushColor });
+      this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
       this.strokedPixels.push({
         rowIndex,
         columnIndex,
@@ -1197,7 +1354,12 @@ export default class Canvas extends EventDispatcher {
           x: mouseCartCoord.x,
           y: mouseCartCoord.y,
         };
+
         this.extensionPoint.direction = buttonDirection;
+        this.mouseDownGridInfo = {
+          direction: buttonDirection,
+          indices: this.getGridIndices(),
+        };
         this.mouseMode = MouseMode.EXTENDING;
         touchy(this.element, addEvent, "mousemove", this.handleExtension);
       }
@@ -1372,6 +1534,21 @@ export default class Canvas extends EventDispatcher {
         if (allRowKeys.length <= 2) {
           break;
         }
+        const topRowPixelMap = this.data.get(currentTopIndex)!;
+        const topRowPixelModifyItems: Array<PixelModifyItem> = [];
+        Array.from(topRowPixelMap.entries()).forEach((columnData) => {
+          const [key, pixel] = columnData;
+          if (pixel.color) {
+            topRowPixelModifyItems.push({
+              color: pixel.color,
+              rowIndex: currentTopIndex,
+              columnIndex: key,
+            });
+          }
+        });
+        if (topRowPixelModifyItems.length > 0) {
+          this.swipedPixels.push(...topRowPixelModifyItems);
+        }
         this.data.delete(currentTopIndex);
         this.setPanZoom({
           offset: {
@@ -1385,6 +1562,21 @@ export default class Canvas extends EventDispatcher {
       case ButtonDirection.BOTTOM:
         if (allRowKeys.length <= 2) {
           break;
+        }
+        const bottomRowPixelMap = this.data.get(currentBottomIndex)!;
+        const bottomRowPixelModifyItems: Array<PixelModifyItem> = [];
+        Array.from(bottomRowPixelMap.entries()).forEach((columnData) => {
+          const [key, pixel] = columnData;
+          if (pixel.color) {
+            bottomRowPixelModifyItems.push({
+              color: pixel.color,
+              rowIndex: currentBottomIndex,
+              columnIndex: key,
+            });
+          }
+        });
+        if (bottomRowPixelModifyItems.length > 0) {
+          this.swipedPixels.push(...bottomRowPixelModifyItems);
         }
         this.data.delete(currentBottomIndex);
         this.setPanZoom({
@@ -1400,6 +1592,20 @@ export default class Canvas extends EventDispatcher {
       case ButtonDirection.LEFT:
         if (allColumnKeys.length <= 2) {
           break;
+        }
+        const leftColumnPixelModifyItems: Array<PixelModifyItem> = [];
+        Array.from(this.data.entries()).map((rowData, key) => {
+          const row = rowData[1];
+          if (row.get(currentLeftIndex)!.color) {
+            leftColumnPixelModifyItems.push({
+              rowIndex: key,
+              columnIndex: currentLeftIndex,
+              color: row.get(currentLeftIndex)!.color,
+            });
+          }
+        });
+        if (leftColumnPixelModifyItems.length > 0) {
+          this.swipedPixels.push(...leftColumnPixelModifyItems);
         }
         this.data.forEach((row) => {
           row.delete(currentLeftIndex);
@@ -1417,6 +1623,20 @@ export default class Canvas extends EventDispatcher {
       case ButtonDirection.RIGHT:
         if (allColumnKeys.length <= 2) {
           break;
+        }
+        const rightColumnPixelModifyItems: Array<PixelModifyItem> = [];
+        Array.from(this.data.entries()).map((rowData, key) => {
+          const row = rowData[1];
+          if (row.get(currentRightIndex)!.color) {
+            rightColumnPixelModifyItems.push({
+              rowIndex: key,
+              columnIndex: currentRightIndex,
+              color: row.get(currentRightIndex).color,
+            });
+          }
+        });
+        if (rightColumnPixelModifyItems.length > 0) {
+          this.swipedPixels.push(...rightColumnPixelModifyItems);
         }
         this.data.forEach((row) => {
           row.delete(currentRightIndex);
@@ -1518,11 +1738,63 @@ export default class Canvas extends EventDispatcher {
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
   }
 
+  addSizeChangeActionToUndoStack() {
+    const extensionDirection = this.mouseDownGridInfo!.direction;
+    const deletedPixels = this.swipedPixels;
+    let sizeChangeAmount = 0;
+    const currentGridIndices = this.getGridIndices();
+    if (extensionDirection === ButtonDirection.TOP) {
+      sizeChangeAmount =
+        this.mouseDownGridInfo!.indices.topRowIndex -
+        currentGridIndices.topRowIndex;
+    } else if (extensionDirection === ButtonDirection.BOTTOM) {
+      sizeChangeAmount =
+        currentGridIndices.bottomRowIndex -
+        this.mouseDownGridInfo!.indices.bottomRowIndex;
+    } else if (extensionDirection === ButtonDirection.LEFT) {
+      sizeChangeAmount =
+        this.mouseDownGridInfo!.indices.leftColumnIndex -
+        currentGridIndices.leftColumnIndex;
+    } else {
+      sizeChangeAmount =
+        currentGridIndices.rightColumnIndex -
+        this.mouseDownGridInfo!.indices.rightColumnIndex;
+    }
+    this.recordAction(
+      new SizeChangeAction(deletedPixels, [
+        {
+          direction: extensionDirection,
+          amount: sizeChangeAmount,
+        },
+      ])
+    );
+    this.swipedPixels = [];
+  }
+
+  addColorFillActionToUndoStack() {
+    this.recordAction(
+      new ColorChangeAction(ColorChangeMode.Fill, this.strokedPixels)
+    );
+    this.strokedPixels = [];
+  }
+
+  addColorEraseActionToUndoStack() {
+    this.recordAction(
+      new ColorChangeAction(ColorChangeMode.Erase, this.erasedPixels)
+    );
+    this.erasedPixels = [];
+  }
   onMouseUp() {
+    if (this.mouseMode === MouseMode.EXTENDING) {
+      this.addSizeChangeActionToUndoStack();
+    }
     this.mouseMode = MouseMode.NULL;
     if (this.strokedPixels.length !== 0) {
       this.emit(CanvasEvents.STROKE_END, this.strokedPixels, this.data);
-      this.strokedPixels = [];
+      this.addColorFillActionToUndoStack();
+    }
+    if (this.erasedPixels.length !== 0) {
+      this.addColorEraseActionToUndoStack();
     }
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
@@ -1532,6 +1804,9 @@ export default class Canvas extends EventDispatcher {
   }
 
   onMouseOut() {
+    if (this.mouseMode === MouseMode.EXTENDING) {
+      this.addSizeChangeActionToUndoStack();
+    }
     if (this.mouseMode === MouseMode.PANNING) {
       return;
     }

@@ -46,6 +46,8 @@ export interface DottingRef {
   erasePixels: (data: Array<{ rowIndex: number; columnIndex: number }>) => void;
   downloadImage: (options?: ImageDownloadOptions) => void;
   setIndicatorPixels: (data: Array<PixelModifyItem>) => void;
+  undo: () => void;
+  redo: () => void;
   // for useBrush
   changeBrushColor: (color: string) => void;
   changeBrushMode: (mode: BrushMode) => void;
@@ -428,6 +430,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [canvas]
   );
 
+  const undo = useCallback(() => {
+    canvas?.undo();
+  }, [canvas]);
+
+  const redo = useCallback(() => {
+    canvas?.redo();
+  }, [canvas]);
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -439,6 +449,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       erasePixels,
       downloadImage,
       setIndicatorPixels,
+      undo,
+      redo,
       // for useBrush
       changeBrushColor,
       changeBrushMode,
@@ -464,6 +476,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       erasePixels,
       downloadImage,
       setIndicatorPixels,
+      undo,
+      redo,
       // for useBrush
       changeBrushColor,
       changeBrushMode,
@@ -488,6 +502,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     <div
       style={{ width: props.width, height: props.height }}
       ref={containerRef}
+      // onKeyDown={(e) => {
+      //   console.log(e.code, e.ctrlKey, e.metaKey);
+      //   if (e.code === "KeyZ" && (e.ctrlKey || e.metaKey)) {
+      //     canvas?.undo();
+      //   }
+      // }}
+      // tabIndex={0}
     >
       <canvas
         ref={gotRef}
