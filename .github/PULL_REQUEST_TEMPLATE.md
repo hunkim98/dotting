@@ -18,6 +18,10 @@
 
   - Write a description of the changes you made on docs
 
+- [other] Write a summary of what other things you have done
+
+  - Write a description of the changes you made on other things
+
 ## Notes
 
 - There are some things that I would like to discuss with you.
