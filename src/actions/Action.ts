@@ -1,6 +1,7 @@
 export enum ActionType {
   ColorChange = "ColorChange",
   SizeChange = "SizeChange",
+  ColorSizeChange = "ColorSizeChange",
 }
 
 export abstract class Action {

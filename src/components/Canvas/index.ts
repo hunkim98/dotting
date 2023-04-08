@@ -31,6 +31,7 @@ import {
 } from "../../actions/ColorChangeAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import Stack from "../../utils/stack";
+import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 
 export enum MouseMode {
   DRAWING = "DRAWING",
@@ -250,20 +251,53 @@ export default class Canvas extends EventDispatcher {
 
       case ActionType.SizeChange:
         const sizeChangeAction = action as SizeChangeAction;
-        const isExtendAction = sizeChangeAction.changeAmount > 0;
-        if (isExtendAction) {
-          for (let i = 0; i < sizeChangeAction.changeAmount; i++) {
-            this.extendGrid(sizeChangeAction.direction);
+        for (let i = 0; i < sizeChangeAction.changeAmounts.length; i++) {
+          const change = sizeChangeAction.changeAmounts[i];
+          const isExtendAction = change.amount > 0;
+          if (isExtendAction) {
+            for (let i = 0; i < change.amount; i++) {
+              this.extendGrid(change.direction);
+            }
+          } else {
+            for (let i = 0; i < -change.amount; i++) {
+              this.shortenGrid(change.direction);
+            }
           }
-        } else {
-          for (let i = 0; i < -sizeChangeAction.changeAmount; i++) {
-            this.shortenGrid(sizeChangeAction.direction);
+          const pixelsToFill = sizeChangeAction.data;
+          for (let i = 0; i < pixelsToFill.length; i++) {
+            const pixel = pixelsToFill[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
           }
         }
-        const pixelsToFill = sizeChangeAction.data;
-        for (let i = 0; i < pixelsToFill.length; i++) {
-          const pixel = pixelsToFill[i];
-          this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
+        break;
+
+      case ActionType.ColorSizeChange:
+        const colorSizeChangeAction = action as ColorSizeChangeAction;
+        for (let i = 0; i < colorSizeChangeAction.changeAmounts.length; i++) {
+          const change = colorSizeChangeAction.changeAmounts[i];
+          const isExtendAction = change.amount > 0;
+          if (isExtendAction) {
+            for (let i = 0; i < change.amount; i++) {
+              this.extendGrid(change.direction);
+            }
+          } else {
+            for (let i = 0; i < -change.amount; i++) {
+              this.shortenGrid(change.direction);
+            }
+          }
+        }
+        if (colorSizeChangeAction.mode === ColorChangeMode.Erase) {
+          const pixelsToErase = colorSizeChangeAction.data;
+          for (let i = 0; i < pixelsToErase.length; i++) {
+            const pixel = pixelsToErase[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, "");
+          }
+        } else if (colorSizeChangeAction.mode === ColorChangeMode.Fill) {
+          const pixelsToFill = colorSizeChangeAction.data;
+          for (let i = 0; i < pixelsToFill.length; i++) {
+            const pixel = pixelsToFill[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
+          }
         }
         break;
     }
@@ -914,41 +948,67 @@ export default class Canvas extends EventDispatcher {
     const minColumnIndex = Math.min(...columnIndices);
     const maxColumnIndex = Math.min(...columnIndices);
     const currentCanvasIndices = this.getGridIndices();
+    let buttonDirections = [];
+    const changeAmounts = [];
     if (minRowIndex < currentCanvasIndices.topRowIndex) {
+      let amount = 0;
       for (
         let index = currentCanvasIndices.topRowIndex - 1;
         minRowIndex <= index;
         index--
       ) {
+        amount++;
         this.extendGrid(ButtonDirection.TOP);
       }
+      changeAmounts.push({
+        direction: ButtonDirection.TOP,
+        amount,
+      });
     }
     if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
+      let amount = 0;
       for (
         let index = currentCanvasIndices.bottomRowIndex + 1;
         maxRowIndex >= index;
         index++
       ) {
+        amount++;
         this.extendGrid(ButtonDirection.BOTTOM);
       }
+      changeAmounts.push({
+        direction: ButtonDirection.BOTTOM,
+        amount,
+      });
     }
     if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
+      let amount = 0;
       for (
         let index = currentCanvasIndices.leftColumnIndex - 1;
         minColumnIndex <= index;
         index--
       ) {
+        amount++;
         this.extendGrid(ButtonDirection.LEFT);
       }
+      changeAmounts.push({
+        direction: ButtonDirection.LEFT,
+        amount,
+      });
     }
     if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
+      let amount = 0;
       for (
         let index = currentCanvasIndices.rightColumnIndex + 1;
         maxColumnIndex >= index;
         index++
       ) {
+        amount++;
         this.extendGrid(ButtonDirection.RIGHT);
       }
+      changeAmounts.push({
+        direction: ButtonDirection.RIGHT,
+        amount,
+      });
     }
 
     for (const change of data) {
@@ -956,6 +1016,9 @@ export default class Canvas extends EventDispatcher {
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
     }
+    this.recordAction(
+      new ColorSizeChangeAction(ColorChangeMode.Fill, data, changeAmounts)
+    );
     this.emit(CanvasEvents.DATA_CHANGE, this.data);
     this.render();
   }
@@ -1695,7 +1758,12 @@ export default class Canvas extends EventDispatcher {
         this.mouseDownGridInfo!.indices.rightColumnIndex;
     }
     this.recordAction(
-      new SizeChangeAction(deletedPixels, extensionDirection, sizeChangeAmount)
+      new SizeChangeAction(deletedPixels, [
+        {
+          direction: extensionDirection,
+          amount: sizeChangeAmount,
+        },
+      ])
     );
     this.swipedPixels = [];
   }

@@ -4,23 +4,20 @@ import { Action, ActionType } from "./Action";
 import { ColorChangeMode } from "./ColorChangeAction";
 
 export class ColorSizeChangeAction extends Action {
-  type = ActionType.ColorChange;
+  type = ActionType.ColorSizeChange;
   mode: ColorChangeMode;
   data: Array<PixelModifyItem>;
-  direction: ButtonDirection;
-  changeAmount: number;
+  changeAmounts: Array<{ direction: ButtonDirection; amount: number }> = [];
 
   constructor(
     mode: ColorChangeMode,
     data: Array<PixelModifyItem>,
-    direction: ButtonDirection,
-    changeAmount: number
+    changeAmounts: Array<{ direction: ButtonDirection; amount: number }>
   ) {
     super();
     this.mode = mode;
     this.data = data;
-    this.direction = direction;
-    this.changeAmount = changeAmount;
+    this.changeAmounts = changeAmounts;
   }
 
   createInverseAction(): Action {
@@ -28,15 +25,19 @@ export class ColorSizeChangeAction extends Action {
       return new ColorSizeChangeAction(
         ColorChangeMode.Erase,
         this.data,
-        this.direction,
-        this.changeAmount
+        this.changeAmounts.map((item) => ({
+          ...item,
+          amount: -item.amount,
+        }))
       );
     } else if (this.mode === ColorChangeMode.Erase) {
       return new ColorSizeChangeAction(
         ColorChangeMode.Fill,
         this.data,
-        this.direction,
-        this.changeAmount
+        this.changeAmounts.map((item) => ({
+          ...item,
+          amount: -item.amount,
+        }))
       );
     } else {
       throw new Error("Unable to create inverse action for color change");

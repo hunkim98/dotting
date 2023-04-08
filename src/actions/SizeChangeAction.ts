@@ -5,22 +5,25 @@ import { Action, ActionType } from "./Action";
 export class SizeChangeAction extends Action {
   type = ActionType.SizeChange;
   data: Array<PixelModifyItem>;
-  direction: ButtonDirection;
-  changeAmount: number;
+  changeAmounts: Array<{ direction: ButtonDirection; amount: number }>;
 
   constructor(
     data: Array<PixelModifyItem>,
-    direction: ButtonDirection,
-    changeAmount: number // this can be negative or positive
+    changeAmounts: Array<{ direction: ButtonDirection; amount: number }>
   ) {
     super();
     this.data = data;
-    this.direction = direction;
-    this.changeAmount = changeAmount;
+    this.changeAmounts = changeAmounts;
   }
 
   createInverseAction(): Action {
-    return new SizeChangeAction(this.data, this.direction, -this.changeAmount);
+    return new SizeChangeAction(
+      this.data,
+      this.changeAmounts.map((item) => ({
+        ...item,
+        amount: -item.amount,
+      }))
+    );
   }
 
   getType(): string {
