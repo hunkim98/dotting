@@ -145,7 +145,7 @@ export default class Canvas extends EventDispatcher {
 
   private undoHistory: Stack<Action> = new Stack();
 
-  private redoHistory: Queue<Action> = new Queue();
+  private redoHistory: Stack<Action> = new Stack();
 
   private ctx: CanvasRenderingContext2D;
 
@@ -215,7 +215,7 @@ export default class Canvas extends EventDispatcher {
     const action = this.undoHistory.pop()!;
     const inverseAction = action.createInverseAction();
     this.commitAction(inverseAction);
-    this.redoHistory.enqueue(action);
+    this.redoHistory.push(action);
     this.render();
   }
 
@@ -223,7 +223,7 @@ export default class Canvas extends EventDispatcher {
     if (this.redoHistory.isEmpty()) {
       return;
     }
-    const action = this.redoHistory.dequeue()!;
+    const action = this.redoHistory.pop()!;
     this.commitAction(action);
     this.undoHistory.push(action);
     this.render();
@@ -1229,7 +1229,9 @@ export default class Canvas extends EventDispatcher {
   }
 
   fillPixelColor(rowIndex: number, columnIndex: number, color: string) {
-    this.data.get(rowIndex)!.set(columnIndex, { color });
+    if (this.data.get(rowIndex) && this.data.get(rowIndex)!.get(columnIndex)) {
+      this.data.get(rowIndex)!.set(columnIndex, { color });
+    }
   }
 
   /**
