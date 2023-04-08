@@ -218,6 +218,16 @@ export default class Canvas extends EventDispatcher {
     this.render();
   }
 
+  redo() {
+    if (this.redoHistory.isEmpty()) {
+      return;
+    }
+    const action = this.redoHistory.dequeue()!;
+    this.commitAction(action);
+    this.undoHistory.push(action);
+    this.render();
+  }
+
   commitAction(action: Action) {
     const type = action.getType();
     switch (type) {
@@ -671,7 +681,6 @@ export default class Canvas extends EventDispatcher {
     ctx.save();
     for (let i = 0; i < this.getRowCount(); i++) {
       for (let j = 0; j < this.getColumnCount(); j++) {
-        // console.log(i, j, this.data.get(i)?.get(j)?.color);
         const rowIndex = i + currentTopIndex;
         const columnIndex = j + currentLeftIndex;
 
@@ -982,6 +991,7 @@ export default class Canvas extends EventDispatcher {
     this.onMouseOut = this.onMouseOut.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
+    this.onKeyDown = this.onKeyDown.bind(this);
 
     // add event listeners
     touchy(this.element, addEvent, "mousedown", this.onMouseDown);
@@ -1520,11 +1530,13 @@ export default class Canvas extends EventDispatcher {
         const leftColumnPixelModifyItems: Array<PixelModifyItem> = [];
         Array.from(this.data.entries()).map((rowData, key) => {
           const row = rowData[1];
-          leftColumnPixelModifyItems.push({
-            rowIndex: key,
-            columnIndex: currentLeftIndex,
-            color: row.get(currentLeftIndex)!.color,
-          });
+          if (row.get(currentLeftIndex)!.color) {
+            leftColumnPixelModifyItems.push({
+              rowIndex: key,
+              columnIndex: currentLeftIndex,
+              color: row.get(currentLeftIndex)!.color,
+            });
+          }
         });
         if (leftColumnPixelModifyItems.length > 0) {
           this.swipedPixels.push(...leftColumnPixelModifyItems);
@@ -1549,11 +1561,13 @@ export default class Canvas extends EventDispatcher {
         const rightColumnPixelModifyItems: Array<PixelModifyItem> = [];
         Array.from(this.data.entries()).map((rowData, key) => {
           const row = rowData[1];
-          rightColumnPixelModifyItems.push({
-            rowIndex: key,
-            columnIndex: currentRightIndex,
-            color: row.get(currentRightIndex)!.color,
-          });
+          if (row.get(currentRightIndex)!.color) {
+            rightColumnPixelModifyItems.push({
+              rowIndex: key,
+              columnIndex: currentRightIndex,
+              color: row.get(currentRightIndex).color,
+            });
+          }
         });
         if (rightColumnPixelModifyItems.length > 0) {
           this.swipedPixels.push(...rightColumnPixelModifyItems);
@@ -1658,50 +1672,58 @@ export default class Canvas extends EventDispatcher {
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
   }
 
+  addSizeChangeActionToUndoStack() {
+    const extensionDirection = this.mouseDownGridInfo!.direction;
+    const deletedPixels = this.swipedPixels;
+    let sizeChangeAmount = 0;
+    const currentGridIndices = this.getGridIndices();
+    if (extensionDirection === ButtonDirection.TOP) {
+      sizeChangeAmount =
+        this.mouseDownGridInfo!.indices.topRowIndex -
+        currentGridIndices.topRowIndex;
+    } else if (extensionDirection === ButtonDirection.BOTTOM) {
+      sizeChangeAmount =
+        currentGridIndices.bottomRowIndex -
+        this.mouseDownGridInfo!.indices.bottomRowIndex;
+    } else if (extensionDirection === ButtonDirection.LEFT) {
+      sizeChangeAmount =
+        this.mouseDownGridInfo!.indices.leftColumnIndex -
+        currentGridIndices.leftColumnIndex;
+    } else {
+      sizeChangeAmount =
+        currentGridIndices.rightColumnIndex -
+        this.mouseDownGridInfo!.indices.rightColumnIndex;
+    }
+    this.recordAction(
+      new SizeChangeAction(deletedPixels, extensionDirection, sizeChangeAmount)
+    );
+    this.swipedPixels = [];
+  }
+
+  addColorFillActionToUndoStack() {
+    this.recordAction(
+      new ColorChangeAction(ColorChangeMode.Fill, this.strokedPixels)
+    );
+    this.strokedPixels = [];
+  }
+
+  addColorEraseActionToUndoStack() {
+    this.recordAction(
+      new ColorChangeAction(ColorChangeMode.Erase, this.erasedPixels)
+    );
+    this.erasedPixels = [];
+  }
   onMouseUp() {
     if (this.mouseMode === MouseMode.EXTENDING) {
-      const extensionDirection = this.mouseDownGridInfo!.direction;
-      const deletedPixels = this.swipedPixels;
-      let sizeChangeAmount = 0;
-      const currentGridIndices = this.getGridIndices();
-      if (extensionDirection === ButtonDirection.TOP) {
-        sizeChangeAmount =
-          this.mouseDownGridInfo!.indices.topRowIndex -
-          currentGridIndices.topRowIndex;
-      } else if (extensionDirection === ButtonDirection.BOTTOM) {
-        sizeChangeAmount =
-          currentGridIndices.bottomRowIndex -
-          this.mouseDownGridInfo!.indices.bottomRowIndex;
-      } else if (extensionDirection === ButtonDirection.LEFT) {
-        sizeChangeAmount =
-          this.mouseDownGridInfo!.indices.leftColumnIndex -
-          currentGridIndices.leftColumnIndex;
-      } else {
-        sizeChangeAmount =
-          currentGridIndices.rightColumnIndex -
-          this.mouseDownGridInfo!.indices.rightColumnIndex;
-      }
-      this.recordAction(
-        new SizeChangeAction(
-          deletedPixels,
-          extensionDirection,
-          sizeChangeAmount
-        )
-      );
-      this.swipedPixels = [];
+      this.addSizeChangeActionToUndoStack();
     }
     this.mouseMode = MouseMode.NULL;
     if (this.strokedPixels.length !== 0) {
       this.emit(CanvasEvents.STROKE_END, this.strokedPixels, this.data);
-      this.recordAction(
-        new ColorChangeAction(ColorChangeMode.Fill, this.strokedPixels)
-      );
-      this.strokedPixels = [];
+      this.addColorFillActionToUndoStack();
     }
     if (this.erasedPixels.length !== 0) {
-      this.recordAction(
-        new ColorChangeAction(ColorChangeMode.Erase, this.erasedPixels)
-      );
+      this.addColorEraseActionToUndoStack();
     }
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
@@ -1711,6 +1733,9 @@ export default class Canvas extends EventDispatcher {
   }
 
   onMouseOut() {
+    if (this.mouseMode === MouseMode.EXTENDING) {
+      this.addSizeChangeActionToUndoStack();
+    }
     if (this.mouseMode === MouseMode.PANNING) {
       return;
     }

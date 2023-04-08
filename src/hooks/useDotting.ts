@@ -46,12 +46,22 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     [ref]
   );
 
+  const undo = useCallback(() => {
+    ref.current?.undo();
+  }, [ref]);
+
+  const redo = useCallback(() => {
+    ref.current?.redo();
+  }, [ref]);
+
   return {
     clear,
     colorPixels,
     erasePixels,
     downloadImage,
     setIndicatorPixels,
+    undo,
+    redo,
   };
 };
 

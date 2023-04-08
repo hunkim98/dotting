@@ -13,6 +13,7 @@ import {
   ColorPixels,
   DownloadImage,
   SetIndicatorPixels,
+  UndoRedo,
 } from "./useDottingComponents";
 
 <Meta title="Hooks/useDotting" />
@@ -275,6 +276,20 @@ With `useDotting`, you can manipulate the grids.
       </td>
       <td>`Array<PixelModifyItem>`</td>
     </tr>
+    <tr>
+      <td>`undo()`</td>
+      <td>
+        Allows you to undo the last action
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>`redo()`</td>
+      <td>
+        Allows you to redo the last action
+      </td>
+      <td></td>
+    </tr>
 
   </tbody>
 </table>
@@ -329,6 +344,12 @@ you need to pass the `initIndicatorData` prop to the `Dotting` component.
 The data type of the `initIndicatorData` is the `Array<PixelModifyItem>`.
 
 <SetIndicatorPixels />
+
+#### 5. Undo and Redo Example `undo()`, `redo()`
+
+With `undo` and `redo` methods, you can undo and redo the last action.
+
+<UndoRedo />
 
 <div className="subheading">Example Source Codes</div>
 

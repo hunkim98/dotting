@@ -17,7 +17,6 @@ export class SizeChangeAction extends Action {
     this.data = data;
     this.direction = direction;
     this.changeAmount = changeAmount;
-    // below are functions to manipulate the canvas
   }
 
   createInverseAction(): Action {

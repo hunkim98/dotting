@@ -46,6 +46,8 @@ export interface DottingRef {
   erasePixels: (data: Array<{ rowIndex: number; columnIndex: number }>) => void;
   downloadImage: (options?: ImageDownloadOptions) => void;
   setIndicatorPixels: (data: Array<PixelModifyItem>) => void;
+  undo: () => void;
+  redo: () => void;
   // for useBrush
   changeBrushColor: (color: string) => void;
   changeBrushMode: (mode: BrushMode) => void;
@@ -102,23 +104,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     useState<
       Array<{ type: string; listener: EventListenerOrEventListenerObject }>
     >([]);
-
-  useEffect(() => {
-    if (!canvas) {
-      return;
-    }
-    console.log("hi from event listner");
-    const undoListener = (e: KeyboardEvent) => {
-      console.log(e);
-      if (e.key === "z") {
-        canvas?.undo();
-      }
-    };
-    document.addEventListener("keydown", undoListener);
-    return () => {
-      document.removeEventListener("keydown", undoListener);
-    };
-  }, [canvas]);
 
   useEffect(() => {
     if (!canvas) {
@@ -445,6 +430,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [canvas]
   );
 
+  const undo = useCallback(() => {
+    canvas?.undo();
+  }, [canvas]);
+
+  const redo = useCallback(() => {
+    canvas?.redo();
+  }, [canvas]);
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -456,6 +449,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       erasePixels,
       downloadImage,
       setIndicatorPixels,
+      undo,
+      redo,
       // for useBrush
       changeBrushColor,
       changeBrushMode,
@@ -481,6 +476,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       erasePixels,
       downloadImage,
       setIndicatorPixels,
+      undo,
+      redo,
       // for useBrush
       changeBrushColor,
       changeBrushMode,
@@ -505,14 +502,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     <div
       style={{ width: props.width, height: props.height }}
       ref={containerRef}
+      // onKeyDown={(e) => {
+      //   console.log(e.code, e.ctrlKey, e.metaKey);
+      //   if (e.code === "KeyZ" && (e.ctrlKey || e.metaKey)) {
+      //     canvas?.undo();
+      //   }
+      // }}
+      // tabIndex={0}
     >
-      <button
-        onClick={() => {
-          canvas?.undo();
-        }}
-      >
-        undo
-      </button>
       <canvas
         ref={gotRef}
         style={{
