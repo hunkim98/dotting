@@ -1272,7 +1272,10 @@ export default class Canvas extends EventDispatcher {
         });
       }
 
-      if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
+      if (
+        this.data.get(rowIndex)!.get(columnIndex) &&
+        this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor
+      ) {
         this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
