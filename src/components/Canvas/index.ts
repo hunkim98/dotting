@@ -286,13 +286,8 @@ export default class Canvas extends EventDispatcher {
             }
           }
         }
-        if (colorSizeChangeAction.mode === ColorChangeMode.Erase) {
-          const pixelsToErase = colorSizeChangeAction.data;
-          for (let i = 0; i < pixelsToErase.length; i++) {
-            const pixel = pixelsToErase[i];
-            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, "");
-          }
-        } else if (colorSizeChangeAction.mode === ColorChangeMode.Fill) {
+        // we do not need to care for colorchangemode.Erase since the grids are already deleted
+        if (colorSizeChangeAction.mode === ColorChangeMode.Fill) {
           const pixelsToFill = colorSizeChangeAction.data;
           for (let i = 0; i < pixelsToFill.length; i++) {
             const pixel = pixelsToFill[i];
@@ -934,6 +929,14 @@ export default class Canvas extends EventDispatcher {
       const { rowIndex, columnIndex } = validData[i];
       this.data.get(rowIndex)!.set(columnIndex, { color: "" });
     }
+    if (validData.length > 0) {
+      this.recordAction(
+        new ColorChangeAction(
+          ColorChangeMode.Erase,
+          validData.map((item) => ({ ...item, color: "" }))
+        )
+      );
+    }
     this.render();
   }
   /**
@@ -948,7 +951,6 @@ export default class Canvas extends EventDispatcher {
     const minColumnIndex = Math.min(...columnIndices);
     const maxColumnIndex = Math.min(...columnIndices);
     const currentCanvasIndices = this.getGridIndices();
-    let buttonDirections = [];
     const changeAmounts = [];
     if (minRowIndex < currentCanvasIndices.topRowIndex) {
       let amount = 0;
