@@ -35,7 +35,7 @@ export enum CanvasEvents {
 export enum BrushMode {
   DOT = "dot",
   ERASER = "eraser",
-  PAINT_BUCKET = "paint bucket",
+  PAINT_BUCKET = "paint_bucket",
 }
 
 export type CanvasDataChangeHandler = (data: DottingData) => void;

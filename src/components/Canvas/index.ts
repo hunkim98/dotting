@@ -86,6 +86,8 @@ export default class Canvas extends EventDispatcher {
 
   private brushMode: BrushMode = BrushMode.DOT;
 
+  private cursorStyle: string = "default";
+
   private data: DottingData = new Map<
     // this number is rowIndex
     number,
@@ -183,6 +185,10 @@ export default class Canvas extends EventDispatcher {
 
     // we will apply the initData only when the rowCount and columnCount are valid
     this.initialize(isInitDataValid ? initData : undefined);
+  }
+
+  setCursorStyle(cursorStyle: string) {
+    this.cursorStyle = cursorStyle;
   }
 
   setCanvasData(data: DottingData) {
@@ -1448,11 +1454,26 @@ export default class Canvas extends EventDispatcher {
     this.render();
   }
 
+  styleMouseCursor = () => {
+    if (
+      this.mouseMode !== MouseMode.PANNING &&
+      this.mouseMode !== MouseMode.EXTENDING
+    ) {
+      this.element.style.cursor = `url("/cursor/${this.brushMode}.cur"), auto`;
+      this.cursorStyle = `url("/cursor/${this.brushMode}.cur"), auto`;
+    } else {
+      this.element.style.cursor = `default`;
+      this.cursorStyle = `default`;
+    }
+  };
+
   onMouseMove(evt: TouchyEvent) {
     evt.preventDefault();
 
     const mouseCartCoord = this.getMouseCartCoord(evt);
     const pixelIndex = this.getPixelIndexFromMouseCartCoord(mouseCartCoord);
+    this.styleMouseCursor();
+
     if (pixelIndex) {
       if (this.mouseMode === MouseMode.DRAWING) {
         this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
