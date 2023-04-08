@@ -733,6 +733,7 @@ export default class Canvas extends EventDispatcher {
               squareLength
             );
             ctx.restore();
+            continue;
           }
         }
         if (
