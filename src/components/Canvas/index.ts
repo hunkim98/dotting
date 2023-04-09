@@ -287,7 +287,13 @@ export default class Canvas extends EventDispatcher {
           }
         }
         // we do not need to care for colorchangemode.Erase since the grids are already deleted
-        if (colorSizeChangeAction.mode === ColorChangeMode.Fill) {
+        if (colorSizeChangeAction.mode === ColorChangeMode.Erase) {
+          const pixelsToFill = colorSizeChangeAction.data;
+          for (let i = 0; i < pixelsToFill.length; i++) {
+            const pixel = pixelsToFill[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, "");
+          }
+        } else if (colorSizeChangeAction.mode === ColorChangeMode.Fill) {
           const pixelsToFill = colorSizeChangeAction.data;
           for (let i = 0; i < pixelsToFill.length; i++) {
             const pixel = pixelsToFill[i];
@@ -733,6 +739,7 @@ export default class Canvas extends EventDispatcher {
               squareLength
             );
             ctx.restore();
+            continue;
           }
         }
         if (
@@ -894,11 +901,13 @@ export default class Canvas extends EventDispatcher {
     const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
     const currentTopIndex = Math.min(...allRowKeys);
     const currentLeftIndex = Math.min(...allColumnKeys);
+    const currentBottomIndex = Math.max(...allRowKeys);
+    const currentRightIndex = Math.max(...allColumnKeys);
     return {
       topRowIndex: currentTopIndex,
-      bottomRowIndex: currentTopIndex + allRowKeys.length - 1,
+      bottomRowIndex: currentBottomIndex,
       leftColumnIndex: currentLeftIndex,
-      rightColumnIndex: currentLeftIndex + allColumnKeys.length - 1,
+      rightColumnIndex: currentRightIndex,
     };
   }
 
@@ -949,7 +958,7 @@ export default class Canvas extends EventDispatcher {
     const minRowIndex = Math.min(...rowIndices);
     const maxRowIndex = Math.max(...rowIndices);
     const minColumnIndex = Math.min(...columnIndices);
-    const maxColumnIndex = Math.min(...columnIndices);
+    const maxColumnIndex = Math.max(...columnIndices);
     const currentCanvasIndices = this.getGridIndices();
     const changeAmounts = [];
     if (minRowIndex < currentCanvasIndices.topRowIndex) {
@@ -1012,7 +1021,6 @@ export default class Canvas extends EventDispatcher {
         amount,
       });
     }
-
     for (const change of data) {
       this.data
         .get(change.rowIndex)!
@@ -1271,7 +1279,13 @@ export default class Canvas extends EventDispatcher {
         });
       }
 
-      if (this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor) {
+      // console.log(rowIndex, columnIndex, this.brushColor, "coloring!");
+      // console.log(this.data.get(rowIndex)!.get(columnIndex));
+
+      if (
+        this.data.get(rowIndex)!.get(columnIndex) &&
+        this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor
+      ) {
         this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
@@ -1337,6 +1351,7 @@ export default class Canvas extends EventDispatcher {
 
   onMouseDown(evt: TouchyEvent) {
     evt.preventDefault();
+
     const point = this.getPointFromTouchyEvent(evt);
     this.panPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
 
@@ -1430,14 +1445,11 @@ export default class Canvas extends EventDispatcher {
   };
 
   extendGrid(direction: ButtonDirection) {
-    const currentRowCount = this.getRowCount();
-    const currentColumnCount = this.getColumnCount();
-    const allRowKeys = Array.from(this.data.keys());
-    const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
-    const currentTopIndex = Math.min(...allRowKeys);
-    const currentLeftIndex = Math.min(...allColumnKeys);
-    const currentBottomIndex = currentTopIndex + currentRowCount - 1;
-    const currentRightIndex = currentLeftIndex + currentColumnCount - 1;
+    const gridIndices = this.getGridIndices();
+    const currentTopIndex = gridIndices.topRowIndex;
+    const currentLeftIndex = gridIndices.leftColumnIndex;
+    const currentBottomIndex = gridIndices.bottomRowIndex;
+    const currentRightIndex = gridIndices.rightColumnIndex;
 
     switch (direction) {
       case ButtonDirection.TOP:
@@ -1472,9 +1484,9 @@ export default class Canvas extends EventDispatcher {
         break;
       case ButtonDirection.LEFT:
         const newLeftIndex = currentLeftIndex - 1;
-        this.data.forEach((row) => {
-          row.set(newLeftIndex, { color: "" });
-        });
+        for (let i = currentTopIndex; i <= currentBottomIndex; i++) {
+          this.data.get(i)!.set(newLeftIndex, { color: "" });
+        }
         this.setPanZoom({
           offset: {
             x:
@@ -1487,9 +1499,9 @@ export default class Canvas extends EventDispatcher {
         break;
       case ButtonDirection.RIGHT:
         const newRightIndex = currentRightIndex + 1;
-        this.data.forEach((row) => {
-          row.set(newRightIndex, { color: "" });
-        });
+        for (let i = currentTopIndex; i <= currentBottomIndex; i++) {
+          this.data.get(i)!.set(newRightIndex, { color: "" });
+        }
         this.setPanZoom({
           offset: {
             x:
