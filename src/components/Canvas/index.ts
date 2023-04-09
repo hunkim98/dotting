@@ -287,7 +287,13 @@ export default class Canvas extends EventDispatcher {
           }
         }
         // we do not need to care for colorchangemode.Erase since the grids are already deleted
-        if (colorSizeChangeAction.mode === ColorChangeMode.Fill) {
+        if (colorSizeChangeAction.mode === ColorChangeMode.Erase) {
+          const pixelsToFill = colorSizeChangeAction.data;
+          for (let i = 0; i < pixelsToFill.length; i++) {
+            const pixel = pixelsToFill[i];
+            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, "");
+          }
+        } else if (colorSizeChangeAction.mode === ColorChangeMode.Fill) {
           const pixelsToFill = colorSizeChangeAction.data;
           for (let i = 0; i < pixelsToFill.length; i++) {
             const pixel = pixelsToFill[i];
@@ -1345,6 +1351,7 @@ export default class Canvas extends EventDispatcher {
 
   onMouseDown(evt: TouchyEvent) {
     evt.preventDefault();
+
     const point = this.getPointFromTouchyEvent(evt);
     this.panPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
 
