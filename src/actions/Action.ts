@@ -5,7 +5,6 @@ export enum ActionType {
 }
 
 export abstract class Action {
-  constructor() {}
 
   abstract type: ActionType;
 

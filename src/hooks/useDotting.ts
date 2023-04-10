@@ -1,11 +1,6 @@
 import {
-  ForwardedRef,
-  forwardRef,
   MutableRefObject,
-  RefObject,
   useCallback,
-  useMemo,
-  useRef,
 } from "react";
 import {
   ImageDownloadOptions,

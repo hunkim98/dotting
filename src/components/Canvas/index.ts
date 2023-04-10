@@ -2,11 +2,8 @@ import {
   addPoints,
   convertCartesianToScreen,
   diffPoints,
-  directionPoints,
-  distPoints,
   getScreenPoint,
   getWorldPoint,
-  gradientPoints,
 } from "../../utils/math";
 import React from "react";
 import Queue from "../../utils/queue";
@@ -14,7 +11,6 @@ import EventDispatcher from "../../utils/eventDispatcher";
 import {
   BrushMode,
   CanvasEvents,
-  ColorChangeItem,
   Coord,
   DottingData,
   GridIndices,
@@ -28,7 +24,6 @@ import { isValidIndicesRange } from "../../utils/validation";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
 import { Action, ActionType } from "../../actions/Action";
 import {
-  ColorChangeMode,
   ColorChangeAction,
 } from "../../actions/ColorChangeAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
@@ -57,13 +52,13 @@ export default class Canvas extends EventDispatcher {
 
   private ZOOM_SENSITIVITY = 200;
 
-  private buttonHeight: number = 20;
+  private buttonHeight = 20;
 
   private buttonMargin: number = this.buttonHeight / 2 + 5;
 
   private element: HTMLCanvasElement;
 
-  private gridSquareLength: number = 20;
+  private gridSquareLength = 20;
 
   private origin = { x: 0, y: 0 };
 
@@ -101,7 +96,7 @@ export default class Canvas extends EventDispatcher {
 
   private brushMode: BrushMode = BrushMode.DOT;
 
-  private cursorStyle: string = "default";
+  private cursorStyle = "default";
 
   private data: DottingData = new Map<
     // this number is rowIndex
@@ -439,7 +434,7 @@ export default class Canvas extends EventDispatcher {
       x: -gridsWidth / 2,
       y: -gridsHeight / 2 - this.buttonMargin,
     };
-    let convertedScreenPoint = convertCartesianToScreen(
+    const convertedScreenPoint = convertCartesianToScreen(
       this.element,
       buttonPos,
       this.dpr,
@@ -481,7 +476,7 @@ export default class Canvas extends EventDispatcher {
       x: -gridsWidth / 2,
       y: gridsHeight / 2 + this.buttonMargin,
     };
-    let convertedScreenPoint = convertCartesianToScreen(
+    const convertedScreenPoint = convertCartesianToScreen(
       this.element,
       buttonPos,
       this.dpr,
@@ -537,7 +532,7 @@ export default class Canvas extends EventDispatcher {
       x: -gridsWidth / 2 - this.buttonMargin,
       y: -gridsHeight / 2,
     };
-    let convertedScreenPoint = convertCartesianToScreen(
+    const convertedScreenPoint = convertCartesianToScreen(
       this.element,
       buttonPos,
       this.dpr,
@@ -580,7 +575,7 @@ export default class Canvas extends EventDispatcher {
       x: gridsWidth / 2 + this.buttonMargin,
       y: -gridsHeight / 2,
     };
-    let convertedScreenPoint = convertCartesianToScreen(
+    const convertedScreenPoint = convertCartesianToScreen(
       this.element,
       buttonPos,
       this.dpr,
@@ -686,7 +681,7 @@ export default class Canvas extends EventDispatcher {
       y: -((this.getRowCount() / 2) * this.gridSquareLength),
     };
     const ctx = this.ctx;
-    let convertedLetTopScreenPoint = convertCartesianToScreen(
+    const convertedLetTopScreenPoint = convertCartesianToScreen(
       this.element,
       leftTopPoint,
       this.dpr,
@@ -796,7 +791,7 @@ export default class Canvas extends EventDispatcher {
       y: -((this.getRowCount() / 2) * this.gridSquareLength),
     };
     const ctx = this.ctx;
-    let convertedScreenPoint = convertCartesianToScreen(
+    const convertedScreenPoint = convertCartesianToScreen(
       this.element,
       leftTopPoint,
       this.dpr,
@@ -1242,7 +1237,6 @@ export default class Canvas extends EventDispatcher {
     // This erases the pixel if the brush mode is eraser
     if (this.brushMode === BrushMode.ERASER) {
       const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
-      const color = "";
       this.data.get(rowIndex)!.set(columnIndex, { color: "" });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
       this.erasedPixelRecords.record({
@@ -1826,7 +1820,7 @@ export default class Canvas extends EventDispatcher {
       this.panZoom.scale = scale;
     }
     if (offset) {
-      let correctedOffset = { ...offset };
+      const correctedOffset = { ...offset };
       const columnCount = this.data.entries().next().value[1].size;
       const rowCount = this.data.size;
 
@@ -2041,8 +2035,8 @@ export default class Canvas extends EventDispatcher {
 
   getPointFromTouch(touch: Touch) {
     const r = this.element.getBoundingClientRect();
-    let originY = touch.clientY;
-    let originX = touch.clientX;
+    const originY = touch.clientY;
+    const originX = touch.clientX;
     const offsetX = touch.clientX - r.left;
     const offsetY = touch.clientY - r.top;
     return {

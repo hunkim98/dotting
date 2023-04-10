@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 export function addEvent(
   el: EventTarget,
   type: string,

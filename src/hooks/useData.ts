@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useMemo, useState } from "react";
+import { MutableRefObject, useEffect, useState } from "react";
 import {
   CanvasDataChangeHandler,
   DottingData,
