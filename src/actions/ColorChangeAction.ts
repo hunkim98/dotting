@@ -1,4 +1,4 @@
-import { PixelModifyItem } from "../components/Canvas/types";
+import { ColorChangeItem } from "../components/Canvas/types";
 import { Action, ActionType } from "./Action";
 
 export enum ColorChangeMode {
@@ -6,15 +6,13 @@ export enum ColorChangeMode {
   Erase = "Erase",
 }
 
-export interface ColorChangeData extends PixelModifyItem {
-  previousColor: string;
-}
+
 
 export class ColorChangeAction extends Action {
   type = ActionType.ColorChange;
-  data: Array<ColorChangeData>;
+  data: Array<ColorChangeItem>;
 
-  constructor(data: Array<ColorChangeData>) {
+  constructor(data: Array<ColorChangeItem>) {
     super();
     this.data = data;
     // below are functions to manipulate the canvas

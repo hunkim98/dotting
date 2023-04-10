@@ -14,6 +14,7 @@ import EventDispatcher from "../../utils/eventDispatcher";
 import {
   BrushMode,
   CanvasEvents,
+  ColorChangeItem,
   Coord,
   DottingData,
   GridIndices,
@@ -29,7 +30,6 @@ import { Action, ActionType } from "../../actions/Action";
 import {
   ColorChangeMode,
   ColorChangeAction,
-  ColorChangeData,
 } from "../../actions/ColorChangeAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import Stack from "../../utils/stack";
@@ -84,9 +84,9 @@ export default class Canvas extends EventDispatcher {
 
   private isGridVisible: boolean;
 
-  private strokedPixels: Array<ColorChangeData> = [];
+  private strokedPixels: Array<ColorChangeItem> = [];
 
-  private erasedPixels: Array<ColorChangeData> = [];
+  private erasedPixels: Array<ColorChangeItem> = [];
 
   private swipedPixels: Array<PixelModifyItem> = [];
 

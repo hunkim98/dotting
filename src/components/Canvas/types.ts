@@ -1,3 +1,5 @@
+
+
 export interface Coord {
   x: number;
   y: number;
@@ -22,6 +24,10 @@ export interface PixelModifyItem {
   rowIndex: number;
   columnIndex: number;
   color: string;
+}
+
+export interface ColorChangeItem extends PixelModifyItem {
+  previousColor: string;
 }
 
 export enum CanvasEvents {
@@ -53,8 +59,10 @@ export type CanvasGridChangeHandler = (
   }
 ) => void;
 
+
+
 export type CanvasStrokeEndHandler = (
-  strokedPixels: Array<PixelModifyItem>,
+  strokedPixels: Array<ColorChangeItem>,
   data: DottingData
 ) => void;
 
