@@ -1,4 +1,4 @@
-import { PixelModifyItem } from "../components/Canvas/types";
+import { ColorChangeItem } from "../components/Canvas/types";
 import { Action, ActionType } from "./Action";
 
 export enum ColorChangeMode {
@@ -6,26 +6,26 @@ export enum ColorChangeMode {
   Erase = "Erase",
 }
 
+
+
 export class ColorChangeAction extends Action {
   type = ActionType.ColorChange;
-  mode: ColorChangeMode;
-  data: Array<PixelModifyItem>;
+  data: Array<ColorChangeItem>;
 
-  constructor(mode: ColorChangeMode, data: Array<PixelModifyItem>) {
+  constructor(data: Array<ColorChangeItem>) {
     super();
-    this.mode = mode;
     this.data = data;
     // below are functions to manipulate the canvas
   }
 
   createInverseAction(): Action {
-    if (this.mode === ColorChangeMode.Fill) {
-      return new ColorChangeAction(ColorChangeMode.Erase, this.data);
-    } else if (this.mode === ColorChangeMode.Erase) {
-      return new ColorChangeAction(ColorChangeMode.Fill, this.data);
-    } else {
-      throw new Error("Unable to create inverse action for color change");
-    }
+    return new ColorChangeAction(
+      this.data.map((item) => ({
+        ...item,
+        previousColor: item.color,
+        color: item.previousColor,
+      }))
+    );
   }
 
   getType(): string {
