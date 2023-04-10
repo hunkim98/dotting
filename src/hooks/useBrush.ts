@@ -23,14 +23,14 @@ const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
     (brushColor: string) => {
       ref.current?.changeBrushColor(brushColor);
     },
-    [ref]
+    [ref],
   );
 
   const changeBrushMode = useCallback(
     (brushMode: BrushMode) => {
       ref.current?.changeBrushMode(brushMode);
     },
-    [ref]
+    [ref],
   );
 
   return {

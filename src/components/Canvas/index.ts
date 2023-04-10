@@ -34,6 +34,7 @@ import {
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import Stack from "../../utils/stack";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
+import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
 
 export enum MouseMode {
   DRAWING = "DRAWING",
@@ -84,9 +85,9 @@ export default class Canvas extends EventDispatcher {
 
   private isGridVisible: boolean;
 
-  private strokedPixels: Array<ColorChangeItem> = [];
+  private strokedPixelRecords: PixelChangeRecords;
 
-  private erasedPixels: Array<ColorChangeItem> = [];
+  private erasedPixelRecords: PixelChangeRecords;
 
   private swipedPixels: Array<PixelModifyItem> = [];
 
@@ -163,10 +164,11 @@ export default class Canvas extends EventDispatcher {
     isGridVisible?: boolean,
     isGridFixed?: boolean,
     initBrushColor?: string,
-    initIndicatorData?: Array<PixelModifyItem>
+    initIndicatorData?: Array<PixelModifyItem>,
   ) {
     super();
-
+    this.strokedPixelRecords = new PixelChangeRecords();
+    this.erasedPixelRecords = new PixelChangeRecords();
     this.element = canvas;
     this.ctx = canvas.getContext("2d")!;
     this.backgroundMode = backgroundMode ? backgroundMode : "checkerboard";
@@ -440,18 +442,18 @@ export default class Canvas extends EventDispatcher {
     let convertedScreenPoint = convertCartesianToScreen(
       this.element,
       buttonPos,
-      this.dpr
+      this.dpr,
     );
     const correctedScreenPoint = getScreenPoint(
       convertedScreenPoint,
-      this.panZoom
+      this.panZoom,
     );
     ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       gridsWidth * this.panZoom.scale,
-      this.buttonHeight * this.panZoom.scale
+      this.buttonHeight * this.panZoom.scale,
     );
     ctx.restore();
     this.drawArrowHead(
@@ -459,14 +461,14 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI * 2,
-      this.panZoom.scale
+      this.panZoom.scale,
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI,
-      this.panZoom.scale
+      this.panZoom.scale,
     );
   }
 
@@ -482,18 +484,18 @@ export default class Canvas extends EventDispatcher {
     let convertedScreenPoint = convertCartesianToScreen(
       this.element,
       buttonPos,
-      this.dpr
+      this.dpr,
     );
     const correctedScreenPoint = getScreenPoint(
       convertedScreenPoint,
-      this.panZoom
+      this.panZoom,
     );
     ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       gridsWidth * this.panZoom.scale,
-      this.buttonHeight * this.panZoom.scale
+      this.buttonHeight * this.panZoom.scale,
     );
     ctx.restore();
     this.drawArrowHead(
@@ -501,14 +503,14 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI * 2,
-      this.panZoom.scale
+      this.panZoom.scale,
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
       correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
       Math.PI,
-      this.panZoom.scale
+      this.panZoom.scale,
     );
   }
   drawArrowHead(ctx, x, y, radians, scale) {
@@ -538,11 +540,11 @@ export default class Canvas extends EventDispatcher {
     let convertedScreenPoint = convertCartesianToScreen(
       this.element,
       buttonPos,
-      this.dpr
+      this.dpr,
     );
     const correctedScreenPoint = getScreenPoint(
       convertedScreenPoint,
-      this.panZoom
+      this.panZoom,
     );
 
     ctx.fillStyle = color;
@@ -550,7 +552,7 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
       this.buttonHeight * this.panZoom.scale,
-      gridsHeight * this.panZoom.scale
+      gridsHeight * this.panZoom.scale,
     );
     ctx.restore();
     this.drawArrowHead(
@@ -558,14 +560,14 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       -Math.PI / 2,
-      this.panZoom.scale
+      this.panZoom.scale,
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       Math.PI / 2,
-      this.panZoom.scale
+      this.panZoom.scale,
     );
   }
 
@@ -581,18 +583,18 @@ export default class Canvas extends EventDispatcher {
     let convertedScreenPoint = convertCartesianToScreen(
       this.element,
       buttonPos,
-      this.dpr
+      this.dpr,
     );
     const correctedScreenPoint = getScreenPoint(
       convertedScreenPoint,
-      this.panZoom
+      this.panZoom,
     );
     ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
       this.buttonHeight * this.panZoom.scale,
-      gridsHeight * this.panZoom.scale
+      gridsHeight * this.panZoom.scale,
     );
     ctx.restore();
     this.drawArrowHead(
@@ -600,14 +602,14 @@ export default class Canvas extends EventDispatcher {
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       -Math.PI / 2,
-      this.panZoom.scale
+      this.panZoom.scale,
     );
     this.drawArrowHead(
       ctx,
       correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
       Math.PI / 2,
-      this.panZoom.scale
+      this.panZoom.scale,
     );
   }
 
@@ -617,22 +619,22 @@ export default class Canvas extends EventDispatcher {
     this.drawTopButton(
       this.hoveredButton === ButtonDirection.TOP
         ? onHoverbuttonBackgroundColor
-        : buttonBackgroundColor
+        : buttonBackgroundColor,
     );
     this.drawBottomButton(
       this.hoveredButton === ButtonDirection.BOTTOM
         ? onHoverbuttonBackgroundColor
-        : buttonBackgroundColor
+        : buttonBackgroundColor,
     );
     this.drawLeftButton(
       this.hoveredButton === ButtonDirection.LEFT
         ? onHoverbuttonBackgroundColor
-        : buttonBackgroundColor
+        : buttonBackgroundColor,
     );
     this.drawRightButton(
       this.hoveredButton === ButtonDirection.RIGHT
         ? onHoverbuttonBackgroundColor
-        : buttonBackgroundColor
+        : buttonBackgroundColor,
     );
   }
 
@@ -687,11 +689,11 @@ export default class Canvas extends EventDispatcher {
     let convertedLetTopScreenPoint = convertCartesianToScreen(
       this.element,
       leftTopPoint,
-      this.dpr
+      this.dpr,
     );
     const correctedLeftTopScreenPoint = getScreenPoint(
       convertedLetTopScreenPoint,
-      this.panZoom
+      this.panZoom,
     );
 
     const allRowKeys = Array.from(this.data.keys());
@@ -708,8 +710,8 @@ export default class Canvas extends EventDispatcher {
         const color = this.data.get(rowIndex)?.get(columnIndex)?.color;
         if (this.indicatorPixels.length !== 0) {
           const indicator = this.indicatorPixels.find(
-            (pixel) =>
-              pixel.rowIndex === rowIndex && pixel.columnIndex === columnIndex
+            pixel =>
+              pixel.rowIndex === rowIndex && pixel.columnIndex === columnIndex,
           );
           if (indicator) {
             const relativeRowIndex = rowIndex - currentTopIndex;
@@ -722,7 +724,7 @@ export default class Canvas extends EventDispatcher {
                 correctedLeftTopScreenPoint.x,
               relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
               squareLength,
-              squareLength
+              squareLength,
             );
             ctx.restore();
             continue;
@@ -749,7 +751,7 @@ export default class Canvas extends EventDispatcher {
                 correctedLeftTopScreenPoint.x,
               relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
               squareLength,
-              squareLength
+              squareLength,
             );
             ctx.restore();
             continue;
@@ -762,7 +764,7 @@ export default class Canvas extends EventDispatcher {
                   correctedLeftTopScreenPoint.x,
                 relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
                 squareLength,
-                squareLength
+                squareLength,
               );
               ctx.restore();
               continue;
@@ -779,7 +781,7 @@ export default class Canvas extends EventDispatcher {
           j * squareLength + correctedLeftTopScreenPoint.x,
           i * squareLength + correctedLeftTopScreenPoint.y,
           squareLength,
-          squareLength
+          squareLength,
         );
       }
     }
@@ -797,11 +799,11 @@ export default class Canvas extends EventDispatcher {
     let convertedScreenPoint = convertCartesianToScreen(
       this.element,
       leftTopPoint,
-      this.dpr
+      this.dpr,
     );
     const correctedScreenPoint = getScreenPoint(
       convertedScreenPoint,
-      this.panZoom
+      this.panZoom,
     );
 
     ctx.save();
@@ -813,13 +815,13 @@ export default class Canvas extends EventDispatcher {
         ctx.beginPath();
         ctx.moveTo(
           correctedScreenPoint.x + i * squareLength,
-          correctedScreenPoint.y - this.gridStrokeWidth / 2
+          correctedScreenPoint.y - this.gridStrokeWidth / 2,
         );
         ctx.lineTo(
           correctedScreenPoint.x + i * squareLength,
           correctedScreenPoint.y +
             this.getRowCount() * squareLength +
-            this.gridStrokeWidth / 2
+            this.gridStrokeWidth / 2,
         );
         ctx.stroke();
         ctx.closePath();
@@ -827,11 +829,11 @@ export default class Canvas extends EventDispatcher {
       ctx.beginPath();
       ctx.moveTo(
         correctedScreenPoint.x + i * squareLength,
-        correctedScreenPoint.y
+        correctedScreenPoint.y,
       );
       ctx.lineTo(
         correctedScreenPoint.x + i * squareLength,
-        correctedScreenPoint.y + this.getRowCount() * squareLength
+        correctedScreenPoint.y + this.getRowCount() * squareLength,
       );
       ctx.stroke();
       ctx.closePath();
@@ -841,13 +843,13 @@ export default class Canvas extends EventDispatcher {
         ctx.beginPath();
         ctx.moveTo(
           correctedScreenPoint.x - this.gridStrokeWidth / 2,
-          correctedScreenPoint.y + j * squareLength
+          correctedScreenPoint.y + j * squareLength,
         );
         ctx.lineTo(
           correctedScreenPoint.x +
             this.getColumnCount() * squareLength +
             this.gridStrokeWidth / 2,
-          correctedScreenPoint.y + j * squareLength
+          correctedScreenPoint.y + j * squareLength,
         );
         ctx.stroke();
         ctx.closePath();
@@ -855,11 +857,11 @@ export default class Canvas extends EventDispatcher {
       ctx.beginPath();
       ctx.moveTo(
         correctedScreenPoint.x,
-        correctedScreenPoint.y + j * squareLength
+        correctedScreenPoint.y + j * squareLength,
       );
       ctx.lineTo(
         correctedScreenPoint.x + this.getColumnCount() * squareLength,
-        correctedScreenPoint.y + j * squareLength
+        correctedScreenPoint.y + j * squareLength,
       );
       ctx.stroke();
       ctx.closePath();
@@ -876,7 +878,7 @@ export default class Canvas extends EventDispatcher {
     const allRows = Array.from(this.data.entries());
     for (let i = 0; i < allRows.length; i++) {
       const columns = Array.from(allRows[i][1]);
-      const columnPixels = columns.map((element) => element[1]);
+      const columnPixels = columns.map(element => element[1]);
       dataArray.push(columnPixels);
     }
     return dataArray;
@@ -910,7 +912,7 @@ export default class Canvas extends EventDispatcher {
    */
   erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
     const currentCanvasIndices = this.getGridIndices();
-    const validData = data.filter((change) => {
+    const validData = data.filter(change => {
       const { rowIndex, columnIndex } = change;
       return (
         rowIndex >= currentCanvasIndices.topRowIndex &&
@@ -920,7 +922,7 @@ export default class Canvas extends EventDispatcher {
       );
     });
 
-    const dataForAction = []
+    const dataForAction = [];
     for (let i = 0; i < validData.length; i++) {
       const { rowIndex, columnIndex } = validData[i];
       const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
@@ -929,11 +931,7 @@ export default class Canvas extends EventDispatcher {
       dataForAction.push({ rowIndex, columnIndex, color, previousColor });
     }
     if (validData.length > 0) {
-      this.recordAction(
-        new ColorChangeAction(
-          dataForAction
-        )
-      );
+      this.recordAction(new ColorChangeAction(dataForAction));
     }
     this.render();
   }
@@ -942,8 +940,8 @@ export default class Canvas extends EventDispatcher {
    * @param data An array of data about position of change and wanted color
    */
   colorPixels(data: Array<PixelModifyItem>) {
-    const rowIndices = data.map((change) => change.rowIndex);
-    const columnIndices = data.map((change) => change.columnIndex);
+    const rowIndices = data.map(change => change.rowIndex);
+    const columnIndices = data.map(change => change.columnIndex);
     const minRowIndex = Math.min(...rowIndices);
     const maxRowIndex = Math.max(...rowIndices);
     const minColumnIndex = Math.min(...columnIndices);
@@ -1010,18 +1008,18 @@ export default class Canvas extends EventDispatcher {
         amount,
       });
     }
-    const dataForAction = []
+    const dataForAction = [];
     for (const change of data) {
-      const previousColor = this.data.get(change.rowIndex)!.get(change.columnIndex)!.color;
+      const previousColor = this.data
+        .get(change.rowIndex)!
+        .get(change.columnIndex)!.color;
       const color = change.color;
       this.data
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
       dataForAction.push({ ...change, color, previousColor });
     }
-    this.recordAction(
-      new ColorSizeChangeAction(dataForAction, changeAmounts)
-    );
+    this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
     this.emit(CanvasEvents.DATA_CHANGE, this.data);
     this.render();
   }
@@ -1151,10 +1149,10 @@ export default class Canvas extends EventDispatcher {
       const currentTopIndex = Math.min(...allRowKeys);
       const currentLeftIndex = Math.min(...allColumnKeys);
       const rowOffset = Math.floor(
-        (mouseCartCoord.y - leftTopPoint.y) / this.gridSquareLength
+        (mouseCartCoord.y - leftTopPoint.y) / this.gridSquareLength,
       );
       const columnOffset = Math.floor(
-        (mouseCartCoord.x - leftTopPoint.x) / this.gridSquareLength
+        (mouseCartCoord.x - leftTopPoint.x) / this.gridSquareLength,
       );
       return {
         rowIndex: currentTopIndex + rowOffset,
@@ -1191,7 +1189,7 @@ export default class Canvas extends EventDispatcher {
             pixelCoord.x,
             pixelCoord.y,
             this.gridSquareLength,
-            this.gridSquareLength
+            this.gridSquareLength,
           );
           imageContext.restore();
         }
@@ -1205,7 +1203,7 @@ export default class Canvas extends EventDispatcher {
           imageContext.moveTo(i * this.gridSquareLength, 0);
           imageContext.lineTo(
             i * this.gridSquareLength,
-            rowCount * this.gridSquareLength
+            rowCount * this.gridSquareLength,
           );
           imageContext.stroke();
           imageContext.closePath();
@@ -1215,7 +1213,7 @@ export default class Canvas extends EventDispatcher {
           imageContext.moveTo(0, j * this.gridSquareLength);
           imageContext.lineTo(
             columnCount * this.gridSquareLength,
-            j * this.gridSquareLength
+            j * this.gridSquareLength,
           );
           imageContext.stroke();
           imageContext.closePath();
@@ -1247,7 +1245,7 @@ export default class Canvas extends EventDispatcher {
       const color = "";
       this.data.get(rowIndex)!.set(columnIndex, { color: "" });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
-      this.erasedPixels.push({
+      this.erasedPixelRecords.record({
         rowIndex,
         columnIndex,
         previousColor,
@@ -1255,29 +1253,12 @@ export default class Canvas extends EventDispatcher {
       });
     } else if (this.brushMode === BrushMode.DOT) {
       // this draws the pixel if the brush mode is brush
-
-      if (
-        // draw Pixel can be called multiple times for the same pixel
-        // we only want to add the pixel to the strokedPixels array if it is a new pixel
-        // the first condition is to push the array if it is empty
-        this.strokedPixels.length === 0 ||
-        this.strokedPixels[this.strokedPixels.length - 1].rowIndex !==
-          rowIndex ||
-        this.strokedPixels[this.strokedPixels.length - 1].columnIndex !==
-          columnIndex
-      ) {
-        // we preserve the intention of the user coloring the same pixel twice
-        // remember that the strokedPixels array is stored in order
-        const color = this.brushColor;
-        const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
-        this.strokedPixels.push({
-          rowIndex,
-          columnIndex,
-          color,
-          previousColor
-        });
-      }
-
+      this.strokedPixelRecords.record({
+        rowIndex,
+        columnIndex,
+        color: this.brushColor,
+        previousColor: this.data.get(rowIndex)!.get(columnIndex)!.color,
+      });
       // console.log(rowIndex, columnIndex, this.brushColor, "coloring!");
       // console.log(this.data.get(rowIndex)!.get(columnIndex));
 
@@ -1308,7 +1289,7 @@ export default class Canvas extends EventDispatcher {
         columnIndex,
       });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
-      this.emit(CanvasEvents.STROKE_END, this.strokedPixels, this.data);
+      this.emit(CanvasEvents.STROKE_END, this.strokedPixelRecords, this.data);
     }
     this.render();
   }
@@ -1316,7 +1297,7 @@ export default class Canvas extends EventDispatcher {
   paintSameColorRegion(
     initialColor: string,
     gridIndices: Indices,
-    currentIndices: { rowIndex: number; columnIndex: number }
+    currentIndices: { rowIndex: number; columnIndex: number },
   ): void {
     const indicesQueue = new Queue<{ rowIndex: number; columnIndex: number }>();
     indicesQueue.enqueue(currentIndices);
@@ -1334,7 +1315,7 @@ export default class Canvas extends EventDispatcher {
       const color = this.brushColor;
       const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
       this.fillPixelColor(rowIndex, columnIndex, color);
-      this.strokedPixels.push({
+      this.strokedPixelRecords.record({
         rowIndex,
         columnIndex,
         color,
@@ -1400,7 +1381,7 @@ export default class Canvas extends EventDispatcher {
     const buttonDirection = this.extensionPoint.direction;
     const extensionAmount = diffPoints(
       this.extensionPoint.lastMousePos,
-      mouseCartCoord
+      mouseCartCoord,
     );
 
     if (buttonDirection) {
@@ -1520,7 +1501,7 @@ export default class Canvas extends EventDispatcher {
 
     const newAllRowKeys = Array.from(this.data.keys());
     const newAllColumnKeys = Array.from(
-      this.data.get(newAllRowKeys[0])!.keys()
+      this.data.get(newAllRowKeys[0])!.keys(),
     );
     const dimensions = {
       columnCount: this.getColumnCount(),
@@ -1550,7 +1531,7 @@ export default class Canvas extends EventDispatcher {
         }
         const topRowPixelMap = this.data.get(currentTopIndex)!;
         const topRowPixelModifyItems: Array<PixelModifyItem> = [];
-        Array.from(topRowPixelMap.entries()).forEach((columnData) => {
+        Array.from(topRowPixelMap.entries()).forEach(columnData => {
           const [key, pixel] = columnData;
           if (pixel.color) {
             topRowPixelModifyItems.push({
@@ -1579,7 +1560,7 @@ export default class Canvas extends EventDispatcher {
         }
         const bottomRowPixelMap = this.data.get(currentBottomIndex)!;
         const bottomRowPixelModifyItems: Array<PixelModifyItem> = [];
-        Array.from(bottomRowPixelMap.entries()).forEach((columnData) => {
+        Array.from(bottomRowPixelMap.entries()).forEach(columnData => {
           const [key, pixel] = columnData;
           if (pixel.color) {
             bottomRowPixelModifyItems.push({
@@ -1621,7 +1602,7 @@ export default class Canvas extends EventDispatcher {
         if (leftColumnPixelModifyItems.length > 0) {
           this.swipedPixels.push(...leftColumnPixelModifyItems);
         }
-        this.data.forEach((row) => {
+        this.data.forEach(row => {
           row.delete(currentLeftIndex);
         });
         this.setPanZoom({
@@ -1652,7 +1633,7 @@ export default class Canvas extends EventDispatcher {
         if (rightColumnPixelModifyItems.length > 0) {
           this.swipedPixels.push(...rightColumnPixelModifyItems);
         }
-        this.data.forEach((row) => {
+        this.data.forEach(row => {
           row.delete(currentRightIndex);
         });
         this.setPanZoom({
@@ -1672,7 +1653,7 @@ export default class Canvas extends EventDispatcher {
 
     const newAllRowKeys = Array.from(this.data.keys());
     const newAllColumnKeys = Array.from(
-      this.data.get(newAllRowKeys[0])!.keys()
+      this.data.get(newAllRowKeys[0])!.keys(),
     );
     const dimensions = {
       columnCount: this.getColumnCount(),
@@ -1780,34 +1761,30 @@ export default class Canvas extends EventDispatcher {
           direction: extensionDirection,
           amount: sizeChangeAmount,
         },
-      ])
+      ]),
     );
     this.swipedPixels = [];
   }
 
   addColorFillActionToUndoStack() {
-    this.recordAction(
-      new ColorChangeAction(this.strokedPixels)
-    );
-    this.strokedPixels = [];
+    this.recordAction(new ColorChangeAction(this.strokedPixelRecords));
+    this.strokedPixelRecords = [];
   }
 
   addColorEraseActionToUndoStack() {
-    this.recordAction(
-      new ColorChangeAction(this.erasedPixels)
-    );
-    this.erasedPixels = [];
+    this.recordAction(new ColorChangeAction(this.erasedPixelRecords));
+    this.erasedPixelRecords = [];
   }
   onMouseUp() {
     if (this.mouseMode === MouseMode.EXTENDING) {
       this.addSizeChangeActionToUndoStack();
     }
     this.mouseMode = MouseMode.NULL;
-    if (this.strokedPixels.length !== 0) {
-      this.emit(CanvasEvents.STROKE_END, this.strokedPixels, this.data);
+    if (this.strokedPixelRecords.length !== 0) {
+      this.emit(CanvasEvents.STROKE_END, this.strokedPixelRecords, this.data);
       this.addColorFillActionToUndoStack();
     }
-    if (this.erasedPixels.length !== 0) {
+    if (this.erasedPixelRecords.length !== 0) {
       this.addColorEraseActionToUndoStack();
     }
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
@@ -1954,7 +1931,7 @@ export default class Canvas extends EventDispatcher {
   returnScrollOffsetFromMouseOffset = (
     mouseOffset: Coord,
     panZoom: PanZoom,
-    newScale: number
+    newScale: number,
   ) => {
     //this is the correct version
     const worldPos = getWorldPoint(mouseOffset, panZoom);
@@ -1987,7 +1964,7 @@ export default class Canvas extends EventDispatcher {
       const newOffset = this.returnScrollOffsetFromMouseOffset(
         mouseOffset,
         this.panZoom,
-        newScale
+        newScale,
       );
 
       this.setPanZoom({ scale: newScale, offset: newOffset });
@@ -2077,7 +2054,7 @@ export default class Canvas extends EventDispatcher {
   }
 
   getPointFromTouchyEvent(
-    evt: TouchyEvent
+    evt: TouchyEvent,
   ): Coord & { offsetX: number; offsetY: number } {
     let originY;
     let originX;
@@ -2152,7 +2129,7 @@ export default class Canvas extends EventDispatcher {
     y: number,
     width: number,
     height: number,
-    radius: number
+    radius: number,
   ) {
     const ctx = this.ctx;
     // if (width < 2 * radius) radius = width / 2;

@@ -13,7 +13,7 @@ const ChangeBrushMode = () => {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       changeBrushColor.bind(null, e.target.value)();
     },
-    []
+    [],
   );
 
   return (
@@ -42,7 +42,7 @@ const ChangeBrushMode = () => {
             marginLeft: 15,
           }}
           value={brushMode}
-          onChange={(e) => {
+          onChange={e => {
             changeBrushMode(e.target.value as BrushMode);
           }}
         >

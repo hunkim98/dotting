@@ -43,7 +43,7 @@ const ChangePixelColor = () => {
                 style={{ width: 40, height: 20 }}
                 type="number"
                 value={rowIndex}
-                onChange={(e) => setRowIndex(Number(e.target.value))}
+                onChange={e => setRowIndex(Number(e.target.value))}
               />
             </div>
             <div style={{ margin: "0 10px" }}>
@@ -52,7 +52,7 @@ const ChangePixelColor = () => {
                 style={{ width: 40, height: 20 }}
                 type="number"
                 value={columnIndex}
-                onChange={(e) => setColumnIndex(Number(e.target.value))}
+                onChange={e => setColumnIndex(Number(e.target.value))}
               />
             </div>
           </div>
@@ -96,7 +96,7 @@ const ChangePixelColor = () => {
                 style={{ width: 40, height: 20 }}
                 type="number"
                 value={rowIndex2}
-                onChange={(e) => setRowIndex2(Number(e.target.value))}
+                onChange={e => setRowIndex2(Number(e.target.value))}
               />
             </div>
             <div style={{ margin: "0 10px" }}>
@@ -105,7 +105,7 @@ const ChangePixelColor = () => {
                 style={{ width: 40, height: 20 }}
                 type="number"
                 value={columnIndex2}
-                onChange={(e) => setColumnIndex2(Number(e.target.value))}
+                onChange={e => setColumnIndex2(Number(e.target.value))}
               />
             </div>
           </div>

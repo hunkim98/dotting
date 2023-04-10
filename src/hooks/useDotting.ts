@@ -22,28 +22,28 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     (changes: Array<PixelModifyItem>) => {
       ref.current?.colorPixels(changes);
     },
-    [ref]
+    [ref],
   );
 
   const erasePixels = useCallback(
     (changes: Array<{ rowIndex: number; columnIndex: number }>) => {
       ref.current?.erasePixels(changes);
     },
-    [ref]
+    [ref],
   );
 
   const downloadImage = useCallback(
     (options?: ImageDownloadOptions) => {
       ref.current?.downloadImage(options);
     },
-    [ref]
+    [ref],
   );
 
   const setIndicatorPixels = useCallback(
     (indicators: Array<PixelModifyItem>) => {
       ref.current?.setIndicatorPixels(indicators);
     },
-    [ref]
+    [ref],
   );
 
   const undo = useCallback(() => {

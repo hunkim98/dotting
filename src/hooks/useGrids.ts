@@ -27,7 +27,7 @@ const useGrids = (ref: MutableRefObject<DottingRef | null>) => {
         bottomRowIndex: number;
         leftColumnIndex: number;
         rightColumnIndex: number;
-      }
+      },
     ) => {
       setDimensions({
         columnCount: dimensions.columnCount,

@@ -6,8 +6,6 @@ export enum ColorChangeMode {
   Erase = "Erase",
 }
 
-
-
 export class ColorChangeAction extends Action {
   type = ActionType.ColorChange;
   data: Array<ColorChangeItem>;
@@ -20,11 +18,11 @@ export class ColorChangeAction extends Action {
 
   createInverseAction(): Action {
     return new ColorChangeAction(
-      this.data.map((item) => ({
+      this.data.map(item => ({
         ...item,
         previousColor: item.color,
         color: item.previousColor,
-      }))
+      })),
     );
   }
 

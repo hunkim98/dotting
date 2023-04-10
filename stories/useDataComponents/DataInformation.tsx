@@ -11,8 +11,8 @@ const DataInformation = () => {
   const [groupData, setGroupData] = useState<Map<string, number>>(new Map());
   useEffect(() => {
     const map = new Map();
-    dataArray.forEach((row) => {
-      row.forEach((pixel) => {
+    dataArray.forEach(row => {
+      row.forEach(pixel => {
         if (pixel.color) {
           if (map.has(pixel.color)) {
             map.set(pixel.color, map.get(pixel.color) + 1);
@@ -47,7 +47,7 @@ const DataInformation = () => {
           "#FFFF00",
           "#000000",
           "#FFFFFF",
-        ].map((color) => (
+        ].map(color => (
           <div
             key={color}
             onClick={changeBrushColor.bind(null, color)}
@@ -68,7 +68,7 @@ const DataInformation = () => {
         </div>
       )}
       <div>
-        {entries.map((entry) => {
+        {entries.map(entry => {
           return (
             <div>
               <span style={{ marginRight: 10, color: entry[0] }}>

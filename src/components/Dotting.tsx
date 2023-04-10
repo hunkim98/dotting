@@ -61,26 +61,26 @@ export interface DottingRef {
   addStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
   removeStrokeEndListener: (listener: CanvasStrokeEndHandler) => void;
   addHoverPixelChangeListener: (
-    listener: CanvasHoverPixelChangeHandler
+    listener: CanvasHoverPixelChangeHandler,
   ) => void;
   removeHoverPixelChangeListener: (
-    listener: CanvasHoverPixelChangeHandler
+    listener: CanvasHoverPixelChangeHandler,
   ) => void;
   // for canvas element event listeners
   addCanvasElementEventListener: (
     type: string,
-    listener: EventListenerOrEventListenerObject
+    listener: EventListenerOrEventListenerObject,
   ) => void;
   removeCanvasElementEventListener: (
     type: string,
-    listener: EventListenerOrEventListenerObject
+    listener: EventListenerOrEventListenerObject,
   ) => void;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
 const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   props: DottingProps,
-  ref: ForwardedRef<DottingRef>
+  ref: ForwardedRef<DottingRef>,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [canvas, setCanvas] = useState<Canvas | null>(null);
@@ -144,13 +144,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!canvas) {
       return;
     }
-    gridChangeListeners.forEach((listener) => {
+    gridChangeListeners.forEach(listener => {
       canvas.addEventListener(CanvasEvents.GRID_CHANGE, listener);
     });
     // The below is to emit the initial grid event
     canvas.emitGridEvent();
     return () => {
-      gridChangeListeners.forEach((listener) => {
+      gridChangeListeners.forEach(listener => {
         canvas?.removeEventListener(CanvasEvents.GRID_CHANGE, listener);
       });
     };
@@ -160,12 +160,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!canvas) {
       return;
     }
-    dataChangeListeners.forEach((listener) => {
+    dataChangeListeners.forEach(listener => {
       canvas.addEventListener(CanvasEvents.DATA_CHANGE, listener);
     });
     canvas.emitDataEvent();
     return () => {
-      dataChangeListeners.forEach((listener) => {
+      dataChangeListeners.forEach(listener => {
         canvas?.removeEventListener(CanvasEvents.DATA_CHANGE, listener);
       });
     };
@@ -175,12 +175,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!canvas) {
       return;
     }
-    brushChangeListeners.forEach((listener) => {
+    brushChangeListeners.forEach(listener => {
       canvas.addEventListener(CanvasEvents.BRUSH_CHANGE, listener);
     });
     canvas.emitBrushChangeEvent();
     return () => {
-      brushChangeListeners.forEach((listener) => {
+      brushChangeListeners.forEach(listener => {
         canvas?.removeEventListener(CanvasEvents.BRUSH_CHANGE, listener);
       });
     };
@@ -190,12 +190,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!canvas) {
       return;
     }
-    strokeEndListeners.forEach((listener) => {
+    strokeEndListeners.forEach(listener => {
       canvas.addEventListener(CanvasEvents.STROKE_END, listener);
     });
     // Emitting initial strokeEnd listener is not necessary!
     return () => {
-      strokeEndListeners.forEach((listener) => {
+      strokeEndListeners.forEach(listener => {
         canvas?.removeEventListener(CanvasEvents.STROKE_END, listener);
       });
     };
@@ -205,12 +205,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!canvas) {
       return;
     }
-    hoverPixelChangeListeners.forEach((listener) => {
+    hoverPixelChangeListeners.forEach(listener => {
       canvas.addEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
     });
     canvas.emitHoverPixelChangeEvent();
     return () => {
-      hoverPixelChangeListeners.forEach((listener) => {
+      hoverPixelChangeListeners.forEach(listener => {
         canvas?.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
       });
     };
@@ -270,104 +270,102 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       props.isGridVisible,
       props.isGridFixed,
       props.initBrushColor,
-      props.initIndicatorData
+      props.initIndicatorData,
     );
     setCanvas(canvas);
   }, []);
 
   const addDataChangeListener = useCallback(
     (listener: CanvasDataChangeHandler) => {
-      setDataChangeListeners((listeners) => [...listeners, listener]);
+      setDataChangeListeners(listeners => [...listeners, listener]);
     },
-    []
+    [],
   );
 
   const removeDataChangeListener = useCallback(
     (listener: CanvasDataChangeHandler) => {
       canvas.removeEventListener(CanvasEvents.DATA_CHANGE, listener);
-      setDataChangeListeners((listeners) =>
-        listeners.filter((l) => l !== listener)
+      setDataChangeListeners(listeners =>
+        listeners.filter(l => l !== listener),
       );
     },
-    [canvas]
+    [canvas],
   );
 
   const addGridChangeListener = useCallback(
     (listener: CanvasGridChangeHandler) => {
-      setGridChangeListeners((listeners) => [...listeners, listener]);
+      setGridChangeListeners(listeners => [...listeners, listener]);
     },
-    []
+    [],
   );
 
   const removeGridChangeListener = useCallback(
     (listener: CanvasGridChangeHandler) => {
       canvas.removeEventListener(CanvasEvents.GRID_CHANGE, listener);
-      setGridChangeListeners((listeners) =>
-        listeners.filter((l) => l !== listener)
+      setGridChangeListeners(listeners =>
+        listeners.filter(l => l !== listener),
       );
     },
-    [canvas]
+    [canvas],
   );
 
   const addBrushChangeListener = useCallback(
     (listener: CanvasBrushChangeHandler) => {
-      setBrushChangeListeners((listeners) => [...listeners, listener]);
+      setBrushChangeListeners(listeners => [...listeners, listener]);
     },
-    []
+    [],
   );
 
   const removeBrushChangeListener = useCallback(
     (listener: CanvasBrushChangeHandler) => {
       canvas.removeEventListener(CanvasEvents.BRUSH_CHANGE, listener);
-      setBrushChangeListeners((listeners) =>
-        listeners.filter((l) => l !== listener)
+      setBrushChangeListeners(listeners =>
+        listeners.filter(l => l !== listener),
       );
     },
-    [canvas]
+    [canvas],
   );
 
   const addStrokeEndListener = useCallback(
     (listener: CanvasStrokeEndHandler) => {
-      setStrokeEndListeners((listeners) => [...listeners, listener]);
+      setStrokeEndListeners(listeners => [...listeners, listener]);
     },
-    []
+    [],
   );
 
   const removeStrokeEndListener = useCallback(
     (listener: CanvasStrokeEndHandler) => {
       canvas.removeEventListener(CanvasEvents.STROKE_END, listener);
-      setStrokeEndListeners((listeners) =>
-        listeners.filter((l) => l !== listener)
-      );
+      setStrokeEndListeners(listeners => listeners.filter(l => l !== listener));
     },
-    [canvas]
+    [canvas],
   );
 
   const addHoverPixelChangeListener = useCallback(
     (listener: CanvasHoverPixelChangeHandler) => {
-      setHoverPixelChangeListeners((listeners) => [...listeners, listener]);
+      setHoverPixelChangeListeners(listeners => [...listeners, listener]);
     },
-    []
+    [],
   );
 
   const removeHoverPixelChangeListener = useCallback(
     (listener: CanvasHoverPixelChangeHandler) => {
       canvas.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
-      setHoverPixelChangeListeners((listeners) =>
-        listeners.filter((l) => l !== listener)
+      setHoverPixelChangeListeners(listeners =>
+        listeners.filter(l => l !== listener),
       );
     },
-    [canvas]
+    [canvas],
   );
 
   const addCanvasElementEventListener = useCallback(
     (type: string, listener: EventListenerOrEventListenerObject) => {
-      setCanvasElementEventListeners((listeners) => [
+      setCanvasElementEventListeners(listeners => [
         ...listeners,
         { type, listener },
       ]);
     },
-    [canvas]
+    [canvas],
   );
 
   const removeCanvasElementEventListener = useCallback(
@@ -377,57 +375,57 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       }
       const canvasElement = canvas.getCanvasElement();
       canvasElement.removeEventListener(type, listener);
-      setCanvasElementEventListeners((listeners) =>
-        listeners.filter((l) => l.type !== type && l.listener !== listener)
+      setCanvasElementEventListeners(listeners =>
+        listeners.filter(l => l.type !== type && l.listener !== listener),
       );
     },
-    [canvas]
+    [canvas],
   );
 
   const clear = useCallback(() => canvas?.clear(), [canvas]);
 
   const colorPixels = useCallback(
     (
-      changes: Array<{ rowIndex: number; columnIndex: number; color: string }>
+      changes: Array<{ rowIndex: number; columnIndex: number; color: string }>,
     ) => {
       canvas?.colorPixels(changes);
     },
-    [canvas]
+    [canvas],
   );
 
   const erasePixels = useCallback(
     (changes: Array<{ rowIndex: number; columnIndex: number }>) => {
       canvas?.erasePixels(changes);
     },
-    [canvas]
+    [canvas],
   );
 
   const setIndicatorPixels = useCallback(
     (indicators: Array<PixelModifyItem>) => {
       canvas?.setIndicatorPixels(indicators);
     },
-    [canvas]
+    [canvas],
   );
 
   const downloadImage = useCallback(
     (options?: ImageDownloadOptions) => {
       canvas?.downloadImage(options);
     },
-    [canvas]
+    [canvas],
   );
 
   const changeBrushColor = useCallback(
     (color: string) => {
       canvas?.changeBrushColor(color);
     },
-    [canvas]
+    [canvas],
   );
 
   const changeBrushMode = useCallback(
     (brushMode: BrushMode) => {
       canvas?.changeBrushMode(brushMode);
     },
-    [canvas]
+    [canvas],
   );
 
   const undo = useCallback(() => {
@@ -495,7 +493,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       // for canvas element listener
       addCanvasElementEventListener,
       removeCanvasElementEventListener,
-    ]
+    ],
   );
 
   return (

@@ -11,13 +11,13 @@ import useHandlers from "./useHandlers";
 const useData = (ref: MutableRefObject<DottingRef | null>) => {
   const { addDataChangeListener, removeDataChangeListener } = useHandlers(ref);
   const [data, setData] = useState<DottingData>(
-    new Map<number, Map<number, PixelData>>()
+    new Map<number, Map<number, PixelData>>(),
   );
 
   const [dataArray, setDataArray] = useState<Array<Array<PixelModifyItem>>>([]);
 
   useEffect(() => {
-    const listener: CanvasDataChangeHandler = (canvasData) => {
+    const listener: CanvasDataChangeHandler = canvasData => {
       setData(canvasData);
       const allRowKeys = Array.from(canvasData.keys());
       const allColumnKeys = Array.from(canvasData.get(allRowKeys[0])!.keys());

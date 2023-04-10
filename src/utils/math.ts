@@ -7,7 +7,7 @@ const degToRad = (degrees: number) => {
 export const convertCartesianToScreen = (
   canvas: HTMLCanvasElement,
   cartesianCoord: Coord,
-  dpr: number
+  dpr: number,
 ): Coord => {
   const screenPoint = {
     x: cartesianCoord.x + canvas.width / dpr / 2,
@@ -80,7 +80,7 @@ export function getWorldPoint(point: Coord, panZoom: PanZoom): Coord {
 export function convertScreenPointToCartesian(
   canvas: HTMLCanvasElement,
   screenPoint: Coord,
-  dpr: number
+  dpr: number,
 ): Coord {
   const cartesianCoord = {
     x: screenPoint.x - canvas.width / dpr / 2,

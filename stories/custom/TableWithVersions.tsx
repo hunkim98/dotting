@@ -16,11 +16,11 @@ const TableWithVersions = ({ tables }: TableWithVersionsProps) => {
   return (
     <div>
       <select
-        onChange={(e) => {
+        onChange={e => {
           setVersion(e.target.value);
         }}
       >
-        {availableVersions.map((v) => (
+        {availableVersions.map(v => (
           <option key={v} value={v}>
             {v}
           </option>
@@ -37,8 +37,8 @@ const TableWithVersions = ({ tables }: TableWithVersionsProps) => {
         </thead>
         <tbody>
           {tables
-            .filter((item) => item.version === version)
-            .map((table) => (
+            .filter(item => item.version === version)
+            .map(table => (
               <tr key={table.name}>
                 <td>{table.name}</td>
                 <td>{table.version}</td>
