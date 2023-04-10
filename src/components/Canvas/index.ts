@@ -1245,20 +1245,16 @@ export default class Canvas extends EventDispatcher {
       });
     } else if (this.brushMode === BrushMode.DOT) {
       // this draws the pixel if the brush mode is brush
-
-      // console.log(rowIndex, columnIndex, this.brushColor, "coloring!");
-      // console.log(this.data.get(rowIndex)!.get(columnIndex));
-
+      this.strokedPixelRecords.record({
+        rowIndex,
+        columnIndex,
+        color: this.brushColor,
+        previousColor: this.data.get(rowIndex)!.get(columnIndex)!.color,
+      });
       if (
         this.data.get(rowIndex)!.get(columnIndex) &&
         this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor
       ) {
-        this.strokedPixelRecords.record({
-          rowIndex,
-          columnIndex,
-          color: this.brushColor,
-          previousColor: this.data.get(rowIndex)!.get(columnIndex)!.color,
-        });
         this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
@@ -1787,7 +1783,7 @@ export default class Canvas extends EventDispatcher {
     if (this.strokedPixelRecords.getRawChanges().length !== 0) {
       this.emit(
         CanvasEvents.STROKE_END,
-        this.strokedPixelRecords.getRawChanges(),
+        this.strokedPixelRecords.getEffectiveChanges(),
         this.data,
       );
       this.addColorFillActionToUndoStack();
