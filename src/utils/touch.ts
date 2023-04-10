@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/ban-types */
 export function addEvent(
   el: EventTarget,
   type: string,
   fn: EventListener,
-  capturing?: boolean
+  capturing?: boolean,
 ) {
   return el.addEventListener(type, fn, capturing);
 }
@@ -11,7 +12,7 @@ export function removeEvent(
   el: EventTarget,
   type: string,
   fn: EventListener,
-  capturing?: boolean
+  capturing?: boolean,
 ) {
   return el.removeEventListener(type, fn, capturing);
 }
@@ -49,7 +50,7 @@ export function touchy(
   el: EventTarget,
   event: Function,
   type: MouseType,
-  fn: (evt: TouchyEvent) => void
+  fn: (evt: TouchyEvent) => void,
 ) {
   event(el, touch[type], fn);
   event(el, type, fn);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 class Event {
   private name: string;
 
@@ -13,7 +14,7 @@ class Event {
   }
 
   off(cb: Function) {
-    const idx = this.callbacks.findIndex((callback) => callback === cb);
+    const idx = this.callbacks.findIndex(callback => callback === cb);
     this.callbacks.splice(idx, 1);
   }
 
@@ -34,7 +35,7 @@ export default class EventDispatcher {
       return;
     }
 
-    this.events[name].callbacks.forEach((cb) => {
+    this.events[name].callbacks.forEach(cb => {
       cb(...args);
     });
   }

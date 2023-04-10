@@ -28,7 +28,7 @@ const CustomExample = () => {
           "#FFFF00",
           "#000000",
           "#FFFFFF",
-        ].map((color) => (
+        ].map(color => (
           <div
             key={color}
             onClick={changeBrushColor.bind(null, color)}

@@ -14,7 +14,7 @@ export class SizeChangeAction extends Action {
 
   constructor(
     data: Array<PixelModifyItem>,
-    changeAmounts: Array<ChangeAmountData>
+    changeAmounts: Array<ChangeAmountData>,
   ) {
     super();
     this.data = data;
@@ -24,10 +24,10 @@ export class SizeChangeAction extends Action {
   createInverseAction(): Action {
     return new SizeChangeAction(
       this.data,
-      this.changeAmounts.map((item) => ({
+      this.changeAmounts.map(item => ({
         ...item,
         amount: -item.amount,
-      }))
+      })),
     );
   }
 

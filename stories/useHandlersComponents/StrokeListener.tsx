@@ -11,11 +11,11 @@ const StrokeListener = () => {
   const ref = useRef<DottingRef>(null);
   const { addStrokeEndListener, removeStrokeEndListener } = useHandlers(ref);
   const [strokedPixels, setStrokedPixels] = useState<Array<PixelModifyItem>>(
-    []
+    [],
   );
   const handleStrokeEnd: CanvasStrokeEndHandler = (
     strokedPixels: Array<PixelModifyItem>,
-    data: DottingData
+    data: DottingData,
   ) => {
     setStrokedPixels(strokedPixels);
   };

@@ -1,7 +1,5 @@
-import { ButtonDirection } from "../components/Canvas";
-import { ColorChangeItem, PixelModifyItem } from "../components/Canvas/types";
+import { ColorChangeItem } from "../components/Canvas/types";
 import { Action, ActionType } from "./Action";
-import { ColorChangeAction, ColorChangeMode } from "./ColorChangeAction";
 import { ChangeAmountData } from "./SizeChangeAction";
 
 export class ColorSizeChangeAction extends Action {
@@ -11,7 +9,7 @@ export class ColorSizeChangeAction extends Action {
 
   constructor(
     data: Array<ColorChangeItem>,
-    changeAmounts: Array<ChangeAmountData>
+    changeAmounts: Array<ChangeAmountData>,
   ) {
     super();
     this.data = data;
@@ -20,15 +18,15 @@ export class ColorSizeChangeAction extends Action {
 
   createInverseAction(): Action {
     return new ColorSizeChangeAction(
-      this.data.map((item) => ({
+      this.data.map(item => ({
         ...item,
         previousColor: item.color,
         color: item.previousColor,
       })),
-      this.changeAmounts.map((item) => ({
+      this.changeAmounts.map(item => ({
         ...item,
         amount: -item.amount,
-      }))
+      })),
     );
   }
 

@@ -13,84 +13,84 @@ const useHandlers = (ref: MutableRefObject<DottingRef | null>) => {
     (listener: CanvasDataChangeHandler) => {
       ref.current?.addDataChangeListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const removeDataChangeListener = useCallback(
     (listener: CanvasDataChangeHandler) => {
       ref.current?.removeDataChangeListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const addGridChangeListener = useCallback(
     (listener: CanvasGridChangeHandler) => {
       ref.current?.addGridChangeListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const removeGridChangeListener = useCallback(
     (listener: CanvasGridChangeHandler) => {
       ref.current?.removeGridChangeListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const addBrushChangeListener = useCallback(
     (listener: CanvasBrushChangeHandler) => {
       ref.current?.addBrushChangeListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const removeBrushChangeListener = useCallback(
     (listener: CanvasBrushChangeHandler) => {
       ref.current?.removeBrushChangeListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const addStrokeEndListener = useCallback(
     (listener: CanvasStrokeEndHandler) => {
       ref.current?.addStrokeEndListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const removeStrokeEndListener = useCallback(
     (listener: CanvasStrokeEndHandler) => {
       ref.current?.removeStrokeEndListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const addHoverPixelChangeListener = useCallback(
     (listener: CanvasHoverPixelChangeHandler) => {
       ref.current?.addHoverPixelChangeListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const removeHoverPixelChangeListener = useCallback(
     (listener: CanvasHoverPixelChangeHandler) => {
       ref.current?.removeHoverPixelChangeListener(listener);
     },
-    [ref]
+    [ref],
   );
 
   const addCanvasElementEventListener = useCallback(
     (event: string, listener: EventListenerOrEventListenerObject) => {
       ref.current?.addCanvasElementEventListener(event, listener);
     },
-    [ref]
+    [ref],
   );
 
   const removeCanvasElementEventListener = useCallback(
     (event: string, listener: EventListenerOrEventListenerObject) => {
       ref.current?.removeCanvasElementEventListener(event, listener);
     },
-    [ref]
+    [ref],
   );
 
   return {

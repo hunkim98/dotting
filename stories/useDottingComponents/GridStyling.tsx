@@ -44,7 +44,7 @@ const GridStyling = () => {
           max={10}
           step={1}
           value={gridStrokeWidth}
-          onChange={(e) => {
+          onChange={e => {
             setGridStrokeWidth(+e.target.value);
           }}
         />
@@ -71,7 +71,7 @@ const GridStyling = () => {
         <input
           type="color"
           value={gridStrokeColor}
-          onChange={(e) => setGridStrokeColor(e.target.value)}
+          onChange={e => setGridStrokeColor(e.target.value)}
         />
       </div>
     </div>

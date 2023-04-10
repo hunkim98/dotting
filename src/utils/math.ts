@@ -1,5 +1,6 @@
 import { Coord, PanZoom } from "./types";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const degToRad = (degrees: number) => {
   return degrees * (Math.PI / 180);
 };
@@ -7,7 +8,7 @@ const degToRad = (degrees: number) => {
 export const convertCartesianToScreen = (
   canvas: HTMLCanvasElement,
   cartesianCoord: Coord,
-  dpr: number
+  dpr: number,
 ): Coord => {
   const screenPoint = {
     x: cartesianCoord.x + canvas.width / dpr / 2,
@@ -80,7 +81,7 @@ export function getWorldPoint(point: Coord, panZoom: PanZoom): Coord {
 export function convertScreenPointToCartesian(
   canvas: HTMLCanvasElement,
   screenPoint: Coord,
-  dpr: number
+  dpr: number,
 ): Coord {
   const cartesianCoord = {
     x: screenPoint.x - canvas.width / dpr / 2,

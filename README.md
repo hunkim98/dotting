@@ -99,5 +99,3 @@ Thanks goes to these incredible people!!
 <a href="https://github.com/hunkim98/dotting/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=hunkim98/dotting" />
 </a>
-
-

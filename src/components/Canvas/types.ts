@@ -1,5 +1,3 @@
-
-
 export interface Coord {
   x: number;
   y: number;
@@ -56,26 +54,24 @@ export type CanvasGridChangeHandler = (
     bottomRowIndex: number;
     leftColumnIndex: number;
     rightColumnIndex: number;
-  }
+  },
 ) => void;
-
-
 
 export type CanvasStrokeEndHandler = (
   strokedPixels: Array<ColorChangeItem>,
-  data: DottingData
+  data: DottingData,
 ) => void;
 
 export type CanvasBrushChangeHandler = (
   brushColor: string,
-  brushMode: BrushMode
+  brushMode: BrushMode,
 ) => void;
 
 export type CanvasHoverPixelChangeHandler = (
   indices: {
     rowIndex: number;
     columnIndex: number;
-  } | null
+  } | null,
 ) => void;
 
 export type GridIndices = {
