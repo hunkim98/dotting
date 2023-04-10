@@ -252,9 +252,9 @@ export default class Canvas extends EventDispatcher {
               this.shortenGrid(change.direction);
             }
           }
-          const pixelsToFill = sizeChangeAction.data;
-          for (let i = 0; i < pixelsToFill.length; i++) {
-            const pixel = pixelsToFill[i];
+          const sizeChangePixels = sizeChangeAction.data;
+          for (let i = 0; i < sizeChangePixels.length; i++) {
+            const pixel = sizeChangePixels[i];
             this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
           }
         }
@@ -276,7 +276,7 @@ export default class Canvas extends EventDispatcher {
           }
         }
         // we do not need to care for colorchangemode.Erase since the grids are already deleted
-        const colorSizeChangePixels = colorChangeAction.data;
+        const colorSizeChangePixels = colorSizeChangeAction.data;
         for (let i = 0; i < colorSizeChangePixels.length; i++) {
           const pixel = colorSizeChangePixels[i];
           this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
@@ -1007,6 +1007,7 @@ export default class Canvas extends EventDispatcher {
         .get(change.rowIndex)!
         .get(change.columnIndex)!.color;
       const color = change.color;
+
       this.data
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
