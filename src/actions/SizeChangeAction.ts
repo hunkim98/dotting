@@ -2,14 +2,19 @@ import { ButtonDirection } from "../components/Canvas";
 import { PixelModifyItem } from "../components/Canvas/types";
 import { Action, ActionType } from "./Action";
 
+export interface ChangeAmountData {
+  direction: ButtonDirection;
+  amount: number;
+}
+
 export class SizeChangeAction extends Action {
   type = ActionType.SizeChange;
   data: Array<PixelModifyItem>;
-  changeAmounts: Array<{ direction: ButtonDirection; amount: number }>;
+  changeAmounts: Array<ChangeAmountData>;
 
   constructor(
     data: Array<PixelModifyItem>,
-    changeAmounts: Array<{ direction: ButtonDirection; amount: number }>
+    changeAmounts: Array<ChangeAmountData>
   ) {
     super();
     this.data = data;

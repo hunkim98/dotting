@@ -8,6 +8,7 @@ import {
   getWorldPoint,
   gradientPoints,
 } from "../../utils/math";
+import React from "react";
 import Queue from "../../utils/queue";
 import EventDispatcher from "../../utils/eventDispatcher";
 import {
@@ -28,6 +29,7 @@ import { Action, ActionType } from "../../actions/Action";
 import {
   ColorChangeMode,
   ColorChangeAction,
+  ColorChangeData,
 } from "../../actions/ColorChangeAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import Stack from "../../utils/stack";
@@ -82,9 +84,9 @@ export default class Canvas extends EventDispatcher {
 
   private isGridVisible: boolean;
 
-  private strokedPixels: Array<PixelModifyItem> = [];
+  private strokedPixels: Array<ColorChangeData> = [];
 
-  private erasedPixels: Array<PixelModifyItem> = [];
+  private erasedPixels: Array<ColorChangeData> = [];
 
   private swipedPixels: Array<PixelModifyItem> = [];
 
@@ -234,18 +236,10 @@ export default class Canvas extends EventDispatcher {
     switch (type) {
       case ActionType.ColorChange:
         const colorChangeAction = action as ColorChangeAction;
-        if (colorChangeAction.mode === ColorChangeMode.Erase) {
-          const pixelsToErase = colorChangeAction.data;
-          for (let i = 0; i < pixelsToErase.length; i++) {
-            const pixel = pixelsToErase[i];
-            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, "");
-          }
-        } else if (colorChangeAction.mode === ColorChangeMode.Fill) {
-          const pixelsToFill = colorChangeAction.data;
-          for (let i = 0; i < pixelsToFill.length; i++) {
-            const pixel = pixelsToFill[i];
-            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
-          }
+        const colorChangePixels = colorChangeAction.data;
+        for (let i = 0; i < colorChangePixels.length; i++) {
+          const pixel = colorChangePixels[i];
+          this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
         }
         break;
 
@@ -287,18 +281,10 @@ export default class Canvas extends EventDispatcher {
           }
         }
         // we do not need to care for colorchangemode.Erase since the grids are already deleted
-        if (colorSizeChangeAction.mode === ColorChangeMode.Erase) {
-          const pixelsToFill = colorSizeChangeAction.data;
-          for (let i = 0; i < pixelsToFill.length; i++) {
-            const pixel = pixelsToFill[i];
-            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, "");
-          }
-        } else if (colorSizeChangeAction.mode === ColorChangeMode.Fill) {
-          const pixelsToFill = colorSizeChangeAction.data;
-          for (let i = 0; i < pixelsToFill.length; i++) {
-            const pixel = pixelsToFill[i];
-            this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
-          }
+        const colorSizeChangePixels = colorChangeAction.data;
+        for (let i = 0; i < colorSizeChangePixels.length; i++) {
+          const pixel = colorSizeChangePixels[i];
+          this.fillPixelColor(pixel.rowIndex, pixel.columnIndex, pixel.color);
         }
         break;
     }
@@ -934,15 +920,18 @@ export default class Canvas extends EventDispatcher {
       );
     });
 
+    const dataForAction = []
     for (let i = 0; i < validData.length; i++) {
       const { rowIndex, columnIndex } = validData[i];
-      this.data.get(rowIndex)!.set(columnIndex, { color: "" });
+      const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
+      const color = "";
+      this.data.get(rowIndex)!.set(columnIndex, { color: color });
+      dataForAction.push({ rowIndex, columnIndex, color, previousColor });
     }
     if (validData.length > 0) {
       this.recordAction(
         new ColorChangeAction(
-          ColorChangeMode.Erase,
-          validData.map((item) => ({ ...item, color: "" }))
+          dataForAction
         )
       );
     }
@@ -1021,13 +1010,17 @@ export default class Canvas extends EventDispatcher {
         amount,
       });
     }
+    const dataForAction = []
     for (const change of data) {
+      const previousColor = this.data.get(change.rowIndex)!.get(change.columnIndex)!.color;
+      const color = change.color;
       this.data
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
+      dataForAction.push({ ...change, color, previousColor });
     }
     this.recordAction(
-      new ColorSizeChangeAction(ColorChangeMode.Fill, data, changeAmounts)
+      new ColorSizeChangeAction(dataForAction, changeAmounts)
     );
     this.emit(CanvasEvents.DATA_CHANGE, this.data);
     this.render();
@@ -1250,11 +1243,14 @@ export default class Canvas extends EventDispatcher {
   drawPixel(rowIndex: number, columnIndex: number) {
     // This erases the pixel if the brush mode is eraser
     if (this.brushMode === BrushMode.ERASER) {
+      const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
+      const color = "";
       this.data.get(rowIndex)!.set(columnIndex, { color: "" });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
       this.erasedPixels.push({
         rowIndex,
         columnIndex,
+        previousColor,
         color: "",
       });
     } else if (this.brushMode === BrushMode.DOT) {
@@ -1272,10 +1268,13 @@ export default class Canvas extends EventDispatcher {
       ) {
         // we preserve the intention of the user coloring the same pixel twice
         // remember that the strokedPixels array is stored in order
+        const color = this.brushColor;
+        const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
         this.strokedPixels.push({
           rowIndex,
           columnIndex,
-          color: this.brushColor,
+          color,
+          previousColor
         });
       }
 
@@ -1332,11 +1331,14 @@ export default class Canvas extends EventDispatcher {
       if (!currentPixel || currentPixel?.color !== initialColor) {
         continue;
       }
-      this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
+      const color = this.brushColor;
+      const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
+      this.fillPixelColor(rowIndex, columnIndex, color);
       this.strokedPixels.push({
         rowIndex,
         columnIndex,
-        color: this.brushColor,
+        color,
+        previousColor,
       });
       [
         { rowIndex: rowIndex - 1, columnIndex },
@@ -1785,14 +1787,14 @@ export default class Canvas extends EventDispatcher {
 
   addColorFillActionToUndoStack() {
     this.recordAction(
-      new ColorChangeAction(ColorChangeMode.Fill, this.strokedPixels)
+      new ColorChangeAction(this.strokedPixels)
     );
     this.strokedPixels = [];
   }
 
   addColorEraseActionToUndoStack() {
     this.recordAction(
-      new ColorChangeAction(ColorChangeMode.Erase, this.erasedPixels)
+      new ColorChangeAction(this.erasedPixels)
     );
     this.erasedPixels = [];
   }
