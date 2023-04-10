@@ -23,9 +23,7 @@ import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
 import { Action, ActionType } from "../../actions/Action";
-import {
-  ColorChangeAction,
-} from "../../actions/ColorChangeAction";
+import { ColorChangeAction } from "../../actions/ColorChangeAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import Stack from "../../utils/stack";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
@@ -1247,12 +1245,7 @@ export default class Canvas extends EventDispatcher {
       });
     } else if (this.brushMode === BrushMode.DOT) {
       // this draws the pixel if the brush mode is brush
-      this.strokedPixelRecords.record({
-        rowIndex,
-        columnIndex,
-        color: this.brushColor,
-        previousColor: this.data.get(rowIndex)!.get(columnIndex)!.color,
-      });
+
       // console.log(rowIndex, columnIndex, this.brushColor, "coloring!");
       // console.log(this.data.get(rowIndex)!.get(columnIndex));
 
@@ -1260,6 +1253,12 @@ export default class Canvas extends EventDispatcher {
         this.data.get(rowIndex)!.get(columnIndex) &&
         this.data.get(rowIndex)!.get(columnIndex).color !== this.brushColor
       ) {
+        this.strokedPixelRecords.record({
+          rowIndex,
+          columnIndex,
+          color: this.brushColor,
+          previousColor: this.data.get(rowIndex)!.get(columnIndex)!.color,
+        });
         this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
@@ -1283,7 +1282,11 @@ export default class Canvas extends EventDispatcher {
         columnIndex,
       });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
-      this.emit(CanvasEvents.STROKE_END, this.strokedPixelRecords, this.data);
+      this.emit(
+        CanvasEvents.STROKE_END,
+        this.strokedPixelRecords.getEffectiveChanges(),
+        this.data,
+      );
     }
     this.render();
   }
@@ -1293,7 +1296,10 @@ export default class Canvas extends EventDispatcher {
     gridIndices: Indices,
     currentIndices: { rowIndex: number; columnIndex: number },
   ): void {
-    const indicesQueue = new Queue<{ rowIndex: number; columnIndex: number }>();
+    const indicesQueue = new Queue<{
+      rowIndex: number;
+      columnIndex: number;
+    }>();
     indicesQueue.enqueue(currentIndices);
 
     while (indicesQueue.size() > 0) {
@@ -1761,24 +1767,32 @@ export default class Canvas extends EventDispatcher {
   }
 
   addColorFillActionToUndoStack() {
-    this.recordAction(new ColorChangeAction(this.strokedPixelRecords));
-    this.strokedPixelRecords = [];
+    this.recordAction(
+      new ColorChangeAction(this.strokedPixelRecords.getEffectiveChanges()),
+    );
+    this.strokedPixelRecords.reset();
   }
 
   addColorEraseActionToUndoStack() {
-    this.recordAction(new ColorChangeAction(this.erasedPixelRecords));
-    this.erasedPixelRecords = [];
+    this.recordAction(
+      new ColorChangeAction(this.erasedPixelRecords.getEffectiveChanges()),
+    );
+    this.erasedPixelRecords.reset();
   }
   onMouseUp() {
     if (this.mouseMode === MouseMode.EXTENDING) {
       this.addSizeChangeActionToUndoStack();
     }
     this.mouseMode = MouseMode.NULL;
-    if (this.strokedPixelRecords.length !== 0) {
-      this.emit(CanvasEvents.STROKE_END, this.strokedPixelRecords, this.data);
+    if (this.strokedPixelRecords.getRawChanges().length !== 0) {
+      this.emit(
+        CanvasEvents.STROKE_END,
+        this.strokedPixelRecords.getRawChanges(),
+        this.data,
+      );
       this.addColorFillActionToUndoStack();
     }
-    if (this.erasedPixelRecords.length !== 0) {
+    if (this.erasedPixelRecords.getRawChanges().length !== 0) {
       this.addColorEraseActionToUndoStack();
     }
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);

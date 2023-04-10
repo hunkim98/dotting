@@ -1,4 +1,5 @@
 import { ColorChangeItem } from "../components/Canvas/types";
+import { generatePixelId, parsePixelId } from "../utils/identifier";
 
 /**
  * This class is used to record the changes of pixels.
@@ -11,14 +12,11 @@ import { ColorChangeItem } from "../components/Canvas/types";
 export class PixelChangeRecords {
   private rawChanges: Array<ColorChangeItem>;
   private effectiveChangesMap: Map<
-    number,
-    Map<
-      number,
-      {
-        color: string;
-        previousColor: string;
-      }
-    >
+    string,
+    {
+      color: string;
+      previousColor: string;
+    }
   >;
 
   constructor() {
@@ -30,40 +28,44 @@ export class PixelChangeRecords {
     if (this.rawChanges.length > 0) {
       const mostRecentRawChange = this.rawChanges[this.rawChanges.length - 1];
       if (
-        mostRecentRawChange.rowIndex === pixel.rowIndex &&
-        mostRecentRawChange.columnIndex === pixel.columnIndex &&
-        mostRecentRawChange.color === pixel.color &&
-        mostRecentRawChange.previousColor === pixel.previousColor
+        !(
+          mostRecentRawChange.rowIndex === pixel.rowIndex &&
+          mostRecentRawChange.columnIndex === pixel.columnIndex &&
+          mostRecentRawChange.color === pixel.color &&
+          mostRecentRawChange.previousColor === pixel.previousColor
+        )
       ) {
-        this.rawChanges.pop();
+        this.rawChanges.push(pixel);
       }
     } else {
       this.rawChanges.push(pixel);
     }
 
     const { rowIndex, columnIndex, color, previousColor } = pixel;
-    if (!this.effectiveChangesMap.has(rowIndex)) {
-      this.effectiveChangesMap.set(rowIndex, new Map());
-      this.effectiveChangesMap.get(rowIndex).set(columnIndex, {
+    const pixelId = generatePixelId(rowIndex, columnIndex);
+    if (!this.effectiveChangesMap.has(pixelId)) {
+      this.effectiveChangesMap.set(pixelId, {
         color,
         previousColor,
       });
     } else {
-      if (!this.effectiveChangesMap.get(rowIndex).has(columnIndex)) {
-        const originalPreviousColor = this.effectiveChangesMap
-          .get(rowIndex)
-          .get(columnIndex).previousColor;
-        this.effectiveChangesMap.get(rowIndex).set(columnIndex, {
-          color,
-          previousColor: originalPreviousColor,
-        });
-      } else {
-        this.effectiveChangesMap.get(rowIndex).set(columnIndex, {
-          color,
-          previousColor: previousColor,
-        });
-      }
+      const originalPreviousColor =
+        this.effectiveChangesMap.get(pixelId).previousColor;
+      console.log(originalPreviousColor);
+      this.effectiveChangesMap.set(pixelId, {
+        color,
+        previousColor: originalPreviousColor,
+      });
     }
+  }
+
+  reset() {
+    this.rawChanges = [];
+    this.effectiveChangesMap = new Map();
+  }
+
+  getIsChanged(): boolean {
+    return this.effectiveChangesMap.size > 0;
   }
 
   getRawChanges(): Array<ColorChangeItem> {
@@ -72,18 +74,18 @@ export class PixelChangeRecords {
 
   getEffectiveChanges(): Array<ColorChangeItem> {
     const result: Array<ColorChangeItem> = [];
-    Array.from(this.effectiveChangesMap.entries()).forEach(
-      ([rowIndex, rowMap]) => {
-        Array.from(rowMap.entries()).forEach(([columnIndex, item]) => {
-          result.push({
-            rowIndex,
-            columnIndex,
-            color: item.color,
-            previousColor: item.previousColor,
-          });
-        });
-      },
-    );
+    // map will be converted to array
+    // foreach will preserve the order of the map
+    // the items of the map will be ordered by the order of their insertion
+    this.effectiveChangesMap.forEach((item, pixelId) => {
+      const { rowIndex, columnIndex } = parsePixelId(pixelId);
+      result.push({
+        rowIndex: rowIndex,
+        columnIndex: columnIndex,
+        color: item.color,
+        previousColor: item.previousColor,
+      });
+    });
     return result;
   }
 }

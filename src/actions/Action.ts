@@ -5,7 +5,6 @@ export enum ActionType {
 }
 
 export abstract class Action {
-
   abstract type: ActionType;
 
   abstract createInverseAction(): Action;

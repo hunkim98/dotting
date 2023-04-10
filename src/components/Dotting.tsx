@@ -102,7 +102,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const [canvasElementEventListeners, setCanvasElementEventListeners] =
     useState<
-      Array<{ type: string; listener: EventListenerOrEventListenerObject }>
+      Array<{
+        type: string;
+        listener: EventListenerOrEventListenerObject;
+      }>
     >([]);
 
   useEffect(() => {
@@ -386,7 +389,11 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const colorPixels = useCallback(
     (
-      changes: Array<{ rowIndex: number; columnIndex: number; color: string }>,
+      changes: Array<{
+        rowIndex: number;
+        columnIndex: number;
+        color: string;
+      }>,
     ) => {
       canvas?.colorPixels(changes);
     },

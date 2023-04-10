@@ -1,7 +1,4 @@
-import {
-  MutableRefObject,
-  useCallback,
-} from "react";
+import { MutableRefObject, useCallback } from "react";
 import {
   ImageDownloadOptions,
   PixelModifyItem,
