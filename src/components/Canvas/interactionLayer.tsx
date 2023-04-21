@@ -1,15 +1,20 @@
 import { ButtonDirection } from ".";
 import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
-import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
+import EventDispatcher from "../../utils/eventDispatcher";
+import {
+  convertCartesianToScreen,
+  diffPoints,
+  getScreenPoint,
+  getWorldPoint,
+} from "../../utils/math";
 import { drawExtendButton } from "../../utils/shapes";
-import { BaseLayer } from "./baseLayer";
+import { TouchyEvent } from "../../utils/touch";
+import { BaseLayer } from "./BaseLayer";
 import { DefaultButtonHeight, DefaultGridSquareLength } from "./config";
 import { Coord, PixelModifyItem } from "./types";
 
 export default class InteractionLayer extends BaseLayer {
   private isPanZoomable: boolean;
-
-  private isGridFixed: boolean;
 
   private strokedPixelRecords: PixelChangeRecords;
 
@@ -23,17 +28,11 @@ export default class InteractionLayer extends BaseLayer {
 
   private isInteractionApplied: boolean = true;
 
-  private hoveredButton: ButtonDirection | null = null;
-
   private columnCount: number;
 
   private rowCount: number;
 
   private gridSquareLength: number = DefaultGridSquareLength;
-
-  private buttonHeight: number = DefaultButtonHeight;
-
-  private buttonMargin: number = DefaultButtonHeight / 2 + 5;
 
   constructor({ canvas }: { canvas: HTMLCanvasElement }) {
     super({ canvas });
@@ -41,13 +40,6 @@ export default class InteractionLayer extends BaseLayer {
 
   setIndicatorPixels(indicatorPixels: Array<PixelModifyItem>) {
     this.indicatorPixels = indicatorPixels;
-    this.render();
-  }
-
-  setIsGridFixed(isGridFixed: boolean) {
-    if (isGridFixed !== undefined) {
-      this.isGridFixed = isGridFixed;
-    }
     this.render();
   }
 
@@ -70,5 +62,13 @@ export default class InteractionLayer extends BaseLayer {
     return this.element;
   }
 
+  /**
+   * Interaction Layer render will be called when:
+   * 1. The canvas is resized
+   * 2. The canvas is panned or zoomed
+   * 3. The canvas is mouse clicked or touched
+   * 4. The pixel grid is hovered
+   * 5. The indicator pixel changes
+   */
   render() {}
 }

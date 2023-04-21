@@ -1,4 +1,4 @@
-import { PanZoom } from "./types";
+import { PanZoom, PixelData } from "./types";
 
 export const DefaultPanZoom: PanZoom = {
   scale: 1,
@@ -15,3 +15,14 @@ export enum ButtonDirection {
   LEFT = "LEFT",
   RIGHT = "RIGHT",
 }
+
+export const DefaultPixelDataDimensions = {
+  columnCount: 8,
+  rowCount: 6,
+};
+
+export const DefaultZoomSensitivity = 200;
+
+export const DefaultMaxScale = 1.5;
+
+export const DefaultMinScale = 0.3;

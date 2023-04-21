@@ -1,6 +1,6 @@
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 import { drawExtendButton } from "../../utils/shapes";
-import { BaseLayer } from "./baseLayer";
+import { BaseLayer } from "./BaseLayer";
 import {
   ButtonDirection,
   DefaultButtonHeight,
@@ -19,30 +19,48 @@ export default class GridLayer extends BaseLayer {
   private buttonHeight: number = DefaultButtonHeight;
   private buttonMargin: number = DefaultButtonHeight / 2 + 5;
   private hoveredButton: ButtonDirection | null = null;
+  private topButtonDimensions: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } = { x: 0, y: 0, width: 0, height: 0 };
+
+  private bottomButtonDimensions: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } = { x: 0, y: 0, width: 0, height: 0 };
+
+  private leftButtonDimensions: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } = { x: 0, y: 0, width: 0, height: 0 };
+
+  private rightButtonDimensions: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } = { x: 0, y: 0, width: 0, height: 0 };
 
   constructor({
     columnCount,
     rowCount,
     canvas,
-    isGridVisible,
-    gridStrokeColor,
-    gridStrokeWidth,
   }: {
     columnCount: number;
     rowCount: number;
     canvas: HTMLCanvasElement;
-    isGridVisible?: boolean;
-    gridStrokeColor?: string;
-    gridStrokeWidth?: number;
   }) {
     super({ canvas });
     this.columnCount = columnCount;
     this.rowCount = rowCount;
     this.ctx = canvas.getContext("2d")!;
     this.element = canvas;
-    this.gridStrokeColor = gridStrokeColor ? gridStrokeColor : "#555555";
-    this.gridStrokeWidth = gridStrokeWidth ? gridStrokeWidth : 1;
-    this.isGridVisible = isGridVisible ? isGridVisible : true;
   }
 
   setColumnCount(columnCount: number) {
@@ -60,11 +78,19 @@ export default class GridLayer extends BaseLayer {
     this.render();
   }
 
+  getIsGridVisible() {
+    return this.isGridVisible;
+  }
+
   setIsGridFixed(isGridFixed: boolean) {
     if (isGridFixed !== undefined) {
       this.isGridFixed = isGridFixed;
     }
     this.render();
+  }
+
+  getIsGridFixed() {
+    return this.isGridFixed;
   }
 
   setGridStrokeColor(gridStrokeColor: string) {
@@ -74,6 +100,10 @@ export default class GridLayer extends BaseLayer {
     this.render();
   }
 
+  getGridStrokeColor() {
+    return this.gridStrokeColor;
+  }
+
   setGridStrokeWidth(gridStrokeWidth: number) {
     if (gridStrokeWidth !== 0 || gridStrokeWidth !== undefined) {
       this.gridStrokeWidth = gridStrokeWidth;
@@ -81,9 +111,22 @@ export default class GridLayer extends BaseLayer {
     this.render();
   }
 
+  getGridStrokeWidth() {
+    return this.gridStrokeWidth;
+  }
+
   setHoveredButton(hoveredButton: ButtonDirection | null) {
     this.hoveredButton = hoveredButton;
     this.render();
+  }
+
+  getButtonsDimensions() {
+    return {
+      top: this.topButtonDimensions,
+      bottom: this.bottomButtonDimensions,
+      left: this.leftButtonDimensions,
+      right: this.rightButtonDimensions,
+    };
   }
 
   findCenterPosForButton(direction: ButtonDirection) {
@@ -122,6 +165,14 @@ export default class GridLayer extends BaseLayer {
 
   drawRightButton(color: string) {
     const centerPos = this.findCenterPosForButton(ButtonDirection.RIGHT);
+    const width = this.buttonHeight;
+    const height = this.rowCount * this.gridSquareLength;
+    this.rightButtonDimensions = {
+      x: centerPos.x - width / 2,
+      y: centerPos.y - height / 2,
+      width,
+      height,
+    };
     drawExtendButton(
       this.ctx,
       centerPos,
@@ -134,6 +185,14 @@ export default class GridLayer extends BaseLayer {
 
   drawLeftButton(color: string) {
     const centerPos = this.findCenterPosForButton(ButtonDirection.LEFT);
+    const width = this.buttonHeight;
+    const height = this.rowCount * this.gridSquareLength;
+    this.leftButtonDimensions = {
+      x: centerPos.x - width / 2,
+      y: centerPos.y - height / 2,
+      width,
+      height,
+    };
     drawExtendButton(
       this.ctx,
       centerPos,
@@ -146,6 +205,14 @@ export default class GridLayer extends BaseLayer {
 
   drawTopButton(color: string) {
     const centerPos = this.findCenterPosForButton(ButtonDirection.TOP);
+    const width = this.columnCount * this.gridSquareLength;
+    const height = this.buttonHeight;
+    this.topButtonDimensions = {
+      x: centerPos.x - width / 2,
+      y: centerPos.y - height / 2,
+      width,
+      height,
+    };
     drawExtendButton(
       this.ctx,
       centerPos,
@@ -158,6 +225,14 @@ export default class GridLayer extends BaseLayer {
 
   drawBottomButton(color: string) {
     const centerPos = this.findCenterPosForButton(ButtonDirection.BOTTOM);
+    const width = this.columnCount * this.gridSquareLength;
+    const height = this.buttonHeight;
+    this.bottomButtonDimensions = {
+      x: centerPos.x - width / 2,
+      y: centerPos.y - height / 2,
+      width,
+      height,
+    };
     drawExtendButton(
       this.ctx,
       centerPos,
@@ -193,6 +268,15 @@ export default class GridLayer extends BaseLayer {
     );
   }
 
+  /**
+   * Grid Layer render will be called when:
+   * 1. isGridFixed is changed
+   * 2. isGridVisible is changed
+   * 3. gridStrokeColor is changed
+   * 4. gridStrokeWidth is changed
+   * 5. panZoom is changed
+   * @returns {void}
+   */
   render() {
     if (!this.isGridFixed) {
       this.drawButtons();
