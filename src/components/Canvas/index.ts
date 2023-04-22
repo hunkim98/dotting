@@ -4,6 +4,7 @@ import {
   diffPoints,
   getScreenPoint,
   getWorldPoint,
+  lerp,
 } from "../../utils/math";
 import React from "react";
 import Queue from "../../utils/queue";
@@ -430,7 +431,7 @@ export default class Canvas extends EventDispatcher {
     ctx.save();
     const buttonPos: Coord = {
       x: -gridsWidth / 2,
-      y: -gridsHeight / 2 - this.buttonMargin,
+      y: -gridsHeight / 2,
     };
     const convertedScreenPoint = convertCartesianToScreen(
       this.element,
@@ -441,28 +442,36 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom,
     );
+
+    const scaledButtonHeight = lerp(
+      this.panZoom.scale,
+      [this.MAX_SCALE, this.MIN_SCALE],
+      [1, this.buttonHeight],
+    );
+
     ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x,
-      correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.y - (scaledButtonHeight / 2) * this.panZoom.scale,
       gridsWidth * this.panZoom.scale,
-      this.buttonHeight * this.panZoom.scale,
+      scaledButtonHeight * this.panZoom.scale,
     );
     ctx.restore();
-    this.drawArrowHead(
-      ctx,
-      correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
-      correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
-      Math.PI * 2,
-      this.panZoom.scale,
-    );
-    this.drawArrowHead(
-      ctx,
-      correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
-      correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
-      Math.PI,
-      this.panZoom.scale,
-    );
+
+    // this.drawArrowHead(
+    //   ctx,
+    //   correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
+    //   correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
+    //   Math.PI * 2,
+    //   this.panZoom.scale,
+    // );
+    // this.drawArrowHead(
+    //   ctx,
+    //   correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
+    //   correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
+    //   Math.PI,
+    //   this.panZoom.scale,
+    // );
   }
 
   drawBottomButton(color: string) {

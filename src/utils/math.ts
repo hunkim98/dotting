@@ -98,3 +98,12 @@ export function worldPointToCartesian(point: Coord, panZoom: PanZoom): Coord {
     y: (point.y - offset.y) / scale,
   };
 }
+
+export function lerp(
+  value: number,
+  [range1Start, range1End]: number[],
+  [range2Start, range2End],
+) {
+  const ratio = (value - range1Start) / (range1End - range1Start);
+  return range2Start + (range2End - range2Start) * ratio;
+}
