@@ -42,6 +42,7 @@ export enum ButtonDirection {
   BOTTOM = "BOTTOM",
   LEFT = "LEFT",
   RIGHT = "RIGHT",
+  RIGHT_TOP = "RIGHT_TOP",
 }
 
 export default class Canvas extends EventDispatcher {
@@ -359,6 +360,11 @@ export default class Canvas extends EventDispatcher {
       y: -gridsHeight / 2,
     };
 
+    const rightTopButtonPos: Coord = {
+      x: gridsWidth / 2 + this.buttonMargin - this.buttonHeight / 2,
+      y: -gridsHeight / 2 - this.buttonMargin - this.buttonHeight / 2,
+    };
+
     const scaledButtonHeight = lerp(
       this.panZoom.scale,
       [this.MAX_SCALE, this.MIN_SCALE],
@@ -391,6 +397,12 @@ export default class Canvas extends EventDispatcher {
       width: scaledButtonHeight,
       height: gridsHeight,
     };
+    const rightTopButtonRect = {
+      x: rightTopButtonPos.x,
+      y: rightTopButtonPos.y,
+      width: scaledButtonHeight,
+      height: gridsHeight,
+    };
 
     if (
       x >= topButtonRect.x &&
@@ -420,6 +432,13 @@ export default class Canvas extends EventDispatcher {
       y <= rightButtonRect.y + rightButtonRect.height
     ) {
       return ButtonDirection.RIGHT;
+    } else if (
+      x >= rightTopButtonRect.x &&
+      x <= rightTopButtonRect.x + rightTopButtonRect.width &&
+      y >= rightTopButtonRect.y &&
+      y <= rightTopButtonRect.y + rightTopButtonRect.height
+    ) {
+      return ButtonDirection.RIGHT_TOP;
     } else {
       return null;
     }
@@ -543,6 +562,35 @@ export default class Canvas extends EventDispatcher {
     ctx.restore();
   }
 
+  drawRightTopButton(color: string) {
+    const gridsWidth = this.gridSquareLength * this.getColumnCount();
+    const gridsHeight = this.gridSquareLength * this.getRowCount();
+
+    const ctx = this.ctx;
+    ctx.save();
+    const buttonPos: Coord = {
+      x: gridsWidth / 2 + this.buttonMargin,
+      y: -gridsHeight / 2 - this.buttonMargin,
+    };
+    const convertedScreenPoint = convertCartesianToScreen(
+      this.element,
+      buttonPos,
+      this.dpr,
+    );
+    const correctedScreenPoint = getScreenPoint(
+      convertedScreenPoint,
+      this.panZoom,
+    );
+    ctx.fillStyle = color;
+    ctx.fillRect(
+      correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale,
+    );
+    ctx.restore();
+  }
+
   drawButtons() {
     const buttonBackgroundColor = "#c8c8c8";
     const onHoverbuttonBackgroundColor = "#b2b2b2";
@@ -563,6 +611,11 @@ export default class Canvas extends EventDispatcher {
     );
     this.drawRightButton(
       this.hoveredButton === ButtonDirection.RIGHT
+        ? onHoverbuttonBackgroundColor
+        : buttonBackgroundColor,
+    );
+    this.drawRightTopButton(
+      this.hoveredButton === ButtonDirection.RIGHT_TOP
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );
@@ -1357,6 +1410,22 @@ export default class Canvas extends EventDispatcher {
             this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
           }
           break;
+        case ButtonDirection.RIGHT_TOP:
+          if (extensionAmount.y > minAmountForExtension) {
+            this.extendGrid(ButtonDirection.TOP);
+            this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
+          } else if (extensionAmount.y < -minAmountForExtension) {
+            this.shortenGrid(ButtonDirection.TOP);
+            this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
+          }
+          if (extensionAmount.x < -minAmountForExtension) {
+            this.extendGrid(ButtonDirection.RIGHT);
+            this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
+          } else if (extensionAmount.x > minAmountForExtension) {
+            this.shortenGrid(ButtonDirection.RIGHT);
+            this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
+          }
+          break;
       }
       this.render();
     }
@@ -1426,6 +1495,27 @@ export default class Canvas extends EventDispatcher {
               this.panZoom.offset.x +
               (this.gridSquareLength / 2) * this.panZoom.scale,
             y: this.panZoom.offset.y,
+          },
+        });
+        break;
+      case ButtonDirection.RIGHT_TOP:
+        const newnewTopIndex = currentTopIndex - 1;
+        const newnewRightIndex = currentRightIndex + 1;
+        this.data.set(newnewTopIndex, new Map());
+
+        for (let i = currentLeftIndex; i <= currentRightIndex; i++) {
+          this.data.get(newnewTopIndex)!.set(i, { color: "" });
+        }
+        for (let i = currentTopIndex; i <= currentBottomIndex; i++) {
+          this.data.get(i)!.set(newnewRightIndex, { color: "" });
+        }
+
+        this.setPanZoom({
+          offset: {
+            x: this.panZoom.offset.x,
+            y:
+              this.panZoom.offset.y -
+              (this.gridSquareLength / 2) * this.panZoom.scale,
           },
         });
         break;
