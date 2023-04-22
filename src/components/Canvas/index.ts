@@ -765,7 +765,8 @@ export default class Canvas extends EventDispatcher {
         if (
           this.hoveredPixel &&
           this.hoveredPixel.rowIndex === rowIndex &&
-          this.hoveredPixel.columnIndex === columnIndex
+          this.hoveredPixel.columnIndex === columnIndex &&
+          this.mouseMode !== MouseMode.EXTENDING
         ) {
           ctx.save();
           const { rowIndex, columnIndex } = this.hoveredPixel;
@@ -1376,7 +1377,7 @@ export default class Canvas extends EventDispatcher {
 
     const mouseCartCoord = this.getMouseCartCoord(evt);
     const pixelIndex = this.getPixelIndexFromMouseCartCoord(mouseCartCoord);
-    if (pixelIndex) {
+    if (pixelIndex && !this.hoveredButton) {
       this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
       this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
     }
