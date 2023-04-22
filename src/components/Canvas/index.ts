@@ -362,31 +362,31 @@ export default class Canvas extends EventDispatcher {
     const scaledButtonHeight = lerp(
       this.panZoom.scale,
       [this.MAX_SCALE, this.MIN_SCALE],
-      [5, this.buttonHeight],
+      [this.buttonHeight, this.buttonHeight * 2],
     );
 
     const x = coord.x;
     const y = coord.y;
     const topButtonRect = {
-      x: topButtonPos.x,
+      x: topButtonPos.x - this.buttonHeight / 2,
       y: topButtonPos.y,
       width: gridsWidth,
       height: scaledButtonHeight,
     };
     const bottomButtonRect = {
       x: bottomButtonPos.x,
-      y: bottomButtonPos.y,
+      y: bottomButtonPos.y + this.buttonHeight / 2,
       width: gridsWidth,
       height: scaledButtonHeight,
     };
     const leftButtonRect = {
-      x: leftButtonPos.x,
+      x: leftButtonPos.x - this.buttonHeight / 2,
       y: leftButtonPos.y,
       width: scaledButtonHeight,
       height: gridsHeight,
     };
     const rightButtonRect = {
-      x: rightButtonPos.x,
+      x: rightButtonPos.x + this.buttonHeight / 2,
       y: rightButtonPos.y,
       width: scaledButtonHeight,
       height: gridsHeight,
@@ -437,7 +437,7 @@ export default class Canvas extends EventDispatcher {
     ctx.save();
     const buttonPos: Coord = {
       x: -gridsWidth / 2,
-      y: -gridsHeight / 2,
+      y: -gridsHeight / 2 - this.buttonMargin,
     };
     const convertedScreenPoint = convertCartesianToScreen(
       this.element,
@@ -449,36 +449,15 @@ export default class Canvas extends EventDispatcher {
       this.panZoom,
     );
 
-    const scaledButtonHeight = lerp(
-      this.panZoom.scale,
-      [this.MAX_SCALE, this.MIN_SCALE],
-      [5, this.buttonHeight],
-    );
-
     ctx.fillStyle = color;
     ctx.globalAlpha = 0.8;
     ctx.fillRect(
       correctedScreenPoint.x,
-      correctedScreenPoint.y - (scaledButtonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       gridsWidth * this.panZoom.scale,
-      scaledButtonHeight * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale,
     );
     ctx.restore();
-
-    // this.drawArrowHead(
-    //   ctx,
-    //   correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
-    //   correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
-    //   Math.PI * 2,
-    //   this.panZoom.scale,
-    // );
-    // this.drawArrowHead(
-    //   ctx,
-    //   correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
-    //   correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
-    //   Math.PI,
-    //   this.panZoom.scale,
-    // );
   }
 
   drawBottomButton(color: string) {
@@ -488,7 +467,7 @@ export default class Canvas extends EventDispatcher {
     const gridsHeight = this.gridSquareLength * this.getRowCount();
     const buttonPos: Coord = {
       x: -gridsWidth / 2,
-      y: gridsHeight / 2,
+      y: gridsHeight / 2 + this.buttonMargin,
     };
     const convertedScreenPoint = convertCartesianToScreen(
       this.element,
@@ -500,47 +479,14 @@ export default class Canvas extends EventDispatcher {
       this.panZoom,
     );
 
-    const scaledButtonHeight = lerp(
-      this.panZoom.scale,
-      [this.MAX_SCALE, this.MIN_SCALE],
-      [5, this.buttonHeight],
-    );
-
     ctx.fillStyle = color;
     ctx.globalAlpha = 0.8;
     ctx.fillRect(
       correctedScreenPoint.x,
-      correctedScreenPoint.y - (scaledButtonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
       gridsWidth * this.panZoom.scale,
-      scaledButtonHeight * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale,
     );
-    ctx.restore();
-    // this.drawArrowHead(
-    //   ctx,
-    //   correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
-    //   correctedScreenPoint.y - (this.buttonHeight / 2) * this.panZoom.scale,
-    //   Math.PI * 2,
-    //   this.panZoom.scale,
-    // );
-    // this.drawArrowHead(
-    //   ctx,
-    //   correctedScreenPoint.x + (gridsWidth * this.panZoom.scale) / 2,
-    //   correctedScreenPoint.y + (this.buttonHeight / 2) * this.panZoom.scale,
-    //   Math.PI,
-    //   this.panZoom.scale,
-    // );
-  }
-  drawArrowHead(ctx, x, y, radians, scale) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.translate(x, y);
-    ctx.rotate(radians);
-    ctx.moveTo(0, 0);
-    ctx.lineTo(7 * scale, 5 * scale);
-    ctx.lineTo(-7 * scale, 5 * scale);
-    ctx.closePath();
-    ctx.fillStyle = "#949494";
-    ctx.fill();
     ctx.restore();
   }
 
@@ -551,7 +497,7 @@ export default class Canvas extends EventDispatcher {
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
     const buttonPos: Coord = {
-      x: -gridsWidth / 2,
+      x: -gridsWidth / 2 - this.buttonMargin,
       y: -gridsHeight / 2,
     };
     const convertedScreenPoint = convertCartesianToScreen(
@@ -564,35 +510,15 @@ export default class Canvas extends EventDispatcher {
       this.panZoom,
     );
 
-    const scaledButtonHeight = lerp(
-      this.panZoom.scale,
-      [this.MAX_SCALE, this.MIN_SCALE],
-      [5, this.buttonHeight],
-    );
-
     ctx.fillStyle = color;
     ctx.globalAlpha = 0.8;
     ctx.fillRect(
-      correctedScreenPoint.x - (scaledButtonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
-      scaledButtonHeight * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale,
       gridsHeight * this.panZoom.scale,
     );
     ctx.restore();
-    // this.drawArrowHead(
-    //   ctx,
-    //   correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
-    //   correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
-    //   -Math.PI / 2,
-    //   this.panZoom.scale,
-    // );
-    // this.drawArrowHead(
-    //   ctx,
-    //   correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
-    //   correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
-    //   Math.PI / 2,
-    //   this.panZoom.scale,
-    // );
   }
 
   drawRightButton(color: string) {
@@ -601,7 +527,7 @@ export default class Canvas extends EventDispatcher {
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
     const buttonPos: Coord = {
-      x: gridsWidth / 2,
+      x: gridsWidth / 2 + this.buttonMargin,
       y: -gridsHeight / 2,
     };
     const convertedScreenPoint = convertCartesianToScreen(
@@ -614,35 +540,15 @@ export default class Canvas extends EventDispatcher {
       this.panZoom,
     );
 
-    const scaledButtonHeight = lerp(
-      this.panZoom.scale,
-      [this.MAX_SCALE, this.MIN_SCALE],
-      [5, this.buttonHeight],
-    );
-
     ctx.fillStyle = color;
     ctx.globalAlpha = 0.8;
     ctx.fillRect(
-      correctedScreenPoint.x - (scaledButtonHeight / 2) * this.panZoom.scale,
+      correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
       correctedScreenPoint.y,
-      scaledButtonHeight * this.panZoom.scale,
+      this.buttonHeight * this.panZoom.scale,
       gridsHeight * this.panZoom.scale,
     );
     ctx.restore();
-    // this.drawArrowHead(
-    //   ctx,
-    //   correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
-    //   correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
-    //   -Math.PI / 2,
-    //   this.panZoom.scale,
-    // );
-    // this.drawArrowHead(
-    //   ctx,
-    //   correctedScreenPoint.x + (this.buttonHeight / 2) * this.panZoom.scale,
-    //   correctedScreenPoint.y + (gridsHeight * this.panZoom.scale) / 2,
-    //   Math.PI / 2,
-    //   this.panZoom.scale,
-    // );
   }
 
   drawButtons() {
