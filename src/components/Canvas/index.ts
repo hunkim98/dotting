@@ -50,6 +50,8 @@ export default class Canvas extends EventDispatcher {
 
   private MIN_SCALE = 0.3;
 
+  private extensionAllowanceRatio = 3;
+
   private ZOOM_SENSITIVITY = 200;
 
   private buttonHeight = 20;
@@ -341,35 +343,32 @@ export default class Canvas extends EventDispatcher {
   detectMouseOnButton(coord: Coord): ButtonDirection | null {
     const gridsHeight = this.gridSquareLength * this.getRowCount();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
-    const topButtonPos: Coord = {
-      x: -gridsWidth / 2,
-      y: -gridsHeight / 2 - this.buttonMargin - this.buttonHeight / 2,
-    };
-    const bottomButtonPos: Coord = {
-      x: -gridsWidth / 2,
-      y: gridsHeight / 2 + this.buttonMargin - this.buttonHeight / 2,
-    };
-
-    const leftButtonPos: Coord = {
-      x: -gridsWidth / 2 - this.buttonMargin - this.buttonHeight / 2,
-      y: -gridsHeight / 2,
-    };
-
-    const rightButtonPos: Coord = {
-      x: gridsWidth / 2 + this.buttonMargin - this.buttonHeight / 2,
-      y: -gridsHeight / 2,
-    };
-
-    const rightTopButtonPos: Coord = {
-      x: gridsWidth / 2 + this.buttonMargin - this.buttonHeight / 2,
-      y: -gridsHeight / 2 - this.buttonMargin - this.buttonHeight / 2,
-    };
-
     const scaledButtonHeight = lerp(
       this.panZoom.scale,
       [this.MAX_SCALE, this.MIN_SCALE],
-      [this.buttonHeight, this.buttonHeight * 2],
+      [this.buttonHeight, this.buttonHeight * this.extensionAllowanceRatio],
     );
+
+    const topButtonPos: Coord = {
+      x: -gridsWidth / 2,
+      y: -gridsHeight / 2 - this.buttonMargin - scaledButtonHeight / 2,
+    };
+    const bottomButtonPos: Coord = {
+      x: -gridsWidth / 2,
+      y: gridsHeight / 2 + this.buttonMargin - scaledButtonHeight / 2,
+    };
+    const leftButtonPos: Coord = {
+      x: -gridsWidth / 2 - this.buttonMargin - scaledButtonHeight / 2,
+      y: -gridsHeight / 2,
+    };
+    const rightButtonPos: Coord = {
+      x: gridsWidth / 2 + this.buttonMargin - scaledButtonHeight / 2,
+      y: -gridsHeight / 2,
+    };
+    const rightTopButtonPos: Coord = {
+      x: gridsWidth / 2 + this.buttonMargin - scaledButtonHeight / 2,
+      y: -gridsHeight / 2 - this.buttonMargin - scaledButtonHeight / 2,
+    };
 
     const x = coord.x;
     const y = coord.y;
@@ -452,8 +451,6 @@ export default class Canvas extends EventDispatcher {
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
 
-    const ctx = this.ctx;
-    ctx.save();
     const buttonPos: Coord = {
       x: -gridsWidth / 2,
       y: -gridsHeight / 2 - this.buttonMargin,
@@ -467,6 +464,9 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom,
     );
+
+    const ctx = this.ctx;
+    ctx.save();
     ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x,
@@ -478,10 +478,9 @@ export default class Canvas extends EventDispatcher {
   }
 
   drawBottomButton(color: string) {
-    const ctx = this.ctx;
-    ctx.save();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
+
     const buttonPos: Coord = {
       x: -gridsWidth / 2,
       y: gridsHeight / 2 + this.buttonMargin,
@@ -495,6 +494,9 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom,
     );
+
+    const ctx = this.ctx;
+    ctx.save();
     ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x,
@@ -506,11 +508,9 @@ export default class Canvas extends EventDispatcher {
   }
 
   drawLeftButton(color: string) {
-    const ctx = this.ctx;
-
-    ctx.save();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
+
     const buttonPos: Coord = {
       x: -gridsWidth / 2 - this.buttonMargin,
       y: -gridsHeight / 2,
@@ -524,6 +524,9 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom,
     );
+
+    const ctx = this.ctx;
+    ctx.save();
     ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
@@ -535,10 +538,9 @@ export default class Canvas extends EventDispatcher {
   }
 
   drawRightButton(color: string) {
-    const ctx = this.ctx;
-    ctx.save();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const gridsHeight = this.gridSquareLength * this.getRowCount();
+
     const buttonPos: Coord = {
       x: gridsWidth / 2 + this.buttonMargin,
       y: -gridsHeight / 2,
@@ -552,6 +554,9 @@ export default class Canvas extends EventDispatcher {
       convertedScreenPoint,
       this.panZoom,
     );
+
+    const ctx = this.ctx;
+    ctx.save();
     ctx.fillStyle = color;
     ctx.fillRect(
       correctedScreenPoint.x - (this.buttonHeight / 2) * this.panZoom.scale,
