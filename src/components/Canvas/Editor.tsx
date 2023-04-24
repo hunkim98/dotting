@@ -36,6 +36,7 @@ import {
 import {
   BrushMode,
   CanvasEvents,
+  ColorChangeItem,
   Coord,
   DottingData,
   GridIndices,
@@ -46,6 +47,8 @@ import {
 import { isValidIndicesRange } from "../../utils/validation";
 import Queue from "../../utils/queue";
 import { Indices } from "../../utils/types";
+import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
+import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
 
 export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;
@@ -91,6 +94,8 @@ export default class Editor extends EventDispatcher {
   private mouseMode: MouseMode = MouseMode.DOT;
   // TODO: why do we need this? For games?
   private isInteractionEnabled = true;
+  // We need isInteractionApplicable to allow multiplayer
+  // We must let yorkie-js-sdk to apply change to data layer not the client
   private isInteractionApplicable = true;
 
   constructor(
@@ -598,6 +603,121 @@ export default class Editor extends EventDispatcher {
     this.renderInteractionLayer();
   }
 
+  private passCurrentUserInteractionToDataLayer() {
+    const interactionLayer = this.getInteractionLayer();
+    if (this.isInteractionApplicable) {
+      const strokePixelRecords = interactionLayer.getStrokedPixelRecords();
+      const pixelModifyItems = strokePixelRecords
+        .get(CurrentDeviceUserId)
+        .getEffectiveChanges();
+      if (pixelModifyItems.length !== 0) {
+        this.colorPixelInDataLayer(pixelModifyItems);
+      }
+      const capturedData = interactionLayer.getCapturedData();
+      // if there is capturedData, it means that the user has changed the dimension
+      if (capturedData) {
+        const interactionGridIndices = getGridIndicesFromData(capturedData);
+        const dataGridIndices = getGridIndicesFromData(this.data);
+        const topRowDiff =
+          interactionGridIndices.topRowIndex - dataGridIndices.topRowIndex;
+        const leftColumnDiff =
+          interactionGridIndices.leftColumnIndex -
+          dataGridIndices.leftColumnIndex;
+        const bottomRowDiff =
+          interactionGridIndices.bottomRowIndex -
+          dataGridIndices.bottomRowIndex;
+        const rightColumnDiff =
+          interactionGridIndices.rightColumnIndex -
+          dataGridIndices.rightColumnIndex;
+        if (topRowDiff > 0) {
+          this.extendGridBy(ButtonDirection.TOP, topRowDiff);
+        } else if (topRowDiff < 0) {
+          this.shortenGridBy(ButtonDirection.TOP, -topRowDiff);
+        }
+        if (leftColumnDiff > 0) {
+          this.extendGridBy(ButtonDirection.LEFT, leftColumnDiff);
+        } else if (leftColumnDiff < 0) {
+          this.shortenGridBy(ButtonDirection.LEFT, -leftColumnDiff);
+        }
+        if (bottomRowDiff > 0) {
+          this.extendGridBy(ButtonDirection.BOTTOM, bottomRowDiff);
+        } else if (bottomRowDiff < 0) {
+          this.shortenGridBy(ButtonDirection.BOTTOM, -bottomRowDiff);
+        }
+        if (rightColumnDiff > 0) {
+          this.extendGridBy(ButtonDirection.RIGHT, rightColumnDiff);
+        } else if (rightColumnDiff < 0) {
+          this.shortenGridBy(ButtonDirection.RIGHT, -rightColumnDiff);
+        }
+      }
+    }
+    interactionLayer.resetCapturedData();
+    interactionLayer.resetStrokePixelRecords();
+  }
+
+  recordAction(action: Action) {
+    this.undoHistory.push(action);
+    this.redoHistory.clear();
+  }
+
+  private colorPixelInDataLayer(data: Array<PixelModifyItem>) {
+    const rowIndices = data.map(change => change.rowIndex);
+    const columnIndices = data.map(change => change.columnIndex);
+    const minRowIndex = Math.min(...rowIndices);
+    const maxRowIndex = Math.max(...rowIndices);
+    const minColumnIndex = Math.min(...columnIndices);
+    const maxColumnIndex = Math.max(...columnIndices);
+    const currentCanvasIndices = this.getGridIndices();
+    const changeAmounts = [];
+    if (minRowIndex < currentCanvasIndices.topRowIndex) {
+      const amount = currentCanvasIndices.topRowIndex - minRowIndex;
+      this.extendGridBy(ButtonDirection.TOP, amount);
+      changeAmounts.push({
+        direction: ButtonDirection.TOP,
+        amount,
+      });
+    }
+    if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
+      const amount = maxRowIndex - currentCanvasIndices.bottomRowIndex;
+      this.extendGridBy(ButtonDirection.BOTTOM, amount);
+      changeAmounts.push({
+        direction: ButtonDirection.BOTTOM,
+        amount,
+      });
+    }
+    if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
+      const amount = currentCanvasIndices.leftColumnIndex - minColumnIndex;
+      this.extendGridBy(ButtonDirection.LEFT, amount);
+      changeAmounts.push({
+        direction: ButtonDirection.LEFT,
+        amount,
+      });
+    }
+    if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
+      const amount = maxColumnIndex - currentCanvasIndices.rightColumnIndex;
+      this.extendGridBy(ButtonDirection.RIGHT, amount);
+      changeAmounts.push({
+        direction: ButtonDirection.RIGHT,
+        amount,
+      });
+    }
+    const dataForAction = [];
+    for (const change of data) {
+      const previousColor = this.data
+        .get(change.rowIndex)!
+        .get(change.columnIndex)!.color;
+      const color = change.color;
+
+      this.data
+        .get(change.rowIndex)!
+        .set(change.columnIndex, { color: change.color });
+      dataForAction.push({ ...change, color, previousColor });
+    }
+    this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
+    this.emit(CanvasEvents.DATA_CHANGE, this.data);
+    return;
+  }
+
   // this will be only used by the current device user
   private paintSameColorRegion(
     initialColor: string,
@@ -699,6 +819,7 @@ export default class Editor extends EventDispatcher {
   }
 
   onMouseUp(evt: TouchEvent) {
+    this.passCurrentUserInteractionToDataLayer();
     return;
   }
 

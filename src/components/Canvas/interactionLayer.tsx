@@ -232,6 +232,11 @@ export default class InteractionLayer extends BaseLayer {
     this.render();
   }
 
+  resetStrokePixelRecords() {
+    this.strokedPixelRecords.clear();
+    this.render();
+  }
+
   /**
    * Interaction Layer render will be called when:
    * 1. The canvas is resized
