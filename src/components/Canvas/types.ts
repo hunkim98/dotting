@@ -1,3 +1,5 @@
+import { MouseMode } from "./config";
+
 export interface Coord {
   x: number;
   y: number;
@@ -41,6 +43,12 @@ export enum BrushMode {
   ERASER = "eraser",
   PAINT_BUCKET = "paint_bucket",
 }
+
+export const PossibleBrushModes = [
+  MouseMode.DOT,
+  MouseMode.ERASER,
+  MouseMode.PAINT_BUCKET,
+];
 
 export type CanvasDataChangeHandler = (data: DottingData) => void;
 

@@ -5,9 +5,9 @@ export const DefaultPanZoom: PanZoom = {
   offset: { x: 0, y: 0 },
 };
 
-export const DefaultGridSquareLength: number = 20;
+export const DefaultGridSquareLength = 20;
 
-export const DefaultButtonHeight: number = 20;
+export const DefaultButtonHeight = 20;
 
 export enum ButtonDirection {
   TOP = "TOP",
@@ -21,8 +21,25 @@ export const DefaultPixelDataDimensions = {
   rowCount: 6,
 };
 
+export enum MouseMode {
+  PANNING = "PANNING",
+  EXTENDING = "EXTENDING",
+  DOT = "DOT",
+  ERASER = "ERASER",
+  PAINT_BUCKET = "PAINT_BUCKET",
+}
+
 export const DefaultZoomSensitivity = 200;
 
 export const DefaultMaxScale = 1.5;
 
 export const DefaultMinScale = 0.3;
+
+export const CurrentDeviceUserId = "current-device-user-id";
+
+export type UserId = string;
+
+export type DimensionChangeRecord = {
+  direction: ButtonDirection;
+  amount: number;
+} | null;

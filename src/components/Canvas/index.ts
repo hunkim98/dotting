@@ -28,20 +28,7 @@ import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import Stack from "../../utils/stack";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
-
-export enum MouseMode {
-  DRAWING = "DRAWING",
-  PANNING = "PANNING",
-  EXTENDING = "EXTENDING",
-  NULL = "NULL",
-}
-
-export enum ButtonDirection {
-  TOP = "TOP",
-  BOTTOM = "BOTTOM",
-  LEFT = "LEFT",
-  RIGHT = "RIGHT",
-}
+import { MouseMode, ButtonDirection } from "./config";
 
 export default class Canvas extends EventDispatcher {
   private MAX_SCALE = 1.5;
@@ -86,7 +73,7 @@ export default class Canvas extends EventDispatcher {
 
   private indicatorPixels: Array<PixelModifyItem> = [];
 
-  private mouseMode: MouseMode = MouseMode.NULL;
+  private mouseMode: MouseMode = MouseMode.DOT;
 
   private hoveredButton: ButtonDirection | null = null;
 
@@ -1341,7 +1328,7 @@ export default class Canvas extends EventDispatcher {
       this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
       this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
     }
-    this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
+    this.mouseMode = pixelIndex ? MouseMode.DOT : MouseMode.PANNING;
     if (!this.isGridFixed) {
       const buttonDirection = this.detectButtonClicked(mouseCartCoord);
       if (buttonDirection) {
@@ -1687,7 +1674,7 @@ export default class Canvas extends EventDispatcher {
     this.styleMouseCursor();
 
     if (pixelIndex) {
-      if (this.mouseMode === MouseMode.DRAWING) {
+      if (this.mouseMode === MouseMode.DOT) {
         this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
       } else {
         // if previous hovered pixel has an outdated index, emit new index
@@ -1780,7 +1767,7 @@ export default class Canvas extends EventDispatcher {
     if (this.mouseMode === MouseMode.EXTENDING) {
       this.addSizeChangeActionToUndoStack();
     }
-    this.mouseMode = MouseMode.NULL;
+    this.mouseMode = MouseMode.DOT;
     if (this.strokedPixelRecords.getRawChanges().length !== 0) {
       this.emit(
         CanvasEvents.STROKE_END,

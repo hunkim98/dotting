@@ -11,8 +11,8 @@ import { Coord, PanZoom } from "./types";
 export default class GridLayer extends BaseLayer {
   private columnCount: number;
   private rowCount: number;
-  private isGridVisible: boolean = true;
-  private isGridFixed: boolean = false;
+  private isGridVisible = true;
+  private isGridFixed = false;
   private gridStrokeColor: string;
   private gridStrokeWidth: number;
   private gridSquareLength: number = DefaultGridSquareLength;
