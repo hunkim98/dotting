@@ -2,7 +2,7 @@ import EventDispatcher from "../../utils/eventDispatcher";
 import { DefaultPanZoom } from "./config";
 import { PanZoom } from "./types";
 
-export abstract class BaseLayer extends EventDispatcher {
+export abstract class BaseLayer {
   protected ctx: CanvasRenderingContext2D;
   protected element: HTMLCanvasElement;
   protected dpr: number;
@@ -11,7 +11,6 @@ export abstract class BaseLayer extends EventDispatcher {
   protected height: number;
 
   constructor({ canvas }: { canvas: HTMLCanvasElement }) {
-    super();
     this.ctx = canvas.getContext("2d")!;
     this.element = canvas;
   }
