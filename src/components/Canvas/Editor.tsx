@@ -27,7 +27,6 @@ import {
   MouseMode,
   ButtonDirection,
   CurrentDeviceUserId,
-  UserId,
 } from "./config";
 import {
   CanvasEvents,
@@ -946,6 +945,7 @@ export default class Editor extends EventDispatcher {
   }
 
   onMouseUp(evt: TouchEvent) {
+    evt.preventDefault();
     this.relayInteractionDataToDataLayer();
     this.mouseMode = MouseMode.DOT;
     const element = this.interactionLayer.getElement();
@@ -958,6 +958,7 @@ export default class Editor extends EventDispatcher {
   }
 
   onMouseOut(evt: TouchEvent) {
+    evt.preventDefault();
     this.relayInteractionDataToDataLayer();
     const element = this.interactionLayer.getElement();
     touchy(element, removeEvent, "mousemove", this.handlePanning);

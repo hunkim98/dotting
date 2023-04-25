@@ -1,4 +1,3 @@
-import EventDispatcher from "../../utils/eventDispatcher";
 import { DefaultPanZoom } from "./config";
 import { PanZoom } from "./types";
 

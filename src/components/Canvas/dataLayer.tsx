@@ -68,14 +68,6 @@ export default class DataLayer extends BaseLayer {
     }
   }
 
-  /**
-   * The name is setSwipedPixels since the data layer will not accept adding items to swiped pixels
-   * @param pixel
-   */
-  setSwipedPixels(pixelItems: Array<PixelModifyItem>) {
-    this.swipedPixels = pixelItems;
-  }
-
   getColumnCount() {
     return getColumnCountFromData(this.data);
   }

@@ -6,7 +6,7 @@ import {
   DefaultButtonHeight,
   DefaultGridSquareLength,
 } from "./config";
-import { Coord, PanZoom } from "./types";
+import { Coord } from "./types";
 
 export default class GridLayer extends BaseLayer {
   private columnCount: number;

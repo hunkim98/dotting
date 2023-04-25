@@ -1,5 +1,4 @@
 import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
-import EventDispatcher from "../../utils/eventDispatcher";
 import {
   addColumnToData,
   addRowToData,
@@ -8,22 +7,12 @@ import {
   extractColoredPixelsFromColumn,
   extractColoredPixelsFromRow,
   getColumnCountFromData,
-  getColumnKeysFromData,
   getGridIndicesFromData,
   getRowCountFromData,
-  getRowKeysFromData,
 } from "../../utils/data";
-import {
-  convertCartesianToScreen,
-  diffPoints,
-  getScreenPoint,
-  getWorldPoint,
-} from "../../utils/math";
-import { drawExtendButton } from "../../utils/shapes";
-import { TouchyEvent } from "../../utils/touch";
+import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 import { BaseLayer } from "./BaseLayer";
 import {
-  DefaultButtonHeight,
   DefaultGridSquareLength,
   DimensionChangeRecord,
   UserId,

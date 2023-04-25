@@ -1,4 +1,4 @@
-import { PanZoom, PixelData } from "./types";
+import { PanZoom } from "./types";
 
 export const DefaultPanZoom: PanZoom = {
   scale: 1,
