@@ -20,6 +20,16 @@ export const getGridIndicesFromData = (data: DottingData): GridIndices => {
   };
 };
 
+export const getRowKeysFromData = (data: DottingData): Array<number> => {
+  return Array.from(data.keys());
+};
+
+export const getColumnKeysFromData = (data: DottingData): Array<number> => {
+  const allRowKeys = Array.from(data.keys());
+  const allColumnKeys = Array.from(data.get(allRowKeys[0])!.keys());
+  return allColumnKeys;
+};
+
 export const getColumnCountFromData = (data: DottingData): number => {
   if (data.size === 0) return 0;
   return data.entries().next().value[1].size as number;
@@ -67,26 +77,33 @@ export const extractColoredPixelsFromColumn = (
 };
 
 export const deleteRowOfData = (data: DottingData, rowIndex: number) => {
+  if (!data.has(rowIndex)) return;
   data.delete(rowIndex);
 };
 
 export const deleteColumnOfData = (data: DottingData, columnIndex: number) => {
   data.forEach(row => {
+    if (!row.has(columnIndex)) return;
     row.delete(columnIndex);
   });
 };
 
 export const addRowToData = (data: DottingData, rowIndex: number) => {
-  const { leftColumnIndex, rightColumnIndex } = getGridIndicesFromData(data);
+  const columnKeys = getColumnKeysFromData(data);
+  if (data.has(rowIndex)) {
+    return;
+  }
   data.set(rowIndex, new Map());
-  for (let i = leftColumnIndex; i <= rightColumnIndex; i++) {
+  for (const i of columnKeys) {
     data.get(rowIndex)!.set(i, { color: "" });
   }
 };
 
 export const addColumnToData = (data: DottingData, columnIndex: number) => {
   data.forEach(row => {
-    row.set(columnIndex, { color: "" });
+    if (!row.has(columnIndex)) {
+      row.set(columnIndex, { color: "" });
+    }
   });
 };
 

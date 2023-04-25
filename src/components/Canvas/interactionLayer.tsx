@@ -59,9 +59,12 @@ export default class InteractionLayer extends BaseLayer {
   // however, when this is not null we should send colored pixels
   private capturedData: DottingData | null = null;
 
-  private columnCount: number;
+  private capturedDataOriginalIndices: GridIndices | null = null;
 
-  private rowCount: number;
+  private hoveredPixel: {
+    rowIndex: number;
+    columnIndex: number;
+  } | null = null;
 
   private gridSquareLength: number = DefaultGridSquareLength;
 
@@ -75,24 +78,37 @@ export default class InteractionLayer extends BaseLayer {
     }
   }
 
-  setColumnCount(columnCount: number) {
-    this.columnCount = columnCount;
-  }
-
-  setRowCount(rowCount: number) {
-    this.rowCount = rowCount;
-  }
-
   getCapturedData() {
     return this.capturedData;
   }
 
+  getCapturedDataOriginalIndices() {
+    return this.capturedDataOriginalIndices;
+  }
+
   setCapturedData(gridChangeStartCapturedData: DottingData) {
     this.capturedData = gridChangeStartCapturedData;
+    this.capturedDataOriginalIndices = getGridIndicesFromData(
+      gridChangeStartCapturedData,
+    );
   }
 
   resetCapturedData() {
     this.capturedData = null;
+    this.capturedDataOriginalIndices = null;
+  }
+
+  getHoveredPixel() {
+    return this.hoveredPixel;
+  }
+
+  setHoveredPixel(
+    hoveredPixel: {
+      rowIndex: number;
+      columnIndex: number;
+    } | null,
+  ) {
+    this.hoveredPixel = hoveredPixel;
   }
 
   // interaction element is the element that is used to interact with the canvas

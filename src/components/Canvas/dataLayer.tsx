@@ -84,65 +84,52 @@ export default class DataLayer extends BaseLayer {
     return this.data;
   }
 
-  shortenGrid(direction: ButtonDirection) {
-    const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
-      getGridIndicesFromData(this.data);
+  setData(data: DottingData) {
+    this.data = data;
+  }
+
+  shortenGrid(direction: ButtonDirection, index: number) {
     const { columnCount, rowCount } = this.getDimensions();
     if (direction === ButtonDirection.TOP) {
       if (rowCount <= 2) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromRow(this.data, topRowIndex);
+      const swipedPixels = extractColoredPixelsFromRow(this.data, index);
       this.swipedPixels.push(...swipedPixels);
-      deleteRowOfData(this.data, topRowIndex);
+      deleteRowOfData(this.data, index);
     } else if (direction === ButtonDirection.BOTTOM) {
       if (rowCount <= 2) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromRow(
-        this.data,
-        bottomRowIndex,
-      );
+      const swipedPixels = extractColoredPixelsFromRow(this.data, index);
       this.swipedPixels.push(...swipedPixels);
-      deleteRowOfData(this.data, bottomRowIndex);
+      deleteRowOfData(this.data, index);
     } else if (direction === ButtonDirection.LEFT) {
       if (columnCount <= 2) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromColumn(
-        this.data,
-        leftColumnIndex,
-      );
+      const swipedPixels = extractColoredPixelsFromColumn(this.data, index);
       this.swipedPixels.push(...swipedPixels);
-      deleteColumnOfData(this.data, leftColumnIndex);
+      deleteColumnOfData(this.data, index);
     } else if (direction === ButtonDirection.RIGHT) {
       if (columnCount <= 2) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromColumn(
-        this.data,
-        rightColumnIndex,
-      );
+      const swipedPixels = extractColoredPixelsFromColumn(this.data, index);
       this.swipedPixels.push(...swipedPixels);
-      deleteColumnOfData(this.data, rightColumnIndex);
+      deleteColumnOfData(this.data, index);
     }
   }
 
-  extendGrid(direction: ButtonDirection) {
-    const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
-      getGridIndicesFromData(this.data);
+  extendGrid(direction: ButtonDirection, index: number) {
     if (direction === ButtonDirection.TOP) {
-      const newTopIndex = topRowIndex - 1;
-      addRowToData(this.data, newTopIndex);
+      addRowToData(this.data, index);
     } else if (direction === ButtonDirection.BOTTOM) {
-      const newBottomIndex = bottomRowIndex + 1;
-      addRowToData(this.data, newBottomIndex);
+      addRowToData(this.data, index);
     } else if (direction === ButtonDirection.LEFT) {
-      const newLeftIndex = leftColumnIndex - 1;
-      addColumnToData(this.data, newLeftIndex);
+      addColumnToData(this.data, index);
     } else if (direction === ButtonDirection.RIGHT) {
-      const newRightIndex = rightColumnIndex + 1;
-      addColumnToData(this.data, newRightIndex);
+      addColumnToData(this.data, index);
     }
   }
 

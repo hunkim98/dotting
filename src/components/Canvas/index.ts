@@ -24,7 +24,10 @@ import { isValidIndicesRange } from "../../utils/validation";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
 import { Action, ActionType } from "../../actions/Action";
 import { ColorChangeAction } from "../../actions/ColorChangeAction";
-import { SizeChangeAction } from "../../actions/SizeChangeAction";
+import {
+  ChangeAmountData,
+  SizeChangeAction,
+} from "../../actions/SizeChangeAction";
 import Stack from "../../utils/stack";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
@@ -927,7 +930,7 @@ export default class Canvas extends EventDispatcher {
     const minColumnIndex = Math.min(...columnIndices);
     const maxColumnIndex = Math.max(...columnIndices);
     const currentCanvasIndices = this.getGridIndices();
-    const changeAmounts = [];
+    const changeAmounts: Array<ChangeAmountData> = [];
     if (minRowIndex < currentCanvasIndices.topRowIndex) {
       let amount = 0;
       for (
@@ -941,6 +944,7 @@ export default class Canvas extends EventDispatcher {
       changeAmounts.push({
         direction: ButtonDirection.TOP,
         amount,
+        startIndex: currentCanvasIndices.topRowIndex,
       });
     }
     if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
@@ -956,6 +960,7 @@ export default class Canvas extends EventDispatcher {
       changeAmounts.push({
         direction: ButtonDirection.BOTTOM,
         amount,
+        startIndex: currentCanvasIndices.bottomRowIndex,
       });
     }
     if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
@@ -971,6 +976,7 @@ export default class Canvas extends EventDispatcher {
       changeAmounts.push({
         direction: ButtonDirection.LEFT,
         amount,
+        startIndex: currentCanvasIndices.leftColumnIndex,
       });
     }
     if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
@@ -986,6 +992,7 @@ export default class Canvas extends EventDispatcher {
       changeAmounts.push({
         direction: ButtonDirection.RIGHT,
         amount,
+        startIndex: currentCanvasIndices.rightColumnIndex,
       });
     }
     const dataForAction = [];
@@ -1726,27 +1733,55 @@ export default class Canvas extends EventDispatcher {
       sizeChangeAmount =
         this.mouseDownGridInfo!.indices.topRowIndex -
         currentGridIndices.topRowIndex;
+      this.recordAction(
+        new SizeChangeAction(deletedPixels, [
+          {
+            direction: extensionDirection,
+            amount: sizeChangeAmount,
+            startIndex: currentGridIndices.topRowIndex,
+          },
+        ]),
+      );
     } else if (extensionDirection === ButtonDirection.BOTTOM) {
       sizeChangeAmount =
         currentGridIndices.bottomRowIndex -
         this.mouseDownGridInfo!.indices.bottomRowIndex;
+      this.recordAction(
+        new SizeChangeAction(deletedPixels, [
+          {
+            direction: extensionDirection,
+            amount: sizeChangeAmount,
+            startIndex: currentGridIndices.bottomRowIndex,
+          },
+        ]),
+      );
     } else if (extensionDirection === ButtonDirection.LEFT) {
       sizeChangeAmount =
         this.mouseDownGridInfo!.indices.leftColumnIndex -
         currentGridIndices.leftColumnIndex;
+      this.recordAction(
+        new SizeChangeAction(deletedPixels, [
+          {
+            direction: extensionDirection,
+            amount: sizeChangeAmount,
+            startIndex: currentGridIndices.leftColumnIndex,
+          },
+        ]),
+      );
     } else {
       sizeChangeAmount =
         currentGridIndices.rightColumnIndex -
         this.mouseDownGridInfo!.indices.rightColumnIndex;
+      this.recordAction(
+        new SizeChangeAction(deletedPixels, [
+          {
+            direction: extensionDirection,
+            amount: sizeChangeAmount,
+            startIndex: currentGridIndices.rightColumnIndex,
+          },
+        ]),
+      );
     }
-    this.recordAction(
-      new SizeChangeAction(deletedPixels, [
-        {
-          direction: extensionDirection,
-          amount: sizeChangeAmount,
-        },
-      ]),
-    );
     this.swipedPixels = [];
   }
 
@@ -1763,6 +1798,7 @@ export default class Canvas extends EventDispatcher {
     );
     this.erasedPixelRecords.reset();
   }
+
   onMouseUp() {
     if (this.mouseMode === MouseMode.EXTENDING) {
       this.addSizeChangeActionToUndoStack();

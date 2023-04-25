@@ -1,4 +1,3 @@
-import { ButtonDirection } from "../components/Canvas";
 import { convertCartesianToScreen, getScreenPoint } from "./math";
 import { Coord } from "./types";
 
