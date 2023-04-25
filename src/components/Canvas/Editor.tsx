@@ -43,11 +43,13 @@ import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import DataLayer from "./DataLayer";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import { ColorChangeAction } from "../../actions/ColorChangeAction";
+import BackgroundLayer from "./BackgroundLayer";
 
 export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;
   private interactionLayer: InteractionLayer;
   private dataLayer: DataLayer;
+  private backgroundLayer: BackgroundLayer;
   private zoomSensitivity: number = DefaultZoomSensitivity;
   private maxScale: number = DefaultMaxScale;
   private minScale: number = DefaultMinScale;
@@ -82,12 +84,19 @@ export default class Editor extends EventDispatcher {
   // We must let yorkie-js-sdk to apply change to data layer not the client
   private isInteractionApplicable = true;
 
-  constructor(
-    gridCanvas: HTMLCanvasElement,
-    interactionCanvas: HTMLCanvasElement,
-    dataCanvas: HTMLCanvasElement,
-    initData?: Array<Array<PixelData>>,
-  ) {
+  constructor({
+    gridCanvas,
+    interactionCanvas,
+    dataCanvas,
+    backgroundCanvas,
+    initData,
+  }: {
+    gridCanvas: HTMLCanvasElement;
+    interactionCanvas: HTMLCanvasElement;
+    dataCanvas: HTMLCanvasElement;
+    backgroundCanvas: HTMLCanvasElement;
+    initData?: Array<Array<PixelData>>;
+  }) {
     super();
     this.dataLayer = new DataLayer({ canvas: dataCanvas, initData: initData });
     const initRowCount = this.dataLayer.getRowCount();
@@ -99,6 +108,9 @@ export default class Editor extends EventDispatcher {
     });
     this.interactionLayer = new InteractionLayer({
       canvas: interactionCanvas,
+    });
+    this.backgroundLayer = new BackgroundLayer({
+      canvas: backgroundCanvas,
     });
 
     this.initialize();
@@ -142,6 +154,10 @@ export default class Editor extends EventDispatcher {
 
   getGridLayer() {
     return this.gridLayer;
+  }
+
+  getBackgroundLayer() {
+    return this.backgroundLayer;
   }
 
   getInteractionLayer() {
@@ -975,5 +991,9 @@ export default class Editor extends EventDispatcher {
 
   renderInteractionLayer() {
     this.interactionLayer.render();
+  }
+
+  renderBackgroundLayer() {
+    this.backgroundLayer.render();
   }
 }
