@@ -1,6 +1,7 @@
 import {
   DottingData,
   GridIndices,
+  PixelData,
   PixelModifyItem,
 } from "../components/Canvas/types";
 
@@ -87,4 +88,28 @@ export const addColumnToData = (data: DottingData, columnIndex: number) => {
   data.forEach(row => {
     row.set(columnIndex, { color: "" });
   });
+};
+
+export const validatePixelArrayData = (data: Array<Array<PixelData>>) => {
+  const dataRowCount = data.length;
+  let columnCount = 0;
+  const rowCount = dataRowCount;
+  let isDataValid = true;
+  if (dataRowCount < 2) {
+    isDataValid = false;
+  } else {
+    const dataColumnCount = data[0].length;
+    columnCount = dataColumnCount;
+    if (dataColumnCount < 2) {
+      isDataValid = false;
+    } else {
+      for (let i = 0; i < dataRowCount; i++) {
+        if (data[i].length !== dataColumnCount) {
+          isDataValid = false;
+          break;
+        }
+      }
+    }
+  }
+  return { isDataValid, columnCount, rowCount };
 };

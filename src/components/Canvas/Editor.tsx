@@ -48,11 +48,12 @@ import { isValidIndicesRange } from "../../utils/validation";
 import Queue from "../../utils/queue";
 import { Indices } from "../../utils/types";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
-import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
+import DataLayer from "./DataLayer";
 
 export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;
   private interactionLayer: InteractionLayer;
+  private dataLayer: DataLayer;
   private zoomSensitivity: number = DefaultZoomSensitivity;
   private maxScale: number = DefaultMaxScale;
   private minScale: number = DefaultMinScale;
@@ -69,18 +70,8 @@ export default class Editor extends EventDispatcher {
     indices: GridIndices;
   } | null = null;
   private dpr = 1;
-  private data: DottingData = new Map<
-    // this number is rowIndex
-    number,
-    Map<
-      // this number is columnIndex
-      number,
-      PixelData
-    >
-  >();
   private brushColor = "#FF0000";
   private gridSquareLength: number = DefaultGridSquareLength;
-  private swipedPixels: Array<PixelModifyItem> = [];
   private undoHistory: Stack<Action> = new Stack();
   private redoHistory: Stack<Action> = new Stack();
   private extensionPoint: {
@@ -101,35 +92,13 @@ export default class Editor extends EventDispatcher {
   constructor(
     gridCanvas: HTMLCanvasElement,
     interactionCanvas: HTMLCanvasElement,
+    dataCanvas: HTMLCanvasElement,
     initData?: Array<Array<PixelData>>,
   ) {
     super();
-    let initRowCount = 0;
-    let initColumnCount = 0;
-
-    if (initData) {
-      const { rowCount, columnCount } =
-        this.validateIncomingPixelData(initData);
-      initRowCount = rowCount;
-      initColumnCount = columnCount;
-      for (let i = 0; i < initData.length; i++) {
-        this.data.set(i, new Map());
-        for (let j = 0; j < initData[i].length; j++) {
-          this.data.get(i)!.set(j, { color: initData[i][j].color });
-        }
-      }
-    } else {
-      const { rowCount, columnCount } = DefaultPixelDataDimensions;
-      initRowCount = rowCount;
-      initColumnCount = columnCount;
-      for (let i = 0; i < 6; i++) {
-        this.data.set(i, new Map());
-        for (let j = 0; j < 8; j++) {
-          this.data.get(i)!.set(j, { color: "" });
-        }
-      }
-    }
-
+    this.dataLayer = new DataLayer({ canvas: dataCanvas, initData: initData });
+    const initRowCount = this.dataLayer.getRowCount();
+    const initColumnCount = this.dataLayer.getColumnCount();
     this.gridLayer = new GridLayer({
       columnCount: initColumnCount,
       rowCount: initRowCount,
@@ -140,30 +109,6 @@ export default class Editor extends EventDispatcher {
     });
 
     this.initialize();
-  }
-
-  validateIncomingPixelData(data: Array<Array<PixelData>>) {
-    const dataRowCount = data.length;
-    let columnCount = 0;
-    const rowCount = dataRowCount;
-    let isDataValid = true;
-    if (dataRowCount < 2) {
-      isDataValid = false;
-    } else {
-      const dataColumnCount = data[0].length;
-      columnCount = dataColumnCount;
-      if (dataColumnCount < 2) {
-        isDataValid = false;
-      } else {
-        for (let i = 0; i < dataRowCount; i++) {
-          if (data[i].length !== dataColumnCount) {
-            isDataValid = false;
-            break;
-          }
-        }
-      }
-    }
-    return { isDataValid, columnCount, rowCount };
   }
 
   initialize() {
@@ -209,15 +154,15 @@ export default class Editor extends EventDispatcher {
   }
 
   getColumnCount() {
-    return getColumnCountFromData(this.data);
+    return this.dataLayer.getColumnCount();
   }
 
   getRowCount() {
-    return getRowCountFromData(this.data);
+    return this.dataLayer.getRowCount();
   }
 
   getGridIndices(): GridIndices {
-    return getGridIndicesFromData(this.data);
+    return this.dataLayer.getGridIndices();
   }
 
   getGridLayer() {
@@ -339,51 +284,26 @@ export default class Editor extends EventDispatcher {
     }
   };
 
+  // this extend grid in the real layer.
+  // This should not be called with mouse events
   extendGridBy(direction: ButtonDirection, amount: number) {
     for (let i = 0; i < amount; i++) {
-      this.extendGrid(direction);
+      this.dataLayer.extendGrid(direction);
     }
-    const dimensions = {
-      columnCount: this.getColumnCount(),
-      rowCount: this.getRowCount(),
-    };
-    const indices = getGridIndicesFromData(this.data);
-    this.emit(CanvasEvents.DATA_CHANGE, this.data);
+    const dimensions = this.dataLayer.getDimensions();
+    const indices = this.dataLayer.getGridIndices();
+    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
     this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
     this.renderAll();
   }
 
-  extendGrid(direction: ButtonDirection) {
-    const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
-      getGridIndicesFromData(this.data);
-    switch (direction) {
-      case ButtonDirection.TOP:
-        const newTopIndex = topRowIndex - 1;
-        addRowToData(this.data, newTopIndex);
-        break;
-      case ButtonDirection.BOTTOM:
-        const newBottomIndex = bottomRowIndex + 1;
-        addRowToData(this.data, newBottomIndex);
-        break;
-      case ButtonDirection.LEFT:
-        const newLeftIndex = leftColumnIndex - 1;
-        addColumnToData(this.data, newLeftIndex);
-        break;
-      case ButtonDirection.RIGHT:
-        const newRightIndex = rightColumnIndex + 1;
-        addColumnToData(this.data, newRightIndex);
-        break;
-      default:
-        break;
-    }
-  }
-
+  // we have extend interaction grid inside editor because we must change the panzoom too
   private extendInteractionGrid(direction: ButtonDirection) {
     const interactionLayer = this.getInteractionLayer();
     const interactionCapturedData = interactionLayer.getCapturedData();
     if (!interactionCapturedData) {
       // we will copy the data to interaction layer
-      interactionLayer.setCapturedData(new Map(this.data));
+      interactionLayer.setCapturedData(new Map(this.dataLayer.getData()));
     }
     interactionLayer.extendCapturedData(direction);
     if (direction === ButtonDirection.TOP) {
@@ -425,12 +345,13 @@ export default class Editor extends EventDispatcher {
     }
   }
 
+  // we have extend interaction grid inside editor because we must change the panzoom too
   private shortenInteractionGrid(direction: ButtonDirection) {
     const interactionLayer = this.getInteractionLayer();
     const interactionCapturedData = interactionLayer.getCapturedData();
     if (!interactionCapturedData) {
       // we will copy the data to interaction layer
-      interactionLayer.setCapturedData(new Map(this.data));
+      interactionLayer.setCapturedData(new Map(this.dataLayer.getData()));
     }
     interactionLayer.shortenCapturedData(direction);
     if (direction === ButtonDirection.TOP) {
@@ -472,65 +393,16 @@ export default class Editor extends EventDispatcher {
     }
   }
 
+  // This should not be called by mouse events
   shortenGridBy(direction: ButtonDirection, amount: number) {
     for (let i = 0; i < amount; i++) {
-      this.shortenGrid(direction);
+      this.dataLayer.shortenGrid(direction);
     }
-    this.emit(CanvasEvents.DATA_CHANGE, this.data);
-    const dimensions = {
-      columnCount: this.getColumnCount(),
-      rowCount: this.getRowCount(),
-    };
-    const indices = getGridIndicesFromData(this.data);
+    const dimensions = this.dataLayer.getDimensions();
+    const indices = this.dataLayer.getGridIndices();
+    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
     this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
     this.renderAll();
-  }
-
-  shortenGrid(direction: ButtonDirection) {
-    const { topRowIndex, leftColumnIndex, bottomRowIndex, rightColumnIndex } =
-      this.getGridIndices();
-    const columnCount = this.getColumnCount();
-    const rowCount = this.getRowCount();
-    switch (direction) {
-      case ButtonDirection.TOP:
-        if (rowCount <= 2) {
-          break;
-        }
-        const topRowSwipedPixels: Array<PixelModifyItem> =
-          extractColoredPixelsFromRow(this.data, topRowIndex);
-        this.swipedPixels.push(...topRowSwipedPixels);
-        deleteRowOfData(this.data, topRowIndex);
-        break;
-      case ButtonDirection.BOTTOM:
-        if (rowCount <= 2) {
-          break;
-        }
-        const bottomRowSwipedPixels: Array<PixelModifyItem> =
-          extractColoredPixelsFromRow(this.data, bottomRowIndex);
-        this.swipedPixels.push(...bottomRowSwipedPixels);
-        deleteRowOfData(this.data, bottomRowIndex);
-        break;
-      case ButtonDirection.LEFT:
-        if (columnCount <= 2) {
-          break;
-        }
-        const leftColumnSwipedPixels: Array<PixelModifyItem> =
-          extractColoredPixelsFromColumn(this.data, leftColumnIndex);
-        this.swipedPixels.push(...leftColumnSwipedPixels);
-        deleteColumnOfData(this.data, leftColumnIndex);
-        break;
-      case ButtonDirection.RIGHT:
-        if (columnCount <= 2) {
-          break;
-        }
-        const rightColumnSwipedPixels: Array<PixelModifyItem> =
-          extractColoredPixelsFromColumn(this.data, rightColumnIndex);
-        this.swipedPixels.push(...rightColumnSwipedPixels);
-        deleteColumnOfData(this.data, rightColumnIndex);
-        break;
-      default:
-        break;
-    }
   }
 
   handlePinchZoom(evt: TouchyEvent) {
@@ -571,16 +443,17 @@ export default class Editor extends EventDispatcher {
   // this will be only used by the current device user
   private drawPixelInInteractionLayer(rowIndex: number, columnIndex: number) {
     const interactionLayer = this.getInteractionLayer();
+    const data = this.dataLayer.getData();
     if (this.mouseMode === MouseMode.ERASER) {
-      const previousColor = this.data.get(rowIndex)?.get(columnIndex).color;
-      interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
+      const previousColor = data.get(rowIndex)?.get(columnIndex).color;
+      interactionLayer.addToErasedPixelRecords(CurrentDeviceUserId, {
         rowIndex,
         columnIndex,
         color: "",
         previousColor,
       });
     } else if (this.mouseMode === MouseMode.DOT) {
-      const previousColor = this.data.get(rowIndex)?.get(columnIndex).color;
+      const previousColor = data.get(rowIndex)?.get(columnIndex).color;
       interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
         rowIndex,
         columnIndex,
@@ -588,10 +461,8 @@ export default class Editor extends EventDispatcher {
         previousColor,
       });
     } else if (this.mouseMode === MouseMode.PAINT_BUCKET) {
-      const gridIndices = getGridIndicesFromData(this.data);
-      const initialSelectedColor = this.data
-        .get(rowIndex)
-        ?.get(columnIndex)?.color;
+      const gridIndices = getGridIndicesFromData(data);
+      const initialSelectedColor = data.get(rowIndex)?.get(columnIndex)?.color;
       if (initialSelectedColor === this.brushColor) {
         return;
       }
@@ -605,19 +476,29 @@ export default class Editor extends EventDispatcher {
 
   private passCurrentUserInteractionToDataLayer() {
     const interactionLayer = this.getInteractionLayer();
+    // if isInteractionApplication is false, the below logic should be done by the user
     if (this.isInteractionApplicable) {
       const strokePixelRecords = interactionLayer.getStrokedPixelRecords();
-      const pixelModifyItems = strokePixelRecords
+      const strokedPixelModifyItems = strokePixelRecords
         .get(CurrentDeviceUserId)
         .getEffectiveChanges();
+      const erasedPixelRecords = interactionLayer.getErasedPixelRecords();
+      const erasedPixelModifyItems = erasedPixelRecords
+        .get(CurrentDeviceUserId)
+        .getEffectiveChanges();
+      const pixelModifyItems = [
+        ...strokedPixelModifyItems,
+        ...erasedPixelModifyItems,
+      ];
       if (pixelModifyItems.length !== 0) {
         this.colorPixelInDataLayer(pixelModifyItems);
       }
+
       const capturedData = interactionLayer.getCapturedData();
       // if there is capturedData, it means that the user has changed the dimension
       if (capturedData) {
         const interactionGridIndices = getGridIndicesFromData(capturedData);
-        const dataGridIndices = getGridIndicesFromData(this.data);
+        const dataGridIndices = this.dataLayer.getGridIndices();
         const topRowDiff =
           interactionGridIndices.topRowIndex - dataGridIndices.topRowIndex;
         const leftColumnDiff =
@@ -650,9 +531,10 @@ export default class Editor extends EventDispatcher {
           this.shortenGridBy(ButtonDirection.RIGHT, -rightColumnDiff);
         }
       }
+      // deletes the records of the current user
+      interactionLayer.deleteErasedPixelRecord(CurrentDeviceUserId);
+      interactionLayer.deleteStrokePixelRecord(CurrentDeviceUserId);
     }
-    interactionLayer.resetCapturedData();
-    interactionLayer.resetStrokePixelRecords();
   }
 
   recordAction(action: Action) {
@@ -703,18 +585,20 @@ export default class Editor extends EventDispatcher {
     }
     const dataForAction = [];
     for (const change of data) {
-      const previousColor = this.data
+      const previousColor = this.dataLayer
+        .getData()
         .get(change.rowIndex)!
         .get(change.columnIndex)!.color;
       const color = change.color;
 
-      this.data
+      this.dataLayer
+        .getData()
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
       dataForAction.push({ ...change, color, previousColor });
     }
     this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
-    this.emit(CanvasEvents.DATA_CHANGE, this.data);
+    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
     return;
   }
 
@@ -730,6 +614,7 @@ export default class Editor extends EventDispatcher {
       columnIndex: number;
     }>();
     indicesQueue.enqueue(currentIndices);
+    const data = this.dataLayer.getData();
 
     while (indicesQueue.size() > 0) {
       const { rowIndex, columnIndex } = indicesQueue.dequeue()!;
@@ -737,12 +622,12 @@ export default class Editor extends EventDispatcher {
         continue;
       }
 
-      const currentPixel = this.data.get(rowIndex)?.get(columnIndex);
+      const currentPixel = data.get(rowIndex)?.get(columnIndex);
       if (!currentPixel || currentPixel?.color !== initialColor) {
         continue;
       }
       const color = this.brushColor;
-      const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
+      const previousColor = data.get(rowIndex)!.get(columnIndex)!.color;
 
       interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
         rowIndex,
@@ -773,7 +658,7 @@ export default class Editor extends EventDispatcher {
       this.panZoom,
       this.dpr,
     );
-    const gridIndices = getGridIndicesFromData(this.data);
+    const gridIndices = this.dataLayer.getGridIndices();
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       mouseCartCoord,
       this.getRowCount(),
@@ -824,6 +709,7 @@ export default class Editor extends EventDispatcher {
   }
 
   onMouseOut(evt: TouchEvent) {
+    this.passCurrentUserInteractionToDataLayer();
     return;
   }
 

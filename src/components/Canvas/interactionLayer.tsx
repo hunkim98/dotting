@@ -42,6 +42,8 @@ export default class InteractionLayer extends BaseLayer {
   // the key will be the user id
   private strokedPixelRecords: Map<UserId, PixelChangeRecords> = new Map();
 
+  private erasedPixelRecords: Map<UserId, PixelChangeRecords> = new Map();
+
   // We make this a map to allow for multiple users to interact with the canvas
   // the key will be the user id
   private dimensionChangeRecord: DimensionChangeRecord = null;
@@ -100,6 +102,10 @@ export default class InteractionLayer extends BaseLayer {
 
   getStrokedPixelRecords() {
     return this.strokedPixelRecords;
+  }
+
+  getErasedPixelRecords() {
+    return this.erasedPixelRecords;
   }
 
   getSwipedPixels() {
@@ -227,8 +233,26 @@ export default class InteractionLayer extends BaseLayer {
     this.render();
   }
 
+  addToErasedPixelRecords(userId: UserId, pixelItem: ColorChangeItem) {
+    if (!this.erasedPixelRecords.has(userId)) {
+      this.erasedPixelRecords.set(userId, new PixelChangeRecords());
+    }
+    this.erasedPixelRecords.get(userId)?.record(pixelItem);
+    this.render();
+  }
+
+  deleteErasedPixelRecord(userId: UserId) {
+    this.erasedPixelRecords.delete(userId);
+    this.render();
+  }
+
   deleteStrokePixelRecord(userId: UserId) {
     this.strokedPixelRecords.delete(userId);
+    this.render();
+  }
+
+  resetErasedPixelRecords() {
+    this.erasedPixelRecords.clear();
     this.render();
   }
 
