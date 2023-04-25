@@ -1,5 +1,10 @@
 import { BaseLayer } from "./BaseLayer";
-import { DottingData, PixelData, PixelModifyItem } from "./types";
+import {
+  ColorChangeItem,
+  DottingData,
+  PixelData,
+  PixelModifyItem,
+} from "./types";
 import {
   addColumnToData,
   addRowToData,
@@ -13,6 +18,7 @@ import {
   validatePixelArrayData,
 } from "../../utils/data";
 import { ButtonDirection, DefaultPixelDataDimensions } from "./config";
+import { ChangeAmountData } from "../../actions/SizeChangeAction";
 
 export default class DataLayer extends BaseLayer {
   private swipedPixels: Array<PixelModifyItem> = [];
@@ -88,6 +94,19 @@ export default class DataLayer extends BaseLayer {
     this.data = data;
   }
 
+  shortenGridBy(
+    direction: ButtonDirection,
+    amount: number,
+    startIndex: number,
+  ) {
+    const shouldIncreaseIndex =
+      direction === ButtonDirection.TOP || direction === ButtonDirection.LEFT;
+    for (let i = 0; i < amount; i++) {
+      const index = startIndex + (shouldIncreaseIndex ? i : -i);
+      this.shortenGrid(direction, index);
+    }
+  }
+
   shortenGrid(direction: ButtonDirection, index: number) {
     const { columnCount, rowCount } = this.getDimensions();
     if (direction === ButtonDirection.TOP) {
@@ -118,6 +137,94 @@ export default class DataLayer extends BaseLayer {
       const swipedPixels = extractColoredPixelsFromColumn(this.data, index);
       this.swipedPixels.push(...swipedPixels);
       deleteColumnOfData(this.data, index);
+    }
+  }
+
+  colorPixels(data: Array<PixelModifyItem>) {
+    const rowIndices = data.map(change => change.rowIndex);
+    const columnIndices = data.map(change => change.columnIndex);
+    const minRowIndex = Math.min(...rowIndices);
+    const maxRowIndex = Math.max(...rowIndices);
+    const minColumnIndex = Math.min(...columnIndices);
+    const maxColumnIndex = Math.max(...columnIndices);
+    const currentCanvasIndices = this.getGridIndices();
+    const changeAmounts: Array<ChangeAmountData> = [];
+    if (minRowIndex < currentCanvasIndices.topRowIndex) {
+      const amount = currentCanvasIndices.topRowIndex - minRowIndex;
+      this.extendGridBy(
+        ButtonDirection.TOP,
+        amount,
+        currentCanvasIndices.topRowIndex,
+      );
+      changeAmounts.push({
+        direction: ButtonDirection.TOP,
+        amount,
+        startIndex: currentCanvasIndices.topRowIndex,
+      });
+    }
+    if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
+      const amount = maxRowIndex - currentCanvasIndices.bottomRowIndex;
+      this.extendGridBy(
+        ButtonDirection.BOTTOM,
+        amount,
+        currentCanvasIndices.bottomRowIndex,
+      );
+      changeAmounts.push({
+        direction: ButtonDirection.BOTTOM,
+        amount,
+        startIndex: currentCanvasIndices.bottomRowIndex,
+      });
+    }
+    if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
+      const amount = currentCanvasIndices.leftColumnIndex - minColumnIndex;
+      this.extendGridBy(
+        ButtonDirection.LEFT,
+        amount,
+        currentCanvasIndices.leftColumnIndex,
+      );
+      changeAmounts.push({
+        direction: ButtonDirection.LEFT,
+        amount,
+        startIndex: currentCanvasIndices.leftColumnIndex,
+      });
+    }
+    if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
+      const amount = maxColumnIndex - currentCanvasIndices.rightColumnIndex;
+      this.extendGridBy(
+        ButtonDirection.RIGHT,
+        amount,
+        currentCanvasIndices.rightColumnIndex,
+      );
+      changeAmounts.push({
+        direction: ButtonDirection.RIGHT,
+        amount,
+        startIndex: currentCanvasIndices.rightColumnIndex,
+      });
+    }
+    const dataForAction: Array<ColorChangeItem> = [];
+    for (const change of data) {
+      const previousColor = this.data
+        .get(change.rowIndex)!
+        .get(change.columnIndex)!.color;
+      const color = change.color;
+      this.data
+        .get(change.rowIndex)!
+        .set(change.columnIndex, { color: change.color });
+      dataForAction.push({ ...change, color, previousColor });
+    }
+    return {
+      dataForAction,
+      changeAmounts,
+    };
+  }
+
+  extendGridBy(direction: ButtonDirection, amount: number, startIndex: number) {
+    const shouldIncreaseIndex =
+      direction === ButtonDirection.BOTTOM ||
+      direction === ButtonDirection.RIGHT;
+    for (let i = 0; i < amount; i++) {
+      const index = startIndex + (shouldIncreaseIndex ? i : -i);
+      this.extendGrid(direction, index);
     }
   }
 

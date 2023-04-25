@@ -93,6 +93,10 @@ export default class GridLayer extends BaseLayer {
     return this.isGridFixed;
   }
 
+  getHoveredButton() {
+    return this.hoveredButton;
+  }
+
   setGridStrokeColor(gridStrokeColor: string) {
     if (gridStrokeColor !== "" || gridStrokeColor !== undefined) {
       this.gridStrokeColor = gridStrokeColor;

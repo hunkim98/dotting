@@ -8,8 +8,10 @@ import {
   extractColoredPixelsFromColumn,
   extractColoredPixelsFromRow,
   getColumnCountFromData,
+  getColumnKeysFromData,
   getGridIndicesFromData,
   getRowCountFromData,
+  getRowKeysFromData,
 } from "../../utils/data";
 import {
   convertCartesianToScreen,
@@ -26,6 +28,7 @@ import {
   DimensionChangeRecord,
   UserId,
   ButtonDirection,
+  TemporaryUserId,
 } from "./config";
 import {
   ColorChangeItem,
@@ -44,6 +47,8 @@ export default class InteractionLayer extends BaseLayer {
 
   private erasedPixelRecords: Map<UserId, PixelChangeRecords> = new Map();
 
+  private tempStrokedPixels: Array<PixelModifyItem> = [];
+
   // We make this a map to allow for multiple users to interact with the canvas
   // the key will be the user id
   private dimensionChangeRecord: DimensionChangeRecord = null;
@@ -51,8 +56,6 @@ export default class InteractionLayer extends BaseLayer {
   private swipedPixels: Array<PixelModifyItem> = [];
 
   private indicatorPixels: Array<PixelModifyItem> = [];
-
-  private interactionGridIndices: GridIndices | null = null;
 
   // this is to prevent other user's grid change from being applied to the canvas
   // when this is not null we will not render data layer
@@ -96,6 +99,7 @@ export default class InteractionLayer extends BaseLayer {
   resetCapturedData() {
     this.capturedData = null;
     this.capturedDataOriginalIndices = null;
+    this.deleteStrokePixelRecord(TemporaryUserId);
   }
 
   getHoveredPixel() {
@@ -128,8 +132,8 @@ export default class InteractionLayer extends BaseLayer {
     return this.swipedPixels;
   }
 
-  setInteractionGridIndices(interactionGridIndices: GridIndices) {
-    this.interactionGridIndices = interactionGridIndices;
+  getIndicatorPixels() {
+    return this.indicatorPixels;
   }
 
   extendCapturedData(direction: ButtonDirection) {
@@ -237,6 +241,7 @@ export default class InteractionLayer extends BaseLayer {
 
   /**
    * In the interaction layer,
+   * This will only collect information of presence updating information
    * @param userId User id of the user who is changing the dimension
    * (the user of the current device will have id "current-device-user-id"
    * @param dimensionChangeRecord
@@ -267,14 +272,11 @@ export default class InteractionLayer extends BaseLayer {
     this.render();
   }
 
-  resetErasedPixelRecords() {
-    this.erasedPixelRecords.clear();
-    this.render();
-  }
-
-  resetStrokePixelRecords() {
-    this.strokedPixelRecords.clear();
-    this.render();
+  // this will be called when multiplayer user (finishes) changing the color
+  // while the user is changing the dimensions of the canvas
+  colorPixels(data: Array<PixelModifyItem>) {
+    this.tempStrokedPixels.concat(data);
+    return;
   }
 
   /**

@@ -37,6 +37,10 @@ export const DefaultMinScale = 0.3;
 
 export const CurrentDeviceUserId = "current-device-user-id";
 
+// this is used so that we can handle the case when multiplayer user colors a pixel
+// when the current device user is changing the size of the grid
+export const TemporaryUserId = "temporary-user-id";
+
 export type UserId = string;
 
 export type DimensionChangeRecord = {

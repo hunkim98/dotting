@@ -1,12 +1,17 @@
 import { Action } from "../../actions/Action";
 import EventDispatcher from "../../utils/eventDispatcher";
-import { getGridIndicesFromData } from "../../utils/data";
+import {
+  getColumnKeysFromData,
+  getGridIndicesFromData,
+  getRowKeysFromData,
+} from "../../utils/data";
 import { diffPoints } from "../../utils/math";
 import {
   calculateNewPanZoomFromPinchZoom,
   getMouseCartCoord,
   getPixelIndexFromMouseCartCoord,
   getPointFromTouchyEvent,
+  returnScrollOffsetFromMouseOffset,
 } from "../../utils/position";
 import Stack from "../../utils/stack";
 import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
@@ -20,13 +25,12 @@ import {
   MouseMode,
   ButtonDirection,
   CurrentDeviceUserId,
+  UserId,
 } from "./config";
 import {
-  BrushMode,
   CanvasEvents,
   ColorChangeItem,
   Coord,
-  DottingData,
   GridIndices,
   PanZoom,
   PixelData,
@@ -37,7 +41,6 @@ import Queue from "../../utils/queue";
 import { Indices } from "../../utils/types";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import DataLayer from "./DataLayer";
-import { HoverPixelListener } from "../../../stories/useHandlersComponents";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import { ColorChangeAction } from "../../actions/ColorChangeAction";
 
@@ -107,32 +110,14 @@ export default class Editor extends EventDispatcher {
     this.onMouseOut = this.onMouseOut.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
+    const element = this.interactionLayer.getElement();
 
     // add event listeners
-    touchy(
-      this.getInteractionLayer().getElement(),
-      addEvent,
-      "mousedown",
-      this.onMouseDown,
-    );
-    touchy(
-      this.getInteractionLayer().getElement(),
-      addEvent,
-      "mouseup",
-      this.onMouseUp,
-    );
-    touchy(
-      this.getInteractionLayer().getElement(),
-      addEvent,
-      "mouseout",
-      this.onMouseOut,
-    );
-    touchy(
-      this.getInteractionLayer().getElement(),
-      addEvent,
-      "mousemove",
-      this.onMouseMove,
-    );
+    touchy(element, addEvent, "mousedown", this.onMouseDown);
+    touchy(element, addEvent, "mouseup", this.onMouseUp);
+    touchy(element, addEvent, "mouseout", this.onMouseOut);
+    touchy(element, addEvent, "mousemove", this.onMouseMove);
+    element.addEventListener("wheel", this.handleWheel);
   }
 
   setIsInteractionEnabled(isInteractionEnabled: boolean) {
@@ -384,23 +369,6 @@ export default class Editor extends EventDispatcher {
     }
   };
 
-  // this extend grid in the real layer.
-  // This should not be called with mouse events
-  extendGridBy(direction: ButtonDirection, amount: number, startIndex: number) {
-    const shouldIncreaseIndex =
-      direction === ButtonDirection.BOTTOM ||
-      direction === ButtonDirection.RIGHT;
-    for (let i = 0; i < amount; i++) {
-      const index = startIndex + (shouldIncreaseIndex ? i : -i);
-      this.dataLayer.extendGrid(direction, index);
-    }
-    const dimensions = this.dataLayer.getDimensions();
-    const indices = this.dataLayer.getGridIndices();
-    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
-    this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
-    this.renderAll();
-  }
-
   // we have extend interaction grid inside editor because we must change the panzoom too
   private extendInteractionGrid(direction: ButtonDirection) {
     const interactionLayer = this.getInteractionLayer();
@@ -497,25 +465,6 @@ export default class Editor extends EventDispatcher {
     }
   }
 
-  // This should not be called by mouse events
-  shortenGridBy(
-    direction: ButtonDirection,
-    amount: number,
-    startIndex: number,
-  ) {
-    const shouldIncreaseIndex =
-      direction === ButtonDirection.TOP || direction === ButtonDirection.LEFT;
-    for (let i = 0; i < amount; i++) {
-      const index = startIndex + (shouldIncreaseIndex ? i : -i);
-      this.dataLayer.shortenGrid(direction, index);
-    }
-    const dimensions = this.dataLayer.getDimensions();
-    const indices = this.dataLayer.getGridIndices();
-    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
-    this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
-    this.renderAll();
-  }
-
   handlePinchZoom(evt: TouchyEvent) {
     const element = this.getInteractionLayer().getElement();
     const { pinchZoomDiff, panZoom } = calculateNewPanZoomFromPinchZoom(
@@ -530,6 +479,38 @@ export default class Editor extends EventDispatcher {
     this.pinchZoomDiff = pinchZoomDiff;
     this.setPanZoom(panZoom);
   }
+
+  handleWheel = (e: WheelEvent) => {
+    e.preventDefault();
+    if (!this.isPanZoomable) {
+      return;
+    }
+    if (e.ctrlKey) {
+      const zoom = 1 - e.deltaY / this.zoomSensitivity;
+      let newScale = this.panZoom.scale * zoom;
+
+      if (newScale > this.maxScale) {
+        newScale = this.minScale;
+      }
+      if (newScale < this.minScale) {
+        newScale = this.maxScale;
+      }
+      const mouseOffset = { x: e.offsetX, y: e.offsetY };
+      const newOffset = returnScrollOffsetFromMouseOffset(
+        mouseOffset,
+        this.panZoom,
+        newScale,
+      );
+
+      this.setPanZoom({ scale: newScale, offset: newOffset });
+    } else {
+      const offset = diffPoints(this.panZoom.offset, {
+        x: e.deltaX,
+        y: e.deltaY,
+      });
+      this.setPanZoom({ ...this.panZoom, offset });
+    }
+  };
 
   handlePanning = (evt: TouchyEvent) => {
     if (!this.isPanZoomable) {
@@ -596,6 +577,7 @@ export default class Editor extends EventDispatcher {
       const strokedPixelModifyItems = strokePixelRecords
         .get(CurrentDeviceUserId)
         .getEffectiveChanges();
+
       const erasedPixelRecords = interactionLayer.getErasedPixelRecords();
       const erasedPixelModifyItems = erasedPixelRecords
         .get(CurrentDeviceUserId)
@@ -605,9 +587,16 @@ export default class Editor extends EventDispatcher {
         ...erasedPixelModifyItems,
       ];
       if (pixelModifyItems.length !== 0) {
-        this.colorPixelInDataLayer(pixelModifyItems);
+        this.dataLayer.colorPixels(pixelModifyItems);
         // record single player mode color change action
         this.recordInteractionColorChangeAction(pixelModifyItems);
+      }
+      if (strokedPixelModifyItems.length !== 0) {
+        this.emit(
+          CanvasEvents.STROKE_END,
+          strokedPixelModifyItems,
+          new Map(this.dataLayer.getData()),
+        );
       }
 
       const capturedData = interactionLayer.getCapturedData();
@@ -632,24 +621,21 @@ export default class Editor extends EventDispatcher {
         let amount = 0;
         let direction: ButtonDirection | null = null;
         let startIndex = 0;
-        let isExtendGrid = false;
         if (topRowDiff > 0) {
-          this.extendGridBy(
+          this.dataLayer.extendGridBy(
             ButtonDirection.TOP,
             topRowDiff,
             dataGridIndices.topRowIndex,
           );
-          isExtendGrid = true;
           amount = topRowDiff;
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
         } else if (topRowDiff < 0) {
-          this.shortenGridBy(
+          this.dataLayer.shortenGridBy(
             ButtonDirection.TOP,
             -topRowDiff,
             dataGridIndices.topRowIndex,
           );
-          isExtendGrid = false;
           amount = -topRowDiff;
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
@@ -658,22 +644,20 @@ export default class Editor extends EventDispatcher {
           );
         }
         if (leftColumnDiff > 0) {
-          this.extendGridBy(
+          this.dataLayer.extendGridBy(
             ButtonDirection.LEFT,
             leftColumnDiff,
             dataGridIndices.leftColumnIndex,
           );
-          isExtendGrid = true;
           amount = leftColumnDiff;
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
         } else if (leftColumnDiff < 0) {
-          this.shortenGridBy(
+          this.dataLayer.shortenGridBy(
             ButtonDirection.LEFT,
             -leftColumnDiff,
             dataGridIndices.leftColumnIndex,
           );
-          isExtendGrid = false;
           amount = -leftColumnDiff;
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
@@ -682,22 +666,20 @@ export default class Editor extends EventDispatcher {
           );
         }
         if (bottomRowDiff > 0) {
-          this.extendGridBy(
+          this.dataLayer.extendGridBy(
             ButtonDirection.BOTTOM,
             bottomRowDiff,
             dataGridIndices.bottomRowIndex,
           );
-          isExtendGrid = true;
           amount = bottomRowDiff;
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
         } else if (bottomRowDiff < 0) {
-          this.shortenGridBy(
+          this.dataLayer.shortenGridBy(
             ButtonDirection.BOTTOM,
             -bottomRowDiff,
             dataGridIndices.bottomRowIndex,
           );
-          isExtendGrid = false;
           amount = -bottomRowDiff;
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
@@ -706,22 +688,20 @@ export default class Editor extends EventDispatcher {
           );
         }
         if (rightColumnDiff > 0) {
-          this.extendGridBy(
+          this.dataLayer.extendGridBy(
             ButtonDirection.RIGHT,
             rightColumnDiff,
             dataGridIndices.rightColumnIndex,
           );
-          isExtendGrid = true;
           amount = rightColumnDiff;
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
         } else if (rightColumnDiff < 0) {
-          this.shortenGridBy(
+          this.dataLayer.shortenGridBy(
             ButtonDirection.RIGHT,
             -rightColumnDiff,
             dataGridIndices.rightColumnIndex,
           );
-          isExtendGrid = false;
           amount = -rightColumnDiff;
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
@@ -738,6 +718,9 @@ export default class Editor extends EventDispatcher {
           );
         }
       }
+      // this will handle all data change actions done by the current device user
+      // no need to record the action of the current device user in any other places
+      this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
       interactionLayer.resetCapturedData();
       // deletes the records of the current user
       interactionLayer.deleteErasedPixelRecord(CurrentDeviceUserId);
@@ -772,80 +755,13 @@ export default class Editor extends EventDispatcher {
     this.redoHistory.clear();
   }
 
-  private colorPixelInDataLayer(data: Array<PixelModifyItem>) {
-    const rowIndices = data.map(change => change.rowIndex);
-    const columnIndices = data.map(change => change.columnIndex);
-    const minRowIndex = Math.min(...rowIndices);
-    const maxRowIndex = Math.max(...rowIndices);
-    const minColumnIndex = Math.min(...columnIndices);
-    const maxColumnIndex = Math.max(...columnIndices);
-    const currentCanvasIndices = this.getGridIndices();
-    const changeAmounts = [];
-    if (minRowIndex < currentCanvasIndices.topRowIndex) {
-      const amount = currentCanvasIndices.topRowIndex - minRowIndex;
-      this.extendGridBy(
-        ButtonDirection.TOP,
-        amount,
-        currentCanvasIndices.topRowIndex,
-      );
-      changeAmounts.push({
-        direction: ButtonDirection.TOP,
-        amount,
-      });
-    }
-    if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
-      const amount = maxRowIndex - currentCanvasIndices.bottomRowIndex;
-      this.extendGridBy(
-        ButtonDirection.BOTTOM,
-        amount,
-        currentCanvasIndices.bottomRowIndex,
-      );
-      changeAmounts.push({
-        direction: ButtonDirection.BOTTOM,
-        amount,
-      });
-    }
-    if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
-      const amount = currentCanvasIndices.leftColumnIndex - minColumnIndex;
-      this.extendGridBy(
-        ButtonDirection.LEFT,
-        amount,
-        currentCanvasIndices.leftColumnIndex,
-      );
-      changeAmounts.push({
-        direction: ButtonDirection.LEFT,
-        amount,
-      });
-    }
-    if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
-      const amount = maxColumnIndex - currentCanvasIndices.rightColumnIndex;
-      this.extendGridBy(
-        ButtonDirection.RIGHT,
-        amount,
-        currentCanvasIndices.rightColumnIndex,
-      );
-      changeAmounts.push({
-        direction: ButtonDirection.RIGHT,
-        amount,
-      });
-    }
-    const dataForAction = [];
-    for (const change of data) {
-      const previousColor = this.dataLayer
-        .getData()
-        .get(change.rowIndex)!
-        .get(change.columnIndex)!.color;
-      const color = change.color;
-
-      this.dataLayer
-        .getData()
-        .get(change.rowIndex)!
-        .set(change.columnIndex, { color: change.color });
-      dataForAction.push({ ...change, color, previousColor });
-    }
+  // this only applies for multiplayer mode or user direct function call
+  colorPixels(data: Array<PixelModifyItem>) {
+    const { changeAmounts, dataForAction } = this.dataLayer.colorPixels(data);
+    this.interactionLayer.colorPixels(data);
     this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
     this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
-    return;
+    this.renderAll();
   }
 
   // this will be only used by the current device user
@@ -1000,11 +916,26 @@ export default class Editor extends EventDispatcher {
 
   onMouseUp(evt: TouchEvent) {
     this.relayInteractionDataToDataLayer();
+    this.mouseMode = MouseMode.DOT;
+    const element = this.interactionLayer.getElement();
+    touchy(element, removeEvent, "mousemove", this.handlePanning);
+    touchy(element, removeEvent, "mousemove", this.handlePinchZoom);
+    touchy(element, removeEvent, "mousemove", this.handleExtension);
+    this.pinchZoomDiff = undefined;
+    this.gridLayer.setHoveredButton(null);
     return;
   }
 
   onMouseOut(evt: TouchEvent) {
     this.relayInteractionDataToDataLayer();
+    const element = this.interactionLayer.getElement();
+    touchy(element, removeEvent, "mousemove", this.handlePanning);
+    touchy(element, removeEvent, "mousemove", this.handlePinchZoom);
+    touchy(element, removeEvent, "mousemove", this.handleExtension);
+    if (this.gridLayer.getHoveredButton() !== null) {
+      this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
+    }
+    this.gridLayer.setHoveredButton(null);
     return;
   }
 
@@ -1015,17 +946,17 @@ export default class Editor extends EventDispatcher {
   }
 
   renderGridLayer() {
-    return;
+    this.gridLayer.render();
   }
 
   clear() {
-    const rowCount = this.getRowCount();
-    const columnCount = this.getColumnCount();
+    const rowKeys = getRowKeysFromData(this.dataLayer.getData());
+    const columnKeys = getColumnKeysFromData(this.dataLayer.getData());
     this.dataLayer.setData(new Map());
     const data = this.dataLayer.getData();
-    for (let i = 0; i < rowCount; i++) {
+    for (const i of rowKeys) {
       data.set(i, new Map());
-      for (let j = 0; j < columnCount; j++) {
+      for (const j of columnKeys) {
         data.get(i)!.set(j, { color: "" });
       }
     }
@@ -1039,10 +970,10 @@ export default class Editor extends EventDispatcher {
   }
 
   renderDataLayer() {
-    return;
+    this.dataLayer.render();
   }
 
   renderInteractionLayer() {
-    return;
+    this.interactionLayer.render();
   }
 }

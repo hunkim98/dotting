@@ -180,3 +180,19 @@ export const getPixelIndexFromMouseCartCoord = (
   }
   return null;
 };
+
+export const returnScrollOffsetFromMouseOffset = (
+  mouseOffset: Coord,
+  panZoom: PanZoom,
+  newScale: number,
+) => {
+  const worldPos = getWorldPoint(mouseOffset, panZoom);
+  const newMousePos = getScreenPoint(worldPos, {
+    scale: newScale,
+    offset: panZoom.offset,
+  });
+  const scaleOffset = diffPoints(mouseOffset, newMousePos);
+  const offset = addPoints(panZoom.offset, scaleOffset);
+
+  return offset;
+};
