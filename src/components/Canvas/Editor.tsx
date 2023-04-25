@@ -1,8 +1,10 @@
 import { Action } from "../../actions/Action";
 import EventDispatcher from "../../utils/eventDispatcher";
 import {
+  getColumnCountFromData,
   getColumnKeysFromData,
   getGridIndicesFromData,
+  getRowCountFromData,
   getRowKeysFromData,
 } from "../../utils/data";
 import { diffPoints } from "../../utils/math";
@@ -107,6 +109,8 @@ export default class Editor extends EventDispatcher {
       canvas: gridCanvas,
     });
     this.interactionLayer = new InteractionLayer({
+      columnCount: initColumnCount,
+      rowCount: initRowCount,
       canvas: interactionCanvas,
     });
     this.backgroundLayer = new BackgroundLayer({
@@ -582,6 +586,15 @@ export default class Editor extends EventDispatcher {
     this.renderInteractionLayer();
   }
 
+  private relayDataDimensionsToLayers() {
+    const columnCount = getColumnCountFromData(this.dataLayer.getData());
+    this.gridLayer.setColumnCount(columnCount);
+    this.interactionLayer.setDataLayerColumnCount(columnCount);
+    const rowCount = getRowCountFromData(this.dataLayer.getData());
+    this.gridLayer.setRowCount(rowCount);
+    this.interactionLayer.setDataLayerRowCount(rowCount);
+  }
+
   // adding to undo stack is handled here(only for single player mode)
   // 1. colorChangeAction
   // 2. sizeChangeAction
@@ -737,6 +750,7 @@ export default class Editor extends EventDispatcher {
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places
       this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
+      this.relayDataDimensionsToLayers();
       interactionLayer.resetCapturedData();
       // deletes the records of the current user
       interactionLayer.deleteErasedPixelRecord(CurrentDeviceUserId);
@@ -775,6 +789,7 @@ export default class Editor extends EventDispatcher {
   colorPixels(data: Array<PixelModifyItem>) {
     const { changeAmounts, dataForAction } = this.dataLayer.colorPixels(data);
     this.interactionLayer.colorPixels(data);
+    this.relayDataDimensionsToLayers();
     this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
     this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
     this.renderAll();

@@ -1,6 +1,7 @@
 import { BaseLayer } from "./BaseLayer";
 import {
   ColorChangeItem,
+  Coord,
   DottingData,
   PixelData,
   PixelModifyItem,
@@ -13,12 +14,19 @@ import {
   extractColoredPixelsFromColumn,
   extractColoredPixelsFromRow,
   getColumnCountFromData,
+  getColumnKeysFromData,
   getGridIndicesFromData,
   getRowCountFromData,
+  getRowKeysFromData,
   validatePixelArrayData,
 } from "../../utils/data";
-import { ButtonDirection, DefaultPixelDataDimensions } from "./config";
+import {
+  ButtonDirection,
+  DefaultGridSquareLength,
+  DefaultPixelDataDimensions,
+} from "./config";
 import { ChangeAmountData } from "../../actions/SizeChangeAction";
+import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 
 export default class DataLayer extends BaseLayer {
   private swipedPixels: Array<PixelModifyItem> = [];
@@ -31,6 +39,7 @@ export default class DataLayer extends BaseLayer {
       PixelData
     >
   >();
+  private gridSquareLength: number = DefaultGridSquareLength;
 
   constructor({
     canvas,
@@ -241,6 +250,46 @@ export default class DataLayer extends BaseLayer {
   }
 
   render() {
-    return;
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    // leftTopPoint is a cartesian coordinate
+    const leftTopPoint: Coord = {
+      x: -((this.getColumnCount() / 2) * this.gridSquareLength),
+      y: -((this.getRowCount() / 2) * this.gridSquareLength),
+    };
+    const ctx = this.ctx;
+    const convertedLetTopScreenPoint = convertCartesianToScreen(
+      this.element,
+      leftTopPoint,
+      this.dpr,
+    );
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLetTopScreenPoint,
+      this.panZoom,
+    );
+
+    const allRowKeys = getRowKeysFromData(this.data);
+    const allColumnKeys = getColumnKeysFromData(this.data);
+
+    ctx.save();
+    for (const i of allRowKeys) {
+      for (const j of allColumnKeys) {
+        const rowIndex = i;
+        const columnIndex = j;
+
+        const color = this.data.get(rowIndex)?.get(columnIndex)?.color;
+        if (!color) {
+          continue;
+        }
+        ctx.fillStyle = color;
+
+        ctx.fillRect(
+          j * squareLength + correctedLeftTopScreenPoint.x,
+          i * squareLength + correctedLeftTopScreenPoint.y,
+          squareLength,
+          squareLength,
+        );
+      }
+    }
+    ctx.restore();
   }
 }

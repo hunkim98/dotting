@@ -57,6 +57,10 @@ export default class InteractionLayer extends BaseLayer {
 
   private indicatorPixels: Array<PixelModifyItem> = [];
 
+  private dataLayerRowCount: number;
+
+  private dataLayerColumnCount: number;
+
   // this is to prevent other user's grid change from being applied to the canvas
   // when this is not null we will not render data layer
   // however, when this is not null we should send colored pixels
@@ -71,8 +75,18 @@ export default class InteractionLayer extends BaseLayer {
 
   private gridSquareLength: number = DefaultGridSquareLength;
 
-  constructor({ canvas }: { canvas: HTMLCanvasElement }) {
+  constructor({
+    columnCount,
+    rowCount,
+    canvas,
+  }: {
+    columnCount: number;
+    rowCount: number;
+    canvas: HTMLCanvasElement;
+  }) {
     super({ canvas });
+    this.dataLayerColumnCount = columnCount;
+    this.dataLayerRowCount = rowCount;
   }
 
   setIsPanZoomable(isPanZoomable: boolean) {
@@ -87,6 +101,14 @@ export default class InteractionLayer extends BaseLayer {
 
   getCapturedDataOriginalIndices() {
     return this.capturedDataOriginalIndices;
+  }
+
+  setDataLayerColumnCount(columnCount: number) {
+    this.dataLayerColumnCount = columnCount;
+  }
+
+  setDataLayerRowCount(rowCount: number) {
+    this.dataLayerRowCount = rowCount;
   }
 
   setCapturedData(gridChangeStartCapturedData: DottingData) {
@@ -254,12 +276,28 @@ export default class InteractionLayer extends BaseLayer {
     this.render();
   }
 
+  getAllStrokePixels() {
+    const allStrokePixels: Array<ColorChangeItem> = [];
+    this.strokedPixelRecords.forEach(pixelChangeRecords => {
+      allStrokePixels.push(...pixelChangeRecords.getEffectiveChanges());
+    });
+    return allStrokePixels;
+  }
+
   addToErasedPixelRecords(userId: UserId, pixelItem: ColorChangeItem) {
     if (!this.erasedPixelRecords.has(userId)) {
       this.erasedPixelRecords.set(userId, new PixelChangeRecords());
     }
     this.erasedPixelRecords.get(userId)?.record(pixelItem);
     this.render();
+  }
+
+  getAllErasedPixels() {
+    const allErasedPixels: Array<ColorChangeItem> = [];
+    this.erasedPixelRecords.forEach(pixelChangeRecords => {
+      allErasedPixels.push(...pixelChangeRecords.getEffectiveChanges());
+    });
+    return allErasedPixels;
   }
 
   deleteErasedPixelRecord(userId: UserId) {
@@ -288,6 +326,76 @@ export default class InteractionLayer extends BaseLayer {
    * 5. The indicator pixel changes
    */
   render() {
-    return;
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    // leftTopPoint is a cartesian coordinate
+    const doesCapturedDataExist = this.capturedData !== null;
+    const rowCount = this.capturedData
+      ? getRowCountFromData(this.capturedData)
+      : this.dataLayerRowCount;
+    const columnCount = this.capturedData
+      ? getColumnCountFromData(this.capturedData)
+      : this.dataLayerColumnCount;
+    const leftTopPoint: Coord = {
+      x: -((columnCount / 2) * this.gridSquareLength),
+      y: -((rowCount / 2) * this.gridSquareLength),
+    };
+    const ctx = this.ctx;
+    const convertedLetTopScreenPoint = convertCartesianToScreen(
+      this.element,
+      leftTopPoint,
+      this.dpr,
+    );
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLetTopScreenPoint,
+      this.panZoom,
+    );
+    const allStrokedPixels = this.getAllStrokePixels().filter(item => {
+      if (!doesCapturedDataExist) {
+        return true;
+      } else {
+        const gridIndices = getGridIndicesFromData(this.capturedData);
+        return (
+          item.rowIndex >= gridIndices.topRowIndex &&
+          item.rowIndex <= gridIndices.bottomRowIndex &&
+          item.columnIndex >= gridIndices.leftColumnIndex &&
+          item.columnIndex <= gridIndices.rightColumnIndex
+        );
+      }
+    });
+    const tempColorPixelsToStroke = this.tempStrokedPixels
+      .filter(item => item.color !== "")
+      .filter(item => {
+        if (!doesCapturedDataExist) {
+          return;
+        } else {
+          const gridIndices = getGridIndicesFromData(this.capturedData);
+          return (
+            item.rowIndex >= gridIndices.topRowIndex &&
+            item.rowIndex <= gridIndices.bottomRowIndex &&
+            item.columnIndex >= gridIndices.leftColumnIndex &&
+            item.columnIndex <= gridIndices.rightColumnIndex
+          );
+        }
+      });
+    ctx.save();
+    for (const item of allStrokedPixels) {
+      ctx.fillStyle = item.color;
+      ctx.fillRect(
+        item.columnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        item.rowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+    }
+    for (const item of tempColorPixelsToStroke) {
+      ctx.fillStyle = item.color;
+      ctx.fillRect(
+        item.columnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        item.rowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+    }
+    ctx.restore();
   }
 }
