@@ -1,5 +1,9 @@
+import {
+  createColumnKeyOrderMapfromData,
+  createRowKeyOrderMapfromData,
+} from "../../utils/data";
 import { DefaultPanZoom } from "./config";
-import { PanZoom } from "./types";
+import { DottingData, PanZoom } from "./types";
 
 export abstract class BaseLayer {
   protected ctx: CanvasRenderingContext2D;
@@ -8,6 +12,9 @@ export abstract class BaseLayer {
   protected panZoom: PanZoom = DefaultPanZoom;
   protected width: number;
   protected height: number;
+  protected criterionDataForRendering: DottingData | null;
+  protected rowKeyOrderMap: Map<number, number> = new Map();
+  protected columnKeyOrderMap: Map<number, number> = new Map();
 
   constructor({ canvas }: { canvas: HTMLCanvasElement }) {
     this.ctx = canvas.getContext("2d")!;
@@ -16,6 +23,16 @@ export abstract class BaseLayer {
 
   setPanZoom(panZoom: PanZoom) {
     this.panZoom = panZoom;
+  }
+
+  setCriterionDataForRendering(criterionDataForRendering: DottingData) {
+    this.criterionDataForRendering = criterionDataForRendering;
+    this.rowKeyOrderMap = createRowKeyOrderMapfromData(
+      criterionDataForRendering,
+    );
+    this.columnKeyOrderMap = createColumnKeyOrderMapfromData(
+      criterionDataForRendering,
+    );
   }
 
   setWidth(width: number, devicePixelRatio?: number) {

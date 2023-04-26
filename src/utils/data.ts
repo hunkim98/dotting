@@ -130,3 +130,23 @@ export const validatePixelArrayData = (data: Array<Array<PixelData>>) => {
   }
   return { isDataValid, columnCount, rowCount };
 };
+
+export const createRowKeyOrderMapfromData = (data: DottingData) => {
+  const rowKeys = getRowKeysFromData(data);
+  const sortedRowKeys = rowKeys.sort((a, b) => a - b);
+  const rowKeyOrderMap = new Map<number, number>();
+  sortedRowKeys.forEach((key, index) => {
+    rowKeyOrderMap.set(key, index);
+  });
+  return rowKeyOrderMap;
+};
+
+export const createColumnKeyOrderMapfromData = (data: DottingData) => {
+  const columnKeys = getColumnKeysFromData(data);
+  const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
+  const columnKeyOrderMap = new Map<number, number>();
+  sortedColumnKeys.forEach((key, index) => {
+    columnKeyOrderMap.set(key, index);
+  });
+  return columnKeyOrderMap;
+};

@@ -921,7 +921,11 @@ export default class Editor extends EventDispatcher {
         ) {
           this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, pixelIndex);
         }
-        this.getInteractionLayer().setHoveredPixel(pixelIndex);
+        this.getInteractionLayer().setHoveredPixel({
+          rowIndex: pixelIndex.rowIndex,
+          columnIndex: pixelIndex.columnIndex,
+          color: this.brushColor,
+        });
         this.renderInteractionLayer();
       }
     } else {

@@ -2,6 +2,8 @@ import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
 import {
   addColumnToData,
   addRowToData,
+  createColumnKeyOrderMapfromData,
+  createRowKeyOrderMapfromData,
   deleteColumnOfData,
   deleteRowOfData,
   extractColoredPixelsFromColumn,
@@ -36,6 +38,9 @@ export default class InteractionLayer extends BaseLayer {
 
   private erasedPixelRecords: Map<UserId, PixelChangeRecords> = new Map();
 
+  // this is for tracking pixels that were applied to data canvas
+  // while the user was changing the dimensions of the data canvas
+  // ( = the captured Data is not null)
   private tempStrokedPixels: Array<PixelModifyItem> = [];
 
   // We make this a map to allow for multiple users to interact with the canvas
@@ -60,6 +65,7 @@ export default class InteractionLayer extends BaseLayer {
   private hoveredPixel: {
     rowIndex: number;
     columnIndex: number;
+    color: string;
   } | null = null;
 
   private gridSquareLength: number = DefaultGridSquareLength;
@@ -121,6 +127,7 @@ export default class InteractionLayer extends BaseLayer {
     hoveredPixel: {
       rowIndex: number;
       columnIndex: number;
+      color: string;
     } | null,
   ) {
     this.hoveredPixel = hoveredPixel;
@@ -306,38 +313,12 @@ export default class InteractionLayer extends BaseLayer {
     return;
   }
 
-  /**
-   * Interaction Layer render will be called when:
-   * 1. The canvas is resized
-   * 2. The canvas is panned or zoomed
-   * 3. The canvas is mouse clicked or touched
-   * 4. The pixel grid is hovered
-   * 5. The indicator pixel changes
-   */
-  render() {
-    const squareLength = this.gridSquareLength * this.panZoom.scale;
-    // leftTopPoint is a cartesian coordinate
-    const doesCapturedDataExist = this.capturedData !== null;
-    const rowCount = this.capturedData
-      ? getRowCountFromData(this.capturedData)
-      : this.dataLayerRowCount;
-    const columnCount = this.capturedData
-      ? getColumnCountFromData(this.capturedData)
-      : this.dataLayerColumnCount;
-    const leftTopPoint: Coord = {
-      x: -((columnCount / 2) * this.gridSquareLength),
-      y: -((rowCount / 2) * this.gridSquareLength),
-    };
+  renderStrokedPixels(
+    correctedLeftTopScreenPoint: Coord,
+    squareLength: number,
+  ) {
     const ctx = this.ctx;
-    const convertedLetTopScreenPoint = convertCartesianToScreen(
-      this.element,
-      leftTopPoint,
-      this.dpr,
-    );
-    const correctedLeftTopScreenPoint = getScreenPoint(
-      convertedLetTopScreenPoint,
-      this.panZoom,
-    );
+    const doesCapturedDataExist = this.capturedData !== null;
     const allStrokedPixels = this.getAllStrokePixels().filter(item => {
       if (!doesCapturedDataExist) {
         return true;
@@ -368,23 +349,133 @@ export default class InteractionLayer extends BaseLayer {
       });
     ctx.save();
     for (const item of allStrokedPixels) {
+      const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
+      const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
+      if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
+        continue;
+      }
       ctx.fillStyle = item.color;
       ctx.fillRect(
-        item.columnIndex * squareLength + correctedLeftTopScreenPoint.x,
-        item.rowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.y,
         squareLength,
         squareLength,
       );
     }
     for (const item of tempColorPixelsToStroke) {
+      const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
+      const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
+      if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
+        continue;
+      }
       ctx.fillStyle = item.color;
       ctx.fillRect(
-        item.columnIndex * squareLength + correctedLeftTopScreenPoint.x,
-        item.rowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
         squareLength,
         squareLength,
       );
     }
     ctx.restore();
+  }
+
+  renderIndicatorPixels(
+    correctedLeftTopScreenPoint: Coord,
+    squareLength: number,
+  ) {
+    if (this.indicatorPixels.length == 0) {
+      return;
+    }
+    const ctx = this.ctx;
+    ctx.save();
+    for (const item of this.indicatorPixels) {
+      ctx.fillStyle = item.color;
+      ctx.globalAlpha = 0.5;
+      const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
+      const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
+      if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
+        continue;
+      }
+      // first erase the color inside the square
+      ctx.clearRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+      ctx.fillRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+    }
+    ctx.restore();
+  }
+
+  renderHoveredPixel(correctedLeftTopScreenPoint: Coord, squareLength: number) {
+    if (this.hoveredPixel === null) {
+      return;
+    }
+    const ctx = this.ctx;
+    const { rowIndex, columnIndex } = this.hoveredPixel;
+    const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
+    const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
+    if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
+      return;
+    }
+    ctx.save();
+    ctx.fillStyle = this.hoveredPixel.color;
+    ctx.globalAlpha = 0.2;
+    ctx.clearRect(
+      relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+      relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+      squareLength,
+      squareLength,
+    );
+    ctx.fillRect(
+      relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+      relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+      squareLength,
+      squareLength,
+    );
+    ctx.restore();
+  }
+
+  /**
+   * Interaction Layer render will be called when:
+   * 1. The canvas is resized
+   * 2. The canvas is panned or zoomed
+   * 3. The canvas is mouse clicked or touched
+   * 4. The pixel grid is hovered
+   * 5. The indicator pixel changes
+   */
+  render() {
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    // leftTopPoint is a cartesian coordinate
+    const doesCapturedDataExist = this.capturedData !== null;
+    const rowCount = this.capturedData
+      ? getRowCountFromData(this.capturedData)
+      : this.dataLayerRowCount;
+    const columnCount = this.capturedData
+      ? getColumnCountFromData(this.capturedData)
+      : this.dataLayerColumnCount;
+    const leftTopPoint: Coord = {
+      x: -((columnCount / 2) * this.gridSquareLength),
+      y: -((rowCount / 2) * this.gridSquareLength),
+    };
+    const convertedLetTopScreenPoint = convertCartesianToScreen(
+      this.element,
+      leftTopPoint,
+      this.dpr,
+    );
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLetTopScreenPoint,
+      this.panZoom,
+    );
+    this.renderStrokedPixels(correctedLeftTopScreenPoint, squareLength);
+    this.renderIndicatorPixels(correctedLeftTopScreenPoint, squareLength);
+    this.renderHoveredPixel(correctedLeftTopScreenPoint, squareLength);
+    //draw indicator pixels on top of the canvas
   }
 }
