@@ -122,8 +122,22 @@ export default class InteractionLayer extends BaseLayer {
     return this.strokedPixelRecords;
   }
 
+  getEffectiveStrokePixelChanges(userId: UserId) {
+    if (!this.strokedPixelRecords.has(userId)) {
+      return [];
+    }
+    return this.strokedPixelRecords.get(userId)!.getEffectiveChanges();
+  }
+
   getErasedPixelRecords() {
     return this.erasedPixelRecords;
+  }
+
+  getEffectiveEraserPixelChanges(userId: UserId) {
+    if (!this.erasedPixelRecords.has(userId)) {
+      return [];
+    }
+    return this.erasedPixelRecords.get(userId)!.getEffectiveChanges();
   }
 
   getSwipedPixels() {
@@ -267,6 +281,12 @@ export default class InteractionLayer extends BaseLayer {
     this.tempStrokedPixels.concat(data);
   }
 
+  // this will be called when multiplayer user (finishes) changing the color
+  // while the user is changing the dimensions of the canvas
+  erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
+    this.tempStrokedPixels.concat(data.map(item => ({ ...item, color: "" })));
+  }
+
   renderStrokedPixels(
     correctedLeftTopScreenPoint: Coord,
     squareLength: number,
@@ -279,10 +299,10 @@ export default class InteractionLayer extends BaseLayer {
       } else {
         const gridIndices = getGridIndicesFromData(this.capturedData);
         return (
-          item.rowIndex >= gridIndices.topRowIndex &&
-          item.rowIndex <= gridIndices.bottomRowIndex &&
-          item.columnIndex >= gridIndices.leftColumnIndex &&
-          item.columnIndex <= gridIndices.rightColumnIndex
+          item.rowIndex < gridIndices.topRowIndex ||
+          item.rowIndex > gridIndices.bottomRowIndex ||
+          item.columnIndex < gridIndices.leftColumnIndex ||
+          item.columnIndex > gridIndices.rightColumnIndex
         );
       }
     });
@@ -290,14 +310,14 @@ export default class InteractionLayer extends BaseLayer {
       .filter(item => item.color !== "")
       .filter(item => {
         if (!doesCapturedDataExist) {
-          return;
+          return true;
         } else {
           const gridIndices = getGridIndicesFromData(this.capturedData);
           return (
-            item.rowIndex >= gridIndices.topRowIndex &&
-            item.rowIndex <= gridIndices.bottomRowIndex &&
-            item.columnIndex >= gridIndices.leftColumnIndex &&
-            item.columnIndex <= gridIndices.rightColumnIndex
+            item.rowIndex < gridIndices.topRowIndex ||
+            item.rowIndex > gridIndices.bottomRowIndex ||
+            item.columnIndex < gridIndices.leftColumnIndex ||
+            item.columnIndex > gridIndices.rightColumnIndex
           );
         }
       });
@@ -311,7 +331,7 @@ export default class InteractionLayer extends BaseLayer {
       ctx.fillStyle = item.color;
       ctx.fillRect(
         relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.y,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
         squareLength,
         squareLength,
       );
@@ -331,6 +351,41 @@ export default class InteractionLayer extends BaseLayer {
       );
     }
     ctx.restore();
+  }
+
+  renderErasedPixels(correctedLeftTopScreenPoint: Coord, squareLength: number) {
+    const tempErasePixels = this.tempStrokedPixels.filter(
+      item => item.color == "",
+    );
+    const allErasedPixels = this.getAllErasedPixels();
+    const ctx = this.ctx;
+    ctx.save();
+    for (const item of allErasedPixels) {
+      const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
+      const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
+      if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
+        continue;
+      }
+      ctx.clearRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+    }
+    for (const item of tempErasePixels) {
+      const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
+      const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
+      if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
+        continue;
+      }
+      ctx.clearRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+    }
   }
 
   renderIndicatorPixels(
@@ -427,7 +482,10 @@ export default class InteractionLayer extends BaseLayer {
       convertedLetTopScreenPoint,
       this.panZoom,
     );
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.width, this.height);
     this.renderStrokedPixels(correctedLeftTopScreenPoint, squareLength);
+    this.renderErasedPixels(correctedLeftTopScreenPoint, squareLength);
     this.renderIndicatorPixels(correctedLeftTopScreenPoint, squareLength);
     this.renderHoveredPixel(correctedLeftTopScreenPoint, squareLength);
     //draw indicator pixels on top of the canvas

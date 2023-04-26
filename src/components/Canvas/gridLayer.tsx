@@ -295,6 +295,7 @@ export default class GridLayer extends BaseLayer {
       y: -((this.rowCount / 2) * this.gridSquareLength),
     };
     const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.width, this.height);
     const convertedScreenPoint = convertCartesianToScreen(
       this.element,
       leftTopPoint,

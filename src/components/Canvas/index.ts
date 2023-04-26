@@ -1803,7 +1803,7 @@ export default class Canvas extends EventDispatcher {
     if (this.mouseMode === MouseMode.EXTENDING) {
       this.addSizeChangeActionToUndoStack();
     }
-    this.mouseMode = MouseMode.DOT;
+    this.mouseMode = MouseMode.PANNING;
     if (this.strokedPixelRecords.getRawChanges().length !== 0) {
       this.emit(
         CanvasEvents.STROKE_END,

@@ -52,6 +52,10 @@ export abstract class BaseLayer {
     );
   }
 
+  scale(x: number, y: number) {
+    this.ctx.scale(x, y);
+  }
+
   setWidth(width: number, devicePixelRatio?: number) {
     this.width = width;
     this.element.width = devicePixelRatio ? width * devicePixelRatio : width;

@@ -1,6 +1,8 @@
-import { Action } from "../../actions/Action";
+import { Action, ActionType } from "../../actions/Action";
 import EventDispatcher from "../../utils/eventDispatcher";
 import {
+  createColumnKeyOrderMapfromData,
+  createRowKeyOrderMapfromData,
   getColumnCountFromData,
   getColumnKeysFromData,
   getGridIndicesFromData,
@@ -38,6 +40,7 @@ import {
   Coord,
   DottingData,
   GridIndices,
+  ImageDownloadOptions,
   PanZoom,
   PixelData,
   PixelModifyItem,
@@ -83,12 +86,14 @@ export default class Editor extends EventDispatcher {
     direction: null,
   };
   private isPanZoomable = true;
-  private mouseMode: MouseMode = MouseMode.DOT;
+  private mouseMode: MouseMode = MouseMode.PANNING;
   // TODO: why do we need this? For games?
   private isInteractionEnabled = true;
   // We need isInteractionApplicable to allow multiplayer
   // We must let yorkie-js-sdk to apply change to data layer not the client
   private isInteractionApplicable = true;
+
+  private element: HTMLCanvasElement;
 
   constructor({
     gridCanvas,
@@ -120,6 +125,11 @@ export default class Editor extends EventDispatcher {
     this.backgroundLayer = new BackgroundLayer({
       canvas: backgroundCanvas,
     });
+    this.interactionLayer.setCriterionDataForRendering(
+      this.dataLayer.getData(),
+    );
+    this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    this.element = interactionCanvas;
 
     this.initialize();
   }
@@ -130,14 +140,38 @@ export default class Editor extends EventDispatcher {
     this.onMouseOut = this.onMouseOut.bind(this);
     this.onMouseDown = this.onMouseDown.bind(this);
     this.onMouseMove = this.onMouseMove.bind(this);
-    const element = this.interactionLayer.getElement();
 
     // add event listeners
-    touchy(element, addEvent, "mousedown", this.onMouseDown);
-    touchy(element, addEvent, "mouseup", this.onMouseUp);
-    touchy(element, addEvent, "mouseout", this.onMouseOut);
-    touchy(element, addEvent, "mousemove", this.onMouseMove);
-    element.addEventListener("wheel", this.handleWheel);
+    touchy(this.element, addEvent, "mousedown", this.onMouseDown);
+    touchy(this.element, addEvent, "mouseup", this.onMouseUp);
+    touchy(this.element, addEvent, "mouseout", this.onMouseOut);
+    touchy(this.element, addEvent, "mousemove", this.onMouseMove);
+    this.element.addEventListener("wheel", this.handleWheel);
+  }
+
+  emitGridEvent() {
+    const data = this.dataLayer.getData();
+    const dimensions = {
+      columnCount: this.getColumnCount(),
+      rowCount: this.getRowCount(),
+    };
+    const indices = getGridIndicesFromData(data);
+    this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
+  }
+
+  emitHoverPixelChangeEvent() {
+    this.emit(
+      CanvasEvents.HOVER_PIXEL_CHANGE,
+      this.interactionLayer.getHoveredPixel(),
+    );
+  }
+
+  emitDataEvent() {
+    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
+  }
+
+  emitBrushChangeEvent() {
+    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.mouseMode);
   }
 
   // background related functions ⬇
@@ -164,12 +198,65 @@ export default class Editor extends EventDispatcher {
   }
   // interaction related functions ⬆
 
+  // grid related functions ⬇
+  setIsGridFixed(isGridFixed: boolean) {
+    this.gridLayer.setIsGridFixed(isGridFixed);
+    this.renderGridLayer();
+  }
+
+  setGridStrokeColor(color: string) {
+    this.gridLayer.setGridStrokeColor(color);
+    this.renderGridLayer();
+  }
+
+  setGridStrokeWidth(width: number) {
+    this.gridLayer.setGridStrokeWidth(width);
+    this.renderGridLayer();
+  }
+
+  setIsGridVisible(isGridVisible: boolean) {
+    this.gridLayer.setIsGridVisible(isGridVisible);
+    this.renderGridLayer();
+  }
+  // grid related functions ⬆
+
+  setIsPanZoomable(isPanZoomable: boolean) {
+    if (isPanZoomable !== undefined) {
+      this.isPanZoomable = isPanZoomable;
+    }
+  }
+
   setIsInteractionEnabled(isInteractionEnabled: boolean) {
-    this.isInteractionEnabled = isInteractionEnabled;
+    if (isInteractionEnabled !== undefined) {
+      this.isInteractionEnabled = isInteractionEnabled;
+    }
   }
 
   setIsInteractionApplicable(isInteractionApplicable: boolean) {
-    this.isInteractionApplicable = isInteractionApplicable;
+    if (isInteractionApplicable !== undefined) {
+      this.isInteractionApplicable = isInteractionApplicable;
+    }
+  }
+
+  changeBrushMode(mode: MouseMode) {
+    this.mouseMode = mode;
+    this.styleMouseCursor();
+  }
+
+  changeBrushColor(color: string) {
+    this.brushColor = color;
+  }
+
+  setBrushColor(color: string) {
+    this.brushColor = color;
+    const hoveredPixel = this.interactionLayer.getHoveredPixel();
+    if (hoveredPixel) {
+      this.interactionLayer.setHoveredPixel({
+        ...hoveredPixel,
+        color: this.brushColor,
+      });
+      this.renderDataLayer();
+    }
   }
 
   getColumnCount() {
@@ -185,14 +272,13 @@ export default class Editor extends EventDispatcher {
   }
 
   styleMouseCursor = () => {
-    const element = this.interactionLayer.getElement();
     if (
       this.mouseMode !== MouseMode.PANNING &&
       this.mouseMode !== MouseMode.EXTENDING
     ) {
-      element.style.cursor = `url("/cursor/${this.mouseMode}.cur"), auto`;
+      this.element.style.cursor = `url("/cursor/${this.mouseMode}.cur"), auto`;
     } else {
-      element.style.cursor = `default`;
+      this.element.style.cursor = `default`;
     }
   };
 
@@ -233,11 +319,19 @@ export default class Editor extends EventDispatcher {
     }
   }
 
+  scale(x: number, y: number) {
+    this.dataLayer.scale(x, y);
+    this.gridLayer.scale(x, y);
+    this.interactionLayer.scale(x, y);
+    this.backgroundLayer.scale(x, y);
+  }
+
   setWidth(width: number, devicePixelRatio?: number) {
     this.width = width;
     this.dataLayer.setWidth(width, devicePixelRatio);
     this.gridLayer.setWidth(width, devicePixelRatio);
     this.interactionLayer.setWidth(width, devicePixelRatio);
+    this.backgroundLayer.setWidth(width, devicePixelRatio);
   }
 
   setHeight(height: number, devicePixelRatio?: number) {
@@ -245,6 +339,7 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setHeight(height, devicePixelRatio);
     this.gridLayer.setHeight(height, devicePixelRatio);
     this.interactionLayer.setHeight(height, devicePixelRatio);
+    this.backgroundLayer.setHeight(height, devicePixelRatio);
   }
 
   getWidth() {
@@ -255,10 +350,14 @@ export default class Editor extends EventDispatcher {
     return this.height;
   }
 
+  getCanvasElement() {
+    return this.element;
+  }
+
   setSize(width: number, height: number, devicePixelRatio?: number) {
     this.setWidth(width, devicePixelRatio);
     this.setHeight(height, devicePixelRatio);
-    this.dpr = devicePixelRatio ? devicePixelRatio : this.dpr;
+    this.setDpr(devicePixelRatio ? devicePixelRatio : this.dpr);
   }
 
   setDpr(dpr: number) {
@@ -343,7 +442,6 @@ export default class Editor extends EventDispatcher {
 
   handleExtension = (evt: TouchyEvent) => {
     evt.preventDefault();
-    const element = this.interactionLayer.getElement();
     const minAmountForExtension = this.gridSquareLength / 2;
     if (window.TouchEvent && evt instanceof TouchEvent) {
       if (evt.touches.length > 1) {
@@ -352,7 +450,7 @@ export default class Editor extends EventDispatcher {
     }
     const mouseCartCoord = getMouseCartCoord(
       evt,
-      element,
+      this.element,
       this.panZoom,
       this.dpr,
     );
@@ -507,18 +605,19 @@ export default class Editor extends EventDispatcher {
   }
 
   handlePinchZoom(evt: TouchyEvent) {
-    const element = this.interactionLayer.getElement();
-    const { pinchZoomDiff, panZoom } = calculateNewPanZoomFromPinchZoom(
+    const newPanZoom = calculateNewPanZoomFromPinchZoom(
       evt,
-      element,
+      this.element,
       this.panZoom,
       this.zoomSensitivity,
       this.pinchZoomDiff,
       this.minScale,
       this.maxScale,
     );
-    this.pinchZoomDiff = pinchZoomDiff;
-    this.setPanZoom(panZoom);
+    if (newPanZoom) {
+      this.pinchZoomDiff = newPanZoom.pinchZoomDiff;
+      this.setPanZoom(newPanZoom.panZoom);
+    }
   }
 
   handleWheel = (e: WheelEvent) => {
@@ -557,14 +656,13 @@ export default class Editor extends EventDispatcher {
     if (!this.isPanZoomable) {
       return;
     }
-    const element = this.interactionLayer.getElement();
     const lastMousePos = this.panPoint.lastMousePos;
     if (window.TouchEvent && evt instanceof TouchEvent) {
       if (evt.touches.length > 1) {
         return;
       }
     }
-    const point = getPointFromTouchyEvent(evt, element, this.panZoom);
+    const point = getPointFromTouchyEvent(evt, this.element, this.panZoom);
     const currentMousePos: Coord = { x: point.offsetX, y: point.offsetY };
     this.panPoint.lastMousePos = currentMousePos;
     const mouseDiff = diffPoints(lastMousePos, currentMousePos);
@@ -623,15 +721,11 @@ export default class Editor extends EventDispatcher {
     const interactionLayer = this.interactionLayer;
     // if isInteractionApplication is false, the below logic should be done by the user
     if (this.isInteractionApplicable) {
-      const strokePixelRecords = interactionLayer.getStrokedPixelRecords();
-      const strokedPixelModifyItems = strokePixelRecords
-        .get(CurrentDeviceUserId)
-        .getEffectiveChanges();
+      const strokedPixelModifyItems =
+        interactionLayer.getEffectiveStrokePixelChanges(CurrentDeviceUserId);
 
-      const erasedPixelRecords = interactionLayer.getErasedPixelRecords();
-      const erasedPixelModifyItems = erasedPixelRecords
-        .get(CurrentDeviceUserId)
-        .getEffectiveChanges();
+      const erasedPixelModifyItems =
+        interactionLayer.getEffectiveEraserPixelChanges(CurrentDeviceUserId);
       const pixelModifyItems = [
         ...strokedPixelModifyItems,
         ...erasedPixelModifyItems,
@@ -806,9 +900,96 @@ export default class Editor extends EventDispatcher {
     this.recordAction(new ColorChangeAction(pixelModifyItems));
   }
 
+  commitAction(action: Action) {
+    const type = action.getType();
+    switch (type) {
+      case ActionType.ColorChange:
+        const colorChangeAction = action as ColorChangeAction;
+        const colorChangePixels = colorChangeAction.data;
+        this.dataLayer.updatePixelColors(colorChangePixels);
+        break;
+
+      case ActionType.SizeChange:
+        const sizeChangeAction = action as SizeChangeAction;
+        for (let i = 0; i < sizeChangeAction.changeAmounts.length; i++) {
+          const change = sizeChangeAction.changeAmounts[i];
+          const isExtendAction = change.amount > 0;
+          if (isExtendAction) {
+            this.dataLayer.extendGridBy(
+              change.direction,
+              change.amount,
+              change.startIndex,
+            );
+          } else {
+            this.dataLayer.shortenGridBy(
+              change.direction,
+              change.amount,
+              change.startIndex,
+            );
+          }
+          const sizeChangePixels = sizeChangeAction.data;
+          this.dataLayer.updatePixelColors(sizeChangePixels);
+        }
+        break;
+
+      case ActionType.ColorSizeChange:
+        const colorSizeChangeAction = action as ColorSizeChangeAction;
+        for (let i = 0; i < colorSizeChangeAction.changeAmounts.length; i++) {
+          const change = colorSizeChangeAction.changeAmounts[i];
+          const isExtendAction = change.amount > 0;
+          if (isExtendAction) {
+            this.dataLayer.extendGridBy(
+              change.direction,
+              change.amount,
+              change.startIndex,
+            );
+          } else {
+            this.dataLayer.shortenGridBy(
+              change.direction,
+              change.amount,
+              change.startIndex,
+            );
+          }
+        }
+        // we do not need to care for colorchangemode.Erase since the grids are already deleted
+        const colorSizeChangePixels = colorSizeChangeAction.data;
+        this.dataLayer.updatePixelColors(colorSizeChangePixels);
+        break;
+    }
+  }
+
   recordAction(action: Action) {
     this.undoHistory.push(action);
     this.redoHistory.clear();
+  }
+
+  undo() {
+    if (this.undoHistory.isEmpty()) {
+      return;
+    }
+    const action = this.undoHistory.pop()!;
+    const inverseAction = action.createInverseAction();
+    this.commitAction(inverseAction);
+    this.redoHistory.push(action);
+    this.renderAll();
+  }
+
+  redo() {
+    if (this.redoHistory.isEmpty()) {
+      return;
+    }
+    const action = this.redoHistory.pop()!;
+    this.commitAction(action);
+    this.undoHistory.push(action);
+    this.renderAll();
+  }
+
+  erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
+    const { dataForAction } = this.dataLayer.erasePixels(data);
+    this.interactionLayer.erasePixels(data);
+    this.recordAction(new ColorChangeAction(dataForAction));
+    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
+    this.renderAll();
   }
 
   // this only applies for multiplayer mode or user direct function call
@@ -877,13 +1058,12 @@ export default class Editor extends EventDispatcher {
 
   onMouseDown(evt: TouchyEvent) {
     evt.preventDefault();
-    const element = this.interactionLayer.getElement();
-    const point = getPointFromTouchyEvent(evt, element, this.panZoom);
+    const point = getPointFromTouchyEvent(evt, this.element, this.panZoom);
     this.panPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
-
+    this.interactionLayer.setHoveredPixel(null);
     const mouseCartCoord = getMouseCartCoord(
       evt,
-      element,
+      this.element,
       this.panZoom,
       this.dpr,
     );
@@ -914,22 +1094,21 @@ export default class Editor extends EventDispatcher {
         };
         this.extensionPoint.direction = buttonDirection;
         this.mouseMode = MouseMode.EXTENDING;
-        touchy(element, addEvent, "mousemove", this.handleExtension);
+        touchy(this.element, addEvent, "mousemove", this.handleExtension);
       }
     }
 
     if (this.mouseMode === MouseMode.PANNING) {
-      touchy(element, addEvent, "mousemove", this.handlePanning);
-      touchy(element, addEvent, "mousemove", this.handlePinchZoom);
+      touchy(this.element, addEvent, "mousemove", this.handlePanning);
+      touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
     }
   }
 
   onMouseMove(evt: TouchyEvent) {
     evt.preventDefault();
-    const element = this.interactionLayer.getElement();
     const mouseCartCoord = getMouseCartCoord(
       evt,
-      element,
+      this.element,
       this.panZoom,
       this.dpr,
     );
@@ -988,11 +1167,10 @@ export default class Editor extends EventDispatcher {
   onMouseUp(evt: TouchEvent) {
     evt.preventDefault();
     this.relayInteractionDataToDataLayer();
-    this.mouseMode = MouseMode.DOT;
-    const element = this.interactionLayer.getElement();
-    touchy(element, removeEvent, "mousemove", this.handlePanning);
-    touchy(element, removeEvent, "mousemove", this.handlePinchZoom);
-    touchy(element, removeEvent, "mousemove", this.handleExtension);
+    this.mouseMode = MouseMode.PANNING;
+    touchy(this.element, removeEvent, "mousemove", this.handlePanning);
+    touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
+    touchy(this.element, removeEvent, "mousemove", this.handleExtension);
     this.pinchZoomDiff = undefined;
     this.gridLayer.setHoveredButton(null);
     return;
@@ -1001,10 +1179,9 @@ export default class Editor extends EventDispatcher {
   onMouseOut(evt: TouchEvent) {
     evt.preventDefault();
     this.relayInteractionDataToDataLayer();
-    const element = this.interactionLayer.getElement();
-    touchy(element, removeEvent, "mousemove", this.handlePanning);
-    touchy(element, removeEvent, "mousemove", this.handlePinchZoom);
-    touchy(element, removeEvent, "mousemove", this.handleExtension);
+    touchy(this.element, removeEvent, "mousemove", this.handlePanning);
+    touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
+    touchy(this.element, removeEvent, "mousemove", this.handleExtension);
     if (this.gridLayer.getHoveredButton() !== null) {
       this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
     }
@@ -1013,9 +1190,8 @@ export default class Editor extends EventDispatcher {
   }
 
   removePanListeners() {
-    const element = this.interactionLayer.getElement();
-    touchy(element, removeEvent, "mousemove", this.handlePanning);
-    touchy(element, removeEvent, "mousemove", this.handlePinchZoom);
+    touchy(this.element, removeEvent, "mousemove", this.handlePanning);
+    touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
   }
 
   renderGridLayer() {
@@ -1036,6 +1212,74 @@ export default class Editor extends EventDispatcher {
     this.renderDataLayer();
   }
 
+  downloadImage(props?: ImageDownloadOptions) {
+    const data = this.dataLayer.getData();
+    const imageCanvas = document.createElement("canvas");
+    const columnCount = this.getColumnCount();
+    const rowCount = this.getRowCount();
+    imageCanvas.width = columnCount * this.gridSquareLength;
+    imageCanvas.height = rowCount * this.gridSquareLength;
+    const imageContext = imageCanvas.getContext("2d")!;
+    const allRowKeys = getRowKeysFromData(data);
+    const allColumnKeys = getColumnKeysFromData(data);
+    const rowKeyOrderMap = createRowKeyOrderMapfromData(data);
+    const columnKeyOrderMap = createColumnKeyOrderMapfromData(data);
+    for (const i of allRowKeys) {
+      for (const j of allColumnKeys) {
+        const rowIndex = i;
+        const columnIndex = j;
+        const relativeRowIndex = rowKeyOrderMap.get(rowIndex);
+        const relativeColumnIndex = columnKeyOrderMap.get(columnIndex);
+        const pixel = data.get(rowIndex)!.get(columnIndex);
+        if (pixel && pixel.color) {
+          const pixelCoord = {
+            x: relativeColumnIndex * this.gridSquareLength,
+            y: relativeRowIndex * this.gridSquareLength,
+          };
+          imageContext.save();
+          imageContext.fillStyle = pixel.color;
+          imageContext.fillRect(
+            pixelCoord.x,
+            pixelCoord.y,
+            this.gridSquareLength,
+            this.gridSquareLength,
+          );
+          imageContext.restore();
+        }
+      }
+      imageContext.save();
+      imageContext.strokeStyle = "#000000";
+      imageContext.lineWidth = 1;
+      if (props && props.isGridVisible) {
+        for (let i = 0; i <= this.getColumnCount(); i++) {
+          imageContext.beginPath();
+          imageContext.moveTo(i * this.gridSquareLength, 0);
+          imageContext.lineTo(
+            i * this.gridSquareLength,
+            rowCount * this.gridSquareLength,
+          );
+          imageContext.stroke();
+          imageContext.closePath();
+        }
+        for (let j = 0; j <= this.getRowCount(); j++) {
+          imageContext.beginPath();
+          imageContext.moveTo(0, j * this.gridSquareLength);
+          imageContext.lineTo(
+            columnCount * this.gridSquareLength,
+            j * this.gridSquareLength,
+          );
+          imageContext.stroke();
+          imageContext.closePath();
+        }
+      }
+      imageContext.restore();
+    }
+    const anchor = document.createElement("a");
+    anchor.href = imageCanvas.toDataURL("image/png");
+    anchor.download = "dotting.png";
+    anchor.click();
+  }
+
   renderAll() {
     this.renderInteractionLayer();
 
@@ -1054,7 +1298,45 @@ export default class Editor extends EventDispatcher {
       this.gridLayer.setRowCount(rowCount);
       this.gridLayer.setColumnCount(columnCount);
     }
+    this.renderWhiteBackgroundForHoveredPixel();
     this.renderGridLayer();
+  }
+
+  renderWhiteBackgroundForHoveredPixel() {
+    const hoveredPixel = this.interactionLayer.getHoveredPixel();
+    if (!hoveredPixel) {
+      return;
+    }
+    const ctx = this.dataLayer.getContext();
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    // leftTopPoint is a cartesian coordinate
+    const leftTopPoint: Coord = {
+      x: -((this.dataLayer.getColumnCount() / 2) * this.gridSquareLength),
+      y: -((this.dataLayer.getRowCount() / 2) * this.gridSquareLength),
+    };
+    const convertedLetTopScreenPoint = convertCartesianToScreen(
+      this.element,
+      leftTopPoint,
+      this.dpr,
+    );
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLetTopScreenPoint,
+      this.panZoom,
+    );
+    const { rowIndex, columnIndex } = hoveredPixel;
+    const relativeRowIndex = this.dataLayer.getRowKeyOrderMap().get(rowIndex);
+    const relativeColumnIndex = this.dataLayer
+      .getColumnKeyOrderMap()
+      .get(columnIndex);
+    if (relativeColumnIndex === undefined || relativeRowIndex === undefined) {
+      return;
+    }
+    ctx.clearRect(
+      correctedLeftTopScreenPoint.x + relativeColumnIndex * squareLength,
+      correctedLeftTopScreenPoint.y + relativeColumnIndex * squareLength,
+      squareLength,
+      squareLength,
+    );
   }
 
   renderErasedPixelsFromInteractionLayerInDataLayer() {
@@ -1064,13 +1346,12 @@ export default class Editor extends EventDispatcher {
       const ctx = this.dataLayer.getContext();
       const squareLength = this.gridSquareLength * this.panZoom.scale;
       // leftTopPoint is a cartesian coordinate
-      const element = this.dataLayer.getElement();
       const leftTopPoint: Coord = {
         x: -((this.dataLayer.getColumnCount() / 2) * this.gridSquareLength),
         y: -((this.dataLayer.getRowCount() / 2) * this.gridSquareLength),
       };
       const convertedLetTopScreenPoint = convertCartesianToScreen(
-        element,
+        this.element,
         leftTopPoint,
         this.dpr,
       );
@@ -1103,8 +1384,8 @@ export default class Editor extends EventDispatcher {
         ctx.clearRect(
           relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
           relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-          this.gridSquareLength,
-          this.gridSquareLength,
+          squareLength,
+          squareLength,
         );
       }
     }
@@ -1120,5 +1401,15 @@ export default class Editor extends EventDispatcher {
 
   renderBackgroundLayer() {
     this.backgroundLayer.render();
+  }
+
+  destroy() {
+    touchy(this.element, removeEvent, "mouseup", this.onMouseUp);
+    touchy(this.element, removeEvent, "mouseout", this.onMouseOut);
+    touchy(this.element, removeEvent, "mousedown", this.onMouseDown);
+    touchy(this.element, removeEvent, "mousemove", this.onMouseMove);
+    touchy(this.element, removeEvent, "mousemove", this.handlePanning);
+    touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
+    this.element.removeEventListener("wheel", this.handleWheel);
   }
 }

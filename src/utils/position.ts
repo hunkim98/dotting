@@ -75,7 +75,7 @@ export const calculateNewPanZoomFromPinchZoom = (
   prevPinchZoomDiff: number | null,
   minScale: number,
   maxScale: number,
-) => {
+): { pinchZoomDiff: number; panZoom: PanZoom } | null => {
   evt.preventDefault();
   if (window.TouchEvent && evt instanceof TouchEvent) {
     const touchCount = evt.touches.length;
@@ -103,6 +103,7 @@ export const calculateNewPanZoomFromPinchZoom = (
       x: (firstTouchPoint.offsetX + secondTouchPoint.offsetY) / 2,
       y: (firstTouchPoint.offsetY + secondTouchPoint.offsetY) / 2,
     };
+    console.log(pinchZoomCurrentDiff, "pinchZoomCurrentDiff");
 
     if (!prevPinchZoomDiff) {
       return { pinchZoomDiff: pinchZoomCurrentDiff, panZoom };
@@ -128,6 +129,8 @@ export const calculateNewPanZoomFromPinchZoom = (
       pinchZoomDiff: pinchZoomCurrentDiff,
       panZoom: { scale: newScale, offset },
     };
+  } else {
+    return null;
   }
 };
 

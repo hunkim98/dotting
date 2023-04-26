@@ -44,12 +44,6 @@ export enum BrushMode {
   PAINT_BUCKET = MouseMode.PAINT_BUCKET,
 }
 
-export const PossibleBrushModes = [
-  MouseMode.DOT,
-  MouseMode.ERASER,
-  MouseMode.PAINT_BUCKET,
-];
-
 export type CanvasDataChangeHandler = (data: DottingData) => void;
 
 export type CanvasGridChangeHandler = (

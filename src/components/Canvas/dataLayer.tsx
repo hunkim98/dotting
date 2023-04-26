@@ -9,7 +9,6 @@ import {
 import {
   addColumnToData,
   addRowToData,
-  createRowKeyOrderMapfromData,
   deleteColumnOfData,
   deleteRowOfData,
   extractColoredPixelsFromColumn,
@@ -50,8 +49,7 @@ export default class DataLayer extends BaseLayer {
     initData?: Array<Array<PixelData>>;
   }) {
     super({ canvas });
-    const { isDataValid } = validatePixelArrayData(initData);
-    if (isDataValid && initData) {
+    if (initData && validatePixelArrayData(initData).isDataValid) {
       for (let i = 0; i < initData.length; i++) {
         this.data.set(i, new Map());
         for (let j = 0; j < initData[i].length; j++) {
@@ -142,6 +140,18 @@ export default class DataLayer extends BaseLayer {
     }
   }
 
+  updatePixelColors(data: Array<PixelModifyItem>) {
+    for (const item of data) {
+      const { rowIndex, columnIndex, color } = item;
+      if (
+        this.data.get(rowIndex) &&
+        this.data.get(rowIndex)!.get(columnIndex)
+      ) {
+        this.data.get(rowIndex)!.set(columnIndex, { color });
+      }
+    }
+  }
+
   colorPixels(data: Array<PixelModifyItem>) {
     const rowIndices = data.map(change => change.rowIndex);
     const columnIndices = data.map(change => change.columnIndex);
@@ -220,6 +230,19 @@ export default class DataLayer extends BaseLayer {
     };
   }
 
+  erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
+    const dataForAction: Array<ColorChangeItem> = [];
+    for (const change of data) {
+      const previousColor = this.data
+        .get(change.rowIndex)!
+        .get(change.columnIndex)!.color;
+      const color = "";
+      this.data.get(change.rowIndex)!.set(change.columnIndex, { color: "" });
+      dataForAction.push({ ...change, color, previousColor });
+    }
+    return { dataForAction };
+  }
+
   extendGridBy(direction: ButtonDirection, amount: number, startIndex: number) {
     const shouldIncreaseIndex =
       direction === ButtonDirection.BOTTOM ||
@@ -250,15 +273,18 @@ export default class DataLayer extends BaseLayer {
       y: -((this.getRowCount() / 2) * this.gridSquareLength),
     };
     const ctx = this.ctx;
-    const convertedLetTopScreenPoint = convertCartesianToScreen(
+    ctx.clearRect(0, 0, this.width, this.height);
+    const convertedLeftTopScreenPoint = convertCartesianToScreen(
       this.element,
       leftTopPoint,
       this.dpr,
     );
+    console.log(convertedLeftTopScreenPoint);
     const correctedLeftTopScreenPoint = getScreenPoint(
-      convertedLetTopScreenPoint,
+      convertedLeftTopScreenPoint,
       this.panZoom,
     );
+    console.log(correctedLeftTopScreenPoint);
 
     const allRowKeys = getRowKeysFromData(this.data);
     const allColumnKeys = getColumnKeysFromData(this.data);
