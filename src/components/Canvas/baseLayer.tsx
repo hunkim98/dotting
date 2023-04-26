@@ -13,12 +13,29 @@ export abstract class BaseLayer {
   protected width: number;
   protected height: number;
   protected criterionDataForRendering: DottingData | null;
+  // TODO: We needed a key value sorted map!
   protected rowKeyOrderMap: Map<number, number> = new Map();
   protected columnKeyOrderMap: Map<number, number> = new Map();
 
   constructor({ canvas }: { canvas: HTMLCanvasElement }) {
     this.ctx = canvas.getContext("2d")!;
     this.element = canvas;
+  }
+
+  getContext() {
+    return this.ctx;
+  }
+
+  getElement() {
+    return this.element;
+  }
+
+  getRowKeyOrderMap() {
+    return this.rowKeyOrderMap;
+  }
+
+  getColumnKeyOrderMap() {
+    return this.columnKeyOrderMap;
   }
 
   setPanZoom(panZoom: PanZoom) {

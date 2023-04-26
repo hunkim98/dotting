@@ -39,9 +39,9 @@ export enum CanvasEvents {
 }
 
 export enum BrushMode {
-  DOT = "dot",
-  ERASER = "eraser",
-  PAINT_BUCKET = "paint_bucket",
+  DOT = MouseMode.DOT,
+  ERASER = MouseMode.ERASER,
+  PAINT_BUCKET = MouseMode.PAINT_BUCKET,
 }
 
 export const PossibleBrushModes = [

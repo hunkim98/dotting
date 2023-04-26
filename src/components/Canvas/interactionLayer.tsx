@@ -2,8 +2,6 @@ import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
 import {
   addColumnToData,
   addRowToData,
-  createColumnKeyOrderMapfromData,
-  createRowKeyOrderMapfromData,
   deleteColumnOfData,
   deleteRowOfData,
   extractColoredPixelsFromColumn,
@@ -16,7 +14,6 @@ import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 import { BaseLayer } from "./BaseLayer";
 import {
   DefaultGridSquareLength,
-  DimensionChangeRecord,
   UserId,
   ButtonDirection,
   TemporaryUserId,
@@ -30,8 +27,6 @@ import {
 } from "./types";
 
 export default class InteractionLayer extends BaseLayer {
-  private isPanZoomable: boolean;
-
   // We make this a map to allow for multiple users to interact with the canvas
   // the key will be the user id
   private strokedPixelRecords: Map<UserId, PixelChangeRecords> = new Map();
@@ -42,10 +37,6 @@ export default class InteractionLayer extends BaseLayer {
   // while the user was changing the dimensions of the data canvas
   // ( = the captured Data is not null)
   private tempStrokedPixels: Array<PixelModifyItem> = [];
-
-  // We make this a map to allow for multiple users to interact with the canvas
-  // the key will be the user id
-  private dimensionChangeRecord: DimensionChangeRecord = null;
 
   private swipedPixels: Array<PixelModifyItem> = [];
 
@@ -82,12 +73,6 @@ export default class InteractionLayer extends BaseLayer {
     super({ canvas });
     this.dataLayerColumnCount = columnCount;
     this.dataLayerRowCount = rowCount;
-  }
-
-  setIsPanZoomable(isPanZoomable: boolean) {
-    if (isPanZoomable !== undefined) {
-      this.isPanZoomable = isPanZoomable;
-    }
   }
 
   getCapturedData() {
@@ -133,11 +118,6 @@ export default class InteractionLayer extends BaseLayer {
     this.hoveredPixel = hoveredPixel;
   }
 
-  // interaction element is the element that is used to interact with the canvas
-  getElement() {
-    return this.element;
-  }
-
   getStrokedPixelRecords() {
     return this.strokedPixelRecords;
   }
@@ -178,7 +158,6 @@ export default class InteractionLayer extends BaseLayer {
           ? leftColumnIndex - 1
           : rightColumnIndex + 1;
       addColumnToData(this.capturedData, newColumnIndex);
-      this.render();
     }
   }
 
@@ -224,31 +203,11 @@ export default class InteractionLayer extends BaseLayer {
       deleteColumnOfData(this.capturedData, swipedColumnIndex);
     }
     this.addToSwipedPixels(pixelModifyItems);
-    this.render();
   }
 
   setIndicatorPixels(indicatorPixels: Array<PixelModifyItem>) {
     this.indicatorPixels = indicatorPixels;
-    this.render();
   }
-
-  getDimensionChange() {
-    return this.dimensionChangeRecord;
-  }
-
-  /**
-   * Dimension change during interaction will not be able to be communicated to other users
-   * The dimension changes that others make will be communicated after the user finishes interacting
-   *
-   * This is because there will be an error
-   * when two users change one dimension at the same time
-   * @param dimensionChangeRecord
-   */
-  setDimensionChangeRecord(dimensionChangeRecord: DimensionChangeRecord) {
-    this.dimensionChangeRecord = dimensionChangeRecord;
-    this.render();
-  }
-
   /**
    * This function will be only used by the current device user
    * @param pixelItems
@@ -269,7 +228,6 @@ export default class InteractionLayer extends BaseLayer {
       this.strokedPixelRecords.set(userId, new PixelChangeRecords());
     }
     this.strokedPixelRecords.get(userId)?.record(pixelItem);
-    this.render();
   }
 
   getAllStrokePixels() {
@@ -285,7 +243,6 @@ export default class InteractionLayer extends BaseLayer {
       this.erasedPixelRecords.set(userId, new PixelChangeRecords());
     }
     this.erasedPixelRecords.get(userId)?.record(pixelItem);
-    this.render();
   }
 
   getAllErasedPixels() {
@@ -298,19 +255,16 @@ export default class InteractionLayer extends BaseLayer {
 
   deleteErasedPixelRecord(userId: UserId) {
     this.erasedPixelRecords.delete(userId);
-    this.render();
   }
 
   deleteStrokePixelRecord(userId: UserId) {
     this.strokedPixelRecords.delete(userId);
-    this.render();
   }
 
   // this will be called when multiplayer user (finishes) changing the color
   // while the user is changing the dimensions of the canvas
   colorPixels(data: Array<PixelModifyItem>) {
     this.tempStrokedPixels.concat(data);
-    return;
   }
 
   renderStrokedPixels(
@@ -454,10 +408,10 @@ export default class InteractionLayer extends BaseLayer {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const doesCapturedDataExist = this.capturedData !== null;
-    const rowCount = this.capturedData
+    const rowCount = doesCapturedDataExist
       ? getRowCountFromData(this.capturedData)
       : this.dataLayerRowCount;
-    const columnCount = this.capturedData
+    const columnCount = doesCapturedDataExist
       ? getColumnCountFromData(this.capturedData)
       : this.dataLayerColumnCount;
     const leftTopPoint: Coord = {

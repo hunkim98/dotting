@@ -9,6 +9,7 @@ import {
 import {
   addColumnToData,
   addRowToData,
+  createRowKeyOrderMapfromData,
   deleteColumnOfData,
   deleteRowOfData,
   extractColoredPixelsFromColumn,
@@ -269,6 +270,12 @@ export default class DataLayer extends BaseLayer {
         const columnIndex = j;
         const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
         const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
+        if (
+          relativeRowIndex === undefined ||
+          relativeColumnIndex === undefined
+        ) {
+          continue;
+        }
 
         const color = this.data.get(rowIndex)?.get(columnIndex)?.color;
         if (!color) {
