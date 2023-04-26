@@ -267,6 +267,8 @@ export default class DataLayer extends BaseLayer {
       for (const j of allColumnKeys) {
         const rowIndex = i;
         const columnIndex = j;
+        const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
+        const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
 
         const color = this.data.get(rowIndex)?.get(columnIndex)?.color;
         if (!color) {
@@ -275,8 +277,8 @@ export default class DataLayer extends BaseLayer {
         ctx.fillStyle = color;
 
         ctx.fillRect(
-          j * squareLength + correctedLeftTopScreenPoint.x,
-          i * squareLength + correctedLeftTopScreenPoint.y,
+          relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+          relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
           squareLength,
           squareLength,
         );
