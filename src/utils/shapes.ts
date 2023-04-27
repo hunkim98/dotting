@@ -41,19 +41,4 @@ export const drawExtendButton = (
   );
 
   ctx.restore();
-
-  drawArrowHead(
-    ctx,
-    leftTopPos.x - (buttonWidth / 2) * scale,
-    leftTopPos.y + (buttonHeight * scale) / 2,
-    -Math.PI / 2,
-    scale,
-  );
-  drawArrowHead(
-    ctx,
-    leftTopPos.x + (buttonWidth / 2) * scale,
-    leftTopPos.y + (buttonHeight * scale) / 2,
-    Math.PI / 2,
-    scale,
-  );
 };

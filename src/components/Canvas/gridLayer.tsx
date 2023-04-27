@@ -1,5 +1,5 @@
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
-import { drawExtendButton } from "../../utils/shapes";
+import { drawArrowHead, drawExtendButton } from "../../utils/shapes";
 import { BaseLayer } from "./BaseLayer";
 import {
   ButtonDirection,
@@ -196,6 +196,20 @@ export default class GridLayer extends BaseLayer {
       height,
       this.panZoom.scale,
     );
+    drawArrowHead(
+      this.ctx,
+      screenPos.x,
+      screenPos.y + (height * this.panZoom.scale) / 2,
+      -Math.PI / 2,
+      this.panZoom.scale,
+    );
+    drawArrowHead(
+      this.ctx,
+      screenPos.x + width * this.panZoom.scale,
+      screenPos.y + (height * this.panZoom.scale) / 2,
+      Math.PI / 2,
+      this.panZoom.scale,
+    );
   }
 
   drawLeftButton(color: string) {
@@ -207,8 +221,8 @@ export default class GridLayer extends BaseLayer {
       height,
     );
     this.leftButtonDimensions = {
-      x: worldPos.x - width / 2,
-      y: worldPos.y - height / 2,
+      x: worldPos.x,
+      y: worldPos.y,
       width,
       height,
     };
@@ -218,6 +232,20 @@ export default class GridLayer extends BaseLayer {
       color,
       width,
       height,
+      this.panZoom.scale,
+    );
+    drawArrowHead(
+      this.ctx,
+      screenPos.x,
+      screenPos.y + (height * this.panZoom.scale) / 2,
+      -Math.PI / 2,
+      this.panZoom.scale,
+    );
+    drawArrowHead(
+      this.ctx,
+      screenPos.x + width * this.panZoom.scale,
+      screenPos.y + (height * this.panZoom.scale) / 2,
+      Math.PI / 2,
       this.panZoom.scale,
     );
   }
@@ -244,6 +272,20 @@ export default class GridLayer extends BaseLayer {
       height,
       this.panZoom.scale,
     );
+    drawArrowHead(
+      this.ctx,
+      screenPos.x + (width * this.panZoom.scale) / 2,
+      screenPos.y,
+      Math.PI * 2,
+      this.panZoom.scale,
+    );
+    drawArrowHead(
+      this.ctx,
+      screenPos.x + (width * this.panZoom.scale) / 2,
+      screenPos.y + height * this.panZoom.scale,
+      Math.PI,
+      this.panZoom.scale,
+    );
   }
 
   drawBottomButton(color: string) {
@@ -255,8 +297,8 @@ export default class GridLayer extends BaseLayer {
       height,
     );
     this.bottomButtonDimensions = {
-      x: worldPos.x - width / 2,
-      y: worldPos.y - height / 2,
+      x: worldPos.x,
+      y: worldPos.y,
       width,
       height,
     };
@@ -266,6 +308,20 @@ export default class GridLayer extends BaseLayer {
       color,
       width,
       height,
+      this.panZoom.scale,
+    );
+    drawArrowHead(
+      this.ctx,
+      screenPos.x + (width * this.panZoom.scale) / 2,
+      screenPos.y,
+      Math.PI * 2,
+      this.panZoom.scale,
+    );
+    drawArrowHead(
+      this.ctx,
+      screenPos.x + (width * this.panZoom.scale) / 2,
+      screenPos.y + height * this.panZoom.scale,
+      Math.PI,
       this.panZoom.scale,
     );
   }
