@@ -518,7 +518,7 @@ export default class Editor extends EventDispatcher {
   private extendInteractionGrid(direction: ButtonDirection) {
     const interactionLayer = this.interactionLayer;
     interactionLayer.extendCapturedData(direction);
-    this.renderInteractionLayer();
+    // this.renderInteractionLayer();
     if (direction === ButtonDirection.TOP) {
       this.setPanZoom({
         offset: {
@@ -561,8 +561,11 @@ export default class Editor extends EventDispatcher {
   // we have extend interaction grid inside editor because we must change the panzoom too
   private shortenInteractionGrid(direction: ButtonDirection) {
     const interactionLayer = this.interactionLayer;
-    interactionLayer.shortenCapturedData(direction);
-    this.renderInteractionLayer();
+    const isShortened = interactionLayer.shortenCapturedData(direction);
+    if (!isShortened) {
+      return;
+    }
+    // this.renderInteractionLayer();
     if (direction === ButtonDirection.TOP) {
       this.setPanZoom({
         offset: {
@@ -572,6 +575,7 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
       });
+      console.log("top");
     } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
@@ -581,6 +585,7 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
       });
+      console.log("bottom");
     } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
@@ -1337,50 +1342,6 @@ export default class Editor extends EventDispatcher {
       squareLength,
       squareLength,
     );
-  }
-
-  renderSwipedPixelsFromInteractionLayerInDataLayer() {
-    const swipedPixelsInInteractionLayer =
-      this.interactionLayer.getSwipedPixels();
-    if (swipedPixelsInInteractionLayer.length > 0) {
-      const ctx = this.dataLayer.getContext();
-      const squareLength = this.gridSquareLength * this.panZoom.scale;
-      // leftTopPoint is a cartesian coordinate
-      const leftTopPoint: Coord = {
-        x: -((this.dataLayer.getColumnCount() / 2) * this.gridSquareLength),
-        y: -((this.dataLayer.getRowCount() / 2) * this.gridSquareLength),
-      };
-      const convertedLetTopScreenPoint = convertCartesianToScreen(
-        this.element,
-        leftTopPoint,
-        this.dpr,
-      );
-      const correctedLeftTopScreenPoint = getScreenPoint(
-        convertedLetTopScreenPoint,
-        this.panZoom,
-      );
-      for (const pixel of swipedPixelsInInteractionLayer) {
-        const { rowIndex, columnIndex } = pixel;
-        const relativeRowIndex = this.dataLayer
-          .getRowKeyOrderMap()
-          .get(rowIndex);
-        const relativeColumnIndex = this.dataLayer
-          .getColumnKeyOrderMap()
-          .get(columnIndex);
-        if (
-          relativeColumnIndex === undefined ||
-          relativeRowIndex === undefined
-        ) {
-          continue;
-        }
-        ctx.clearRect(
-          relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-          relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-          squareLength,
-          squareLength,
-        );
-      }
-    }
   }
 
   renderErasedPixelsFromInteractionLayerInDataLayer() {

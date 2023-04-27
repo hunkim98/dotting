@@ -145,10 +145,6 @@ export default class InteractionLayer extends BaseLayer {
     return this.erasedPixelRecords.get(userId)!.getEffectiveChanges();
   }
 
-  getSwipedPixels() {
-    return this.swipedPixels;
-  }
-
   getIndicatorPixels() {
     return this.indicatorPixels;
   }
@@ -167,9 +163,9 @@ export default class InteractionLayer extends BaseLayer {
         direction === ButtonDirection.TOP
           ? topRowIndex - 1
           : bottomRowIndex + 1;
-      this.swipedPixels = this.swipedPixels.filter(
-        swipedPixel => swipedPixel.rowIndex !== newRowIndex,
-      );
+      // this.swipedPixels = this.swipedPixels.filter(
+      //   swipedPixel => swipedPixel.rowIndex !== newRowIndex,
+      // );
       addRowToData(this.capturedData, newRowIndex);
     } else if (
       direction === ButtonDirection.LEFT ||
@@ -179,14 +175,14 @@ export default class InteractionLayer extends BaseLayer {
         direction === ButtonDirection.LEFT
           ? leftColumnIndex - 1
           : rightColumnIndex + 1;
-      this.swipedPixels = this.swipedPixels.filter(
-        swipedPixel => swipedPixel.columnIndex !== newColumnIndex,
-      );
+      // this.swipedPixels = this.swipedPixels.filter(
+      //   swipedPixel => swipedPixel.columnIndex !== newColumnIndex,
+      // );
       addColumnToData(this.capturedData, newColumnIndex);
     }
   }
 
-  shortenCapturedData(direction: ButtonDirection) {
+  shortenCapturedData(direction: ButtonDirection): boolean {
     if (!this.capturedData) {
       throw new Error("There is no captured data");
     }
@@ -200,7 +196,7 @@ export default class InteractionLayer extends BaseLayer {
       direction === ButtonDirection.BOTTOM
     ) {
       if (rowCount <= 2) {
-        return;
+        return false;
       }
       const swipedRowIndex =
         direction === ButtonDirection.TOP ? topRowIndex : bottomRowIndex;
@@ -216,7 +212,7 @@ export default class InteractionLayer extends BaseLayer {
       direction === ButtonDirection.RIGHT
     ) {
       if (columnCount <= 2) {
-        return;
+        return false;
       }
       const swipedColumnIndex =
         direction === ButtonDirection.LEFT ? leftColumnIndex : rightColumnIndex;
@@ -228,6 +224,7 @@ export default class InteractionLayer extends BaseLayer {
       deleteColumnOfData(this.capturedData, swipedColumnIndex);
     }
     this.addToSwipedPixels(pixelModifyItems);
+    return true;
   }
 
   setIndicatorPixels(indicatorPixels: Array<PixelModifyItem>) {
