@@ -770,6 +770,7 @@ export default class Editor extends EventDispatcher {
             amount,
             dataGridIndices.topRowIndex,
           );
+          console.log(topRowDiff, amount, dataGridIndices.topRowIndex);
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
         } else if (topRowDiff > 0) {
@@ -1448,7 +1449,7 @@ export default class Editor extends EventDispatcher {
 
   renderInteractionLayer() {
     this.interactionLayer.render();
-    this.renderSwipedPixelsFromInteractionLayerInDataLayer();
+    // this.renderSwipedPixelsFromInteractionLayerInDataLayer();
   }
 
   renderBackgroundLayer() {

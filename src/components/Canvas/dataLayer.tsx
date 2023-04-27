@@ -258,7 +258,7 @@ export default class DataLayer extends BaseLayer {
     const shouldIncreaseIndex =
       direction === ButtonDirection.BOTTOM ||
       direction === ButtonDirection.RIGHT;
-    for (let i = 0; i < amount; i++) {
+    for (let i = 1; i <= amount; i++) {
       const index = startIndex + (shouldIncreaseIndex ? i : -i);
       this.extendGrid(direction, index);
     }
