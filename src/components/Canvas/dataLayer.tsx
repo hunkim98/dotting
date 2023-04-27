@@ -90,6 +90,14 @@ export default class DataLayer extends BaseLayer {
     return this.data;
   }
 
+  getSwipedPixels() {
+    return this.swipedPixels;
+  }
+
+  resetSwipedPixels() {
+    this.swipedPixels = [];
+  }
+
   setData(data: DottingData) {
     this.data = data;
   }
@@ -109,29 +117,32 @@ export default class DataLayer extends BaseLayer {
 
   shortenGrid(direction: ButtonDirection, index: number) {
     const { columnCount, rowCount } = this.getDimensions();
+    const rowKeys = getRowKeysFromData(this.data);
+    const columnKeys = getColumnKeysFromData(this.data);
+    console.log(this.data);
     if (direction === ButtonDirection.TOP) {
-      if (rowCount <= 2) {
+      if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
       }
       const swipedPixels = extractColoredPixelsFromRow(this.data, index);
       this.swipedPixels.push(...swipedPixels);
       deleteRowOfData(this.data, index);
     } else if (direction === ButtonDirection.BOTTOM) {
-      if (rowCount <= 2) {
+      if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
       }
       const swipedPixels = extractColoredPixelsFromRow(this.data, index);
       this.swipedPixels.push(...swipedPixels);
       deleteRowOfData(this.data, index);
     } else if (direction === ButtonDirection.LEFT) {
-      if (columnCount <= 2) {
+      if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }
       const swipedPixels = extractColoredPixelsFromColumn(this.data, index);
       this.swipedPixels.push(...swipedPixels);
       deleteColumnOfData(this.data, index);
     } else if (direction === ButtonDirection.RIGHT) {
-      if (columnCount <= 2) {
+      if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }
       const swipedPixels = extractColoredPixelsFromColumn(this.data, index);
@@ -279,12 +290,10 @@ export default class DataLayer extends BaseLayer {
       leftTopPoint,
       this.dpr,
     );
-    console.log(convertedLeftTopScreenPoint);
     const correctedLeftTopScreenPoint = getScreenPoint(
       convertedLeftTopScreenPoint,
       this.panZoom,
     );
-    console.log(correctedLeftTopScreenPoint);
 
     const allRowKeys = getRowKeysFromData(this.data);
     const allColumnKeys = getColumnKeysFromData(this.data);

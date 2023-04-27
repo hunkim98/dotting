@@ -248,14 +248,16 @@ export default class Editor extends EventDispatcher {
   }
 
   setBrushColor(color: string) {
-    this.brushColor = color;
-    const hoveredPixel = this.interactionLayer.getHoveredPixel();
-    if (hoveredPixel) {
-      this.interactionLayer.setHoveredPixel({
-        ...hoveredPixel,
-        color: this.brushColor,
-      });
-      this.renderDataLayer();
+    if (color !== undefined) {
+      this.brushColor = color;
+      const hoveredPixel = this.interactionLayer.getHoveredPixel();
+      if (hoveredPixel) {
+        this.interactionLayer.setHoveredPixel({
+          ...hoveredPixel,
+          color: this.brushColor,
+        });
+        this.renderDataLayer();
+      }
     }
   }
 
@@ -442,6 +444,12 @@ export default class Editor extends EventDispatcher {
 
   handleExtension = (evt: TouchyEvent) => {
     evt.preventDefault();
+    const interactionLayer = this.interactionLayer;
+    const interactionCapturedData = interactionLayer.getCapturedData();
+    if (!interactionCapturedData) {
+      // we will copy the data to interaction layer
+      interactionLayer.setCapturedData(new Map(this.dataLayer.getData()));
+    }
     const minAmountForExtension = this.gridSquareLength / 2;
     if (window.TouchEvent && evt instanceof TouchEvent) {
       if (evt.touches.length > 1) {
@@ -476,7 +484,7 @@ export default class Editor extends EventDispatcher {
             this.extendInteractionGrid(ButtonDirection.BOTTOM);
             this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
           } else if (extensionAmount.y > minAmountForExtension) {
-            this.shortenInteractionGrid(ButtonDirection.TOP);
+            this.shortenInteractionGrid(ButtonDirection.BOTTOM);
             this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
           }
           break;
@@ -509,11 +517,6 @@ export default class Editor extends EventDispatcher {
   // we have extend interaction grid inside editor because we must change the panzoom too
   private extendInteractionGrid(direction: ButtonDirection) {
     const interactionLayer = this.interactionLayer;
-    const interactionCapturedData = interactionLayer.getCapturedData();
-    if (!interactionCapturedData) {
-      // we will copy the data to interaction layer
-      interactionLayer.setCapturedData(new Map(this.dataLayer.getData()));
-    }
     interactionLayer.extendCapturedData(direction);
     this.renderInteractionLayer();
     if (direction === ButtonDirection.TOP) {
@@ -558,23 +561,9 @@ export default class Editor extends EventDispatcher {
   // we have extend interaction grid inside editor because we must change the panzoom too
   private shortenInteractionGrid(direction: ButtonDirection) {
     const interactionLayer = this.interactionLayer;
-    const interactionCapturedData = interactionLayer.getCapturedData();
-    if (!interactionCapturedData) {
-      // we will copy the data to interaction layer
-      interactionLayer.setCapturedData(new Map(this.dataLayer.getData()));
-    }
     interactionLayer.shortenCapturedData(direction);
     this.renderInteractionLayer();
     if (direction === ButtonDirection.TOP) {
-      this.setPanZoom({
-        offset: {
-          x: this.panZoom.offset.x,
-          y:
-            this.panZoom.offset.y -
-            (this.gridSquareLength / 2) * this.panZoom.scale,
-        },
-      });
-    } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
@@ -583,11 +572,20 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
       });
+    } else if (direction === ButtonDirection.BOTTOM) {
+      this.setPanZoom({
+        offset: {
+          x: this.panZoom.offset.x,
+          y:
+            this.panZoom.offset.y -
+            (this.gridSquareLength / 2) * this.panZoom.scale,
+        },
+      });
     } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
           x:
-            this.panZoom.offset.x -
+            this.panZoom.offset.x +
             (this.gridSquareLength / 2) * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
@@ -596,7 +594,7 @@ export default class Editor extends EventDispatcher {
       this.setPanZoom({
         offset: {
           x:
-            this.panZoom.offset.x +
+            this.panZoom.offset.x -
             (this.gridSquareLength / 2) * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
@@ -760,113 +758,115 @@ export default class Editor extends EventDispatcher {
         const rightColumnDiff =
           interactionGridIndices.rightColumnIndex -
           dataGridIndices.rightColumnIndex;
-        const swipedPixels = interactionLayer.getSwipedPixels();
-        let deletedPixels = [];
+        // const swipedPixels = interactionLayer.getSwipedPixels();
+        // let deletedPixels = [];
         let amount = 0;
         let direction: ButtonDirection | null = null;
         let startIndex = 0;
-        if (topRowDiff > 0) {
-          this.dataLayer.extendGridBy(
-            ButtonDirection.TOP,
-            topRowDiff,
-            dataGridIndices.topRowIndex,
-          );
-          amount = topRowDiff;
-          direction = ButtonDirection.TOP;
-          startIndex = dataGridIndices.topRowIndex;
-        } else if (topRowDiff < 0) {
-          this.dataLayer.shortenGridBy(
-            ButtonDirection.TOP,
-            -topRowDiff,
-            dataGridIndices.topRowIndex,
-          );
+        if (topRowDiff < 0) {
           amount = -topRowDiff;
+          this.dataLayer.extendGridBy(
+            ButtonDirection.TOP,
+            amount,
+            dataGridIndices.topRowIndex,
+          );
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
-          deletedPixels = swipedPixels.filter(
-            pixel => pixel.rowIndex <= startIndex + amount - 1,
+        } else if (topRowDiff > 0) {
+          amount = topRowDiff;
+          this.dataLayer.shortenGridBy(
+            ButtonDirection.TOP,
+            amount,
+            dataGridIndices.topRowIndex,
           );
+          direction = ButtonDirection.TOP;
+          startIndex = dataGridIndices.topRowIndex;
+          // deletedPixels = swipedPixels.filter(
+          //   pixel => pixel.rowIndex <= startIndex + amount - 1,
+          // );
         }
-        if (leftColumnDiff > 0) {
+        if (leftColumnDiff < 0) {
+          amount = -leftColumnDiff;
           this.dataLayer.extendGridBy(
             ButtonDirection.LEFT,
-            leftColumnDiff,
+            amount,
             dataGridIndices.leftColumnIndex,
           );
-          amount = leftColumnDiff;
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
-        } else if (leftColumnDiff < 0) {
+        } else if (leftColumnDiff > 0) {
+          amount = leftColumnDiff;
           this.dataLayer.shortenGridBy(
             ButtonDirection.LEFT,
-            -leftColumnDiff,
+            amount,
             dataGridIndices.leftColumnIndex,
           );
-          amount = -leftColumnDiff;
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
-          deletedPixels = swipedPixels.filter(
-            pixel => pixel.columnIndex <= startIndex + amount - 1,
-          );
+          // deletedPixels = swipedPixels.filter(
+          //   pixel => pixel.columnIndex <= startIndex + amount - 1,
+          // );
         }
         if (bottomRowDiff > 0) {
+          amount = bottomRowDiff;
           this.dataLayer.extendGridBy(
             ButtonDirection.BOTTOM,
-            bottomRowDiff,
+            amount,
             dataGridIndices.bottomRowIndex,
           );
-          amount = bottomRowDiff;
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
         } else if (bottomRowDiff < 0) {
+          amount = -bottomRowDiff;
           this.dataLayer.shortenGridBy(
             ButtonDirection.BOTTOM,
-            -bottomRowDiff,
+            amount,
             dataGridIndices.bottomRowIndex,
           );
-          amount = -bottomRowDiff;
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
-          deletedPixels = swipedPixels.filter(
-            pixel => pixel.rowIndex >= startIndex - amount + 1,
-          );
+          // deletedPixels = swipedPixels.filter(
+          //   pixel => pixel.rowIndex >= startIndex - amount + 1,
+          // );
         }
         if (rightColumnDiff > 0) {
+          amount = rightColumnDiff;
           this.dataLayer.extendGridBy(
             ButtonDirection.RIGHT,
-            rightColumnDiff,
+            amount,
             dataGridIndices.rightColumnIndex,
           );
-          amount = rightColumnDiff;
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
         } else if (rightColumnDiff < 0) {
+          amount = -rightColumnDiff;
           this.dataLayer.shortenGridBy(
             ButtonDirection.RIGHT,
-            -rightColumnDiff,
+            amount,
             dataGridIndices.rightColumnIndex,
           );
-          amount = -rightColumnDiff;
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
-          deletedPixels = swipedPixels.filter(
-            pixel => pixel.columnIndex >= startIndex - amount + 1,
-          );
+          // deletedPixels = swipedPixels.filter(
+          //   pixel => pixel.columnIndex >= startIndex - amount + 1,
+          // );
         }
+
         if (direction) {
+          console.log(this.dataLayer.getSwipedPixels());
           this.recordInteractionSizeChangeAction(
             direction,
-            deletedPixels,
+            this.dataLayer.getSwipedPixels(),
             amount,
             startIndex,
           );
+          this.dataLayer.resetSwipedPixels();
         }
       }
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places
       this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
       this.relayDataDimensionsToLayers();
-      interactionLayer.resetCapturedData();
       // deletes the records of the current user
       interactionLayer.deleteErasedPixelRecord(CurrentDeviceUserId);
       interactionLayer.deleteStrokePixelRecord(CurrentDeviceUserId);
@@ -874,8 +874,9 @@ export default class Editor extends EventDispatcher {
       this.interactionLayer.setCriterionDataForRendering(
         this.dataLayer.getData(),
       );
-      this.renderAll();
     }
+    interactionLayer.resetCapturedData();
+    this.renderAll();
   }
 
   // this will only record one action
@@ -1082,6 +1083,7 @@ export default class Editor extends EventDispatcher {
         pixelIndex.rowIndex,
         pixelIndex.columnIndex,
       );
+      this.renderInteractionLayer();
     }
     this.mouseMode = pixelIndex ? MouseMode.DOT : MouseMode.PANNING;
     const isGridFixed = this.gridLayer.getIsGridFixed();
@@ -1196,6 +1198,11 @@ export default class Editor extends EventDispatcher {
 
   renderGridLayer() {
     this.gridLayer.render();
+  }
+
+  clearDataLayer() {
+    const ctx = this.dataLayer.getContext();
+    ctx.clearRect(0, 0, this.width, this.height);
   }
 
   clear() {
@@ -1339,6 +1346,50 @@ export default class Editor extends EventDispatcher {
     );
   }
 
+  renderSwipedPixelsFromInteractionLayerInDataLayer() {
+    const swipedPixelsInInteractionLayer =
+      this.interactionLayer.getSwipedPixels();
+    if (swipedPixelsInInteractionLayer.length > 0) {
+      const ctx = this.dataLayer.getContext();
+      const squareLength = this.gridSquareLength * this.panZoom.scale;
+      // leftTopPoint is a cartesian coordinate
+      const leftTopPoint: Coord = {
+        x: -((this.dataLayer.getColumnCount() / 2) * this.gridSquareLength),
+        y: -((this.dataLayer.getRowCount() / 2) * this.gridSquareLength),
+      };
+      const convertedLetTopScreenPoint = convertCartesianToScreen(
+        this.element,
+        leftTopPoint,
+        this.dpr,
+      );
+      const correctedLeftTopScreenPoint = getScreenPoint(
+        convertedLetTopScreenPoint,
+        this.panZoom,
+      );
+      for (const pixel of swipedPixelsInInteractionLayer) {
+        const { rowIndex, columnIndex } = pixel;
+        const relativeRowIndex = this.dataLayer
+          .getRowKeyOrderMap()
+          .get(rowIndex);
+        const relativeColumnIndex = this.dataLayer
+          .getColumnKeyOrderMap()
+          .get(columnIndex);
+        if (
+          relativeColumnIndex === undefined ||
+          relativeRowIndex === undefined
+        ) {
+          continue;
+        }
+        ctx.clearRect(
+          relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+          relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+          squareLength,
+          squareLength,
+        );
+      }
+    }
+  }
+
   renderErasedPixelsFromInteractionLayerInDataLayer() {
     const erasedPixelsInInteractionLayer =
       this.interactionLayer.getAllErasedPixels();
@@ -1397,6 +1448,7 @@ export default class Editor extends EventDispatcher {
 
   renderInteractionLayer() {
     this.interactionLayer.render();
+    this.renderSwipedPixelsFromInteractionLayerInDataLayer();
   }
 
   renderBackgroundLayer() {

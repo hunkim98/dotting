@@ -37,7 +37,6 @@ export default class BackgroundLayer extends BaseLayer {
     ctx.save();
 
     ctx.globalAlpha = this.backgroundAlpha;
-
     if (this.backgroundMode === "color") {
       ctx.fillStyle = this.backgroundColor;
       ctx.fillRect(0, 0, this.width, this.height);
@@ -47,7 +46,6 @@ export default class BackgroundLayer extends BaseLayer {
         x: this.width / cellWidth,
         y: this.height / cellWidth,
       };
-
       for (let i = 0; i < cellCount.x; i++) {
         for (let j = 0; j < cellCount.y; j++) {
           const isEvenRow = i % 2 === 0;

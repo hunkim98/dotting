@@ -102,6 +102,7 @@ export default class InteractionLayer extends BaseLayer {
     this.capturedData = null;
     this.capturedDataOriginalIndices = null;
     this.deleteStrokePixelRecord(TemporaryUserId);
+    this.swipedPixels = [];
   }
 
   getHoveredPixel() {
@@ -162,6 +163,9 @@ export default class InteractionLayer extends BaseLayer {
         direction === ButtonDirection.TOP
           ? topRowIndex - 1
           : bottomRowIndex + 1;
+      this.swipedPixels = this.swipedPixels.filter(
+        swipedPixel => swipedPixel.rowIndex !== newRowIndex,
+      );
       addRowToData(this.capturedData, newRowIndex);
     } else if (
       direction === ButtonDirection.LEFT ||
@@ -171,6 +175,9 @@ export default class InteractionLayer extends BaseLayer {
         direction === ButtonDirection.LEFT
           ? leftColumnIndex - 1
           : rightColumnIndex + 1;
+      this.swipedPixels = this.swipedPixels.filter(
+        swipedPixel => swipedPixel.columnIndex !== newColumnIndex,
+      );
       addColumnToData(this.capturedData, newColumnIndex);
     }
   }
@@ -197,7 +204,7 @@ export default class InteractionLayer extends BaseLayer {
         this.capturedData,
         swipedRowIndex,
       );
-      pixelModifyItems.concat(swipedRowPixels);
+      pixelModifyItems.push(...swipedRowPixels);
       // delete the row in captured data
       deleteRowOfData(this.capturedData, swipedRowIndex);
     } else if (
@@ -213,14 +220,16 @@ export default class InteractionLayer extends BaseLayer {
         this.capturedData,
         swipedColumnIndex,
       );
-      pixelModifyItems.concat(swipedColumnPixels);
+      pixelModifyItems.push(...swipedColumnPixels);
       deleteColumnOfData(this.capturedData, swipedColumnIndex);
     }
     this.addToSwipedPixels(pixelModifyItems);
   }
 
   setIndicatorPixels(indicatorPixels: Array<PixelModifyItem>) {
-    this.indicatorPixels = indicatorPixels;
+    if (Array.isArray(indicatorPixels)) {
+      this.indicatorPixels = indicatorPixels;
+    }
   }
   /**
    * This function will be only used by the current device user

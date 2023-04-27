@@ -273,33 +273,21 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       backgroundCanvas,
       initData: props.initData,
     });
-    if (props.isGridFixed !== undefined) {
-      editor.setIsGridFixed(props.isGridFixed);
-    }
-    if (props.backgroundAlpha !== undefined) {
-      editor.setBackgroundAlpha(props.backgroundAlpha);
-    }
-    if (props.backgroundMode !== undefined) {
-      editor.setBackgroundMode(props.backgroundMode);
-    }
-    if (props.isPanZoomable !== undefined) {
-      editor.setIsPanZoomable(props.isPanZoomable);
-    }
-    if (props.isGridVisible !== undefined) {
-      editor.setIsGridVisible(props.isGridVisible);
-    }
-    if (props.gridStrokeColor !== undefined) {
-      editor.setGridStrokeColor(props.gridStrokeColor);
-    }
-    if (props.gridStrokeWidth !== undefined) {
-      editor.setGridStrokeWidth(props.gridStrokeWidth);
-    }
-    if (props.initBrushColor !== undefined) {
-      editor.setBrushColor(props.initBrushColor);
-    }
-    if (props.initIndicatorData !== undefined) {
-      editor.setIndicatorPixels(props.initIndicatorData);
-    }
+    editor.setIsGridFixed(props.isGridFixed);
+    editor.setBackgroundAlpha(props.backgroundAlpha);
+    editor.setBackgroundMode(props.backgroundMode);
+    editor.setIsPanZoomable(props.isPanZoomable);
+
+    editor.setIsGridVisible(props.isGridVisible);
+
+    editor.setGridStrokeColor(props.gridStrokeColor);
+
+    editor.setGridStrokeWidth(props.gridStrokeWidth);
+
+    editor.setBrushColor(props.initBrushColor);
+
+    editor.setIndicatorPixels(props.initIndicatorData);
+
     setEditor(editor);
 
     console.log("editor is set!");
