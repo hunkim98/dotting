@@ -92,7 +92,11 @@ export default class InteractionLayer extends BaseLayer {
   }
 
   setCapturedData(gridChangeStartCapturedData: DottingData) {
-    this.capturedData = gridChangeStartCapturedData;
+    this.capturedData = new Map();
+    for (const row of Array.from(gridChangeStartCapturedData.entries())) {
+      const [rowIndex, rowData] = row;
+      this.capturedData.set(rowIndex, new Map(rowData));
+    }
     this.capturedDataOriginalIndices = getGridIndicesFromData(
       gridChangeStartCapturedData,
     );

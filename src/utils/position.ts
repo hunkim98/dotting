@@ -103,7 +103,6 @@ export const calculateNewPanZoomFromPinchZoom = (
       x: (firstTouchPoint.offsetX + secondTouchPoint.offsetY) / 2,
       y: (firstTouchPoint.offsetY + secondTouchPoint.offsetY) / 2,
     };
-    console.log(pinchZoomCurrentDiff, "pinchZoomCurrentDiff");
 
     if (!prevPinchZoomDiff) {
       return { pinchZoomDiff: pinchZoomCurrentDiff, panZoom };

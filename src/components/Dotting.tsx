@@ -290,7 +290,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
     setEditor(editor);
 
-    console.log("editor is set!");
     return () => {
       editor.destroy();
     };

@@ -448,7 +448,7 @@ export default class Editor extends EventDispatcher {
     const interactionCapturedData = interactionLayer.getCapturedData();
     if (!interactionCapturedData) {
       // we will copy the data to interaction layer
-      interactionLayer.setCapturedData(new Map(this.dataLayer.getData()));
+      interactionLayer.setCapturedData(this.dataLayer.getData());
     }
     const minAmountForExtension = this.gridSquareLength / 2;
     if (window.TouchEvent && evt instanceof TouchEvent) {
@@ -729,7 +729,6 @@ export default class Editor extends EventDispatcher {
         ...erasedPixelModifyItems,
       ];
       if (pixelModifyItems.length !== 0) {
-        console.log(pixelModifyItems, "this is pixelModifyItems");
         this.dataLayer.colorPixels(pixelModifyItems);
         // record single player mode color change action
         this.recordInteractionColorChangeAction(pixelModifyItems);
@@ -771,7 +770,6 @@ export default class Editor extends EventDispatcher {
             amount,
             dataGridIndices.topRowIndex,
           );
-          console.log(topRowDiff, amount, dataGridIndices.topRowIndex);
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
         } else if (topRowDiff > 0) {
@@ -853,7 +851,6 @@ export default class Editor extends EventDispatcher {
           //   pixel => pixel.columnIndex >= startIndex - amount + 1,
           // );
         }
-
         if (direction) {
           this.recordInteractionSizeChangeAction(
             direction,
@@ -1199,11 +1196,6 @@ export default class Editor extends EventDispatcher {
 
   renderGridLayer() {
     this.gridLayer.render();
-  }
-
-  clearDataLayer() {
-    const ctx = this.dataLayer.getContext();
-    ctx.clearRect(0, 0, this.width, this.height);
   }
 
   clear() {

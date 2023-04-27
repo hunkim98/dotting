@@ -7,7 +7,6 @@ export function parsePixelId(pixelId: string): {
   columnIndex: number;
 } {
   const [rowIndex, columnIndex] = pixelId.split("*");
-  console.log(rowIndex, columnIndex);
   return {
     rowIndex: parseInt(rowIndex),
     columnIndex: parseInt(columnIndex),
