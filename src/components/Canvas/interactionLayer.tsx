@@ -287,13 +287,13 @@ export default class InteractionLayer extends BaseLayer {
   // this will be called when multiplayer user (finishes) changing the color
   // while the user is changing the dimensions of the canvas
   colorPixels(data: Array<PixelModifyItem>) {
-    this.tempStrokedPixels.concat(data);
+    this.tempStrokedPixels.push(...data);
   }
 
   // this will be called when multiplayer user (finishes) changing the color
   // while the user is changing the dimensions of the canvas
   erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
-    this.tempStrokedPixels.concat(data.map(item => ({ ...item, color: "" })));
+    this.tempStrokedPixels.push(...data.map(item => ({ ...item, color: "" })));
   }
 
   renderStrokedPixels(

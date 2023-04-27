@@ -729,6 +729,7 @@ export default class Editor extends EventDispatcher {
         ...erasedPixelModifyItems,
       ];
       if (pixelModifyItems.length !== 0) {
+        console.log(pixelModifyItems, "this is pixelModifyItems");
         this.dataLayer.colorPixels(pixelModifyItems);
         // record single player mode color change action
         this.recordInteractionColorChangeAction(pixelModifyItems);
@@ -854,7 +855,6 @@ export default class Editor extends EventDispatcher {
         }
 
         if (direction) {
-          console.log(this.dataLayer.getSwipedPixels());
           this.recordInteractionSizeChangeAction(
             direction,
             this.dataLayer.getSwipedPixels(),

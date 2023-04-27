@@ -174,6 +174,7 @@ export default class DataLayer extends BaseLayer {
     const changeAmounts: Array<ChangeAmountData> = [];
     if (minRowIndex < currentCanvasIndices.topRowIndex) {
       const amount = currentCanvasIndices.topRowIndex - minRowIndex;
+
       this.extendGridBy(
         ButtonDirection.TOP,
         amount,
