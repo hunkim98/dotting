@@ -15,6 +15,9 @@ export default class BackgroundLayer extends BaseLayer {
   }
 
   setBackgroundAlpha(alpha?: number) {
+    if (alpha === undefined) {
+      this.backgroundAlpha = 0.5;
+    }
     this.backgroundAlpha = alpha
       ? alpha >= 1
         ? 1

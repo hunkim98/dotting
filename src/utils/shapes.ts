@@ -23,7 +23,7 @@ export const drawArrowHead = (
 
 export const drawExtendButton = (
   ctx: CanvasRenderingContext2D,
-  centerPos: Coord,
+  leftTopPos: Coord,
   color: string,
   buttonWidth: number, // this is changeable
   buttonHeight: number, // this is fixed
@@ -34,8 +34,8 @@ export const drawExtendButton = (
   ctx.fillStyle = color;
 
   ctx.fillRect(
-    centerPos.x,
-    centerPos.y - (buttonHeight * scale) / 2,
+    leftTopPos.x,
+    leftTopPos.y,
     buttonWidth * scale,
     buttonHeight * scale,
   );
@@ -44,15 +44,15 @@ export const drawExtendButton = (
 
   drawArrowHead(
     ctx,
-    centerPos.x - (buttonHeight / 2) * scale,
-    centerPos.y + (buttonWidth * scale) / 2,
+    leftTopPos.x - (buttonWidth / 2) * scale,
+    leftTopPos.y + (buttonHeight * scale) / 2,
     -Math.PI / 2,
     scale,
   );
   drawArrowHead(
     ctx,
-    centerPos.x + (buttonHeight / 2) * scale,
-    centerPos.y + (buttonWidth * scale) / 2,
+    leftTopPos.x + (buttonWidth / 2) * scale,
+    leftTopPos.y + (buttonHeight * scale) / 2,
     Math.PI / 2,
     scale,
   );

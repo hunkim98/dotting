@@ -133,7 +133,11 @@ export default class GridLayer extends BaseLayer {
     };
   }
 
-  findCenterPosForButton(direction: ButtonDirection) {
+  findLeftTopPosForButton(
+    direction: ButtonDirection,
+    buttonWidth: number,
+    buttonHeight: number,
+  ) {
     const gridsWidth = this.gridSquareLength * this.columnCount;
     const gridsHeight = this.gridSquareLength * this.rowCount;
     const buttonPos: Coord = {
@@ -141,17 +145,17 @@ export default class GridLayer extends BaseLayer {
       y: -gridsHeight / 2,
     };
     if (direction === ButtonDirection.LEFT) {
-      buttonPos.x = -gridsWidth / 2 - this.buttonMargin;
+      buttonPos.x = -gridsWidth / 2 - this.buttonMargin - buttonWidth / 2;
       buttonPos.y = -gridsHeight / 2;
     } else if (direction === ButtonDirection.RIGHT) {
-      buttonPos.x = gridsWidth / 2 + this.buttonMargin;
+      buttonPos.x = gridsWidth / 2 + this.buttonMargin - buttonWidth / 2;
       buttonPos.y = -gridsHeight / 2;
     } else if (direction === ButtonDirection.TOP) {
       buttonPos.x = -gridsWidth / 2;
-      buttonPos.y = -gridsHeight / 2 - this.buttonMargin;
+      buttonPos.y = -gridsHeight / 2 - this.buttonMargin - buttonHeight / 2;
     } else if (direction === ButtonDirection.BOTTOM) {
       buttonPos.x = -gridsWidth / 2;
-      buttonPos.y = gridsHeight / 2 + this.buttonMargin;
+      buttonPos.y = gridsHeight / 2 + this.buttonMargin - buttonHeight / 2;
     } else {
       throw new Error("Invalid button direction");
     }
@@ -164,85 +168,104 @@ export default class GridLayer extends BaseLayer {
       convertedScreenPos,
       this.panZoom,
     );
-    return correctedScreenPoint;
+    return {
+      worldPos: buttonPos,
+      screenPos: correctedScreenPoint,
+    };
   }
 
   drawRightButton(color: string) {
-    const centerPos = this.findCenterPosForButton(ButtonDirection.RIGHT);
     const width = this.buttonHeight;
     const height = this.rowCount * this.gridSquareLength;
+    const { screenPos, worldPos } = this.findLeftTopPosForButton(
+      ButtonDirection.RIGHT,
+      width,
+      height,
+    );
     this.rightButtonDimensions = {
-      x: centerPos.x - width / 2,
-      y: centerPos.y - height / 2,
+      x: worldPos.x,
+      y: worldPos.y,
       width,
       height,
     };
     drawExtendButton(
       this.ctx,
-      centerPos,
+      screenPos,
       color,
-      this.buttonHeight,
-      this.rowCount * this.gridSquareLength,
+      width,
+      height,
       this.panZoom.scale,
     );
   }
 
   drawLeftButton(color: string) {
-    const centerPos = this.findCenterPosForButton(ButtonDirection.LEFT);
     const width = this.buttonHeight;
     const height = this.rowCount * this.gridSquareLength;
+    const { screenPos, worldPos } = this.findLeftTopPosForButton(
+      ButtonDirection.LEFT,
+      width,
+      height,
+    );
     this.leftButtonDimensions = {
-      x: centerPos.x - width / 2,
-      y: centerPos.y - height / 2,
+      x: worldPos.x - width / 2,
+      y: worldPos.y - height / 2,
       width,
       height,
     };
     drawExtendButton(
       this.ctx,
-      centerPos,
+      screenPos,
       color,
-      this.buttonHeight,
-      this.rowCount * this.gridSquareLength,
+      width,
+      height,
       this.panZoom.scale,
     );
   }
 
   drawTopButton(color: string) {
-    const centerPos = this.findCenterPosForButton(ButtonDirection.TOP);
     const width = this.columnCount * this.gridSquareLength;
     const height = this.buttonHeight;
+    const { screenPos, worldPos } = this.findLeftTopPosForButton(
+      ButtonDirection.TOP,
+      width,
+      height,
+    );
     this.topButtonDimensions = {
-      x: centerPos.x - width / 2,
-      y: centerPos.y - height / 2,
+      x: worldPos.x,
+      y: worldPos.y,
       width,
       height,
     };
     drawExtendButton(
       this.ctx,
-      centerPos,
+      screenPos,
       color,
-      this.buttonHeight,
-      this.columnCount * this.gridSquareLength,
+      width,
+      height,
       this.panZoom.scale,
     );
   }
 
   drawBottomButton(color: string) {
-    const centerPos = this.findCenterPosForButton(ButtonDirection.BOTTOM);
     const width = this.columnCount * this.gridSquareLength;
     const height = this.buttonHeight;
+    const { screenPos, worldPos } = this.findLeftTopPosForButton(
+      ButtonDirection.BOTTOM,
+      width,
+      height,
+    );
     this.bottomButtonDimensions = {
-      x: centerPos.x - width / 2,
-      y: centerPos.y - height / 2,
+      x: worldPos.x - width / 2,
+      y: worldPos.y - height / 2,
       width,
       height,
     };
     drawExtendButton(
       this.ctx,
-      centerPos,
+      screenPos,
       color,
-      this.buttonHeight,
-      this.columnCount * this.gridSquareLength,
+      width,
+      height,
       this.panZoom.scale,
     );
   }
@@ -282,6 +305,8 @@ export default class GridLayer extends BaseLayer {
    * @returns {void}
    */
   render() {
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.width, this.height);
     if (!this.isGridFixed) {
       this.drawButtons();
     }
@@ -294,8 +319,6 @@ export default class GridLayer extends BaseLayer {
       x: -((this.columnCount / 2) * this.gridSquareLength),
       y: -((this.rowCount / 2) * this.gridSquareLength),
     };
-    const ctx = this.ctx;
-    ctx.clearRect(0, 0, this.width, this.height);
     const convertedScreenPoint = convertCartesianToScreen(
       this.element,
       leftTopPoint,
@@ -305,8 +328,8 @@ export default class GridLayer extends BaseLayer {
       convertedScreenPoint,
       this.panZoom,
     );
-
     ctx.save();
+
     ctx.lineWidth = this.gridStrokeWidth;
     ctx.strokeStyle = this.gridStrokeColor;
 

@@ -582,19 +582,35 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         ref={gotBackgroundCanvasRef}
         style={{
           position: "absolute",
-          pointerEvents: "none",
           border: "1px solid #555555",
           ...props.style,
         }}
       />
       <canvas
         ref={gotDataCanvasRef}
-        style={{ position: "absolute", pointerEvents: "none" }}
+        style={{
+          position: "absolute",
+          pointerEvents: "none",
+          border: "1px solid #555555",
+          ...props.style,
+        }}
       />
-      <canvas ref={gotInteractionCanvasRef} style={{ position: "absolute" }} />
+      <canvas
+        ref={gotInteractionCanvasRef}
+        style={{
+          position: "absolute",
+          border: "1px solid #555555",
+          ...props.style,
+        }}
+      />
       <canvas
         ref={gotGridCanvasRef}
-        style={{ position: "absolute", pointerEvents: "none" }}
+        style={{
+          position: "absolute",
+          pointerEvents: "none",
+          border: "1px solid #555555",
+          ...props.style,
+        }}
       />
     </div>
   );
