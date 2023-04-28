@@ -858,7 +858,6 @@ export default class Editor extends EventDispatcher {
         }
 
         if (direction) {
-          console.log(amount, isExtendingAction);
           this.recordInteractionSizeChangeAction(
             direction,
             this.dataLayer.getSwipedPixels(),
@@ -1109,7 +1108,6 @@ export default class Editor extends EventDispatcher {
         pixelIndex.rowIndex,
         pixelIndex.columnIndex,
       );
-      console.log(pixelIndex);
       this.renderInteractionLayer();
     }
     this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
