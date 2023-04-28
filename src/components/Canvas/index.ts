@@ -76,7 +76,7 @@ export default class Canvas extends EventDispatcher {
 
   private indicatorPixels: Array<PixelModifyItem> = [];
 
-  private mouseMode: MouseMode = MouseMode.DOT;
+  private mouseMode: MouseMode = MouseMode.PANNING;
 
   private hoveredButton: ButtonDirection | null = null;
 
@@ -1335,7 +1335,7 @@ export default class Canvas extends EventDispatcher {
       this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
       this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
     }
-    this.mouseMode = pixelIndex ? MouseMode.DOT : MouseMode.PANNING;
+    this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
     if (!this.isGridFixed) {
       const buttonDirection = this.detectButtonClicked(mouseCartCoord);
       if (buttonDirection) {
@@ -1681,7 +1681,7 @@ export default class Canvas extends EventDispatcher {
     this.styleMouseCursor();
 
     if (pixelIndex) {
-      if (this.mouseMode === MouseMode.DOT) {
+      if (this.mouseMode === MouseMode.DRAWING) {
         this.drawPixel(pixelIndex.rowIndex, pixelIndex.columnIndex);
       } else {
         // if previous hovered pixel has an outdated index, emit new index

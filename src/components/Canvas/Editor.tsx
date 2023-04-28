@@ -88,7 +88,7 @@ export default class Editor extends EventDispatcher {
   };
   private isPanZoomable = true;
   private mouseMode: MouseMode = MouseMode.PANNING;
-  private brushTool: BrushTool;
+  private brushTool: BrushTool = BrushTool.DOT;
   // TODO: why do we need this? For games?
   private isInteractionEnabled = true;
   // We need isInteractionApplicable to allow multiplayer
@@ -680,7 +680,7 @@ export default class Editor extends EventDispatcher {
   private drawPixelInInteractionLayer(rowIndex: number, columnIndex: number) {
     const interactionLayer = this.interactionLayer;
     const data = this.dataLayer.getData();
-    if (this.mouseMode === MouseMode.ERASER) {
+    if (this.brushTool === BrushTool.ERASER) {
       const previousColor = data.get(rowIndex)?.get(columnIndex).color;
       interactionLayer.addToErasedPixelRecords(CurrentDeviceUserId, {
         rowIndex,
@@ -688,7 +688,7 @@ export default class Editor extends EventDispatcher {
         color: "",
         previousColor,
       });
-    } else if (this.mouseMode === MouseMode.DOT) {
+    } else if (this.brushTool === BrushTool.DOT) {
       const previousColor = data.get(rowIndex)?.get(columnIndex).color;
       interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
         rowIndex,
@@ -696,7 +696,7 @@ export default class Editor extends EventDispatcher {
         color: this.brushColor,
         previousColor,
       });
-    } else if (this.mouseMode === MouseMode.PAINT_BUCKET) {
+    } else if (this.brushTool === BrushTool.PAINT_BUCKET) {
       const gridIndices = getGridIndicesFromData(data);
       const initialSelectedColor = data.get(rowIndex)?.get(columnIndex)?.color;
       if (initialSelectedColor === this.brushColor) {
@@ -1102,7 +1102,7 @@ export default class Editor extends EventDispatcher {
       console.log(pixelIndex);
       this.renderInteractionLayer();
     }
-    this.mouseMode = pixelIndex ? MouseMode.DOT : MouseMode.PANNING;
+    this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
     const isGridFixed = this.gridLayer.getIsGridFixed();
     if (!isGridFixed) {
       const buttonDirection = this.detectButtonClicked(mouseCartCoord);
@@ -1142,7 +1142,7 @@ export default class Editor extends EventDispatcher {
     );
     const hoveredPixel = this.interactionLayer.getHoveredPixel();
     if (pixelIndex) {
-      if (this.mouseMode === MouseMode.DOT) {
+      if (this.mouseMode === MouseMode.DRAWING) {
         this.drawPixelInInteractionLayer(
           pixelIndex.rowIndex,
           pixelIndex.columnIndex,
