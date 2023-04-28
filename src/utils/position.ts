@@ -75,7 +75,7 @@ export const calculateNewPanZoomFromPinchZoom = (
   prevPinchZoomDiff: number | null,
   minScale: number,
   maxScale: number,
-): { pinchZoomDiff: number; panZoom: PanZoom } | null => {
+): { pinchZoomDiff: number; panZoom: PanZoom } => {
   evt.preventDefault();
   if (window.TouchEvent && evt instanceof TouchEvent) {
     const touchCount = evt.touches.length;
@@ -100,7 +100,7 @@ export const calculateNewPanZoomFromPinchZoom = (
     const firstTouchPoint = getPointFromTouch(firstTouch, element, panZoom);
     const secondTouchPoint = getPointFromTouch(secondTouch, element, panZoom);
     const touchCenterPos = {
-      x: (firstTouchPoint.offsetX + secondTouchPoint.offsetY) / 2,
+      x: (firstTouchPoint.offsetX + secondTouchPoint.offsetX) / 2,
       y: (firstTouchPoint.offsetY + secondTouchPoint.offsetY) / 2,
     };
 

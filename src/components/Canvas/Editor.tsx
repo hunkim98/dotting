@@ -608,6 +608,9 @@ export default class Editor extends EventDispatcher {
   }
 
   handlePinchZoom(evt: TouchyEvent) {
+    if (!this.isPanZoomable) {
+      return;
+    }
     const newPanZoom = calculateNewPanZoomFromPinchZoom(
       evt,
       this.element,
@@ -633,10 +636,10 @@ export default class Editor extends EventDispatcher {
       let newScale = this.panZoom.scale * zoom;
 
       if (newScale > this.maxScale) {
-        newScale = this.minScale;
+        newScale = this.maxScale;
       }
       if (newScale < this.minScale) {
-        newScale = this.maxScale;
+        newScale = this.minScale;
       }
       const mouseOffset = { x: e.offsetX, y: e.offsetY };
       const newOffset = returnScrollOffsetFromMouseOffset(
