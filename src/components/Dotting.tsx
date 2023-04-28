@@ -13,7 +13,7 @@ import {
   CanvasDataChangeHandler,
   CanvasGridChangeHandler,
   CanvasStrokeEndHandler,
-  BrushMode,
+  BrushTool,
   CanvasBrushChangeHandler,
   PixelModifyItem,
   ImageDownloadOptions,
@@ -51,7 +51,7 @@ export interface DottingRef {
   redo: () => void;
   // for useBrush
   changeBrushColor: (color: string) => void;
-  changeBrushMode: (mode: MouseMode) => void;
+  changeBrushTool: (tool: BrushTool) => void;
   // for useHandler
   addDataChangeListener: (listener: CanvasDataChangeHandler) => void;
   removeDataChangeListener: (listener: CanvasDataChangeHandler) => void;
@@ -478,9 +478,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
-  const changeBrushMode = useCallback(
-    (brushMode: MouseMode) => {
-      editor?.changeBrushMode(brushMode);
+  const changeBrushTool = useCallback(
+    (brushTool: BrushTool) => {
+      editor?.setBrushTool(brushTool);
     },
     [editor],
   );
@@ -508,7 +508,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       redo,
       // for useBrush
       changeBrushColor,
-      changeBrushMode,
+      changeBrushTool,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,
@@ -535,7 +535,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       redo,
       // for useBrush
       changeBrushColor,
-      changeBrushMode,
+      changeBrushTool,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,

@@ -38,10 +38,10 @@ export enum CanvasEvents {
   HOVER_PIXEL_CHANGE = "hoverPixelChange",
 }
 
-export enum BrushMode {
-  DOT = MouseMode.DOT,
-  ERASER = MouseMode.ERASER,
-  PAINT_BUCKET = MouseMode.PAINT_BUCKET,
+export enum BrushTool {
+  DOT = "DOT",
+  ERASER = "ERASER",
+  PAINT_BUCKET = "PAINT_BUCKET",
 }
 
 export type CanvasDataChangeHandler = (data: DottingData) => void;
@@ -66,7 +66,7 @@ export type CanvasStrokeEndHandler = (
 
 export type CanvasBrushChangeHandler = (
   brushColor: string,
-  brushMode: BrushMode,
+  brushMode: BrushTool,
 ) => void;
 
 export type CanvasHoverPixelChangeHandler = (

@@ -119,6 +119,7 @@ export default class DataLayer extends BaseLayer {
     const { columnCount, rowCount } = this.getDimensions();
     const rowKeys = getRowKeysFromData(this.data);
     const columnKeys = getColumnKeysFromData(this.data);
+    console.log(index, "index to shorten");
     if (direction === ButtonDirection.TOP) {
       if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
@@ -134,6 +135,7 @@ export default class DataLayer extends BaseLayer {
       this.swipedPixels.push(...swipedPixels);
       deleteRowOfData(this.data, index);
     } else if (direction === ButtonDirection.LEFT) {
+      console.log(columnKeys.includes(index));
       if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }

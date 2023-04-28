@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useRef } from "react";
-import { BrushMode } from "../../src/components/Canvas/types";
+import { BrushTool } from "../../src/components/Canvas/types";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useBrush from "../../src/hooks/useBrush";
 
@@ -43,13 +43,13 @@ const ChangeBrushMode = () => {
           }}
           value={brushMode}
           onChange={e => {
-            changeBrushMode(e.target.value as BrushMode);
+            changeBrushMode(e.target.value as BrushTool);
           }}
         >
-          <option value={BrushMode.DOT}>{BrushMode.DOT}</option>
-          <option value={BrushMode.ERASER}>{BrushMode.ERASER}</option>
-          <option value={BrushMode.PAINT_BUCKET}>
-            {BrushMode.PAINT_BUCKET}
+          <option value={BrushTool.DOT}>{BrushTool.DOT}</option>
+          <option value={BrushTool.ERASER}>{BrushTool.ERASER}</option>
+          <option value={BrushTool.PAINT_BUCKET}>
+            {BrushTool.PAINT_BUCKET}
           </option>
         </select>
       </div>

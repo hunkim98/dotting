@@ -9,7 +9,7 @@ import React from "react";
 import Queue from "../../utils/queue";
 import EventDispatcher from "../../utils/eventDispatcher";
 import {
-  BrushMode,
+  BrushTool,
   CanvasEvents,
   Coord,
   DottingData,
@@ -82,7 +82,7 @@ export default class Canvas extends EventDispatcher {
 
   private brushColor: string;
 
-  private brushMode: BrushMode = BrushMode.DOT;
+  private brushMode: BrushTool = BrushTool.DOT;
 
   private cursorStyle = "default";
 
@@ -722,7 +722,7 @@ export default class Canvas extends EventDispatcher {
           const { rowIndex, columnIndex } = this.hoveredPixel;
           const relativeRowIndex = rowIndex - currentTopIndex;
           const relativeColumnIndex = columnIndex - currentLeftIndex;
-          if (this.brushMode !== BrushMode.ERASER) {
+          if (this.brushMode !== BrushTool.ERASER) {
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = this.brushColor;
             if (color === this.brushColor) {
@@ -1113,7 +1113,7 @@ export default class Canvas extends EventDispatcher {
     this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushMode);
   }
 
-  changeBrushMode(brushMode: BrushMode) {
+  changeBrushMode(brushMode: BrushTool) {
     this.brushMode = brushMode;
     this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushMode);
   }
@@ -1228,7 +1228,7 @@ export default class Canvas extends EventDispatcher {
    */
   drawPixel(rowIndex: number, columnIndex: number) {
     // This erases the pixel if the brush mode is eraser
-    if (this.brushMode === BrushMode.ERASER) {
+    if (this.brushMode === BrushTool.ERASER) {
       const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
       this.data.get(rowIndex)!.set(columnIndex, { color: "" });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
@@ -1238,7 +1238,7 @@ export default class Canvas extends EventDispatcher {
         previousColor,
         color: "",
       });
-    } else if (this.brushMode === BrushMode.DOT) {
+    } else if (this.brushMode === BrushTool.DOT) {
       // this draws the pixel if the brush mode is brush
       this.strokedPixelRecords.record({
         rowIndex,
@@ -1253,7 +1253,7 @@ export default class Canvas extends EventDispatcher {
         this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
-    } else if (this.brushMode === BrushMode.PAINT_BUCKET) {
+    } else if (this.brushMode === BrushTool.PAINT_BUCKET) {
       /* 🪣 this paints same color area / with selected brush color. */
 
       const gridIndices = this.getGridIndices();

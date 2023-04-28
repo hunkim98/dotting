@@ -25,10 +25,27 @@ export class SizeChangeAction extends Action {
   createInverseAction(): Action {
     return new SizeChangeAction(
       this.data,
-      this.changeAmounts.map(item => ({
-        ...item,
-        amount: -item.amount,
-      })),
+      this.changeAmounts.map(item => {
+        const wasExtendAction = item.amount > 0;
+        let newStartIndex = item.startIndex;
+        if (
+          item.direction === ButtonDirection.TOP ||
+          item.direction === ButtonDirection.LEFT
+        ) {
+          newStartIndex = item.startIndex - item.amount;
+        } else if (
+          item.direction === ButtonDirection.BOTTOM ||
+          item.direction === ButtonDirection.RIGHT
+        ) {
+          newStartIndex = item.startIndex + item.amount;
+        }
+
+        return {
+          ...item,
+          amount: -item.amount,
+          startIndex: newStartIndex,
+        };
+      }),
     );
   }
 

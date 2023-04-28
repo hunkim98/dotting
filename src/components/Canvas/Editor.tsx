@@ -35,6 +35,7 @@ import {
   CurrentDeviceUserId,
 } from "./config";
 import {
+  BrushTool,
   CanvasEvents,
   ColorChangeItem,
   Coord,
@@ -87,6 +88,7 @@ export default class Editor extends EventDispatcher {
   };
   private isPanZoomable = true;
   private mouseMode: MouseMode = MouseMode.PANNING;
+  private brushTool: BrushTool;
   // TODO: why do we need this? For games?
   private isInteractionEnabled = true;
   // We need isInteractionApplicable to allow multiplayer
@@ -238,8 +240,8 @@ export default class Editor extends EventDispatcher {
     }
   }
 
-  changeBrushMode(mode: MouseMode) {
-    this.mouseMode = mode;
+  setBrushTool(mode: BrushTool) {
+    this.brushTool = mode;
     this.styleMouseCursor();
   }
 
@@ -768,6 +770,7 @@ export default class Editor extends EventDispatcher {
         let amount = 0;
         let direction: ButtonDirection | null = null;
         let startIndex = 0;
+        let isExtendingAction = true;
         if (topRowDiff < 0) {
           amount = -topRowDiff;
           this.dataLayer.extendGridBy(
@@ -777,6 +780,7 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
+          isExtendingAction = true;
         } else if (topRowDiff > 0) {
           amount = topRowDiff;
           this.dataLayer.shortenGridBy(
@@ -786,9 +790,7 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
-          // deletedPixels = swipedPixels.filter(
-          //   pixel => pixel.rowIndex <= startIndex + amount - 1,
-          // );
+          isExtendingAction = false;
         }
         if (leftColumnDiff < 0) {
           amount = -leftColumnDiff;
@@ -799,6 +801,7 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
+          isExtendingAction = true;
         } else if (leftColumnDiff > 0) {
           amount = leftColumnDiff;
           this.dataLayer.shortenGridBy(
@@ -808,9 +811,7 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
-          // deletedPixels = swipedPixels.filter(
-          //   pixel => pixel.columnIndex <= startIndex + amount - 1,
-          // );
+          isExtendingAction = false;
         }
         if (bottomRowDiff > 0) {
           amount = bottomRowDiff;
@@ -821,6 +822,7 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
+          isExtendingAction = true;
         } else if (bottomRowDiff < 0) {
           amount = -bottomRowDiff;
           this.dataLayer.shortenGridBy(
@@ -830,9 +832,7 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
-          // deletedPixels = swipedPixels.filter(
-          //   pixel => pixel.rowIndex >= startIndex - amount + 1,
-          // );
+          isExtendingAction = false;
         }
         if (rightColumnDiff > 0) {
           amount = rightColumnDiff;
@@ -843,6 +843,7 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
+          isExtendingAction = true;
         } else if (rightColumnDiff < 0) {
           amount = -rightColumnDiff;
           this.dataLayer.shortenGridBy(
@@ -852,15 +853,15 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
-          // deletedPixels = swipedPixels.filter(
-          //   pixel => pixel.columnIndex >= startIndex - amount + 1,
-          // );
+          isExtendingAction = false;
         }
+
         if (direction) {
+          console.log(amount, isExtendingAction);
           this.recordInteractionSizeChangeAction(
             direction,
             this.dataLayer.getSwipedPixels(),
-            amount,
+            isExtendingAction ? amount : -amount,
             startIndex,
           );
           this.dataLayer.resetSwipedPixels();
@@ -927,7 +928,7 @@ export default class Editor extends EventDispatcher {
           } else {
             this.dataLayer.shortenGridBy(
               change.direction,
-              change.amount,
+              -change.amount,
               change.startIndex,
             );
           }
@@ -975,6 +976,12 @@ export default class Editor extends EventDispatcher {
     const inverseAction = action.createInverseAction();
     this.commitAction(inverseAction);
     this.redoHistory.push(action);
+    const rowCount = getRowCountFromData(this.dataLayer.getData());
+    const columnCount = getColumnCountFromData(this.dataLayer.getData());
+    this.gridLayer.setRowCount(rowCount);
+    this.gridLayer.setColumnCount(columnCount);
+    this.interactionLayer.setDataLayerRowCount(rowCount);
+    this.interactionLayer.setDataLayerColumnCount(columnCount);
     this.renderAll();
   }
 
@@ -985,6 +992,12 @@ export default class Editor extends EventDispatcher {
     const action = this.redoHistory.pop()!;
     this.commitAction(action);
     this.undoHistory.push(action);
+    const rowCount = getRowCountFromData(this.dataLayer.getData());
+    const columnCount = getColumnCountFromData(this.dataLayer.getData());
+    this.gridLayer.setRowCount(rowCount);
+    this.gridLayer.setColumnCount(columnCount);
+    this.interactionLayer.setDataLayerRowCount(rowCount);
+    this.interactionLayer.setDataLayerColumnCount(columnCount);
     this.renderAll();
   }
 
@@ -1086,6 +1099,7 @@ export default class Editor extends EventDispatcher {
         pixelIndex.rowIndex,
         pixelIndex.columnIndex,
       );
+      console.log(pixelIndex);
       this.renderInteractionLayer();
     }
     this.mouseMode = pixelIndex ? MouseMode.DOT : MouseMode.PANNING;
@@ -1133,6 +1147,7 @@ export default class Editor extends EventDispatcher {
           pixelIndex.rowIndex,
           pixelIndex.columnIndex,
         );
+        this.renderInteractionLayer();
       } else {
         if (
           // We should also consider when the hovered pixel is null
@@ -1286,8 +1301,6 @@ export default class Editor extends EventDispatcher {
   }
 
   renderAll() {
-    this.renderInteractionLayer();
-
     this.renderBackgroundLayer();
     // if there is captured data in interaction layer we will not render data layer
     // captured data will not be null when user is extending the grid
@@ -1303,45 +1316,9 @@ export default class Editor extends EventDispatcher {
       this.gridLayer.setRowCount(rowCount);
       this.gridLayer.setColumnCount(columnCount);
     }
-    this.renderWhiteBackgroundForHoveredPixel();
-    this.renderGridLayer();
-  }
+    this.renderInteractionLayer();
 
-  renderWhiteBackgroundForHoveredPixel() {
-    const hoveredPixel = this.interactionLayer.getHoveredPixel();
-    if (!hoveredPixel) {
-      return;
-    }
-    const ctx = this.dataLayer.getContext();
-    const squareLength = this.gridSquareLength * this.panZoom.scale;
-    // leftTopPoint is a cartesian coordinate
-    const leftTopPoint: Coord = {
-      x: -((this.dataLayer.getColumnCount() / 2) * this.gridSquareLength),
-      y: -((this.dataLayer.getRowCount() / 2) * this.gridSquareLength),
-    };
-    const convertedLetTopScreenPoint = convertCartesianToScreen(
-      this.element,
-      leftTopPoint,
-      this.dpr,
-    );
-    const correctedLeftTopScreenPoint = getScreenPoint(
-      convertedLetTopScreenPoint,
-      this.panZoom,
-    );
-    const { rowIndex, columnIndex } = hoveredPixel;
-    const relativeRowIndex = this.dataLayer.getRowKeyOrderMap().get(rowIndex);
-    const relativeColumnIndex = this.dataLayer
-      .getColumnKeyOrderMap()
-      .get(columnIndex);
-    if (relativeColumnIndex === undefined || relativeRowIndex === undefined) {
-      return;
-    }
-    ctx.clearRect(
-      correctedLeftTopScreenPoint.x + relativeColumnIndex * squareLength,
-      correctedLeftTopScreenPoint.y + relativeColumnIndex * squareLength,
-      squareLength,
-      squareLength,
-    );
+    this.renderGridLayer();
   }
 
   renderErasedPixelsFromInteractionLayerInDataLayer() {
@@ -1402,6 +1379,7 @@ export default class Editor extends EventDispatcher {
 
   renderInteractionLayer() {
     this.interactionLayer.render();
+
     // this.renderSwipedPixelsFromInteractionLayerInDataLayer();
   }
 

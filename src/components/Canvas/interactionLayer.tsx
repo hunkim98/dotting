@@ -444,14 +444,14 @@ export default class InteractionLayer extends BaseLayer {
       return;
     }
     ctx.save();
-    ctx.fillStyle = this.hoveredPixel.color;
-    ctx.globalAlpha = 0.2;
+    ctx.globalAlpha = 0.5;
     ctx.clearRect(
       relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
       relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
       squareLength,
       squareLength,
     );
+    ctx.fillStyle = this.hoveredPixel.color;
     ctx.fillRect(
       relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
       relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
