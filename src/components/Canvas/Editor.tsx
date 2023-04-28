@@ -77,6 +77,7 @@ export default class Editor extends EventDispatcher {
   private dpr = 1;
   private brushColor = "#FF0000";
   private gridSquareLength: number = DefaultGridSquareLength;
+  private maxHistoryCount = 100;
   private undoHistory: Stack<Action> = new Stack();
   private redoHistory: Stack<Action> = new Stack();
   private extensionPoint: {
