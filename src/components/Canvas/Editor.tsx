@@ -374,14 +374,23 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setDpr(dpr);
   }
 
-  setPanZoom({ offset, scale }: Partial<PanZoom>) {
+  setPanZoom({
+    offset,
+    scale,
+    baseColumnCount,
+    baseRowCount,
+  }: Partial<PanZoom> & { baseColumnCount?: number; baseRowCount?: number }) {
     if (scale) {
       this.panZoom.scale = scale;
     }
     if (offset) {
       const correctedOffset = { ...offset };
-      const columnCount = this.dataLayer.getColumnCount();
-      const rowCount = this.dataLayer.getRowCount();
+      const columnCount = baseColumnCount
+        ? baseColumnCount
+        : this.dataLayer.getColumnCount();
+      const rowCount = baseRowCount
+        ? baseRowCount
+        : this.dataLayer.getRowCount();
 
       // rowCount * this.gridSquareLength * this.panZoom.scale < this.height
       // Offset changes when grid is bigger than canvas
@@ -516,6 +525,9 @@ export default class Editor extends EventDispatcher {
     const interactionLayer = this.interactionLayer;
     interactionLayer.extendCapturedData(direction);
     // this.renderInteractionLayer();
+    const interactionCapturedData = interactionLayer.getCapturedData()!;
+    const baseRowCount = getRowCountFromData(interactionCapturedData);
+    const baseColumnCount = getColumnCountFromData(interactionCapturedData);
     if (direction === ButtonDirection.TOP) {
       this.setPanZoom({
         offset: {
@@ -524,6 +536,8 @@ export default class Editor extends EventDispatcher {
             this.panZoom.offset.y -
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
+        baseRowCount,
+        baseColumnCount,
       });
       this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.BOTTOM) {
@@ -534,6 +548,8 @@ export default class Editor extends EventDispatcher {
             this.panZoom.offset.y +
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
+        baseRowCount,
+        baseColumnCount,
       });
       this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.LEFT) {
@@ -544,6 +560,8 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
+        baseRowCount,
+        baseColumnCount,
       });
       this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.RIGHT) {
@@ -554,6 +572,8 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
+        baseRowCount,
+        baseColumnCount,
       });
       this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
     }
@@ -566,6 +586,10 @@ export default class Editor extends EventDispatcher {
     if (!isShortened) {
       return;
     }
+    const interactionCapturedData = interactionLayer.getCapturedData()!;
+    const baseRowCount = getRowCountFromData(interactionCapturedData);
+    const baseColumnCount = getColumnCountFromData(interactionCapturedData);
+    console.log("is shortened?");
     // this.renderInteractionLayer();
     if (direction === ButtonDirection.TOP) {
       this.setPanZoom({
@@ -575,6 +599,8 @@ export default class Editor extends EventDispatcher {
             this.panZoom.offset.y +
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
+        baseColumnCount,
+        baseRowCount,
       });
       this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.BOTTOM) {
@@ -585,6 +611,8 @@ export default class Editor extends EventDispatcher {
             this.panZoom.offset.y -
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
+        baseColumnCount,
+        baseRowCount,
       });
       this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.LEFT) {
@@ -595,6 +623,8 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
+        baseColumnCount,
+        baseRowCount,
       });
       this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.RIGHT) {
@@ -605,6 +635,8 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
+        baseColumnCount,
+        baseRowCount,
       });
       this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
     }
@@ -967,6 +999,9 @@ export default class Editor extends EventDispatcher {
   }
 
   recordAction(action: Action) {
+    if (this.undoHistory.size() >= this.maxHistoryCount) {
+      this.undoHistory.shift();
+    }
     this.undoHistory.push(action);
     this.redoHistory.clear();
   }

@@ -196,6 +196,7 @@ export default class InteractionLayer extends BaseLayer {
       direction === ButtonDirection.BOTTOM
     ) {
       if (rowCount <= 2) {
+        console.log("row count less than 2");
         return false;
       }
       const swipedRowIndex =
@@ -212,6 +213,7 @@ export default class InteractionLayer extends BaseLayer {
       direction === ButtonDirection.RIGHT
     ) {
       if (columnCount <= 2) {
+        console.log("column count less than 2");
         return false;
       }
       const swipedColumnIndex =
