@@ -4,14 +4,14 @@ import { DottingRef } from "../components/Dotting";
 import useHandlers from "./useHandlers";
 
 const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
-  const [brushMode, setBrushMode] = useState<BrushTool>(BrushTool.DOT);
+  const [brushTool, setBrushTool] = useState<BrushTool>(BrushTool.DOT);
   const [brushColor, setBrushColor] = useState<string>("");
   const { addBrushChangeListener, removeBrushChangeListener } =
     useHandlers(ref);
 
   useEffect(() => {
     const listener = (brushColor: string, brushMode: BrushTool) => {
-      setBrushMode(brushMode);
+      setBrushTool(brushMode);
       setBrushColor(brushColor);
     };
     addBrushChangeListener(listener);
@@ -26,17 +26,17 @@ const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
-  const changeBrushMode = useCallback(
+  const changeBrushTool = useCallback(
     (brushMode: BrushTool) => {
-      ref.current?.changeBrushMode(brushMode);
+      ref.current?.changeBrushTool(brushMode);
     },
     [ref],
   );
 
   return {
     changeBrushColor,
-    changeBrushMode,
-    brushMode,
+    changeBrushTool,
+    brushTool,
     brushColor,
   };
 };

@@ -173,7 +173,7 @@ export default class Editor extends EventDispatcher {
   }
 
   emitBrushChangeEvent() {
-    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.mouseMode);
+    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushTool);
   }
 
   // background related functions ⬇
@@ -240,13 +240,15 @@ export default class Editor extends EventDispatcher {
     }
   }
 
-  setBrushTool(mode: BrushTool) {
-    this.brushTool = mode;
+  setBrushTool(tool: BrushTool) {
+    this.brushTool = tool;
     this.styleMouseCursor();
+    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushTool);
   }
 
   changeBrushColor(color: string) {
     this.brushColor = color;
+    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushTool);
   }
 
   setBrushColor(color: string) {

@@ -1,5 +1,3 @@
-import { MouseMode } from "./config";
-
 export interface Coord {
   x: number;
   y: number;
@@ -66,7 +64,7 @@ export type CanvasStrokeEndHandler = (
 
 export type CanvasBrushChangeHandler = (
   brushColor: string,
-  brushMode: BrushTool,
+  brushTool: BrushTool,
 ) => void;
 
 export type CanvasHoverPixelChangeHandler = (
