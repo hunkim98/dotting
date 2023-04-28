@@ -50,7 +50,7 @@ export const extractColoredPixelsFromRow = (
     if (pixel.color) {
       pixelModifyItems.push({
         color: pixel.color,
-        rowIndex: key,
+        rowIndex: rowIndex,
         columnIndex: key,
       });
     }
@@ -64,10 +64,11 @@ export const extractColoredPixelsFromColumn = (
 ) => {
   const pixelModifyItems: Array<PixelModifyItem> = [];
   Array.from(data.entries()).map((rowData, key) => {
+    const rowIndex = rowData[0];
     const row = rowData[1];
     if (row.get(columnIndex)!.color) {
       pixelModifyItems.push({
-        rowIndex: key,
+        rowIndex: rowIndex,
         columnIndex: columnIndex,
         color: row.get(columnIndex)!.color,
       });

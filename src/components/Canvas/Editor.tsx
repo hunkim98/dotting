@@ -475,37 +475,29 @@ export default class Editor extends EventDispatcher {
         case ButtonDirection.TOP:
           if (extensionAmount.y > minAmountForExtension) {
             this.extendInteractionGrid(ButtonDirection.TOP);
-            this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
           } else if (extensionAmount.y < -minAmountForExtension) {
             this.shortenInteractionGrid(ButtonDirection.TOP);
-            this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
           }
           break;
         case ButtonDirection.BOTTOM:
           if (extensionAmount.y < -minAmountForExtension) {
             this.extendInteractionGrid(ButtonDirection.BOTTOM);
-            this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
           } else if (extensionAmount.y > minAmountForExtension) {
             this.shortenInteractionGrid(ButtonDirection.BOTTOM);
-            this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
           }
           break;
         case ButtonDirection.LEFT:
           if (extensionAmount.x > minAmountForExtension) {
             this.extendInteractionGrid(ButtonDirection.LEFT);
-            this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
           } else if (extensionAmount.x < -minAmountForExtension) {
             this.shortenInteractionGrid(ButtonDirection.LEFT);
-            this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
           }
           break;
         case ButtonDirection.RIGHT:
           if (extensionAmount.x < -minAmountForExtension) {
             this.extendInteractionGrid(ButtonDirection.RIGHT);
-            this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
           } else if (extensionAmount.x > minAmountForExtension) {
             this.shortenInteractionGrid(ButtonDirection.RIGHT);
-            this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
           }
           break;
       }
@@ -530,6 +522,7 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
       });
+      this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
@@ -539,6 +532,7 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
       });
+      this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
@@ -548,6 +542,7 @@ export default class Editor extends EventDispatcher {
           y: this.panZoom.offset.y,
         },
       });
+      this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
@@ -557,6 +552,7 @@ export default class Editor extends EventDispatcher {
           y: this.panZoom.offset.y,
         },
       });
+      this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
     }
   }
 
@@ -577,7 +573,7 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
       });
-      console.log("top");
+      this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
@@ -587,7 +583,7 @@ export default class Editor extends EventDispatcher {
             (this.gridSquareLength / 2) * this.panZoom.scale,
         },
       });
-      console.log("bottom");
+      this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
@@ -597,6 +593,7 @@ export default class Editor extends EventDispatcher {
           y: this.panZoom.offset.y,
         },
       });
+      this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
     } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
@@ -606,6 +603,7 @@ export default class Editor extends EventDispatcher {
           y: this.panZoom.offset.y,
         },
       });
+      this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
     }
   }
 
@@ -975,6 +973,7 @@ export default class Editor extends EventDispatcher {
     const action = this.undoHistory.pop()!;
     const inverseAction = action.createInverseAction();
     this.commitAction(inverseAction);
+
     this.redoHistory.push(action);
     const rowCount = getRowCountFromData(this.dataLayer.getData());
     const columnCount = getColumnCountFromData(this.dataLayer.getData());
@@ -982,6 +981,10 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setColumnCount(columnCount);
     this.interactionLayer.setDataLayerRowCount(rowCount);
     this.interactionLayer.setDataLayerColumnCount(columnCount);
+    this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    this.interactionLayer.setCriterionDataForRendering(
+      this.dataLayer.getData(),
+    );
     this.renderAll();
   }
 
@@ -998,6 +1001,10 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setColumnCount(columnCount);
     this.interactionLayer.setDataLayerRowCount(rowCount);
     this.interactionLayer.setDataLayerColumnCount(columnCount);
+    this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    this.interactionLayer.setCriterionDataForRendering(
+      this.dataLayer.getData(),
+    );
     this.renderAll();
   }
 
