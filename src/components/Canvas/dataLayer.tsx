@@ -90,6 +90,18 @@ export default class DataLayer extends BaseLayer {
     return this.data;
   }
 
+  getCopiedData() {
+    const copiedMap = new Map();
+    Array.from(this.data.entries()).forEach(([rowIndex, row]) => {
+      const copiedRow = new Map();
+      Array.from(row.entries()).forEach(([columnIndex, pixelData]) => {
+        copiedRow.set(columnIndex, { ...pixelData });
+      });
+      copiedMap.set(rowIndex, copiedRow);
+    });
+    return copiedMap;
+  }
+
   getSwipedPixels() {
     return this.swipedPixels;
   }

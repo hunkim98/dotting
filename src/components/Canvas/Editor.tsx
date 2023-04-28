@@ -452,7 +452,7 @@ export default class Editor extends EventDispatcher {
     const interactionCapturedData = interactionLayer.getCapturedData();
     if (!interactionCapturedData) {
       // we will copy the data to interaction layer
-      interactionLayer.setCapturedData(this.dataLayer.getData());
+      interactionLayer.setCapturedData(this.dataLayer.getCopiedData());
     }
     const minAmountForExtension = this.gridSquareLength / 2;
     if (window.TouchEvent && evt instanceof TouchEvent) {
@@ -1052,8 +1052,8 @@ export default class Editor extends EventDispatcher {
       columnIndex: number;
     }>();
     indicesQueue.enqueue(currentIndices);
-    const data = this.dataLayer.getData();
-
+    interactionLayer.setCapturedData(this.dataLayer.getCopiedData());
+    const data = this.interactionLayer.getCapturedData()!;
     while (indicesQueue.size() > 0) {
       const { rowIndex, columnIndex } = indicesQueue.dequeue()!;
       if (!isValidIndicesRange(rowIndex, columnIndex, gridIndices)) {
@@ -1066,7 +1066,7 @@ export default class Editor extends EventDispatcher {
       }
       const color = this.brushColor;
       const previousColor = data.get(rowIndex)!.get(columnIndex)!.color;
-
+      data.get(rowIndex).get(columnIndex)!.color = color;
       interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
         rowIndex,
         columnIndex,
@@ -1082,6 +1082,7 @@ export default class Editor extends EventDispatcher {
         indicesQueue.enqueue({ rowIndex, columnIndex });
       });
     }
+    interactionLayer.resetCapturedData();
   }
 
   onMouseDown(evt: TouchyEvent) {
