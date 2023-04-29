@@ -170,7 +170,7 @@ export default class Editor extends EventDispatcher {
   }
 
   emitDataEvent() {
-    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
+    this.emit(CanvasEvents.DATA_CHANGE, this.dataLayer.getCopiedData());
   }
 
   emitBrushChangeEvent() {
@@ -904,7 +904,20 @@ export default class Editor extends EventDispatcher {
       }
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places
-      this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
+      const updatedData = this.dataLayer.getCopiedData();
+      this.emit(CanvasEvents.DATA_CHANGE, updatedData);
+      const updatedColumnCount = getColumnCountFromData(updatedData);
+      const updatedRowCount = getRowCountFromData(updatedData);
+      const updatedDimensions = {
+        rowCount: updatedRowCount,
+        columnCount: updatedColumnCount,
+      };
+      const updatedGridIndices = getGridIndicesFromData(updatedData);
+      this.emit(
+        CanvasEvents.GRID_CHANGE,
+        updatedDimensions,
+        updatedGridIndices,
+      );
       this.relayDataDimensionsToLayers();
       // deletes the records of the current user
       interactionLayer.deleteErasedPixelRecord(CurrentDeviceUserId);
@@ -1052,7 +1065,7 @@ export default class Editor extends EventDispatcher {
     const { dataForAction } = this.dataLayer.erasePixels(data);
     this.interactionLayer.erasePixels(data);
     this.recordAction(new ColorChangeAction(dataForAction));
-    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
+    this.emit(CanvasEvents.DATA_CHANGE, this.dataLayer.getCopiedData());
     this.renderAll();
   }
 
@@ -1062,7 +1075,7 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.colorPixels(data);
     this.relayDataDimensionsToLayers();
     this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
-    this.emit(CanvasEvents.DATA_CHANGE, new Map(this.dataLayer.getData()));
+    this.emit(CanvasEvents.DATA_CHANGE, this.dataLayer.getCopiedData());
     if (this.interactionLayer.getCapturedData() !== null) {
       this.interactionLayer.setCriterionDataForRendering(
         this.interactionLayer.getCapturedData(),
