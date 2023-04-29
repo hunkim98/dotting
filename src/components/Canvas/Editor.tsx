@@ -1161,6 +1161,7 @@ export default class Editor extends EventDispatcher {
         pixelIndex.columnIndex,
       );
       this.renderInteractionLayer();
+      this.renderErasedPixelsFromInteractionLayerInDataLayer();
     }
     this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
     const isGridFixed = this.gridLayer.getIsGridFixed();
@@ -1208,6 +1209,9 @@ export default class Editor extends EventDispatcher {
           pixelIndex.columnIndex,
         );
         this.renderInteractionLayer();
+        if (this.brushTool === BrushTool.ERASER) {
+          this.renderErasedPixelsFromInteractionLayerInDataLayer();
+        }
       } else {
         if (
           // We should also consider when the hovered pixel is null
@@ -1220,7 +1224,8 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.setHoveredPixel({
           rowIndex: pixelIndex.rowIndex,
           columnIndex: pixelIndex.columnIndex,
-          color: this.brushColor,
+          color:
+            this.brushTool !== BrushTool.ERASER ? this.brushColor : "white",
         });
         this.renderInteractionLayer();
       }
