@@ -225,22 +225,22 @@ With `useBrush`, you can change the brush color and mode.
       <td>`string`</td>
     </tr>
     <tr>
-      <td>`changeBrushMode(brushMode: BrushMode)`</td>
+      <td>`changeBrushTool(brushTool: BrushTool)`</td>
       <td>Allows you to change the brush mode to `DOT`, `ERASER` or `PAINT_BUCKET`</td>
       <td>
-        `BrushMode`
+        `BrushTool`
         ```ts
-        export enum BrushMode {
-          DOT = "dot",
-          ERASER = "eraser",
-          PAINT_BUCKET = "paint_bucket",
+        export enum BrushTool {
+          DOT = "DOT",
+          ERASER = "ERASER",
+          PAINT_BUCKET = "PAINT_BUCKET",
         }
         ```
       </td>
     </tr>
     <tr>
-      <td>`brushMode`</td>
-      <td>Allows you to know the current brush mode. Variable type is `BrushMode`</td>
+      <td>`brushTool`</td>
+      <td>Allows you to know the current brush mode. Variable type is `BrushTool`</td>
       <td>
       </td>
     </tr>
@@ -261,7 +261,9 @@ With `changeBrushColor` method, you can change the color of the brush.
 
 <ChangeBrushColor />
 
-#### 2. Change Brush Mode Example `changeBrushMode(mode: string)`
+#### 2. Change Brush Tool Example `changeBrushTool(brushTool: BrushTool)`
+
+With `changeBrushTool` method, you can change the brush tool.
 
 <ChangeBrushTool />
 
