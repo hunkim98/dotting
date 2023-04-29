@@ -1072,11 +1072,9 @@ export default class Editor extends EventDispatcher {
   // this only applies for multiplayer mode or user direct function call
   colorPixels(data: Array<PixelModifyItem>) {
     const { changeAmounts, dataForAction } = this.dataLayer.colorPixels(data);
-    this.interactionLayer.colorPixels(data);
-    this.relayDataDimensionsToLayers();
-    this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
-    this.emit(CanvasEvents.DATA_CHANGE, this.dataLayer.getCopiedData());
     if (this.interactionLayer.getCapturedData() !== null) {
+      //only color pixels in interaction layer if there is a captured data
+      this.interactionLayer.colorPixels(data);
       this.interactionLayer.setCriterionDataForRendering(
         this.interactionLayer.getCapturedData(),
       );
@@ -1085,6 +1083,9 @@ export default class Editor extends EventDispatcher {
         this.dataLayer.getData(),
       );
     }
+    this.relayDataDimensionsToLayers();
+    this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
+    this.emit(CanvasEvents.DATA_CHANGE, this.dataLayer.getCopiedData());
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.renderAll();
   }
