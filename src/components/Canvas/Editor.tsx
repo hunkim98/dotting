@@ -1063,7 +1063,11 @@ export default class Editor extends EventDispatcher {
 
   erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
     const { dataForAction } = this.dataLayer.erasePixels(data);
-    this.interactionLayer.erasePixels(data);
+    if (this.interactionLayer.getCapturedData() !== null) {
+      this.interactionLayer.erasePixels(data);
+    }
+    // we don't need to relay data dimensions to layers because there will be no
+    // row column change in erasePixels
     this.recordAction(new ColorChangeAction(dataForAction));
     this.emit(CanvasEvents.DATA_CHANGE, this.dataLayer.getCopiedData());
     this.renderAll();
