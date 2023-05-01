@@ -38,8 +38,6 @@ export default class InteractionLayer extends BaseLayer {
   // ( = the captured Data is not null)
   private tempStrokedPixels: Array<PixelModifyItem> = [];
 
-  private swipedPixels: Array<PixelModifyItem> = [];
-
   private indicatorPixels: Array<PixelModifyItem> = [];
 
   private dataLayerRowCount: number;
@@ -106,7 +104,6 @@ export default class InteractionLayer extends BaseLayer {
     this.capturedData = null;
     this.capturedDataOriginalIndices = null;
     this.deleteStrokePixelRecord(TemporaryUserId);
-    this.swipedPixels = [];
   }
 
   getHoveredPixel() {
@@ -225,7 +222,6 @@ export default class InteractionLayer extends BaseLayer {
       pixelModifyItems.push(...swipedColumnPixels);
       deleteColumnOfData(this.capturedData, swipedColumnIndex);
     }
-    this.addToSwipedPixels(pixelModifyItems);
     return true;
   }
 
@@ -233,13 +229,6 @@ export default class InteractionLayer extends BaseLayer {
     if (Array.isArray(indicatorPixels)) {
       this.indicatorPixels = indicatorPixels;
     }
-  }
-  /**
-   * This function will be only used by the current device user
-   * @param pixelItems
-   */
-  addToSwipedPixels(pixelItems: Array<PixelModifyItem>) {
-    this.swipedPixels.push(...pixelItems);
   }
 
   /**
