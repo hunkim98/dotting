@@ -63,7 +63,7 @@ export const extractColoredPixelsFromColumn = (
   columnIndex: number,
 ) => {
   const pixelModifyItems: Array<PixelModifyItem> = [];
-  Array.from(data.entries()).map((rowData, key) => {
+  Array.from(data.entries()).map(rowData => {
     const rowIndex = rowData[0];
     const row = rowData[1];
     if (row.get(columnIndex)!.color) {

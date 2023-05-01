@@ -6,7 +6,6 @@ import React, {
   useState,
 } from "react";
 import { forwardRef, useRef } from "react";
-import Canvas from "./Canvas";
 import {
   PixelData,
   CanvasEvents,
@@ -20,7 +19,6 @@ import {
   CanvasHoverPixelChangeHandler,
 } from "./Canvas/types";
 import Editor from "./Canvas/Editor";
-import { MouseMode } from "./Canvas/config";
 
 export interface DottingProps {
   width: number | string;

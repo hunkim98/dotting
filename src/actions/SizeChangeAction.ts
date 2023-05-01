@@ -26,7 +26,6 @@ export class SizeChangeAction extends Action {
     return new SizeChangeAction(
       this.data,
       this.changeAmounts.map(item => {
-        const wasExtendAction = item.amount > 0;
         let newStartIndex = item.startIndex;
         if (
           item.direction === ButtonDirection.TOP ||

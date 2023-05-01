@@ -39,7 +39,6 @@ import {
   CanvasEvents,
   ColorChangeItem,
   Coord,
-  DottingData,
   GridIndices,
   ImageDownloadOptions,
   PanZoom,

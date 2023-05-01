@@ -1,4 +1,3 @@
-import { convertCartesianToScreen, getScreenPoint } from "./math";
 import { Coord } from "./types";
 
 export const drawArrowHead = (
