@@ -49,6 +49,16 @@ export default class Stack<T> {
     return this.length === 0;
   }
 
+  shift(): T | null {
+    if (this.length === 0) {
+      return null;
+    }
+    const data = this.tail.data;
+    this.tail = this.tail.next;
+    this.length--;
+    return data;
+  }
+
   clear(): void {
     this.head = null;
     this.tail = null;

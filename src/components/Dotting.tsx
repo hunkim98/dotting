@@ -6,19 +6,19 @@ import React, {
   useState,
 } from "react";
 import { forwardRef, useRef } from "react";
-import Canvas from "./Canvas";
 import {
   PixelData,
   CanvasEvents,
   CanvasDataChangeHandler,
   CanvasGridChangeHandler,
   CanvasStrokeEndHandler,
-  BrushMode,
+  BrushTool,
   CanvasBrushChangeHandler,
   PixelModifyItem,
   ImageDownloadOptions,
   CanvasHoverPixelChangeHandler,
 } from "./Canvas/types";
+import Editor from "./Canvas/Editor";
 
 export interface DottingProps {
   width: number | string;
@@ -49,7 +49,7 @@ export interface DottingRef {
   redo: () => void;
   // for useBrush
   changeBrushColor: (color: string) => void;
-  changeBrushMode: (mode: BrushMode) => void;
+  changeBrushTool: (tool: BrushTool) => void;
   // for useHandler
   addDataChangeListener: (listener: CanvasDataChangeHandler) => void;
   removeDataChangeListener: (listener: CanvasDataChangeHandler) => void;
@@ -82,7 +82,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   ref: ForwardedRef<DottingRef>,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [canvas, setCanvas] = useState<Canvas | null>(null);
+  const [gridCanvas, setGridCanvas] = useState<HTMLCanvasElement | null>(null);
+  const [dataCanvas, setDataCanvas] = useState<HTMLCanvasElement | null>(null);
+  const [interactionCanvas, setInteractionCanvas] =
+    useState<HTMLCanvasElement | null>(null);
+  const [backgroundCanvas, setBackgroundCanvas] =
+    useState<HTMLCanvasElement | null>(null);
+  const [editor, setEditor] = useState<Editor | null>(null);
   const [dataChangeListeners, setDataChangeListeners] = useState<
     CanvasDataChangeHandler[]
   >([]);
@@ -108,143 +114,143 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     >([]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
-    canvas.setIsGridFixed(props.isGridFixed);
-  }, [canvas, props.isGridFixed]);
+    editor.setIsGridFixed(props.isGridFixed);
+  }, [editor, props.isGridFixed]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
-    canvas.setGridStrokeColor(props.gridStrokeColor);
-  }, [canvas, props.gridStrokeColor]);
+    editor.setGridStrokeColor(props.gridStrokeColor);
+  }, [editor, props.gridStrokeColor]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
-    canvas.setGridStrokeWidth(props.gridStrokeWidth);
-  }, [canvas, props.gridStrokeWidth]);
+    editor.setGridStrokeWidth(props.gridStrokeWidth);
+  }, [editor, props.gridStrokeWidth]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
-    canvas.setIsGridVisible(props.isGridVisible);
-  }, [canvas, props.isGridVisible]);
+    editor.setIsGridVisible(props.isGridVisible);
+  }, [editor, props.isGridVisible]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
-    canvas.setIsPanZoomable(props.isPanZoomable);
-  }, [canvas, props.isPanZoomable]);
+    editor.setIsPanZoomable(props.isPanZoomable);
+  }, [editor, props.isPanZoomable]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
     gridChangeListeners.forEach(listener => {
-      canvas.addEventListener(CanvasEvents.GRID_CHANGE, listener);
+      editor.addEventListener(CanvasEvents.GRID_CHANGE, listener);
     });
     // The below is to emit the initial grid event
-    canvas.emitGridEvent();
+    editor.emitGridEvent();
     return () => {
       gridChangeListeners.forEach(listener => {
-        canvas?.removeEventListener(CanvasEvents.GRID_CHANGE, listener);
+        editor?.removeEventListener(CanvasEvents.GRID_CHANGE, listener);
       });
     };
-  }, [canvas, gridChangeListeners]);
+  }, [editor, gridChangeListeners]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
     dataChangeListeners.forEach(listener => {
-      canvas.addEventListener(CanvasEvents.DATA_CHANGE, listener);
+      editor.addEventListener(CanvasEvents.DATA_CHANGE, listener);
     });
-    canvas.emitDataEvent();
+    editor.emitDataEvent();
     return () => {
       dataChangeListeners.forEach(listener => {
-        canvas?.removeEventListener(CanvasEvents.DATA_CHANGE, listener);
+        editor?.removeEventListener(CanvasEvents.DATA_CHANGE, listener);
       });
     };
-  }, [canvas, dataChangeListeners]);
+  }, [editor, dataChangeListeners]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
     brushChangeListeners.forEach(listener => {
-      canvas.addEventListener(CanvasEvents.BRUSH_CHANGE, listener);
+      editor.addEventListener(CanvasEvents.BRUSH_CHANGE, listener);
     });
-    canvas.emitBrushChangeEvent();
+    editor.emitBrushChangeEvent();
     return () => {
       brushChangeListeners.forEach(listener => {
-        canvas?.removeEventListener(CanvasEvents.BRUSH_CHANGE, listener);
+        editor?.removeEventListener(CanvasEvents.BRUSH_CHANGE, listener);
       });
     };
-  }, [canvas, brushChangeListeners]);
+  }, [editor, brushChangeListeners]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
     strokeEndListeners.forEach(listener => {
-      canvas.addEventListener(CanvasEvents.STROKE_END, listener);
+      editor.addEventListener(CanvasEvents.STROKE_END, listener);
     });
     // Emitting initial strokeEnd listener is not necessary!
     return () => {
       strokeEndListeners.forEach(listener => {
-        canvas?.removeEventListener(CanvasEvents.STROKE_END, listener);
+        editor?.removeEventListener(CanvasEvents.STROKE_END, listener);
       });
     };
-  }, [canvas, strokeEndListeners]);
+  }, [editor, strokeEndListeners]);
 
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
     hoverPixelChangeListeners.forEach(listener => {
-      canvas.addEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
+      editor.addEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
     });
-    canvas.emitHoverPixelChangeEvent();
+    editor.emitHoverPixelChangeEvent();
     return () => {
       hoverPixelChangeListeners.forEach(listener => {
-        canvas?.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
+        editor?.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
       });
     };
-  }, [canvas, hoverPixelChangeListeners]);
+  }, [editor, hoverPixelChangeListeners]);
 
   // The below is to add event listeners directly to the canvas element
   // E.g. for mousemove, mousedown, mouseup, etc.
   useEffect(() => {
-    if (!canvas) {
+    if (!editor) {
       return;
     }
     canvasElementEventListeners.forEach(({ type, listener }) => {
-      const canvasElement = canvas.getCanvasElement();
+      const canvasElement = editor.getCanvasElement();
       canvasElement.addEventListener(type, listener);
     });
     return () => {
       canvasElementEventListeners.forEach(({ type, listener }) => {
-        const canvasElement = canvas.getCanvasElement();
+        const canvasElement = editor.getCanvasElement();
         canvasElement.removeEventListener(type, listener);
       });
     };
-  }, [canvas, canvasElementEventListeners]);
+  }, [editor, canvasElementEventListeners]);
 
   // We put resize handler
   useEffect(() => {
     const onResize = () => {
-      if (containerRef.current && canvas) {
+      if (containerRef.current && editor) {
         const dpr = window.devicePixelRatio;
         const rect = containerRef.current.getBoundingClientRect();
-        canvas.setSize(rect.width, rect.height, dpr);
-        canvas.scale(dpr, dpr);
-        canvas.render();
+        editor.setSize(rect.width, rect.height, dpr);
+        editor.scale(dpr, dpr);
+        editor.renderAll();
       }
     };
     onResize();
@@ -252,29 +258,72 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     return () => {
       window.removeEventListener("resize", onResize);
     };
-  }, [canvas, containerRef, props.height, props.width]);
+  }, [editor, containerRef, props.height, props.width]);
 
-  // Reference: https://github.com/ascorbic/react-artboard/blob/main/src/components/Artboard.tsx
-  const gotRef = useCallback((canvasRef: HTMLCanvasElement) => {
-    if (!canvasRef) {
+  useEffect(() => {
+    if (!gridCanvas || !interactionCanvas || !dataCanvas || !backgroundCanvas) {
       return;
     }
-    canvasRef.style["touchAction"] = "none";
-    const canvas = new Canvas(
-      canvasRef,
-      props.initData,
-      props.backgroundMode,
-      props.backgroundColor,
-      props.backgroundAlpha,
-      props.isPanZoomable,
-      props.gridStrokeColor,
-      props.gridStrokeWidth,
-      props.isGridVisible,
-      props.isGridFixed,
-      props.initBrushColor,
-      props.initIndicatorData,
-    );
-    setCanvas(canvas);
+    const editor = new Editor({
+      gridCanvas,
+      interactionCanvas,
+      dataCanvas,
+      backgroundCanvas,
+      initData: props.initData,
+    });
+    editor.setIsGridFixed(props.isGridFixed);
+    editor.setBackgroundAlpha(props.backgroundAlpha);
+    editor.setBackgroundMode(props.backgroundMode);
+    editor.setIsPanZoomable(props.isPanZoomable);
+
+    editor.setIsGridVisible(props.isGridVisible);
+
+    editor.setGridStrokeColor(props.gridStrokeColor);
+
+    editor.setGridStrokeWidth(props.gridStrokeWidth);
+
+    editor.setBrushColor(props.initBrushColor);
+
+    editor.setIndicatorPixels(props.initIndicatorData);
+
+    setEditor(editor);
+
+    return () => {
+      editor.destroy();
+    };
+  }, [gridCanvas, interactionCanvas, dataCanvas, backgroundCanvas]);
+
+  // Reference: https://github.com/ascorbic/react-artboard/blob/main/src/components/Artboard.tsx
+  const gotGridCanvasRef = useCallback((element: HTMLCanvasElement) => {
+    if (!element) {
+      return;
+    }
+    element.style["touchAction"] = "none";
+    setGridCanvas(element);
+  }, []);
+
+  const gotInteractionCanvasRef = useCallback((element: HTMLCanvasElement) => {
+    if (!element) {
+      return;
+    }
+    element.style["touchAction"] = "none";
+    setInteractionCanvas(element);
+  }, []);
+
+  const gotDataCanvasRef = useCallback((element: HTMLCanvasElement) => {
+    if (!element) {
+      return;
+    }
+    element.style["touchAction"] = "none";
+    setDataCanvas(element);
+  }, []);
+
+  const gotBackgroundCanvasRef = useCallback((element: HTMLCanvasElement) => {
+    if (!element) {
+      return;
+    }
+    element.style["touchAction"] = "none";
+    setBackgroundCanvas(element);
   }, []);
 
   const addDataChangeListener = useCallback(
@@ -286,12 +335,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const removeDataChangeListener = useCallback(
     (listener: CanvasDataChangeHandler) => {
-      canvas.removeEventListener(CanvasEvents.DATA_CHANGE, listener);
+      editor.removeEventListener(CanvasEvents.DATA_CHANGE, listener);
       setDataChangeListeners(listeners =>
         listeners.filter(l => l !== listener),
       );
     },
-    [canvas],
+    [editor],
   );
 
   const addGridChangeListener = useCallback(
@@ -303,12 +352,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const removeGridChangeListener = useCallback(
     (listener: CanvasGridChangeHandler) => {
-      canvas.removeEventListener(CanvasEvents.GRID_CHANGE, listener);
+      editor.removeEventListener(CanvasEvents.GRID_CHANGE, listener);
       setGridChangeListeners(listeners =>
         listeners.filter(l => l !== listener),
       );
     },
-    [canvas],
+    [editor],
   );
 
   const addBrushChangeListener = useCallback(
@@ -320,12 +369,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const removeBrushChangeListener = useCallback(
     (listener: CanvasBrushChangeHandler) => {
-      canvas.removeEventListener(CanvasEvents.BRUSH_CHANGE, listener);
+      editor.removeEventListener(CanvasEvents.BRUSH_CHANGE, listener);
       setBrushChangeListeners(listeners =>
         listeners.filter(l => l !== listener),
       );
     },
-    [canvas],
+    [editor],
   );
 
   const addStrokeEndListener = useCallback(
@@ -337,10 +386,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const removeStrokeEndListener = useCallback(
     (listener: CanvasStrokeEndHandler) => {
-      canvas.removeEventListener(CanvasEvents.STROKE_END, listener);
+      editor.removeEventListener(CanvasEvents.STROKE_END, listener);
       setStrokeEndListeners(listeners => listeners.filter(l => l !== listener));
     },
-    [canvas],
+    [editor],
   );
 
   const addHoverPixelChangeListener = useCallback(
@@ -352,12 +401,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const removeHoverPixelChangeListener = useCallback(
     (listener: CanvasHoverPixelChangeHandler) => {
-      canvas.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
+      editor.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
       setHoverPixelChangeListeners(listeners =>
         listeners.filter(l => l !== listener),
       );
     },
-    [canvas],
+    [editor],
   );
 
   const addCanvasElementEventListener = useCallback(
@@ -367,24 +416,24 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         { type, listener },
       ]);
     },
-    [canvas],
+    [editor],
   );
 
   const removeCanvasElementEventListener = useCallback(
     (type: string, listener: EventListenerOrEventListenerObject) => {
-      if (!canvas) {
+      if (!editor) {
         return;
       }
-      const canvasElement = canvas.getCanvasElement();
+      const canvasElement = editor.getCanvasElement();
       canvasElement.removeEventListener(type, listener);
       setCanvasElementEventListeners(listeners =>
         listeners.filter(l => l.type !== type && l.listener !== listener),
       );
     },
-    [canvas],
+    [editor],
   );
 
-  const clear = useCallback(() => canvas?.clear(), [canvas]);
+  const clear = useCallback(() => editor?.clear(), [editor]);
 
   const colorPixels = useCallback(
     (
@@ -394,53 +443,53 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         color: string;
       }>,
     ) => {
-      canvas?.colorPixels(changes);
+      editor?.colorPixels(changes);
     },
-    [canvas],
+    [editor],
   );
 
   const erasePixels = useCallback(
     (changes: Array<{ rowIndex: number; columnIndex: number }>) => {
-      canvas?.erasePixels(changes);
+      editor?.erasePixels(changes);
     },
-    [canvas],
+    [editor],
   );
 
   const setIndicatorPixels = useCallback(
     (indicators: Array<PixelModifyItem>) => {
-      canvas?.setIndicatorPixels(indicators);
+      editor?.setIndicatorPixels(indicators);
     },
-    [canvas],
+    [editor],
   );
 
   const downloadImage = useCallback(
     (options?: ImageDownloadOptions) => {
-      canvas?.downloadImage(options);
+      editor?.downloadImage(options);
     },
-    [canvas],
+    [editor],
   );
 
   const changeBrushColor = useCallback(
     (color: string) => {
-      canvas?.changeBrushColor(color);
+      editor?.changeBrushColor(color);
     },
-    [canvas],
+    [editor],
   );
 
-  const changeBrushMode = useCallback(
-    (brushMode: BrushMode) => {
-      canvas?.changeBrushMode(brushMode);
+  const changeBrushTool = useCallback(
+    (brushTool: BrushTool) => {
+      editor?.setBrushTool(brushTool);
     },
-    [canvas],
+    [editor],
   );
 
   const undo = useCallback(() => {
-    canvas?.undo();
-  }, [canvas]);
+    editor?.undo();
+  }, [editor]);
 
   const redo = useCallback(() => {
-    canvas?.redo();
-  }, [canvas]);
+    editor?.redo();
+  }, [editor]);
 
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
@@ -457,7 +506,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       redo,
       // for useBrush
       changeBrushColor,
-      changeBrushMode,
+      changeBrushTool,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,
@@ -484,7 +533,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       redo,
       // for useBrush
       changeBrushColor,
-      changeBrushMode,
+      changeBrushTool,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,
@@ -504,7 +553,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   return (
     <div
-      style={{ width: props.width, height: props.height }}
+      style={{ width: props.width, height: props.height, position: "relative" }}
       ref={containerRef}
       // onKeyDown={(e) => {
       //   console.log(e.code, e.ctrlKey, e.metaKey);
@@ -515,8 +564,35 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       // tabIndex={0}
     >
       <canvas
-        ref={gotRef}
+        ref={gotBackgroundCanvasRef}
         style={{
+          position: "absolute",
+          border: "1px solid #555555",
+          ...props.style,
+        }}
+      />
+      <canvas
+        ref={gotDataCanvasRef}
+        style={{
+          position: "absolute",
+          pointerEvents: "none",
+          border: "1px solid #555555",
+          ...props.style,
+        }}
+      />
+      <canvas
+        ref={gotInteractionCanvasRef}
+        style={{
+          position: "absolute",
+          border: "1px solid #555555",
+          ...props.style,
+        }}
+      />
+      <canvas
+        ref={gotGridCanvasRef}
+        style={{
+          position: "absolute",
+          pointerEvents: "none",
           border: "1px solid #555555",
           ...props.style,
         }}

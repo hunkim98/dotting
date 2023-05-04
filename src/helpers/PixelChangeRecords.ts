@@ -51,7 +51,6 @@ export class PixelChangeRecords {
     } else {
       const originalPreviousColor =
         this.effectiveChangesMap.get(pixelId).previousColor;
-      console.log(originalPreviousColor);
       this.effectiveChangesMap.set(pixelId, {
         color,
         previousColor: originalPreviousColor,

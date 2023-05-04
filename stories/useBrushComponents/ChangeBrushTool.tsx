@@ -1,12 +1,12 @@
 import React, { useCallback } from "react";
 import { useRef } from "react";
-import { BrushMode } from "../../src/components/Canvas/types";
+import { BrushTool } from "../../src/components/Canvas/types";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useBrush from "../../src/hooks/useBrush";
 
-const ChangeBrushMode = () => {
+const ChangeBrushTool = () => {
   const ref = useRef<DottingRef>(null);
-  const { changeBrushColor, changeBrushMode, brushMode, brushColor } =
+  const { changeBrushColor, changeBrushTool, brushTool, brushColor } =
     useBrush(ref);
 
   const handleColorChange = useCallback(
@@ -41,15 +41,15 @@ const ChangeBrushMode = () => {
           style={{
             marginLeft: 15,
           }}
-          value={brushMode}
+          value={brushTool}
           onChange={e => {
-            changeBrushMode(e.target.value as BrushMode);
+            changeBrushTool(e.target.value as BrushTool);
           }}
         >
-          <option value={BrushMode.DOT}>{BrushMode.DOT}</option>
-          <option value={BrushMode.ERASER}>{BrushMode.ERASER}</option>
-          <option value={BrushMode.PAINT_BUCKET}>
-            {BrushMode.PAINT_BUCKET}
+          <option value={BrushTool.DOT}>{BrushTool.DOT}</option>
+          <option value={BrushTool.ERASER}>{BrushTool.ERASER}</option>
+          <option value={BrushTool.PAINT_BUCKET}>
+            {BrushTool.PAINT_BUCKET}
           </option>
         </select>
       </div>
@@ -79,4 +79,4 @@ const ChangeBrushMode = () => {
   );
 };
 
-export default ChangeBrushMode;
+export default ChangeBrushTool;

@@ -1,4 +1,4 @@
 import ChangeBrushColor from "./ChangeBrushColor";
-import ChangeBrushMode from "./ChangeBrushMode";
+import ChangeBrushTool from "./ChangeBrushTool";
 
-export { ChangeBrushColor, ChangeBrushMode };
+export { ChangeBrushColor, ChangeBrushTool };

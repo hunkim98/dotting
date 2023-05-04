@@ -1,17 +1,17 @@
 import { MutableRefObject, useCallback, useEffect, useState } from "react";
-import { BrushMode } from "../components/Canvas/types";
+import { BrushTool } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
 import useHandlers from "./useHandlers";
 
 const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
-  const [brushMode, setBrushMode] = useState<BrushMode>(BrushMode.DOT);
+  const [brushTool, setBrushTool] = useState<BrushTool>(BrushTool.DOT);
   const [brushColor, setBrushColor] = useState<string>("");
   const { addBrushChangeListener, removeBrushChangeListener } =
     useHandlers(ref);
 
   useEffect(() => {
-    const listener = (brushColor: string, brushMode: BrushMode) => {
-      setBrushMode(brushMode);
+    const listener = (brushColor: string, brushMode: BrushTool) => {
+      setBrushTool(brushMode);
       setBrushColor(brushColor);
     };
     addBrushChangeListener(listener);
@@ -26,17 +26,17 @@ const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
-  const changeBrushMode = useCallback(
-    (brushMode: BrushMode) => {
-      ref.current?.changeBrushMode(brushMode);
+  const changeBrushTool = useCallback(
+    (brushMode: BrushTool) => {
+      ref.current?.changeBrushTool(brushMode);
     },
     [ref],
   );
 
   return {
     changeBrushColor,
-    changeBrushMode,
-    brushMode,
+    changeBrushTool,
+    brushTool,
     brushColor,
   };
 };

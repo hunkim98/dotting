@@ -1,10 +1,11 @@
-import { ButtonDirection } from "../components/Canvas";
+import { ButtonDirection } from "../components/Canvas/config";
 import { PixelModifyItem } from "../components/Canvas/types";
 import { Action, ActionType } from "./Action";
 
 export interface ChangeAmountData {
   direction: ButtonDirection;
   amount: number;
+  startIndex: number;
 }
 
 export class SizeChangeAction extends Action {
@@ -24,10 +25,26 @@ export class SizeChangeAction extends Action {
   createInverseAction(): Action {
     return new SizeChangeAction(
       this.data,
-      this.changeAmounts.map(item => ({
-        ...item,
-        amount: -item.amount,
-      })),
+      this.changeAmounts.map(item => {
+        let newStartIndex = item.startIndex;
+        if (
+          item.direction === ButtonDirection.TOP ||
+          item.direction === ButtonDirection.LEFT
+        ) {
+          newStartIndex = item.startIndex - item.amount;
+        } else if (
+          item.direction === ButtonDirection.BOTTOM ||
+          item.direction === ButtonDirection.RIGHT
+        ) {
+          newStartIndex = item.startIndex + item.amount;
+        }
+
+        return {
+          ...item,
+          amount: -item.amount,
+          startIndex: newStartIndex,
+        };
+      }),
     );
   }
 

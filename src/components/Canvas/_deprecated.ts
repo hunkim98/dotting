@@ -9,7 +9,7 @@ import React from "react";
 import Queue from "../../utils/queue";
 import EventDispatcher from "../../utils/eventDispatcher";
 import {
-  BrushMode,
+  BrushTool,
   CanvasEvents,
   Coord,
   DottingData,
@@ -24,24 +24,14 @@ import { isValidIndicesRange } from "../../utils/validation";
 import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
 import { Action, ActionType } from "../../actions/Action";
 import { ColorChangeAction } from "../../actions/ColorChangeAction";
-import { SizeChangeAction } from "../../actions/SizeChangeAction";
+import {
+  ChangeAmountData,
+  SizeChangeAction,
+} from "../../actions/SizeChangeAction";
 import Stack from "../../utils/stack";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
-
-export enum MouseMode {
-  DRAWING = "DRAWING",
-  PANNING = "PANNING",
-  EXTENDING = "EXTENDING",
-  NULL = "NULL",
-}
-
-export enum ButtonDirection {
-  TOP = "TOP",
-  BOTTOM = "BOTTOM",
-  LEFT = "LEFT",
-  RIGHT = "RIGHT",
-}
+import { MouseMode, ButtonDirection } from "./config";
 
 export default class Canvas extends EventDispatcher {
   private MAX_SCALE = 1.5;
@@ -86,13 +76,13 @@ export default class Canvas extends EventDispatcher {
 
   private indicatorPixels: Array<PixelModifyItem> = [];
 
-  private mouseMode: MouseMode = MouseMode.NULL;
+  private mouseMode: MouseMode = MouseMode.PANNING;
 
   private hoveredButton: ButtonDirection | null = null;
 
   private brushColor: string;
 
-  private brushMode: BrushMode = BrushMode.DOT;
+  private brushMode: BrushTool = BrushTool.DOT;
 
   private cursorStyle = "default";
 
@@ -732,7 +722,7 @@ export default class Canvas extends EventDispatcher {
           const { rowIndex, columnIndex } = this.hoveredPixel;
           const relativeRowIndex = rowIndex - currentTopIndex;
           const relativeColumnIndex = columnIndex - currentLeftIndex;
-          if (this.brushMode !== BrushMode.ERASER) {
+          if (this.brushMode !== BrushTool.ERASER) {
             ctx.globalAlpha = 0.5;
             ctx.fillStyle = this.brushColor;
             if (color === this.brushColor) {
@@ -940,7 +930,7 @@ export default class Canvas extends EventDispatcher {
     const minColumnIndex = Math.min(...columnIndices);
     const maxColumnIndex = Math.max(...columnIndices);
     const currentCanvasIndices = this.getGridIndices();
-    const changeAmounts = [];
+    const changeAmounts: Array<ChangeAmountData> = [];
     if (minRowIndex < currentCanvasIndices.topRowIndex) {
       let amount = 0;
       for (
@@ -954,6 +944,7 @@ export default class Canvas extends EventDispatcher {
       changeAmounts.push({
         direction: ButtonDirection.TOP,
         amount,
+        startIndex: currentCanvasIndices.topRowIndex,
       });
     }
     if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
@@ -969,6 +960,7 @@ export default class Canvas extends EventDispatcher {
       changeAmounts.push({
         direction: ButtonDirection.BOTTOM,
         amount,
+        startIndex: currentCanvasIndices.bottomRowIndex,
       });
     }
     if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
@@ -984,6 +976,7 @@ export default class Canvas extends EventDispatcher {
       changeAmounts.push({
         direction: ButtonDirection.LEFT,
         amount,
+        startIndex: currentCanvasIndices.leftColumnIndex,
       });
     }
     if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
@@ -999,6 +992,7 @@ export default class Canvas extends EventDispatcher {
       changeAmounts.push({
         direction: ButtonDirection.RIGHT,
         amount,
+        startIndex: currentCanvasIndices.rightColumnIndex,
       });
     }
     const dataForAction = [];
@@ -1119,7 +1113,7 @@ export default class Canvas extends EventDispatcher {
     this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushMode);
   }
 
-  changeBrushMode(brushMode: BrushMode) {
+  changeBrushMode(brushMode: BrushTool) {
     this.brushMode = brushMode;
     this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushMode);
   }
@@ -1234,7 +1228,7 @@ export default class Canvas extends EventDispatcher {
    */
   drawPixel(rowIndex: number, columnIndex: number) {
     // This erases the pixel if the brush mode is eraser
-    if (this.brushMode === BrushMode.ERASER) {
+    if (this.brushMode === BrushTool.ERASER) {
       const previousColor = this.data.get(rowIndex)!.get(columnIndex)!.color;
       this.data.get(rowIndex)!.set(columnIndex, { color: "" });
       this.emit(CanvasEvents.DATA_CHANGE, this.data);
@@ -1244,7 +1238,7 @@ export default class Canvas extends EventDispatcher {
         previousColor,
         color: "",
       });
-    } else if (this.brushMode === BrushMode.DOT) {
+    } else if (this.brushMode === BrushTool.DOT) {
       // this draws the pixel if the brush mode is brush
       this.strokedPixelRecords.record({
         rowIndex,
@@ -1259,7 +1253,7 @@ export default class Canvas extends EventDispatcher {
         this.fillPixelColor(rowIndex, columnIndex, this.brushColor);
         this.emit(CanvasEvents.DATA_CHANGE, this.data);
       }
-    } else if (this.brushMode === BrushMode.PAINT_BUCKET) {
+    } else if (this.brushMode === BrushTool.PAINT_BUCKET) {
       /* 🪣 this paints same color area / with selected brush color. */
 
       const gridIndices = this.getGridIndices();
@@ -1739,27 +1733,55 @@ export default class Canvas extends EventDispatcher {
       sizeChangeAmount =
         this.mouseDownGridInfo!.indices.topRowIndex -
         currentGridIndices.topRowIndex;
+      this.recordAction(
+        new SizeChangeAction(deletedPixels, [
+          {
+            direction: extensionDirection,
+            amount: sizeChangeAmount,
+            startIndex: currentGridIndices.topRowIndex,
+          },
+        ]),
+      );
     } else if (extensionDirection === ButtonDirection.BOTTOM) {
       sizeChangeAmount =
         currentGridIndices.bottomRowIndex -
         this.mouseDownGridInfo!.indices.bottomRowIndex;
+      this.recordAction(
+        new SizeChangeAction(deletedPixels, [
+          {
+            direction: extensionDirection,
+            amount: sizeChangeAmount,
+            startIndex: currentGridIndices.bottomRowIndex,
+          },
+        ]),
+      );
     } else if (extensionDirection === ButtonDirection.LEFT) {
       sizeChangeAmount =
         this.mouseDownGridInfo!.indices.leftColumnIndex -
         currentGridIndices.leftColumnIndex;
+      this.recordAction(
+        new SizeChangeAction(deletedPixels, [
+          {
+            direction: extensionDirection,
+            amount: sizeChangeAmount,
+            startIndex: currentGridIndices.leftColumnIndex,
+          },
+        ]),
+      );
     } else {
       sizeChangeAmount =
         currentGridIndices.rightColumnIndex -
         this.mouseDownGridInfo!.indices.rightColumnIndex;
+      this.recordAction(
+        new SizeChangeAction(deletedPixels, [
+          {
+            direction: extensionDirection,
+            amount: sizeChangeAmount,
+            startIndex: currentGridIndices.rightColumnIndex,
+          },
+        ]),
+      );
     }
-    this.recordAction(
-      new SizeChangeAction(deletedPixels, [
-        {
-          direction: extensionDirection,
-          amount: sizeChangeAmount,
-        },
-      ]),
-    );
     this.swipedPixels = [];
   }
 
@@ -1776,11 +1798,12 @@ export default class Canvas extends EventDispatcher {
     );
     this.erasedPixelRecords.reset();
   }
+
   onMouseUp() {
     if (this.mouseMode === MouseMode.EXTENDING) {
       this.addSizeChangeActionToUndoStack();
     }
-    this.mouseMode = MouseMode.NULL;
+    this.mouseMode = MouseMode.PANNING;
     if (this.strokedPixelRecords.getRawChanges().length !== 0) {
       this.emit(
         CanvasEvents.STROKE_END,
