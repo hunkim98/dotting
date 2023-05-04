@@ -1,4 +1,5 @@
 module.exports = {
+  displayName: "dotting",
   roots: ["./src"],
   setupFilesAfterEnv: ["./jest.setup.ts"],
   moduleFileExtensions: ["ts", "tsx", "js"],

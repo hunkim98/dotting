@@ -1,7 +1,7 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "react-hooks"],
+  "plugins": ["@typescript-eslint", "react-hooks", "unicorn"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
@@ -12,7 +12,9 @@
   "rules": {
     "@typescript-eslint/no-non-null-assertion": "off",
     "no-case-declarations": "off",
-    /* Import order */
+    "no-undef": "warn",
+    "react-hooks/rules-of-hooks": "error",
+    /* Import */
     "import/order": [
       "error",
       {
@@ -31,6 +33,13 @@
         "newlines-between": "always"
       }
     ],
-    "react-hooks/rules-of-hooks": "error"
+    "import/no-unresolved": [2, { "caseSensitiveStrict": true }],
+    /* File name */
+    "unicorn/filename-case": [
+      "error",
+      {
+        "cases": { "pascalCase": true, "camelCase": true }
+      }
+    ]
   }
 }
