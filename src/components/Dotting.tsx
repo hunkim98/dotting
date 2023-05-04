@@ -4,8 +4,9 @@ import React, {
   useEffect,
   useImperativeHandle,
   useState,
-} from "react";
-import { forwardRef, useRef } from "react";
+ forwardRef, useRef } from "react";
+
+import Editor from "./Canvas/Editor";
 import {
   PixelData,
   CanvasEvents,
@@ -18,7 +19,6 @@ import {
   ImageDownloadOptions,
   CanvasHoverPixelChangeHandler,
 } from "./Canvas/types";
-import Editor from "./Canvas/Editor";
 
 export interface DottingProps {
   width: number | string;

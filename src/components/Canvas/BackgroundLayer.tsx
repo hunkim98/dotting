@@ -1,4 +1,5 @@
 import React from "react";
+
 import { BaseLayer } from "./BaseLayer";
 
 export default class BackgroundLayer extends BaseLayer {

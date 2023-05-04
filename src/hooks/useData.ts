@@ -1,4 +1,6 @@
 import { MutableRefObject, useEffect, useState } from "react";
+
+import useHandlers from "./useHandlers";
 import {
   CanvasDataChangeHandler,
   DottingData,
@@ -6,7 +8,6 @@ import {
   PixelModifyItem,
 } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
-import useHandlers from "./useHandlers";
 
 const useData = (ref: MutableRefObject<DottingRef | null>) => {
   const { addDataChangeListener, removeDataChangeListener } = useHandlers(ref);

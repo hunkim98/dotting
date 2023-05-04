@@ -1,8 +1,8 @@
 import Clear from "./Clear";
 import ColorPixels from "./ColorPixels";
 import DownloadImage from "./DownloadImage";
-import SetIndicatorPixels from "./SetIndicatorPixels";
 import GridStyling from "./GridStyling";
+import SetIndicatorPixels from "./SetIndicatorPixels";
 import UndoRedo from "./UndoRedo";
 
 export {

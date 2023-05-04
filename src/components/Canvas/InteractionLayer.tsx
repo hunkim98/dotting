@@ -1,16 +1,3 @@
-import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
-import {
-  addColumnToData,
-  addRowToData,
-  deleteColumnOfData,
-  deleteRowOfData,
-  extractColoredPixelsFromColumn,
-  extractColoredPixelsFromRow,
-  getColumnCountFromData,
-  getGridIndicesFromData,
-  getRowCountFromData,
-} from "../../utils/data";
-import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 import { BaseLayer } from "./BaseLayer";
 import {
   DefaultGridSquareLength,
@@ -25,6 +12,19 @@ import {
   GridIndices,
   PixelModifyItem,
 } from "./types";
+import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
+import {
+  addColumnToData,
+  addRowToData,
+  deleteColumnOfData,
+  deleteRowOfData,
+  extractColoredPixelsFromColumn,
+  extractColoredPixelsFromRow,
+  getColumnCountFromData,
+  getGridIndicesFromData,
+  getRowCountFromData,
+} from "../../utils/data";
+import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 
 export default class InteractionLayer extends BaseLayer {
   // We make this a map to allow for multiple users to interact with the canvas

@@ -1,5 +1,3 @@
-import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
-import { drawArrowHead, drawExtendButton } from "../../utils/shapes";
 import { BaseLayer } from "./BaseLayer";
 import {
   ButtonDirection,
@@ -7,6 +5,8 @@ import {
   DefaultGridSquareLength,
 } from "./config";
 import { Coord } from "./types";
+import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
+import { drawArrowHead, drawExtendButton } from "../../utils/shapes";
 
 export default class GridLayer extends BaseLayer {
   private columnCount: number;

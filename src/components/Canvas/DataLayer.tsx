@@ -1,11 +1,17 @@
 import { BaseLayer } from "./BaseLayer";
 import {
+  ButtonDirection,
+  DefaultGridSquareLength,
+  DefaultPixelDataDimensions,
+} from "./config";
+import {
   ColorChangeItem,
   Coord,
   DottingData,
   PixelData,
   PixelModifyItem,
 } from "./types";
+import { ChangeAmountData } from "../../actions/SizeChangeAction";
 import {
   addColumnToData,
   addRowToData,
@@ -20,12 +26,6 @@ import {
   getRowKeysFromData,
   validatePixelArrayData,
 } from "../../utils/data";
-import {
-  ButtonDirection,
-  DefaultGridSquareLength,
-  DefaultPixelDataDimensions,
-} from "./config";
-import { ChangeAmountData } from "../../actions/SizeChangeAction";
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 
 export default class DataLayer extends BaseLayer {

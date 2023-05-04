@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+
 import { DottingData } from "../src/components/Canvas/types";
 import DottingComponent, {
   DottingProps,

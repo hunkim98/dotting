@@ -1,7 +1,8 @@
 import { MutableRefObject, useEffect, useState } from "react";
+
+import useHandlers from "./useHandlers";
 import { CanvasGridChangeHandler } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
-import useHandlers from "./useHandlers";
 
 const useGrids = (ref: MutableRefObject<DottingRef | null>) => {
   const { addGridChangeListener, removeGridChangeListener } = useHandlers(ref);
