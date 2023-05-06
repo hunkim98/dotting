@@ -1,7 +1,7 @@
-import { ButtonDirection } from "../components/Canvas/config";
-import { ColorChangeItem } from "../components/Canvas/types";
 import { Action, ActionType } from "./Action";
 import { ChangeAmountData } from "./SizeChangeAction";
+import { ButtonDirection } from "../components/Canvas/config";
+import { ColorChangeItem } from "../components/Canvas/types";
 
 export class ColorSizeChangeAction extends Action {
   type = ActionType.ColorSizeChange;

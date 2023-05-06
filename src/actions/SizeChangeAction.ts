@@ -1,6 +1,6 @@
+import { Action, ActionType } from "./Action";
 import { ButtonDirection } from "../components/Canvas/config";
 import { PixelModifyItem } from "../components/Canvas/types";
-import { Action, ActionType } from "./Action";
 
 export interface ChangeAmountData {
   direction: ButtonDirection;

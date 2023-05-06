@@ -1,5 +1,5 @@
-import React from "react";
-import { useRef } from "react";
+import React, { useRef } from "react";
+
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useDotting from "../../src/hooks/useDotting";
 

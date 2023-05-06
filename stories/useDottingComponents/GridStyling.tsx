@@ -1,5 +1,5 @@
-import React from "react";
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
+
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 
 const GridStyling = () => {

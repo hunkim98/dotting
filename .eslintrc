@@ -1,14 +1,45 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
+  "plugins": ["@typescript-eslint", "react-hooks", "unicorn"],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript"
   ],
   "rules": {
     "@typescript-eslint/no-non-null-assertion": "off",
-    "no-case-declarations": "off"
+    "no-case-declarations": "off",
+    "no-undef": "warn",
+    "react-hooks/rules-of-hooks": "error",
+    /* Import */
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          ["parent", "sibling"],
+          "index",
+          "object"
+        ],
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        "newlines-between": "always"
+      }
+    ],
+    "import/no-unresolved": [2, { "caseSensitiveStrict": true }],
+    /* File name */
+    "unicorn/filename-case": [
+      "error",
+      {
+        "cases": { "pascalCase": true, "camelCase": true }
+      }
+    ]
   }
 }

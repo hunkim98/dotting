@@ -1,5 +1,31 @@
+import BackgroundLayer from "./BackgroundLayer";
+import {
+  DefaultGridSquareLength,
+  DefaultMaxScale,
+  DefaultMinScale,
+  DefaultZoomSensitivity,
+  MouseMode,
+  ButtonDirection,
+  CurrentDeviceUserId,
+} from "./config";
+import DataLayer from "./DataLayer";
+import GridLayer from "./GridLayer";
+import InteractionLayer from "./InteractionLayer";
+import {
+  BrushTool,
+  CanvasEvents,
+  ColorChangeItem,
+  Coord,
+  GridIndices,
+  ImageDownloadOptions,
+  PanZoom,
+  PixelData,
+  PixelModifyItem,
+} from "./types";
 import { Action, ActionType } from "../../actions/Action";
-import EventDispatcher from "../../utils/eventDispatcher";
+import { ColorChangeAction } from "../../actions/ColorChangeAction";
+import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
+import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import {
   createColumnKeyOrderMapfromData,
   createRowKeyOrderMapfromData,
@@ -9,6 +35,7 @@ import {
   getRowCountFromData,
   getRowKeysFromData,
 } from "../../utils/data";
+import EventDispatcher from "../../utils/eventDispatcher";
 import {
   convertCartesianToScreen,
   diffPoints,
@@ -21,38 +48,11 @@ import {
   getPointFromTouchyEvent,
   returnScrollOffsetFromMouseOffset,
 } from "../../utils/position";
+import Queue from "../../utils/queue";
 import Stack from "../../utils/stack";
 import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
-import GridLayer from "./GridLayer";
-import InteractionLayer from "./InteractionLayer";
-import {
-  DefaultGridSquareLength,
-  DefaultMaxScale,
-  DefaultMinScale,
-  DefaultZoomSensitivity,
-  MouseMode,
-  ButtonDirection,
-  CurrentDeviceUserId,
-} from "./config";
-import {
-  BrushTool,
-  CanvasEvents,
-  ColorChangeItem,
-  Coord,
-  GridIndices,
-  ImageDownloadOptions,
-  PanZoom,
-  PixelData,
-  PixelModifyItem,
-} from "./types";
-import { isValidIndicesRange } from "../../utils/validation";
-import Queue from "../../utils/queue";
 import { Indices } from "../../utils/types";
-import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
-import DataLayer from "./DataLayer";
-import { SizeChangeAction } from "../../actions/SizeChangeAction";
-import { ColorChangeAction } from "../../actions/ColorChangeAction";
-import BackgroundLayer from "./BackgroundLayer";
+import { isValidIndicesRange } from "../../utils/validation";
 
 export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;

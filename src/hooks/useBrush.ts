@@ -1,7 +1,8 @@
 import { MutableRefObject, useCallback, useEffect, useState } from "react";
+
+import useHandlers from "./useHandlers";
 import { BrushTool } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
-import useHandlers from "./useHandlers";
 
 const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
   const [brushTool, setBrushTool] = useState<BrushTool>(BrushTool.DOT);
