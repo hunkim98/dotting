@@ -51,6 +51,7 @@ const ChangeBrushTool = () => {
           <option value={BrushTool.PAINT_BUCKET}>
             {BrushTool.PAINT_BUCKET}
           </option>
+          <option value={BrushTool.SELECT}>{BrushTool.SELECT}</option>
         </select>
       </div>
       <div
