@@ -19,10 +19,6 @@ export default class GridLayer extends BaseLayer {
   private buttonHeight: number = DefaultButtonHeight;
   private buttonMargin: number = DefaultButtonHeight / 2 + 5;
   private hoveredButton: ButtonDirection | null = null;
-  private currentSelectedArea: {
-    startWorldPos: Coord;
-    endWorldPos: Coord;
-  } | null = null;
   private topButtonDimensions: {
     x: number;
     y: number;
@@ -73,15 +69,6 @@ export default class GridLayer extends BaseLayer {
 
   setRowCount(rowCount: number) {
     this.rowCount = rowCount;
-  }
-
-  setCurrentSelectedArea(
-    currentSelectedArea: {
-      startWorldPos: Coord;
-      endWorldPos: Coord;
-    } | null,
-  ) {
-    this.currentSelectedArea = currentSelectedArea;
   }
 
   setIsGridVisible(isGridVisible: boolean) {
