@@ -1,4 +1,4 @@
-import React, { useCallback , useRef } from "react";
+import React, { useCallback, useRef } from "react";
 
 import { BrushTool } from "../../src/components/Canvas/types";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
@@ -51,7 +51,7 @@ const ChangeBrushTool = () => {
           <option value={BrushTool.PAINT_BUCKET}>
             {BrushTool.PAINT_BUCKET}
           </option>
-          <option value={BrushTool.SELECT}>{BrushTool.SELECT}</option>
+          {/* <option value={BrushTool.SELECT}>{BrushTool.SELECT}</option> */}
         </select>
       </div>
       <div
