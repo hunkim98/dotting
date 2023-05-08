@@ -296,7 +296,7 @@ export default class Editor extends EventDispatcher {
     const y = coord.y;
     const scaledYHeight = lerpRanges(
       this.panZoom.scale,
-      // this range is inverted because height has to smaller when zoom out
+      // this range is inverted because height has to be smaller when zoomed in
       this.maxScale,
       this.minScale,
       top.height,
@@ -304,7 +304,7 @@ export default class Editor extends EventDispatcher {
     );
     const scaledXWidth = lerpRanges(
       this.panZoom.scale,
-      // this range is inverted because width has to smaller when zoom out
+      // this range is inverted because width has to be smaller when zoomed in
       this.maxScale,
       this.minScale,
       left.width,
@@ -313,8 +313,8 @@ export default class Editor extends EventDispatcher {
     if (
       x >= top.x &&
       x <= top.x + top.width &&
-      y >= top.y - scaledYHeight &&
-      y <= top.y + scaledYHeight - scaledYHeight + top.height
+      y >= top.y - scaledYHeight + top.height &&
+      y <= top.y + top.height
     ) {
       return ButtonDirection.TOP;
     } else if (
@@ -325,8 +325,8 @@ export default class Editor extends EventDispatcher {
     ) {
       return ButtonDirection.BOTTOM;
     } else if (
-      x >= left.x - scaledXWidth &&
-      x <= left.x + scaledXWidth - scaledXWidth + left.width &&
+      x >= left.x - scaledXWidth + left.width &&
+      x <= left.x + left.width &&
       y >= left.y &&
       y <= left.y + left.height
     ) {
