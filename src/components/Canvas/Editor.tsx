@@ -40,6 +40,7 @@ import {
   convertCartesianToScreen,
   diffPoints,
   getScreenPoint,
+  lerpRanges,
 } from "../../utils/math";
 import {
   calculateNewPanZoomFromPinchZoom,
@@ -62,6 +63,7 @@ export default class Editor extends EventDispatcher {
   private zoomSensitivity: number = DefaultZoomSensitivity;
   private maxScale: number = DefaultMaxScale;
   private minScale: number = DefaultMinScale;
+  private extensionAllowanceRatio = 2;
   private pinchZoomDiff: number | null = null;
   private width: number;
   private height: number;
@@ -292,10 +294,26 @@ export default class Editor extends EventDispatcher {
     const { top, bottom, right, left } = this.gridLayer.getButtonsDimensions();
     const x = coord.x;
     const y = coord.y;
+    const scaledYHeight = lerpRanges(
+      this.panZoom.scale,
+      // this range is inverted because height has to be smaller when zoomed in
+      this.maxScale,
+      this.minScale,
+      top.height,
+      top.height * this.extensionAllowanceRatio,
+    );
+    const scaledXWidth = lerpRanges(
+      this.panZoom.scale,
+      // this range is inverted because width has to be smaller when zoomed in
+      this.maxScale,
+      this.minScale,
+      left.width,
+      left.width * this.extensionAllowanceRatio,
+    );
     if (
       x >= top.x &&
       x <= top.x + top.width &&
-      y >= top.y &&
+      y >= top.y - scaledYHeight + top.height &&
       y <= top.y + top.height
     ) {
       return ButtonDirection.TOP;
@@ -303,11 +321,11 @@ export default class Editor extends EventDispatcher {
       x >= bottom.x &&
       x <= bottom.x + bottom.width &&
       y >= bottom.y &&
-      y <= bottom.y + bottom.height
+      y <= bottom.y + scaledYHeight
     ) {
       return ButtonDirection.BOTTOM;
     } else if (
-      x >= left.x &&
+      x >= left.x - scaledXWidth + left.width &&
       x <= left.x + left.width &&
       y >= left.y &&
       y <= left.y + left.height
@@ -315,7 +333,7 @@ export default class Editor extends EventDispatcher {
       return ButtonDirection.LEFT;
     } else if (
       x >= right.x &&
-      x <= right.x + right.width &&
+      x <= right.x + scaledXWidth &&
       y >= right.y &&
       y <= right.y + right.height
     ) {
