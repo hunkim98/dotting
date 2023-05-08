@@ -1,5 +1,5 @@
-import { ColorChangeItem } from "../components/Canvas/types";
 import { Action, ActionType } from "./Action";
+import { ColorChangeItem } from "../components/Canvas/types";
 
 export enum ColorChangeMode {
   Fill = "Fill",

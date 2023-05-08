@@ -1,31 +1,4 @@
-import { Action, ActionType } from "../../actions/Action";
-import EventDispatcher from "../../utils/eventDispatcher";
-import {
-  createColumnKeyOrderMapfromData,
-  createRowKeyOrderMapfromData,
-  getColumnCountFromData,
-  getColumnKeysFromData,
-  getGridIndicesFromData,
-  getRowCountFromData,
-  getRowKeysFromData,
-} from "../../utils/data";
-import {
-  convertCartesianToScreen,
-  diffPoints,
-  getScreenPoint,
-} from "../../utils/math";
-import {
-  calculateNewPanZoomFromPinchZoom,
-  getMouseCartCoord,
-  getPixelIndexFromMouseCartCoord,
-  getPointFromTouchyEvent,
-  getSelectedPixelRegion,
-  returnScrollOffsetFromMouseOffset,
-} from "../../utils/position";
-import Stack from "../../utils/stack";
-import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
-import GridLayer from "./GridLayer";
-import InteractionLayer from "./InteractionLayer";
+import BackgroundLayer from "./BackgroundLayer";
 import {
   DefaultGridSquareLength,
   DefaultMaxScale,
@@ -35,6 +8,9 @@ import {
   ButtonDirection,
   CurrentDeviceUserId,
 } from "./config";
+import DataLayer from "./DataLayer";
+import GridLayer from "./GridLayer";
+import InteractionLayer from "./InteractionLayer";
 import {
   BrushTool,
   CanvasEvents,
@@ -46,14 +22,39 @@ import {
   PixelData,
   PixelModifyItem,
 } from "./types";
-import { isValidIndicesRange } from "../../utils/validation";
-import Queue from "../../utils/queue";
-import { Indices } from "../../utils/types";
-import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
-import DataLayer from "./DataLayer";
-import { SizeChangeAction } from "../../actions/SizeChangeAction";
+import { Action, ActionType } from "../../actions/Action";
 import { ColorChangeAction } from "../../actions/ColorChangeAction";
-import BackgroundLayer from "./BackgroundLayer";
+import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
+import { SizeChangeAction } from "../../actions/SizeChangeAction";
+import {
+  createColumnKeyOrderMapfromData,
+  createRowKeyOrderMapfromData,
+  getColumnCountFromData,
+  getColumnKeysFromData,
+  getGridIndicesFromData,
+  getRowCountFromData,
+  getRowKeysFromData,
+} from "../../utils/data";
+import EventDispatcher from "../../utils/eventDispatcher";
+import {
+  convertCartesianToScreen,
+  diffPoints,
+  getScreenPoint,
+  lerpRanges,
+} from "../../utils/math";
+import {
+  calculateNewPanZoomFromPinchZoom,
+  getMouseCartCoord,
+  getPixelIndexFromMouseCartCoord,
+  getPointFromTouchyEvent,
+  getSelectedPixelRegion,
+  returnScrollOffsetFromMouseOffset,
+} from "../../utils/position";
+import Queue from "../../utils/queue";
+import Stack from "../../utils/stack";
+import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
+import { Indices } from "../../utils/types";
+import { isValidIndicesRange } from "../../utils/validation";
 
 export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;
@@ -63,6 +64,7 @@ export default class Editor extends EventDispatcher {
   private zoomSensitivity: number = DefaultZoomSensitivity;
   private maxScale: number = DefaultMaxScale;
   private minScale: number = DefaultMinScale;
+  private extensionAllowanceRatio = 2;
   private pinchZoomDiff: number | null = null;
   private width: number;
   private height: number;
@@ -297,10 +299,26 @@ export default class Editor extends EventDispatcher {
     const { top, bottom, right, left } = this.gridLayer.getButtonsDimensions();
     const x = coord.x;
     const y = coord.y;
+    const scaledYHeight = lerpRanges(
+      this.panZoom.scale,
+      // this range is inverted because height has to be smaller when zoomed in
+      this.maxScale,
+      this.minScale,
+      top.height,
+      top.height * this.extensionAllowanceRatio,
+    );
+    const scaledXWidth = lerpRanges(
+      this.panZoom.scale,
+      // this range is inverted because width has to be smaller when zoomed in
+      this.maxScale,
+      this.minScale,
+      left.width,
+      left.width * this.extensionAllowanceRatio,
+    );
     if (
       x >= top.x &&
       x <= top.x + top.width &&
-      y >= top.y &&
+      y >= top.y - scaledYHeight + top.height &&
       y <= top.y + top.height
     ) {
       return ButtonDirection.TOP;
@@ -308,11 +326,11 @@ export default class Editor extends EventDispatcher {
       x >= bottom.x &&
       x <= bottom.x + bottom.width &&
       y >= bottom.y &&
-      y <= bottom.y + bottom.height
+      y <= bottom.y + scaledYHeight
     ) {
       return ButtonDirection.BOTTOM;
     } else if (
-      x >= left.x &&
+      x >= left.x - scaledXWidth + left.width &&
       x <= left.x + left.width &&
       y >= left.y &&
       y <= left.y + left.height
@@ -320,7 +338,7 @@ export default class Editor extends EventDispatcher {
       return ButtonDirection.LEFT;
     } else if (
       x >= right.x &&
-      x <= right.x + right.width &&
+      x <= right.x + scaledXWidth &&
       y >= right.y &&
       y <= right.y + right.height
     ) {

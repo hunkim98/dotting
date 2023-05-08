@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useRef } from "react";
+import React, { useEffect, useMemo, useState , useRef } from "react";
+
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useBrush from "../../src/hooks/useBrush";
 import useData from "../../src/hooks/useData";

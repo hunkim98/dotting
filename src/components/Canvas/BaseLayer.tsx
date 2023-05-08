@@ -1,9 +1,9 @@
+import { DefaultPanZoom } from "./config";
+import { DottingData, PanZoom } from "./types";
 import {
   createColumnKeyOrderMapfromData,
   createRowKeyOrderMapfromData,
 } from "../../utils/data";
-import { DefaultPanZoom } from "./config";
-import { DottingData, PanZoom } from "./types";
 
 export abstract class BaseLayer {
   protected ctx: CanvasRenderingContext2D;

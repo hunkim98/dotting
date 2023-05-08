@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect } from "react";
-import { useRef } from "react";
-import Dotting, { DottingRef } from "../../src/components/Dotting";
+import React, { useCallback, useEffect , useRef } from "react";
+
 import { useBrush, useDotting } from "../../src";
+import Dotting, { DottingRef } from "../../src/components/Dotting";
 
 const CustomExample = () => {
   const ref = useRef<DottingRef>(null);

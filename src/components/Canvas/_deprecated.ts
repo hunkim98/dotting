@@ -1,13 +1,6 @@
-import {
-  addPoints,
-  convertCartesianToScreen,
-  diffPoints,
-  getScreenPoint,
-  getWorldPoint,
-} from "../../utils/math";
 import React from "react";
-import Queue from "../../utils/queue";
-import EventDispatcher from "../../utils/eventDispatcher";
+
+import { MouseMode, ButtonDirection } from "./config";
 import {
   BrushTool,
   CanvasEvents,
@@ -19,19 +12,27 @@ import {
   PixelData,
   PixelModifyItem,
 } from "./types";
-import { Indices } from "../../utils/types";
-import { isValidIndicesRange } from "../../utils/validation";
-import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
 import { Action, ActionType } from "../../actions/Action";
 import { ColorChangeAction } from "../../actions/ColorChangeAction";
+import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import {
   ChangeAmountData,
   SizeChangeAction,
 } from "../../actions/SizeChangeAction";
-import Stack from "../../utils/stack";
-import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
-import { MouseMode, ButtonDirection } from "./config";
+import EventDispatcher from "../../utils/eventDispatcher";
+import {
+  addPoints,
+  convertCartesianToScreen,
+  diffPoints,
+  getScreenPoint,
+  getWorldPoint,
+} from "../../utils/math";
+import Queue from "../../utils/queue";
+import Stack from "../../utils/stack";
+import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
+import { Indices } from "../../utils/types";
+import { isValidIndicesRange } from "../../utils/validation";
 
 export default class Canvas extends EventDispatcher {
   private MAX_SCALE = 1.5;
