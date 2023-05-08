@@ -244,6 +244,10 @@ export default class Editor extends EventDispatcher {
   setBrushTool(tool: BrushTool) {
     this.brushTool = tool;
     this.styleMouseCursor();
+    if (this.brushTool !== BrushTool.SELECT) {
+      this.interactionLayer.setSelectedArea(null);
+      this.interactionLayer.setSelectingArea(null);
+    }
     this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushTool);
   }
 
