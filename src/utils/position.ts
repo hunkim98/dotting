@@ -183,20 +183,67 @@ export const getPixelIndexFromMouseCartCoord = (
   return null;
 };
 
-/**
- * This function returns the selected region in pixel grid aligned coordinates
- * and the pixels that are selected in the region
- * @param selectingArea
- * @param rowCount
- * @param columnCount
- * @param gridSquareLength
- * @returns
- */
+export const getIsPointInsideRegion = (
+  point: Coord,
+  area: { startWorldPos: Coord; endWorldPos: Coord },
+) => {
+  const selectedAreaTopLeft = {
+    x: 0,
+    y: 0,
+  };
+  const selectedAreaBottomRight = {
+    x: 0,
+    y: 0,
+  };
+  let isSelectedFromLeftToRight = true;
+  if (area.startWorldPos.x > area.endWorldPos.x) {
+    isSelectedFromLeftToRight = false;
+  }
+  let isSelectedFromTopToBottom = true;
+  if (area.startWorldPos.y > area.endWorldPos.y) {
+    isSelectedFromTopToBottom = false;
+  }
+  if (isSelectedFromLeftToRight && isSelectedFromTopToBottom) {
+    // start from left top end at right bottom
+    selectedAreaTopLeft.x = area.startWorldPos.x;
+    selectedAreaTopLeft.y = area.startWorldPos.y;
+    selectedAreaBottomRight.x = area.endWorldPos.x;
+    selectedAreaBottomRight.y = area.endWorldPos.y;
+  } else if (isSelectedFromLeftToRight && !isSelectedFromTopToBottom) {
+    // start from left bottom end at right top
+    selectedAreaTopLeft.x = area.startWorldPos.x;
+    selectedAreaTopLeft.y = area.endWorldPos.y;
+    selectedAreaBottomRight.x = area.endWorldPos.x;
+    selectedAreaBottomRight.y = area.startWorldPos.y;
+  } else if (!isSelectedFromLeftToRight && isSelectedFromTopToBottom) {
+    // start from right top end at left bottom
+    selectedAreaTopLeft.x = area.endWorldPos.x;
+    selectedAreaTopLeft.y = area.startWorldPos.y;
+    selectedAreaBottomRight.x = area.startWorldPos.x;
+    selectedAreaBottomRight.y = area.endWorldPos.y;
+  } else {
+    // start from right bottom end at left top
+    selectedAreaTopLeft.x = area.endWorldPos.x;
+    selectedAreaTopLeft.y = area.endWorldPos.y;
+    selectedAreaBottomRight.x = area.startWorldPos.x;
+    selectedAreaBottomRight.y = area.startWorldPos.y;
+  }
+
+  return (
+    point.x >= selectedAreaTopLeft.x &&
+    point.x <= selectedAreaBottomRight.x &&
+    point.y >= selectedAreaTopLeft.y &&
+    point.y <= selectedAreaBottomRight.y
+  );
+};
+
 export const convertSelectingAreaToPixelGridArea = (
   selectingArea: { startWorldPos: Coord; endWorldPos: Coord },
   rowCount: number,
   columnCount: number,
   gridSquareLength: number,
+  rowKeysInOrder: number[],
+  columnKeysInOrder: number[],
 ) => {
   const pixelGridLeftTopPoint: Coord = {
     x: -((columnCount / 2) * gridSquareLength),
@@ -301,35 +348,33 @@ export const convertSelectingAreaToPixelGridArea = (
       Math.ceil(selectedAreaBottomOffsetAmount / gridSquareLength) *
         gridSquareLength;
   }
+  const relativeTopLeftRowIndex = Math.floor(
+    (selectedRegionTopLeft.y - pixelGridLeftTopPoint.y) / gridSquareLength,
+  );
+  const relativeTopLeftColumnIndex = Math.floor(
+    (selectedRegionTopLeft.x - pixelGridLeftTopPoint.x) / gridSquareLength,
+  );
+  const relativeBottomRightRowIndex = Math.floor(
+    (selectedRegionBottomRight.y - pixelGridLeftTopPoint.y) / gridSquareLength,
+  );
+  const relativeBottomRightColumnIndex = Math.floor(
+    (selectedRegionBottomRight.x - pixelGridLeftTopPoint.x) / gridSquareLength,
+  );
   const includedPixelsIndices: Array<{
     rowIndex: number;
     columnIndex: number;
   }> = [];
-  for (
-    let rowIndex = 0;
-    rowIndex < rowCount;
-    rowIndex = rowIndex + gridSquareLength
-  ) {
+
+  for (let i = relativeTopLeftRowIndex; i < relativeBottomRightRowIndex; i++) {
     for (
-      let columnIndex = 0;
-      columnIndex < columnCount;
-      columnIndex = columnIndex + gridSquareLength
+      let j = relativeTopLeftColumnIndex;
+      j < relativeBottomRightColumnIndex;
+      j++
     ) {
-      const pixelCenter: Coord = {
-        x: pixelGridLeftTopPoint.x + columnIndex + gridSquareLength / 2,
-        y: pixelGridLeftTopPoint.y + rowIndex + gridSquareLength / 2,
-      };
-      if (
-        pixelCenter.x >= selectedRegionTopLeft.x &&
-        pixelCenter.x <= selectedRegionBottomRight.x &&
-        pixelCenter.y >= selectedRegionTopLeft.y &&
-        pixelCenter.y <= selectedRegionBottomRight.y
-      ) {
-        includedPixelsIndices.push({
-          rowIndex: rowIndex / gridSquareLength,
-          columnIndex: columnIndex / gridSquareLength,
-        });
-      }
+      includedPixelsIndices.push({
+        rowIndex: rowKeysInOrder[i],
+        columnIndex: columnKeysInOrder[j],
+      });
     }
   }
   return {
