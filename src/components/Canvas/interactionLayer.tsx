@@ -52,6 +52,8 @@ export default class InteractionLayer extends BaseLayer {
     endWorldPos: Coord;
   } | null = null;
 
+  private selectedAreaPixels: Array<PixelModifyItem> | null = null;
+
   // this is to prevent other user's grid change from being applied to the canvas
   // when this is not null we will not render data layer
   // however, when this is not null we should send colored pixels
@@ -105,6 +107,10 @@ export default class InteractionLayer extends BaseLayer {
     this.selectingArea = area;
   }
 
+  setSelectedAreaPixels(pixelArray: Array<PixelModifyItem>) {
+    this.selectedAreaPixels = pixelArray;
+  }
+
   setCapturedData(gridChangeStartCapturedData: DottingData) {
     this.capturedData = new Map();
     for (const row of Array.from(gridChangeStartCapturedData.entries())) {
@@ -142,6 +148,10 @@ export default class InteractionLayer extends BaseLayer {
 
   getSelectedArea() {
     return this.selectedArea;
+  }
+
+  getSelectedAreaPixels() {
+    return this.selectedAreaPixels;
   }
 
   getStrokedPixelRecords() {
