@@ -52,6 +52,11 @@ export default class InteractionLayer extends BaseLayer {
     endWorldPos: Coord;
   } | null = null;
 
+  private movingSelectedArea: {
+    startWorldPos: Coord;
+    endWorldPos: Coord;
+  } | null = null;
+
   private movingSelectedPixels: Array<ColorChangeItem> | null = null;
 
   private selectedAreaPixels: Array<ColorChangeItem> | null = null;
@@ -113,6 +118,15 @@ export default class InteractionLayer extends BaseLayer {
     this.movingSelectedPixels = pixels;
   }
 
+  setMovingSelectedArea(
+    area: {
+      startWorldPos: Coord;
+      endWorldPos: Coord;
+    } | null,
+  ) {
+    this.movingSelectedArea = area;
+  }
+
   setSelectedAreaPixels(pixelArray: Array<ColorChangeItem>) {
     this.selectedAreaPixels = pixelArray;
   }
@@ -140,6 +154,10 @@ export default class InteractionLayer extends BaseLayer {
 
   getMovingSelectedPixels() {
     return this.movingSelectedPixels;
+  }
+
+  getMovingSelectedArea() {
+    return this.movingSelectedArea;
   }
 
   setHoveredPixel(
