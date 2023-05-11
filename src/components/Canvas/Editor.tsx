@@ -47,7 +47,7 @@ import {
   getMouseCartCoord,
   getPixelIndexFromMouseCartCoord,
   getPointFromTouchyEvent,
-  getSelectedPixelRegion,
+  convertSelectingAreaToPixelGridArea,
   returnScrollOffsetFromMouseOffset,
 } from "../../utils/position";
 import Queue from "../../utils/queue";
@@ -1307,7 +1307,7 @@ export default class Editor extends EventDispatcher {
       if (selectingArea) {
         const rowCount = this.dataLayer.getRowCount();
         const columnCount = this.dataLayer.getColumnCount();
-        const region = getSelectedPixelRegion(
+        const region = convertSelectingAreaToPixelGridArea(
           selectingArea,
           rowCount,
           columnCount,

@@ -183,24 +183,50 @@ export const getPixelIndexFromMouseCartCoord = (
   return null;
 };
 
-export const getSelectedPixelRegion = (
+/**
+ * This function returns the selected region in pixel grid aligned coordinates
+ * and the pixels that are selected in the region
+ * @param selectingArea
+ * @param rowCount
+ * @param columnCount
+ * @param gridSquareLength
+ * @returns
+ */
+export const convertSelectingAreaToPixelGridArea = (
   selectingArea: { startWorldPos: Coord; endWorldPos: Coord },
   rowCount: number,
   columnCount: number,
   gridSquareLength: number,
 ) => {
-  const leftTopPoint: Coord = {
+  const pixelGridLeftTopPoint: Coord = {
     x: -((columnCount / 2) * gridSquareLength),
     y: -((rowCount / 2) * gridSquareLength),
   };
-  let isSelectedFromLeftToRight = true;
-  if (selectingArea.startWorldPos.x > selectingArea.endWorldPos.x) {
-    isSelectedFromLeftToRight = false;
-  }
-  let isSelectedFromTopToBottom = true;
-  if (selectingArea.startWorldPos.y > selectingArea.endWorldPos.y) {
-    isSelectedFromTopToBottom = false;
-  }
+  const isSelectedFromLeftToRight = !(
+    selectingArea.startWorldPos.x > selectingArea.endWorldPos.x
+  );
+  const isSelectedFromTopToBottom = !(
+    selectingArea.startWorldPos.y > selectingArea.endWorldPos.y
+  );
+  // To ease the algorithm, we will first identify the left top, right top, left bottom and right bottom points
+
+  const selectedAreaTopLeft = {
+    x: isSelectedFromLeftToRight
+      ? selectingArea.startWorldPos.x
+      : selectingArea.endWorldPos.x,
+    y: isSelectedFromTopToBottom
+      ? selectingArea.startWorldPos.y
+      : selectingArea.endWorldPos.y,
+  };
+  const selectedAreaBottomRight = {
+    x: isSelectedFromLeftToRight
+      ? selectingArea.endWorldPos.x
+      : selectingArea.startWorldPos.x,
+    y: isSelectedFromTopToBottom
+      ? selectingArea.endWorldPos.y
+      : selectingArea.startWorldPos.y,
+  };
+
   const selectedRegionTopLeft: Coord = {
     x: 0,
     y: 0,
@@ -209,84 +235,71 @@ export const getSelectedPixelRegion = (
     x: 0,
     y: 0,
   };
-  const selectedAreaTopLeft = {
-    x: 0,
-    y: 0,
-  };
-  const selectedAreaBottomRight = {
-    x: 0,
-    y: 0,
-  };
-  if (isSelectedFromLeftToRight && isSelectedFromTopToBottom) {
-    // start from left top end at right bottom
-    selectedAreaTopLeft.x = selectingArea.startWorldPos.x;
-    selectedAreaTopLeft.y = selectingArea.startWorldPos.y;
-    selectedAreaBottomRight.x = selectingArea.endWorldPos.x;
-    selectedAreaBottomRight.y = selectingArea.endWorldPos.y;
-  } else if (isSelectedFromLeftToRight && !isSelectedFromTopToBottom) {
-    // start from left bottom end at right top
-    selectedAreaTopLeft.x = selectingArea.startWorldPos.x;
-    selectedAreaTopLeft.y = selectingArea.endWorldPos.y;
-    selectedAreaBottomRight.x = selectingArea.endWorldPos.x;
-    selectedAreaBottomRight.y = selectingArea.startWorldPos.y;
-  } else if (!isSelectedFromLeftToRight && isSelectedFromTopToBottom) {
-    // start from right top end at left bottom
-    selectedAreaTopLeft.x = selectingArea.endWorldPos.x;
-    selectedAreaTopLeft.y = selectingArea.startWorldPos.y;
-    selectedAreaBottomRight.x = selectingArea.startWorldPos.x;
-    selectedAreaBottomRight.y = selectingArea.endWorldPos.y;
+  // leftTopPoint is the the left top point of the grid
+  const selectedAreaLeftOffsetAmount =
+    selectedAreaTopLeft.x - pixelGridLeftTopPoint.x;
+  // if selectedAreaLeftOffsetAmount is negative, then the selected area's left part is outside the grid
+  if (selectedAreaLeftOffsetAmount < 0) {
+    selectedRegionTopLeft.x = pixelGridLeftTopPoint.x;
   } else {
-    // start from right bottom end at left top
-    selectedAreaTopLeft.x = selectingArea.endWorldPos.x;
-    selectedAreaTopLeft.y = selectingArea.endWorldPos.y;
-    selectedAreaBottomRight.x = selectingArea.startWorldPos.x;
-    selectedAreaBottomRight.y = selectingArea.startWorldPos.y;
-  }
-  const startDistanceFromLeft = selectedAreaTopLeft.x - leftTopPoint.x;
-  const startDistanceFromTop = selectedAreaTopLeft.y - leftTopPoint.y;
-  if (startDistanceFromLeft < 0) {
-    selectedRegionTopLeft.x = leftTopPoint.x;
-  } else {
-    if (startDistanceFromLeft > columnCount * gridSquareLength) {
+    if (selectedAreaLeftOffsetAmount > columnCount * gridSquareLength) {
       return null;
     }
     selectedRegionTopLeft.x =
-      leftTopPoint.x +
-      Math.floor(startDistanceFromLeft / gridSquareLength) * gridSquareLength;
+      pixelGridLeftTopPoint.x +
+      Math.floor(selectedAreaLeftOffsetAmount / gridSquareLength) *
+        gridSquareLength;
   }
-  if (startDistanceFromTop < 0) {
-    selectedRegionTopLeft.y = leftTopPoint.y;
+  // if selectedAreaTopOffsetAmount is negative, then the selected area's top part is outside the grid
+  const selectedAreaTopOffsetAmount =
+    selectedAreaTopLeft.y - pixelGridLeftTopPoint.y;
+  if (selectedAreaTopOffsetAmount < 0) {
+    selectedRegionTopLeft.y = pixelGridLeftTopPoint.y;
   } else {
-    if (startDistanceFromTop > rowCount * gridSquareLength) {
+    if (selectedAreaTopOffsetAmount > rowCount * gridSquareLength) {
       return null;
     }
     selectedRegionTopLeft.y =
-      leftTopPoint.y +
-      Math.floor(startDistanceFromTop / gridSquareLength) * gridSquareLength;
+      pixelGridLeftTopPoint.y +
+      Math.floor(selectedAreaTopOffsetAmount / gridSquareLength) *
+        gridSquareLength;
   }
 
-  const endDistanceFromLeft = selectedAreaBottomRight.x - leftTopPoint.x;
-  const endDistanceFromTop = selectedAreaBottomRight.y - leftTopPoint.y;
-  if (endDistanceFromLeft > columnCount * gridSquareLength) {
+  // if selectedAreaRightOffsetAmount is positive, then the selected area's right part is outside the grid
+  const selectedAreaRightOffsetAmount =
+    selectedAreaBottomRight.x -
+    pixelGridLeftTopPoint.x +
+    columnCount * gridSquareLength;
+
+  if (selectedAreaRightOffsetAmount > 0) {
     selectedRegionBottomRight.x =
-      leftTopPoint.x + columnCount * gridSquareLength;
+      pixelGridLeftTopPoint.x + columnCount * gridSquareLength;
   } else {
-    if (endDistanceFromLeft < 0) {
+    if (selectedAreaRightOffsetAmount < -columnCount * gridSquareLength) {
       return null;
     }
     selectedRegionBottomRight.x =
-      leftTopPoint.x +
-      Math.ceil(endDistanceFromLeft / gridSquareLength) * gridSquareLength;
+      pixelGridLeftTopPoint.x +
+      Math.ceil(selectedAreaRightOffsetAmount / gridSquareLength) *
+        gridSquareLength;
   }
-  if (endDistanceFromTop > rowCount * gridSquareLength) {
-    selectedRegionBottomRight.y = leftTopPoint.y + rowCount * gridSquareLength;
+
+  // if selectedAreaBottomOffsetAmount is positive, then the selected area's bottom part is outside the grid
+  const selectedAreaBottomOffsetAmount =
+    selectedAreaBottomRight.y -
+    pixelGridLeftTopPoint.y +
+    rowCount * gridSquareLength;
+  if (selectedAreaBottomOffsetAmount > 0) {
+    selectedRegionBottomRight.y =
+      pixelGridLeftTopPoint.y + rowCount * gridSquareLength;
   } else {
-    if (endDistanceFromTop < 0) {
+    if (selectedAreaBottomOffsetAmount < -rowCount * gridSquareLength) {
       return null;
     }
     selectedRegionBottomRight.y =
-      leftTopPoint.y +
-      Math.ceil(endDistanceFromTop / gridSquareLength) * gridSquareLength;
+      pixelGridLeftTopPoint.y +
+      Math.ceil(selectedAreaBottomOffsetAmount / gridSquareLength) *
+        gridSquareLength;
   }
   const includedPixelsIndices: Array<{
     rowIndex: number;
@@ -303,8 +316,8 @@ export const getSelectedPixelRegion = (
       columnIndex = columnIndex + gridSquareLength
     ) {
       const pixelCenter: Coord = {
-        x: leftTopPoint.x + columnIndex + gridSquareLength / 2,
-        y: leftTopPoint.y + rowIndex + gridSquareLength / 2,
+        x: pixelGridLeftTopPoint.x + columnIndex + gridSquareLength / 2,
+        y: pixelGridLeftTopPoint.y + rowIndex + gridSquareLength / 2,
       };
       if (
         pixelCenter.x >= selectedRegionTopLeft.x &&
