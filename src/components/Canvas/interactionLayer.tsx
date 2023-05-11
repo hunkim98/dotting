@@ -52,7 +52,14 @@ export default class InteractionLayer extends BaseLayer {
     endWorldPos: Coord;
   } | null = null;
 
-  private selectedAreaPixels: Array<PixelModifyItem> | null = null;
+  private movingSelectedArea: {
+    startWorldPos: Coord;
+    endWorldPos: Coord;
+  } | null = null;
+
+  private movingSelectedPixels: Array<ColorChangeItem> | null = null;
+
+  private selectedAreaPixels: Array<ColorChangeItem> | null = null;
 
   // this is to prevent other user's grid change from being applied to the canvas
   // when this is not null we will not render data layer
@@ -107,7 +114,20 @@ export default class InteractionLayer extends BaseLayer {
     this.selectingArea = area;
   }
 
-  setSelectedAreaPixels(pixelArray: Array<PixelModifyItem>) {
+  setMovingSelectedPixels(pixels: Array<ColorChangeItem> | null) {
+    this.movingSelectedPixels = pixels;
+  }
+
+  setMovingSelectedArea(
+    area: {
+      startWorldPos: Coord;
+      endWorldPos: Coord;
+    } | null,
+  ) {
+    this.movingSelectedArea = area;
+  }
+
+  setSelectedAreaPixels(pixelArray: Array<ColorChangeItem>) {
     this.selectedAreaPixels = pixelArray;
   }
 
@@ -130,6 +150,14 @@ export default class InteractionLayer extends BaseLayer {
 
   getHoveredPixel() {
     return this.hoveredPixel;
+  }
+
+  getMovingSelectedPixels() {
+    return this.movingSelectedPixels;
+  }
+
+  getMovingSelectedArea() {
+    return this.movingSelectedArea;
   }
 
   setHoveredPixel(
@@ -423,6 +451,37 @@ export default class InteractionLayer extends BaseLayer {
     }
   }
 
+  renderMovingSelectedPixels(
+    correctedLeftTopScreenPoint: Coord,
+    squareLength: number,
+  ) {
+    if (
+      this.movingSelectedPixels === null ||
+      this.movingSelectedPixels.length == 0
+    ) {
+      return;
+    }
+    const ctx = this.ctx;
+    ctx.save();
+    for (const item of this.movingSelectedPixels) {
+      // this is the color of the pixel before the user started moving the selected pixels
+      const color = item.previousColor;
+      ctx.fillStyle = color;
+      const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
+      const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
+      if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
+        continue;
+      }
+      ctx.fillRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+    }
+    ctx.restore();
+  }
+
   renderIndicatorPixels(
     correctedLeftTopScreenPoint: Coord,
     squareLength: number,
@@ -522,7 +581,8 @@ export default class InteractionLayer extends BaseLayer {
     this.renderStrokedPixels(correctedLeftTopScreenPoint, squareLength);
     this.renderErasedPixels(correctedLeftTopScreenPoint, squareLength);
     this.renderIndicatorPixels(correctedLeftTopScreenPoint, squareLength);
-    this.renderHoveredPixel(correctedLeftTopScreenPoint, squareLength);
     //draw indicator pixels on top of the canvas
+    this.renderHoveredPixel(correctedLeftTopScreenPoint, squareLength);
+    this.renderMovingSelectedPixels(correctedLeftTopScreenPoint, squareLength);
   }
 }

@@ -1245,8 +1245,23 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.setSelectingArea(null);
         const selectedAreaPixels =
           this.interactionLayer.getSelectedAreaPixels();
+        const data = this.dataLayer.getData();
+        const {
+          topRowIndex,
+          bottomRowIndex,
+          leftColumnIndex,
+          rightColumnIndex,
+        } = getGridIndicesFromData(data);
         // erase pixels from data layer first
-        this.dataLayer.erasePixels(selectedAreaPixels);
+        const filteredSelectedAreaPixels = selectedAreaPixels.filter(
+          ({ rowIndex, columnIndex }) =>
+            rowIndex >= topRowIndex &&
+            rowIndex <= bottomRowIndex &&
+            columnIndex >= leftColumnIndex &&
+            columnIndex <= rightColumnIndex,
+        );
+
+        this.dataLayer.erasePixels(filteredSelectedAreaPixels);
         this.interactionLayer.setMovingSelectedPixels(selectedAreaPixels);
         this.dataLayer.render();
         this.interactionLayer.render();
@@ -1340,9 +1355,29 @@ export default class Editor extends EventDispatcher {
             };
           },
         );
+        this.interactionLayer.setMovingSelectedArea({
+          startWorldPos: {
+            x:
+              previousSelectedArea.startWorldPos.x -
+              pixelWiseDeltaX * this.gridSquareLength,
+            y:
+              previousSelectedArea.startWorldPos.y -
+              pixelWiseDeltaY * this.gridSquareLength,
+          },
+          endWorldPos: {
+            x:
+              previousSelectedArea.endWorldPos.x -
+              pixelWiseDeltaX * this.gridSquareLength,
+            y:
+              previousSelectedArea.endWorldPos.y -
+              pixelWiseDeltaY * this.gridSquareLength,
+          },
+        });
         this.interactionLayer.setMovingSelectedPixels(newMovingSelectedPixels);
+        const selectedArea = this.interactionLayer.getMovingSelectedArea();
+        this.gridLayer.render();
+        this.gridLayer.renderSelection(selectedArea);
         this.interactionLayer.render();
-
         return;
       }
       if (previousSelectingArea !== null) {
@@ -1405,59 +1440,126 @@ export default class Editor extends EventDispatcher {
     }
   }
 
+  relaySelectingAreaToSelectedArea() {
+    const selectingArea = this.interactionLayer.getSelectingArea();
+    if (selectingArea) {
+      const data = this.dataLayer.getData();
+      const rowCount = this.dataLayer.getRowCount();
+      const columnCount = this.dataLayer.getColumnCount();
+      const rowKeys = getRowKeysFromData(data);
+      const columnKeys = getColumnKeysFromData(data);
+      const sortedRowKeys = rowKeys.sort((a, b) => a - b);
+      const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
+      const region = convertSelectingAreaToPixelGridArea(
+        selectingArea,
+        rowCount,
+        columnCount,
+        this.gridSquareLength,
+        sortedRowKeys,
+        sortedColumnKeys,
+      );
+      if (region) {
+        this.interactionLayer.setSelectedArea({
+          startWorldPos: region.startWorldPos,
+          endWorldPos: region.endWorldPos,
+        });
+        const pixelData = this.dataLayer.getData();
+        const regionPixelItems: Array<ColorChangeItem> = [];
+        for (const index of region.includedPixelsIndices) {
+          const rowIndex = index.rowIndex;
+          const columnIndex = index.columnIndex;
+          const color = pixelData.get(rowIndex).get(columnIndex)?.color;
+          if (color) {
+            regionPixelItems.push({
+              rowIndex,
+              columnIndex,
+              previousColor: color,
+              color: "",
+            });
+          }
+        }
+        this.interactionLayer.setSelectedAreaPixels(regionPixelItems);
+        this.gridLayer.renderSelection({
+          startWorldPos: region.startWorldPos,
+          endWorldPos: region.endWorldPos,
+        });
+      }
+    }
+    this.interactionLayer.setSelectingArea(null);
+  }
+
+  relayMovingSelectedAreaToSelectedArea() {
+    // we must record the action
+
+    const previousSelectedArea = this.interactionLayer.getSelectedArea();
+    const previousSelectedAreaPixels =
+      this.interactionLayer.getSelectedAreaPixels();
+    const finalSelectedArea = this.interactionLayer.getMovingSelectedArea();
+    const finalSelectedAreaPixels =
+      this.interactionLayer.getMovingSelectedPixels();
+    if (
+      !previousSelectedArea ||
+      !previousSelectedAreaPixels ||
+      !finalSelectedArea ||
+      !finalSelectedAreaPixels
+    ) {
+      return;
+    }
+    const data = this.dataLayer.getData();
+    const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
+      getGridIndicesFromData(data);
+    // we will not allow the selected area to expand the canvas
+    const filteredFinalSelectedAreaPixels = finalSelectedAreaPixels
+      .filter(
+        item =>
+          item.rowIndex <= bottomRowIndex &&
+          item.columnIndex <= rightColumnIndex &&
+          item.rowIndex >= topRowIndex &&
+          item.columnIndex >= leftColumnIndex,
+      )
+      .map(filteredItem => ({
+        ...filteredItem,
+        color: filteredItem.previousColor,
+        previousColor:
+          data.get(filteredItem.rowIndex).get(filteredItem.columnIndex)
+            ?.color || "",
+      }));
+    // ⬇️ this part is for recording the action
+    const { dataForAction } = this.dataLayer.colorPixels(
+      filteredFinalSelectedAreaPixels,
+    );
+    const newSelectedAreaColorChangeItems = dataForAction;
+    const previousSelectedAreaColorChangeItems: Array<ColorChangeItem> =
+      previousSelectedAreaPixels;
+    this.recordAction(
+      new ColorChangeAction([
+        ...newSelectedAreaColorChangeItems,
+        ...previousSelectedAreaColorChangeItems,
+      ]),
+    );
+    // ⬆️ this part is for recording the action
+
+    const movingSelectedArea = this.interactionLayer.getMovingSelectedArea();
+    if (movingSelectedArea) {
+      this.interactionLayer.setSelectedArea(movingSelectedArea);
+      const movingSelectedPixels =
+        this.interactionLayer.getMovingSelectedPixels();
+      this.interactionLayer.setSelectedAreaPixels(movingSelectedPixels);
+    }
+    this.interactionLayer.setMovingSelectedArea(null);
+    this.interactionLayer.setMovingSelectedPixels(null);
+    this.gridLayer.render();
+    this.gridLayer.renderSelection(movingSelectedArea);
+  }
+
   onMouseUp(evt: TouchEvent) {
     evt.preventDefault();
     this.relayInteractionDataToDataLayer();
     this.mouseMode = MouseMode.PANNING;
     if (this.brushTool === BrushTool.SELECT) {
-      const selectedArea = this.interactionLayer.getSelectedArea();
-      const selectingArea = this.interactionLayer.getSelectingArea();
-      if (selectingArea) {
-        const data = this.dataLayer.getData();
-        const rowCount = this.dataLayer.getRowCount();
-        const columnCount = this.dataLayer.getColumnCount();
-        const rowKeys = getRowKeysFromData(data);
-        const columnKeys = getColumnKeysFromData(data);
-        const sortedRowKeys = rowKeys.sort((a, b) => a - b);
-        const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
-        const region = convertSelectingAreaToPixelGridArea(
-          selectingArea,
-          rowCount,
-          columnCount,
-          this.gridSquareLength,
-          sortedRowKeys,
-          sortedColumnKeys,
-        );
-        if (region) {
-          this.interactionLayer.setSelectedArea({
-            startWorldPos: region.startWorldPos,
-            endWorldPos: region.endWorldPos,
-          });
-          const pixelData = this.dataLayer.getData();
-          const regionPixelItems: Array<ColorChangeItem> = [];
-          for (const index of region.includedPixelsIndices) {
-            const rowIndex = index.rowIndex;
-            const columnIndex = index.columnIndex;
-            const color = pixelData.get(rowIndex).get(columnIndex)?.color;
-            if (color) {
-              regionPixelItems.push({
-                rowIndex,
-                columnIndex,
-                previousColor: color,
-                color: "",
-              });
-            }
-          }
-          this.interactionLayer.setSelectedAreaPixels(regionPixelItems);
-          this.gridLayer.renderSelection({
-            startWorldPos: region.startWorldPos,
-            endWorldPos: region.endWorldPos,
-          });
-        }
-      }
+      this.relaySelectingAreaToSelectedArea();
+      this.relayMovingSelectedAreaToSelectedArea();
     }
-
-    this.interactionLayer.setSelectingArea(null);
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
     touchy(this.element, removeEvent, "mousemove", this.handleExtension);
@@ -1471,6 +1573,7 @@ export default class Editor extends EventDispatcher {
   onMouseOut(evt: TouchEvent) {
     evt.preventDefault();
     this.relayInteractionDataToDataLayer();
+
     this.interactionLayer.setSelectingArea(null);
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
