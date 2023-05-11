@@ -44,6 +44,14 @@ export default class InteractionLayer extends BaseLayer {
 
   private dataLayerColumnCount: number;
 
+  private selectingArea: { startWorldPos: Coord; endWorldPos: Coord } | null =
+    null;
+
+  private selectedArea: {
+    startWorldPos: Coord;
+    endWorldPos: Coord;
+  } | null = null;
+
   // this is to prevent other user's grid change from being applied to the canvas
   // when this is not null we will not render data layer
   // however, when this is not null we should send colored pixels
@@ -89,6 +97,14 @@ export default class InteractionLayer extends BaseLayer {
     this.dataLayerRowCount = rowCount;
   }
 
+  setSelectedArea(area: { startWorldPos: Coord; endWorldPos: Coord } | null) {
+    this.selectedArea = area;
+  }
+
+  setSelectingArea(area: { startWorldPos: Coord; endWorldPos: Coord } | null) {
+    this.selectingArea = area;
+  }
+
   setCapturedData(gridChangeStartCapturedData: DottingData) {
     this.capturedData = new Map();
     for (const row of Array.from(gridChangeStartCapturedData.entries())) {
@@ -118,6 +134,14 @@ export default class InteractionLayer extends BaseLayer {
     } | null,
   ) {
     this.hoveredPixel = hoveredPixel;
+  }
+
+  getSelectingArea() {
+    return this.selectingArea;
+  }
+
+  getSelectedArea() {
+    return this.selectedArea;
   }
 
   getStrokedPixelRecords() {

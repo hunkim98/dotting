@@ -183,6 +183,162 @@ export const getPixelIndexFromMouseCartCoord = (
   return null;
 };
 
+/**
+ * This function returns the selected region in pixel grid aligned coordinates
+ * and the pixels that are selected in the region
+ * @param selectingArea
+ * @param rowCount
+ * @param columnCount
+ * @param gridSquareLength
+ * @returns
+ */
+export const convertSelectingAreaToPixelGridArea = (
+  selectingArea: { startWorldPos: Coord; endWorldPos: Coord },
+  rowCount: number,
+  columnCount: number,
+  gridSquareLength: number,
+) => {
+  const pixelGridLeftTopPoint: Coord = {
+    x: -((columnCount / 2) * gridSquareLength),
+    y: -((rowCount / 2) * gridSquareLength),
+  };
+  const isSelectedFromLeftToRight = !(
+    selectingArea.startWorldPos.x > selectingArea.endWorldPos.x
+  );
+  const isSelectedFromTopToBottom = !(
+    selectingArea.startWorldPos.y > selectingArea.endWorldPos.y
+  );
+  // To ease the algorithm, we will first identify the left top, right top, left bottom and right bottom points
+
+  const selectedAreaTopLeft = {
+    x: isSelectedFromLeftToRight
+      ? selectingArea.startWorldPos.x
+      : selectingArea.endWorldPos.x,
+    y: isSelectedFromTopToBottom
+      ? selectingArea.startWorldPos.y
+      : selectingArea.endWorldPos.y,
+  };
+  const selectedAreaBottomRight = {
+    x: isSelectedFromLeftToRight
+      ? selectingArea.endWorldPos.x
+      : selectingArea.startWorldPos.x,
+    y: isSelectedFromTopToBottom
+      ? selectingArea.endWorldPos.y
+      : selectingArea.startWorldPos.y,
+  };
+
+  const selectedRegionTopLeft: Coord = {
+    x: 0,
+    y: 0,
+  };
+  const selectedRegionBottomRight: Coord = {
+    x: 0,
+    y: 0,
+  };
+  // leftTopPoint is the the left top point of the grid
+  const selectedAreaLeftOffsetAmount =
+    selectedAreaTopLeft.x - pixelGridLeftTopPoint.x;
+  // if selectedAreaLeftOffsetAmount is negative, then the selected area's left part is outside the grid
+  if (selectedAreaLeftOffsetAmount < 0) {
+    selectedRegionTopLeft.x = pixelGridLeftTopPoint.x;
+  } else {
+    if (selectedAreaLeftOffsetAmount > columnCount * gridSquareLength) {
+      return null;
+    }
+    selectedRegionTopLeft.x =
+      pixelGridLeftTopPoint.x +
+      Math.floor(selectedAreaLeftOffsetAmount / gridSquareLength) *
+        gridSquareLength;
+  }
+  // if selectedAreaTopOffsetAmount is negative, then the selected area's top part is outside the grid
+  const selectedAreaTopOffsetAmount =
+    selectedAreaTopLeft.y - pixelGridLeftTopPoint.y;
+  if (selectedAreaTopOffsetAmount < 0) {
+    selectedRegionTopLeft.y = pixelGridLeftTopPoint.y;
+  } else {
+    if (selectedAreaTopOffsetAmount > rowCount * gridSquareLength) {
+      return null;
+    }
+    selectedRegionTopLeft.y =
+      pixelGridLeftTopPoint.y +
+      Math.floor(selectedAreaTopOffsetAmount / gridSquareLength) *
+        gridSquareLength;
+  }
+
+  // if selectedAreaRightOffsetAmount is positive, then the selected area's right part is outside the grid
+  const selectedAreaRightOffsetAmount =
+    selectedAreaBottomRight.x -
+    pixelGridLeftTopPoint.x +
+    columnCount * gridSquareLength;
+
+  if (selectedAreaRightOffsetAmount > 0) {
+    selectedRegionBottomRight.x =
+      pixelGridLeftTopPoint.x + columnCount * gridSquareLength;
+  } else {
+    if (selectedAreaRightOffsetAmount < -columnCount * gridSquareLength) {
+      return null;
+    }
+    selectedRegionBottomRight.x =
+      pixelGridLeftTopPoint.x +
+      Math.ceil(selectedAreaRightOffsetAmount / gridSquareLength) *
+        gridSquareLength;
+  }
+
+  // if selectedAreaBottomOffsetAmount is positive, then the selected area's bottom part is outside the grid
+  const selectedAreaBottomOffsetAmount =
+    selectedAreaBottomRight.y -
+    pixelGridLeftTopPoint.y +
+    rowCount * gridSquareLength;
+  if (selectedAreaBottomOffsetAmount > 0) {
+    selectedRegionBottomRight.y =
+      pixelGridLeftTopPoint.y + rowCount * gridSquareLength;
+  } else {
+    if (selectedAreaBottomOffsetAmount < -rowCount * gridSquareLength) {
+      return null;
+    }
+    selectedRegionBottomRight.y =
+      pixelGridLeftTopPoint.y +
+      Math.ceil(selectedAreaBottomOffsetAmount / gridSquareLength) *
+        gridSquareLength;
+  }
+  const includedPixelsIndices: Array<{
+    rowIndex: number;
+    columnIndex: number;
+  }> = [];
+  for (
+    let rowIndex = 0;
+    rowIndex < rowCount;
+    rowIndex = rowIndex + gridSquareLength
+  ) {
+    for (
+      let columnIndex = 0;
+      columnIndex < columnCount;
+      columnIndex = columnIndex + gridSquareLength
+    ) {
+      const pixelCenter: Coord = {
+        x: pixelGridLeftTopPoint.x + columnIndex + gridSquareLength / 2,
+        y: pixelGridLeftTopPoint.y + rowIndex + gridSquareLength / 2,
+      };
+      if (
+        pixelCenter.x >= selectedRegionTopLeft.x &&
+        pixelCenter.x <= selectedRegionBottomRight.x &&
+        pixelCenter.y >= selectedRegionTopLeft.y &&
+        pixelCenter.y <= selectedRegionBottomRight.y
+      ) {
+        includedPixelsIndices.push({
+          rowIndex: rowIndex / gridSquareLength,
+          columnIndex: columnIndex / gridSquareLength,
+        });
+      }
+    }
+  }
+  return {
+    startWorldPos: selectedRegionTopLeft,
+    endWorldPos: selectedRegionBottomRight,
+    includedPixelsIndices,
+  };
+};
+
 export const returnScrollOffsetFromMouseOffset = (
   mouseOffset: Coord,
   panZoom: PanZoom,

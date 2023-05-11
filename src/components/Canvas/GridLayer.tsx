@@ -75,7 +75,6 @@ export default class GridLayer extends BaseLayer {
     if (isGridVisible !== undefined) {
       this.isGridVisible = isGridVisible;
     }
-    this.render();
   }
 
   getIsGridVisible() {
@@ -86,7 +85,6 @@ export default class GridLayer extends BaseLayer {
     if (isGridFixed !== undefined) {
       this.isGridFixed = isGridFixed;
     }
-    this.render();
   }
 
   getIsGridFixed() {
@@ -101,7 +99,6 @@ export default class GridLayer extends BaseLayer {
     if (gridStrokeColor !== "" || gridStrokeColor !== undefined) {
       this.gridStrokeColor = gridStrokeColor;
     }
-    this.render();
   }
 
   getGridStrokeColor() {
@@ -112,7 +109,6 @@ export default class GridLayer extends BaseLayer {
     if (gridStrokeWidth !== 0 || gridStrokeWidth !== undefined) {
       this.gridStrokeWidth = gridStrokeWidth;
     }
-    this.render();
   }
 
   getGridStrokeWidth() {
@@ -121,7 +117,6 @@ export default class GridLayer extends BaseLayer {
 
   setHoveredButton(hoveredButton: ButtonDirection | null) {
     this.hoveredButton = hoveredButton;
-    this.render();
   }
 
   getButtonsDimensions() {
@@ -349,6 +344,35 @@ export default class GridLayer extends BaseLayer {
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );
+  }
+
+  renderSelection(area: { startWorldPos: Coord; endWorldPos: Coord }) {
+    const ctx = this.ctx;
+    const { startWorldPos, endWorldPos } = area;
+    const convertedStartWorldPos = convertCartesianToScreen(
+      this.element,
+      startWorldPos,
+      this.dpr,
+    );
+    const convertedEndWorldPos = convertCartesianToScreen(
+      this.element,
+      endWorldPos,
+      this.dpr,
+    );
+    const startScreenPos = getScreenPoint(convertedStartWorldPos, this.panZoom);
+    const endScreenPos = getScreenPoint(convertedEndWorldPos, this.panZoom);
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(startScreenPos.x, startScreenPos.y);
+    ctx.lineTo(endScreenPos.x, startScreenPos.y);
+    ctx.lineTo(endScreenPos.x, endScreenPos.y);
+    ctx.lineTo(startScreenPos.x, endScreenPos.y);
+    ctx.lineTo(startScreenPos.x, startScreenPos.y);
+    ctx.closePath();
+    ctx.strokeStyle = "#fc933c";
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.restore();
   }
 
   /**
