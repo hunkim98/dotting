@@ -1231,7 +1231,6 @@ export default class Editor extends EventDispatcher {
           this.mouseDownWorldPos,
           previousSelectedArea,
         );
-        console.log(isMouseCoordInSelectedArea);
       }
       // we need to reset the selected area if the mouse is not in the previous selected area
       if (!isMouseCoordInSelectedArea) {
@@ -1241,7 +1240,18 @@ export default class Editor extends EventDispatcher {
           endWorldPos: this.mouseDownWorldPos,
         });
       } else {
+        // we will move the selected area if the mouse is in the previous selected area
+        // remove the selecting area if it exists
         this.interactionLayer.setSelectingArea(null);
+        const selectedAreaPixels =
+          this.interactionLayer.getSelectedAreaPixels();
+        // erase pixels from data layer first
+        this.dataLayer.erasePixels(selectedAreaPixels);
+        this.interactionLayer.setMovingSelectedPixels(selectedAreaPixels);
+        this.dataLayer.render();
+        this.interactionLayer.render();
+
+        // move the pixels to interaction layer
       }
     } else {
       if (pixelIndex) {
@@ -1301,12 +1311,38 @@ export default class Editor extends EventDispatcher {
     if (this.brushTool === BrushTool.SELECT) {
       const previousSelectingArea = this.interactionLayer.getSelectingArea();
       const previousSelectedArea = this.interactionLayer.getSelectedArea();
+      const previousSelectedAreaPixels =
+        this.interactionLayer.getSelectedAreaPixels();
+      const movingSelectedPixels =
+        this.interactionLayer.getMovingSelectedPixels();
       // mouseDownWorldPos may be null
-      if (previousSelectedArea && this.mouseDownWorldPos) {
+      if (
+        movingSelectedPixels &&
+        this.mouseDownWorldPos &&
+        previousSelectedArea
+      ) {
         const mouseMoveDistance = diffPoints(
           this.mouseDownWorldPos,
           this.mouseMoveWorldPos,
         );
+        const pixelWiseDeltaX = Math.round(
+          mouseMoveDistance.x / this.gridSquareLength,
+        );
+        const pixelWiseDeltaY = Math.round(
+          mouseMoveDistance.y / this.gridSquareLength,
+        );
+        const newMovingSelectedPixels = previousSelectedAreaPixels.map(
+          pixel => {
+            return {
+              ...pixel,
+              rowIndex: pixel.rowIndex - pixelWiseDeltaY,
+              columnIndex: pixel.columnIndex - pixelWiseDeltaX,
+            };
+          },
+        );
+        this.interactionLayer.setMovingSelectedPixels(newMovingSelectedPixels);
+        this.interactionLayer.render();
+
         return;
       }
       if (previousSelectingArea !== null) {
@@ -1398,7 +1434,7 @@ export default class Editor extends EventDispatcher {
             endWorldPos: region.endWorldPos,
           });
           const pixelData = this.dataLayer.getData();
-          const regionPixelItems: Array<PixelModifyItem> = [];
+          const regionPixelItems: Array<ColorChangeItem> = [];
           for (const index of region.includedPixelsIndices) {
             const rowIndex = index.rowIndex;
             const columnIndex = index.columnIndex;
@@ -1407,7 +1443,8 @@ export default class Editor extends EventDispatcher {
               regionPixelItems.push({
                 rowIndex,
                 columnIndex,
-                color,
+                previousColor: color,
+                color: "",
               });
             }
           }
