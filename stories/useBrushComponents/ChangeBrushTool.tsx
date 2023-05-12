@@ -3,11 +3,13 @@ import React, { useCallback, useRef } from "react";
 import { BrushTool } from "../../src/components/Canvas/types";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useBrush from "../../src/hooks/useBrush";
+import { useDotting } from "../../src";
 
 const ChangeBrushTool = () => {
   const ref = useRef<DottingRef>(null);
   const { changeBrushColor, changeBrushTool, brushTool, brushColor } =
     useBrush(ref);
+  const { undo, redo } = useDotting(ref);
 
   const handleColorChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +76,8 @@ const ChangeBrushTool = () => {
           }}
         ></div>
         <input type="color" value={brushColor} onChange={handleColorChange} />
+        {/* <button onClick={undo}>undo</button> */}
+        {/* <button onClick={redo}>redo</button> */}
       </div>
       <div></div>
     </div>

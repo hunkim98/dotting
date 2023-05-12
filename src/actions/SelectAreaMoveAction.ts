@@ -11,8 +11,8 @@ export class SelectAreaMoveAction extends Action {
 
   constructor(
     data: Array<ColorChangeItem>,
-    previousSelectedArea,
-    newSelectedArea,
+    previousSelectedArea: { startWorldPos: Coord; endWorldPos: Coord } | null,
+    newSelectedArea: { startWorldPos: Coord; endWorldPos: Coord } | null,
   ) {
     super();
     this.data = data;

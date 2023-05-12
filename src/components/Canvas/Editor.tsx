@@ -57,6 +57,7 @@ import Stack from "../../utils/stack";
 import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
 import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
+import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
 
 export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;
@@ -1011,11 +1012,15 @@ export default class Editor extends EventDispatcher {
 
   commitAction(action: Action) {
     const type = action.getType();
+    if (type !== ActionType.SelectAreaMove) {
+      // we will disable the select area move tool after the action is committed
+      this.interactionLayer.setSelectedArea(null);
+      this.setBrushTool(BrushTool.DOT);
+    }
     switch (type) {
       case ActionType.ColorChange:
         const colorChangeAction = action as ColorChangeAction;
-        const colorChangePixels = colorChangeAction.data;
-        this.dataLayer.updatePixelColors(colorChangePixels);
+        this.dataLayer.updatePixelColors(colorChangeAction.data);
         break;
 
       case ActionType.SizeChange:
@@ -1063,6 +1068,15 @@ export default class Editor extends EventDispatcher {
         // we do not need to care for colorchangemode.Erase since the grids are already deleted
         const colorSizeChangePixels = colorSizeChangeAction.data;
         this.dataLayer.updatePixelColors(colorSizeChangePixels);
+        break;
+
+      case ActionType.SelectAreaMove:
+        const selectAreamoveAction = action as SelectAreaMoveAction;
+        this.dataLayer.updatePixelColors(selectAreamoveAction.data);
+        this.brushTool = BrushTool.SELECT;
+        this.interactionLayer.setSelectedArea(
+          selectAreamoveAction.newSelectedArea,
+        );
         break;
     }
   }
@@ -1560,10 +1574,14 @@ export default class Editor extends EventDispatcher {
     const previousSelectedAreaColorChangeItems: Array<ColorChangeItem> =
       previousSelectedAreaPixels;
     this.recordAction(
-      new ColorChangeAction([
-        ...newSelectedAreaColorChangeItems,
-        ...previousSelectedAreaColorChangeItems,
-      ]),
+      new SelectAreaMoveAction(
+        [
+          ...newSelectedAreaColorChangeItems,
+          ...previousSelectedAreaColorChangeItems,
+        ],
+        previousSelectedArea,
+        finalSelectedArea,
+      ),
     );
     // ⬆️ this part is for recording the action
 
