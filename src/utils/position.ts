@@ -187,23 +187,60 @@ export const getIsPointInsideRegion = (
   point: Coord,
   area: { startWorldPos: Coord; endWorldPos: Coord },
 ) => {
-  const isSelectedFromLeftToRight = area.startWorldPos.x < area.endWorldPos.x;
-  const isSelectedFromTopToBottom = area.startWorldPos.y < area.endWorldPos.y;
-  const selectedAreaTopLeft = {
-    x: isSelectedFromLeftToRight ? area.startWorldPos.x : area.endWorldPos.x,
-    y: isSelectedFromTopToBottom ? area.startWorldPos.y : area.endWorldPos.y,
-  };
-  const selectedAreaBottomRight = {
-    x: isSelectedFromLeftToRight ? area.endWorldPos.x : area.startWorldPos.x,
-    y: isSelectedFromTopToBottom ? area.endWorldPos.y : area.startWorldPos.y,
-  };
+  const { areaTopLeftPos, areaBottomRightPos } =
+    getAreaTopLeftAndBottomRight(area);
 
   return (
-    point.x >= selectedAreaTopLeft.x &&
-    point.x <= selectedAreaBottomRight.x &&
-    point.y >= selectedAreaTopLeft.y &&
-    point.y <= selectedAreaBottomRight.y
+    point.x >= areaTopLeftPos.x &&
+    point.x <= areaBottomRightPos.x &&
+    point.y >= areaTopLeftPos.y &&
+    point.y <= areaBottomRightPos.y
   );
+};
+
+export const getDoesAreaOverlapPixelgrid = (
+  area: { startWorldPos: Coord; endWorldPos: Coord } | null,
+  rowCount: number,
+  columnCount: number,
+  gridSquareLength: number,
+) => {
+  if (!area) return false;
+  const { areaTopLeftPos, areaBottomRightPos } =
+    getAreaTopLeftAndBottomRight(area);
+
+  const pixelGridLeftTopPoint: Coord = {
+    x: -((columnCount / 2) * gridSquareLength),
+    y: -((rowCount / 2) * gridSquareLength),
+  };
+  const pixelGridRightBottomPoint: Coord = {
+    x: (columnCount / 2) * gridSquareLength,
+    y: (rowCount / 2) * gridSquareLength,
+  };
+  return !(
+    areaTopLeftPos.x >= pixelGridRightBottomPoint.x ||
+    areaTopLeftPos.y >= pixelGridRightBottomPoint.y ||
+    areaBottomRightPos.x <= pixelGridLeftTopPoint.x ||
+    areaBottomRightPos.y <= pixelGridLeftTopPoint.y
+  );
+};
+
+export const getAreaTopLeftAndBottomRight = (area: {
+  startWorldPos: Coord;
+  endWorldPos: Coord;
+}) => {
+  const isAreaFromLeftToRight = area.startWorldPos.x < area.endWorldPos.x;
+  const isAreaFromTopToBottom = area.startWorldPos.y < area.endWorldPos.y;
+  // To ease the algorithm, we will first identify the left top, right top, left bottom and right bottom points
+
+  const areaTopLeftPos = {
+    x: isAreaFromLeftToRight ? area.startWorldPos.x : area.endWorldPos.x,
+    y: isAreaFromTopToBottom ? area.startWorldPos.y : area.endWorldPos.y,
+  };
+  const areaBottomRightPos = {
+    x: isAreaFromLeftToRight ? area.endWorldPos.x : area.startWorldPos.x,
+    y: isAreaFromTopToBottom ? area.endWorldPos.y : area.startWorldPos.y,
+  };
+  return { areaTopLeftPos, areaBottomRightPos };
 };
 
 export const convertWorldPosAreaToPixelGridArea = (
@@ -214,33 +251,13 @@ export const convertWorldPosAreaToPixelGridArea = (
   rowKeysInOrder: number[],
   columnKeysInOrder: number[],
 ) => {
+  const { areaTopLeftPos, areaBottomRightPos } =
+    getAreaTopLeftAndBottomRight(selectingArea);
+
   const pixelGridLeftTopPoint: Coord = {
     x: -((columnCount / 2) * gridSquareLength),
     y: -((rowCount / 2) * gridSquareLength),
   };
-  const isSelectedFromLeftToRight =
-    selectingArea.startWorldPos.x < selectingArea.endWorldPos.x;
-  const isSelectedFromTopToBottom =
-    selectingArea.startWorldPos.y < selectingArea.endWorldPos.y;
-  // To ease the algorithm, we will first identify the left top, right top, left bottom and right bottom points
-
-  const selectedAreaTopLeft = {
-    x: isSelectedFromLeftToRight
-      ? selectingArea.startWorldPos.x
-      : selectingArea.endWorldPos.x,
-    y: isSelectedFromTopToBottom
-      ? selectingArea.startWorldPos.y
-      : selectingArea.endWorldPos.y,
-  };
-  const selectedAreaBottomRight = {
-    x: isSelectedFromLeftToRight
-      ? selectingArea.endWorldPos.x
-      : selectingArea.startWorldPos.x,
-    y: isSelectedFromTopToBottom
-      ? selectingArea.endWorldPos.y
-      : selectingArea.startWorldPos.y,
-  };
-
   const selectedRegionTopLeft: Coord = {
     x: 0,
     y: 0,
@@ -251,7 +268,7 @@ export const convertWorldPosAreaToPixelGridArea = (
   };
   // leftTopPoint is the the left top point of the grid
   const selectedAreaLeftOffsetAmount =
-    selectedAreaTopLeft.x - pixelGridLeftTopPoint.x;
+    areaTopLeftPos.x - pixelGridLeftTopPoint.x;
   // if selectedAreaLeftOffsetAmount is negative, then the selected area's left part is outside the grid
   if (selectedAreaLeftOffsetAmount < 0) {
     selectedRegionTopLeft.x = pixelGridLeftTopPoint.x;
@@ -266,7 +283,7 @@ export const convertWorldPosAreaToPixelGridArea = (
   }
   // if selectedAreaTopOffsetAmount is negative, then the selected area's top part is outside the grid
   const selectedAreaTopOffsetAmount =
-    selectedAreaTopLeft.y - pixelGridLeftTopPoint.y;
+    areaTopLeftPos.y - pixelGridLeftTopPoint.y;
   if (selectedAreaTopOffsetAmount < 0) {
     selectedRegionTopLeft.y = pixelGridLeftTopPoint.y;
   } else {
@@ -281,7 +298,7 @@ export const convertWorldPosAreaToPixelGridArea = (
 
   // if selectedAreaRightOffsetAmount is positive, then the selected area's right part is outside the grid
   const selectedAreaRightOffsetAmount =
-    selectedAreaBottomRight.x -
+    areaBottomRightPos.x -
     (pixelGridLeftTopPoint.x + columnCount * gridSquareLength);
 
   if (selectedAreaRightOffsetAmount > 0) {
@@ -300,7 +317,7 @@ export const convertWorldPosAreaToPixelGridArea = (
 
   // if selectedAreaBottomOffsetAmount is positive, then the selected area's bottom part is outside the grid
   const selectedAreaBottomOffsetAmount =
-    selectedAreaBottomRight.y -
+    areaBottomRightPos.y -
     (pixelGridLeftTopPoint.y + rowCount * gridSquareLength);
   if (selectedAreaBottomOffsetAmount > 0) {
     selectedRegionBottomRight.y =
