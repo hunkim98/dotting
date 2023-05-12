@@ -1228,8 +1228,20 @@ export default class Editor extends EventDispatcher {
           sortedRowKeys,
           sortedColumnKeys,
         );
-        const selectedAreaPixels =
-          this.interactionLayer.getSelectedAreaPixels();
+        const selectedAreaPixels: Array<ColorChangeItem> = [];
+        for (const index of includedPixelsIndices) {
+          const rowIndex = index.rowIndex;
+          const columnIndex = index.columnIndex;
+          const color = data.get(rowIndex).get(columnIndex)?.color;
+          if (color) {
+            selectedAreaPixels.push({
+              rowIndex,
+              columnIndex,
+              previousColor: color,
+              color: "",
+            });
+          }
+        }
         const {
           topRowIndex,
           bottomRowIndex,
@@ -1246,6 +1258,7 @@ export default class Editor extends EventDispatcher {
         );
 
         this.dataLayer.erasePixels(filteredSelectedAreaPixels);
+        this.interactionLayer.setSelectedAreaPixels(selectedAreaPixels);
         this.interactionLayer.setMovingSelectedPixels(selectedAreaPixels);
         this.dataLayer.render();
         this.interactionLayer.render();
