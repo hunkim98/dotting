@@ -187,47 +187,16 @@ export const getIsPointInsideRegion = (
   point: Coord,
   area: { startWorldPos: Coord; endWorldPos: Coord },
 ) => {
+  const isSelectedFromLeftToRight = area.startWorldPos.x < area.endWorldPos.x;
+  const isSelectedFromTopToBottom = area.startWorldPos.y < area.endWorldPos.y;
   const selectedAreaTopLeft = {
-    x: 0,
-    y: 0,
+    x: isSelectedFromLeftToRight ? area.startWorldPos.x : area.endWorldPos.x,
+    y: isSelectedFromTopToBottom ? area.startWorldPos.y : area.endWorldPos.y,
   };
   const selectedAreaBottomRight = {
-    x: 0,
-    y: 0,
+    x: isSelectedFromLeftToRight ? area.endWorldPos.x : area.startWorldPos.x,
+    y: isSelectedFromTopToBottom ? area.endWorldPos.y : area.startWorldPos.y,
   };
-  let isSelectedFromLeftToRight = true;
-  if (area.startWorldPos.x > area.endWorldPos.x) {
-    isSelectedFromLeftToRight = false;
-  }
-  let isSelectedFromTopToBottom = true;
-  if (area.startWorldPos.y > area.endWorldPos.y) {
-    isSelectedFromTopToBottom = false;
-  }
-  if (isSelectedFromLeftToRight && isSelectedFromTopToBottom) {
-    // start from left top end at right bottom
-    selectedAreaTopLeft.x = area.startWorldPos.x;
-    selectedAreaTopLeft.y = area.startWorldPos.y;
-    selectedAreaBottomRight.x = area.endWorldPos.x;
-    selectedAreaBottomRight.y = area.endWorldPos.y;
-  } else if (isSelectedFromLeftToRight && !isSelectedFromTopToBottom) {
-    // start from left bottom end at right top
-    selectedAreaTopLeft.x = area.startWorldPos.x;
-    selectedAreaTopLeft.y = area.endWorldPos.y;
-    selectedAreaBottomRight.x = area.endWorldPos.x;
-    selectedAreaBottomRight.y = area.startWorldPos.y;
-  } else if (!isSelectedFromLeftToRight && isSelectedFromTopToBottom) {
-    // start from right top end at left bottom
-    selectedAreaTopLeft.x = area.endWorldPos.x;
-    selectedAreaTopLeft.y = area.startWorldPos.y;
-    selectedAreaBottomRight.x = area.startWorldPos.x;
-    selectedAreaBottomRight.y = area.endWorldPos.y;
-  } else {
-    // start from right bottom end at left top
-    selectedAreaTopLeft.x = area.endWorldPos.x;
-    selectedAreaTopLeft.y = area.endWorldPos.y;
-    selectedAreaBottomRight.x = area.startWorldPos.x;
-    selectedAreaBottomRight.y = area.startWorldPos.y;
-  }
 
   return (
     point.x >= selectedAreaTopLeft.x &&
@@ -237,7 +206,7 @@ export const getIsPointInsideRegion = (
   );
 };
 
-export const convertSelectingAreaToPixelGridArea = (
+export const convertWorldPosAreaToPixelGridArea = (
   selectingArea: { startWorldPos: Coord; endWorldPos: Coord },
   rowCount: number,
   columnCount: number,

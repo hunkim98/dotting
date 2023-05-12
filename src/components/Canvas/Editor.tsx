@@ -48,7 +48,7 @@ import {
   getMouseCartCoord,
   getPixelIndexFromMouseCartCoord,
   getPointFromTouchyEvent,
-  convertSelectingAreaToPixelGridArea,
+  convertWorldPosAreaToPixelGridArea,
   returnScrollOffsetFromMouseOffset,
 } from "../../utils/position";
 import Queue from "../../utils/queue";
@@ -1243,9 +1243,23 @@ export default class Editor extends EventDispatcher {
         // we will move the selected area if the mouse is in the previous selected area
         // remove the selecting area if it exists
         this.interactionLayer.setSelectingArea(null);
+        const data = this.dataLayer.getData();
+        const rowCount = this.dataLayer.getRowCount();
+        const columnCount = this.dataLayer.getColumnCount();
+        const rowKeys = getRowKeysFromData(data);
+        const columnKeys = getColumnKeysFromData(data);
+        const sortedRowKeys = rowKeys.sort((a, b) => a - b);
+        const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
+        const { includedPixelsIndices } = convertWorldPosAreaToPixelGridArea(
+          this.interactionLayer.getSelectedArea()!,
+          rowCount,
+          columnCount,
+          this.gridSquareLength,
+          sortedRowKeys,
+          sortedColumnKeys,
+        );
         const selectedAreaPixels =
           this.interactionLayer.getSelectedAreaPixels();
-        const data = this.dataLayer.getData();
         const {
           topRowIndex,
           bottomRowIndex,
@@ -1450,7 +1464,7 @@ export default class Editor extends EventDispatcher {
       const columnKeys = getColumnKeysFromData(data);
       const sortedRowKeys = rowKeys.sort((a, b) => a - b);
       const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
-      const region = convertSelectingAreaToPixelGridArea(
+      const region = convertWorldPosAreaToPixelGridArea(
         selectingArea,
         rowCount,
         columnCount,
