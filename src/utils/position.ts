@@ -249,12 +249,10 @@ export const convertSelectingAreaToPixelGridArea = (
     x: -((columnCount / 2) * gridSquareLength),
     y: -((rowCount / 2) * gridSquareLength),
   };
-  const isSelectedFromLeftToRight = !(
-    selectingArea.startWorldPos.x > selectingArea.endWorldPos.x
-  );
-  const isSelectedFromTopToBottom = !(
-    selectingArea.startWorldPos.y > selectingArea.endWorldPos.y
-  );
+  const isSelectedFromLeftToRight =
+    selectingArea.startWorldPos.x < selectingArea.endWorldPos.x;
+  const isSelectedFromTopToBottom =
+    selectingArea.startWorldPos.y < selectingArea.endWorldPos.y;
   // To ease the algorithm, we will first identify the left top, right top, left bottom and right bottom points
 
   const selectedAreaTopLeft = {
@@ -315,8 +313,7 @@ export const convertSelectingAreaToPixelGridArea = (
   // if selectedAreaRightOffsetAmount is positive, then the selected area's right part is outside the grid
   const selectedAreaRightOffsetAmount =
     selectedAreaBottomRight.x -
-    pixelGridLeftTopPoint.x +
-    columnCount * gridSquareLength;
+    (pixelGridLeftTopPoint.x + columnCount * gridSquareLength);
 
   if (selectedAreaRightOffsetAmount > 0) {
     selectedRegionBottomRight.x =
@@ -327,6 +324,7 @@ export const convertSelectingAreaToPixelGridArea = (
     }
     selectedRegionBottomRight.x =
       pixelGridLeftTopPoint.x +
+      columnCount * gridSquareLength +
       Math.ceil(selectedAreaRightOffsetAmount / gridSquareLength) *
         gridSquareLength;
   }
@@ -334,8 +332,7 @@ export const convertSelectingAreaToPixelGridArea = (
   // if selectedAreaBottomOffsetAmount is positive, then the selected area's bottom part is outside the grid
   const selectedAreaBottomOffsetAmount =
     selectedAreaBottomRight.y -
-    pixelGridLeftTopPoint.y +
-    rowCount * gridSquareLength;
+    (pixelGridLeftTopPoint.y + rowCount * gridSquareLength);
   if (selectedAreaBottomOffsetAmount > 0) {
     selectedRegionBottomRight.y =
       pixelGridLeftTopPoint.y + rowCount * gridSquareLength;
@@ -345,6 +342,7 @@ export const convertSelectingAreaToPixelGridArea = (
     }
     selectedRegionBottomRight.y =
       pixelGridLeftTopPoint.y +
+      rowCount * gridSquareLength +
       Math.ceil(selectedAreaBottomOffsetAmount / gridSquareLength) *
         gridSquareLength;
   }
