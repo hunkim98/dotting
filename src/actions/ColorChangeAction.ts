@@ -1,11 +1,6 @@
 import { Action, ActionType } from "./Action";
 import { ColorChangeItem } from "../components/Canvas/types";
 
-export enum ColorChangeMode {
-  Fill = "Fill",
-  Erase = "Erase",
-}
-
 export class ColorChangeAction extends Action {
   type = ActionType.ColorChange;
   data: Array<ColorChangeItem>;
