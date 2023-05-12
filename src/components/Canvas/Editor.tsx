@@ -285,13 +285,39 @@ export default class Editor extends EventDispatcher {
   }
 
   styleMouseCursor = () => {
+    // for standard interaction coordinates
+    const interactionCoord = { x: 0, y: 0 };
+
+    if (this.mouseMode !== MouseMode.EXTENDING) {
+      if (this.brushTool === BrushTool.DOT) {
+        interactionCoord.x = 1;
+        interactionCoord.y = 14;
+      } else if (this.brushTool === BrushTool.ERASER) {
+        interactionCoord.x = 3;
+        interactionCoord.y = 14;
+      } else if (this.brushTool === BrushTool.PAINT_BUCKET) {
+        interactionCoord.x = 14;
+        interactionCoord.y = 14;
+      }
+      const cursorShape = `url("/cursor/${this.brushTool}.svg") ${interactionCoord.x} ${interactionCoord.y}`;
+      if (cursorShape === this.element.style.cursor) {
+        return;
+      }
+      this.element.style.cursor = `${cursorShape}, auto`;
+    }
+
+    // Detect HoveredButton for resize-cursor style
+    const hoveredButton = this.gridLayer.getHoveredButton();
     if (
-      this.mouseMode !== MouseMode.PANNING &&
-      this.mouseMode !== MouseMode.EXTENDING
+      hoveredButton === ButtonDirection.TOP ||
+      hoveredButton === ButtonDirection.BOTTOM
     ) {
-      this.element.style.cursor = `url("/cursor/${this.mouseMode}.cur"), auto`;
-    } else {
-      this.element.style.cursor = `default`;
+      this.element.style.cursor = `ns-resize`;
+    } else if (
+      hoveredButton === ButtonDirection.LEFT ||
+      hoveredButton === ButtonDirection.RIGHT
+    ) {
+      this.element.style.cursor = `ew-resize`;
     }
   };
 
@@ -1221,6 +1247,8 @@ export default class Editor extends EventDispatcher {
 
   onMouseMove(evt: TouchyEvent) {
     evt.preventDefault();
+    this.styleMouseCursor();
+
     const mouseCartCoord = getMouseCartCoord(
       evt,
       this.element,
