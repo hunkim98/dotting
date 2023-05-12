@@ -50,6 +50,7 @@ import {
   getPointFromTouchyEvent,
   convertWorldPosAreaToPixelGridArea,
   returnScrollOffsetFromMouseOffset,
+  getDoesAreaOverlapPixelgrid,
 } from "../../utils/position";
 import Queue from "../../utils/queue";
 import Stack from "../../utils/stack";
@@ -1554,6 +1555,21 @@ export default class Editor extends EventDispatcher {
     if (this.brushTool === BrushTool.SELECT) {
       this.relaySelectingAreaToSelectedArea();
       this.relayMovingSelectedAreaToSelectedArea();
+      // get the updated selected area
+      const selectedArea = this.interactionLayer.getSelectedArea();
+      const doesSelectedAreaExistInGrid = getDoesAreaOverlapPixelgrid(
+        selectedArea,
+        this.dataLayer.getRowCount(),
+        this.dataLayer.getColumnCount(),
+        this.gridSquareLength,
+      );
+      if (!doesSelectedAreaExistInGrid) {
+        this.interactionLayer.setMovingSelectedArea(null);
+        this.interactionLayer.setMovingSelectedPixels(null);
+        this.interactionLayer.setSelectedArea(null);
+        this.interactionLayer.setSelectedAreaPixels(null);
+        this.gridLayer.render();
+      }
     }
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
