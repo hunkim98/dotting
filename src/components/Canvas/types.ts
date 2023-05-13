@@ -43,7 +43,7 @@ export enum BrushTool {
   SELECT = "SELECT",
 }
 
-export type CanvasDataChangeParams = DottingData;
+export type CanvasDataChangeParams = { data: DottingData };
 
 export type CanvasDataChangeHandler = (params: CanvasDataChangeParams) => void;
 

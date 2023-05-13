@@ -186,7 +186,7 @@ export default class Editor extends EventDispatcher {
   }
 
   emitCurrentData() {
-    this.emitDataChangeEvent(this.dataLayer.getCopiedData());
+    this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
   }
 
   emitCurrentBrushTool() {
@@ -999,7 +999,7 @@ export default class Editor extends EventDispatcher {
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places
       const updatedData = this.dataLayer.getCopiedData();
-      this.emitDataChangeEvent(updatedData);
+      this.emitDataChangeEvent({ data: updatedData });
       const updatedColumnCount = getColumnCountFromData(updatedData);
       const updatedRowCount = getRowCountFromData(updatedData);
       const updatedDimensions = {
@@ -1176,7 +1176,7 @@ export default class Editor extends EventDispatcher {
     // we don't need to relay data dimensions to layers because there will be no
     // row column change in erasePixels
     this.recordAction(new ColorChangeAction(dataForAction));
-    this.emitDataChangeEvent(this.dataLayer.getCopiedData());
+    this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
     this.renderAll();
   }
 
@@ -1196,7 +1196,7 @@ export default class Editor extends EventDispatcher {
     }
     this.relayDataDimensionsToLayers();
     this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
-    this.emitDataChangeEvent(this.dataLayer.getCopiedData());
+    this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.renderAll();
   }
@@ -1658,7 +1658,7 @@ export default class Editor extends EventDispatcher {
         strokeTool: BrushTool.SELECT,
       });
       // only emit data change event when there is a change
-      this.emitDataChangeEvent(newData);
+      this.emitDataChangeEvent({ data: newData });
     }
 
     // ⬆️ this part is for recording the action

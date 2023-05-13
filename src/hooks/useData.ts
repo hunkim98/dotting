@@ -18,7 +18,7 @@ const useData = (ref: MutableRefObject<DottingRef | null>) => {
   const [dataArray, setDataArray] = useState<Array<Array<PixelModifyItem>>>([]);
 
   useEffect(() => {
-    const listener: CanvasDataChangeHandler = canvasData => {
+    const listener: CanvasDataChangeHandler = ({ data: canvasData }) => {
       setData(canvasData);
       const allRowKeys = Array.from(canvasData.keys());
       const allColumnKeys = Array.from(canvasData.get(allRowKeys[0])!.keys());
