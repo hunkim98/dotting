@@ -58,6 +58,7 @@ import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
 import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
 import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
+import { generatePixelId } from "../../utils/identifier";
 
 export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;
@@ -837,7 +838,7 @@ export default class Editor extends EventDispatcher {
         this.emit(
           CanvasEvents.STROKE_END,
           strokedPixelModifyItems,
-          new Map(this.dataLayer.getData()),
+          this.dataLayer.getCopiedData(),
         );
       }
 
@@ -1191,6 +1192,7 @@ export default class Editor extends EventDispatcher {
       const color = this.brushColor;
       const previousColor = data.get(rowIndex)!.get(columnIndex)!.color;
       data.get(rowIndex).get(columnIndex)!.color = color;
+      // paint same color region is recorded in stroked pixels
       interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
         rowIndex,
         columnIndex,
@@ -1585,6 +1587,34 @@ export default class Editor extends EventDispatcher {
         finalSelectedArea,
       ),
     );
+    // we will use a map to remove the duplicated items
+    const effectiveColorChangeItemsMap = new Map<string, ColorChangeItem>();
+    // first we add the previous selected area items
+    // this is because we will override the previous selected area items
+    // with the new selected area items
+    for (const item of previousSelectedAreaColorChangeItems) {
+      effectiveColorChangeItemsMap.set(
+        generatePixelId(item.rowIndex, item.columnIndex),
+        item,
+      );
+    }
+    // then override the previous selected area items with the new selected area items
+    for (const item of newSelectedAreaColorChangeItems) {
+      effectiveColorChangeItemsMap.set(
+        generatePixelId(item.rowIndex, item.columnIndex),
+        item,
+      );
+    }
+    const effectiveColorChangeItems = Array.from(
+      effectiveColorChangeItemsMap.values(),
+    );
+    const newData = this.dataLayer.getCopiedData();
+    if (effectiveColorChangeItems.length > 0) {
+      this.emit(CanvasEvents.STROKE_END, effectiveColorChangeItems, newData);
+      // only emit data change event when there is a change
+      this.emit(CanvasEvents.DATA_CHANGE, newData);
+    }
+
     // ⬆️ this part is for recording the action
 
     const movingSelectedArea = this.interactionLayer.getMovingSelectedArea();
