@@ -18,18 +18,7 @@ const useGrids = (ref: MutableRefObject<DottingRef | null>) => {
   });
 
   useEffect(() => {
-    const listener: CanvasGridChangeHandler = (
-      dimensions: {
-        columnCount: number;
-        rowCount: number;
-      },
-      indices: {
-        topRowIndex: number;
-        bottomRowIndex: number;
-        leftColumnIndex: number;
-        rightColumnIndex: number;
-      },
-    ) => {
+    const listener: CanvasGridChangeHandler = ({ dimensions, indices }) => {
       setDimensions({
         columnCount: dimensions.columnCount,
         rowCount: dimensions.rowCount,

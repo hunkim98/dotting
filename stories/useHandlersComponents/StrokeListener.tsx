@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import {
+  BrushTool,
   CanvasStrokeEndHandler,
+  ColorChangeItem,
   DottingData,
   PixelModifyItem,
 } from "../../src/components/Canvas/types";
@@ -11,13 +13,14 @@ import useHandlers from "../../src/hooks/useHandlers";
 const StrokeListener = () => {
   const ref = useRef<DottingRef>(null);
   const { addStrokeEndListener, removeStrokeEndListener } = useHandlers(ref);
-  const [strokedPixels, setStrokedPixels] = useState<Array<PixelModifyItem>>(
+  const [strokedPixels, setStrokedPixels] = useState<Array<ColorChangeItem>>(
     [],
   );
-  const handleStrokeEnd: CanvasStrokeEndHandler = (
-    strokedPixels: Array<PixelModifyItem>,
-    data: DottingData,
-  ) => {
+  const handleStrokeEnd: CanvasStrokeEndHandler = ({
+    strokedPixels,
+    data,
+    strokeTool,
+  }) => {
     setStrokedPixels(strokedPixels);
   };
 

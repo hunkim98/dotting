@@ -13,14 +13,16 @@ const HoverPixelListener = () => {
   const ref = useRef<DottingRef>(null);
   const { addHoverPixelChangeListener, removeHoverPixelChangeListener } =
     useHandlers(ref);
-  const [hoveredPixel, setHoveredPixel] = useState<{
-    rowIndex: number;
-    columnIndex: number;
-  } | null>(null);
-  const handleHoverPixelChangeHandler: CanvasHoverPixelChangeHandler =
-    indices => {
-      setHoveredPixel(indices);
-    };
+  const [hoveredPixel, setHoveredPixel] =
+    useState<{
+      rowIndex: number;
+      columnIndex: number;
+    } | null>(null);
+  const handleHoverPixelChangeHandler: CanvasHoverPixelChangeHandler = ({
+    indices,
+  }) => {
+    setHoveredPixel(indices);
+  };
 
   useEffect(() => {
     addHoverPixelChangeListener(handleHoverPixelChangeHandler);

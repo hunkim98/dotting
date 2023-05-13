@@ -213,6 +213,7 @@ The events that you can listen to are:
 - `grid change`
 - `stroke end`
 - `hover pixel change`
+- `brush change`
 
 #### Features provided by `useHandlers`
 
@@ -237,7 +238,8 @@ The events that you can listen to are:
       <td> 
         `CanvasDataChangeHandler`
         ```ts
-        export type CanvasDataChangeHandler = (data: DottingData) => void;
+        export type CanvasDataChangeParams = { data: DottingData };
+        export type CanvasDataChangeHandler = (params: CanvasDataChangeParams) => void;
         export type DottingData = Map<number, Map<number, PixelData>>;
         export type PixelData = {
             color: string;
@@ -260,18 +262,20 @@ The events that you can listen to are:
       <td>
         `CanvasGridChangeHandler`
         ```ts
-        export type CanvasGridChangeHandler = (
-            dimensions: {
-                columnCount: number;
-                rowCount: number;
-            },
-            indices: {
-                topRowIndex: number;
-                bottomRowIndex: number;
-                leftColumnIndex: number;
-                rightColumnIndex: number;
-            }
-        ) => void;
+        export type CanvasGridChangeParams = {
+          dimensions: {
+            columnCount: number;
+            rowCount: number;
+          };
+          indices: {
+            topRowIndex: number;
+            bottomRowIndex: number;
+            leftColumnIndex: number;
+            rightColumnIndex: number;
+          };
+        };
+
+        export type CanvasGridChangeHandler = (params: CanvasGridChangeParams) => void;
         ```
       </td>
     </tr>
@@ -290,14 +294,20 @@ The events that you can listen to are:
       <td>
         `CanvasBrushChangeHandler`
         ```ts
+        export type CanvasBrushChangeParams = {
+          brushColor: string;
+          brushTool: BrushTool;
+        };
+
         export type CanvasBrushChangeHandler = (
-            brushColor: string,
-            brushMode: BrushMode
+          params: CanvasBrushChangeParams,
         ) => void;
-        export enum BrushMode {
-            DOT = "dot",
-            ERASER = "eraser",
-            PAINT_BUCKET = "paint_bucket",
+
+        export enum BrushTool {
+          DOT = "DOT",
+          ERASER = "ERASER",
+          PAINT_BUCKET = "PAINT_BUCKET",
+          SELECT = "SELECT",
         }
         ```
       </td>
@@ -317,14 +327,20 @@ The events that you can listen to are:
       <td>
         `CanvasStrokeEndHandler`
         ```ts
-        export type CanvasStrokeEndHandler = (
-            strokedPixels: Array<PixelModifyItem>,
-            data: DottingData
-        ) => void;
-        export interface PixelModifyItem {
+
+        export type CanvasStrokeEndParams = {
+          strokedPixels: Array<ColorChangeItem>;
+          data: DottingData;
+          strokeTool: BrushTool;
+        };
+
+        export type CanvasStrokeEndHandler = (params: CanvasStrokeEndParams) => void;
+
+        export interface ColorChangeItem {
             rowIndex: number;
             columnIndex: number;
             color: string;
+            previousColor: string;
         }
         export type DottingData = Map<number, Map<number, PixelData>>;
         export type PixelData = {
@@ -343,17 +359,17 @@ The events that you can listen to are:
     <tr>
       <td>`addHoverPixelChangeListener(listener: CanvasHoverPixelChangeHandler)`</td>
       <td>
-        Allows you to listen to hover pixel change events 
+        Allows you to listen to hover pixel change events
       </td>
       <td>
         `CanvasHoverPixelChangeHandler`
         ```ts
-        export type CanvasHoverPixelChangeHandler = (
+        export type CanvasHoverPixelChangeHandler = ({
           indices: {
             rowIndex: number;
             columnIndex: number;
           } | null
-        ) => void;
+        }) => void;
         ```
       </td>
     </tr>
@@ -378,7 +394,7 @@ The events that you can listen to are:
       </td>
       <td>`string`, `EventListenerOrEventListenerObject`</td>
     </tr>
- 
+
   </tbody>
 </table>
 
