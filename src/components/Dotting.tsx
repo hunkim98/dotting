@@ -4,7 +4,9 @@ import React, {
   useEffect,
   useImperativeHandle,
   useState,
- forwardRef, useRef } from "react";
+  forwardRef,
+  useRef,
+} from "react";
 
 import Editor from "./Canvas/Editor";
 import {
@@ -156,7 +158,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       editor.addEventListener(CanvasEvents.GRID_CHANGE, listener);
     });
     // The below is to emit the initial grid event
-    editor.emitGridEvent();
+    editor.emitCurrentGridStatus();
     return () => {
       gridChangeListeners.forEach(listener => {
         editor?.removeEventListener(CanvasEvents.GRID_CHANGE, listener);
@@ -171,7 +173,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     dataChangeListeners.forEach(listener => {
       editor.addEventListener(CanvasEvents.DATA_CHANGE, listener);
     });
-    editor.emitDataEvent();
+    editor.emitCurrentData();
     return () => {
       dataChangeListeners.forEach(listener => {
         editor?.removeEventListener(CanvasEvents.DATA_CHANGE, listener);
@@ -186,7 +188,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     brushChangeListeners.forEach(listener => {
       editor.addEventListener(CanvasEvents.BRUSH_CHANGE, listener);
     });
-    editor.emitBrushChangeEvent();
+    editor.emitCurrentBrushTool();
     return () => {
       brushChangeListeners.forEach(listener => {
         editor?.removeEventListener(CanvasEvents.BRUSH_CHANGE, listener);
@@ -216,7 +218,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     hoverPixelChangeListeners.forEach(listener => {
       editor.addEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
     });
-    editor.emitHoverPixelChangeEvent();
+    editor.emitCurrentHoverPixelStatus();
     return () => {
       hoverPixelChangeListeners.forEach(listener => {
         editor?.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);

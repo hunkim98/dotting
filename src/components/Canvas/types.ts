@@ -43,36 +43,51 @@ export enum BrushTool {
   SELECT = "SELECT",
 }
 
-export type CanvasDataChangeHandler = (data: DottingData) => void;
+export type CanvasDataChangeParams = DottingData;
 
-export type CanvasGridChangeHandler = (
+export type CanvasDataChangeHandler = (params: CanvasDataChangeParams) => void;
+
+export type CanvasGridChangeParams = {
   dimensions: {
     columnCount: number;
     rowCount: number;
-  },
+  };
   indices: {
     topRowIndex: number;
     bottomRowIndex: number;
     leftColumnIndex: number;
     rightColumnIndex: number;
-  },
-) => void;
+  };
+};
 
-export type CanvasStrokeEndHandler = (
-  strokedPixels: Array<ColorChangeItem>,
-  data: DottingData,
-) => void;
+export type CanvasGridChangeHandler = (params: CanvasGridChangeParams) => void;
+
+export type CanvasStrokeEndParams = {
+  strokedPixels: Array<ColorChangeItem>;
+  data: DottingData;
+  strokeTool: BrushTool;
+};
+
+export type CanvasStrokeEndHandler = (params: CanvasStrokeEndParams) => void;
+
+export type CanvasBrushChangeParams = {
+  brushColor: string;
+  brushTool: BrushTool;
+};
 
 export type CanvasBrushChangeHandler = (
-  brushColor: string,
-  brushTool: BrushTool,
+  params: CanvasBrushChangeParams,
 ) => void;
 
-export type CanvasHoverPixelChangeHandler = (
+export type CanvasHoverPixelChangeParams = {
   indices: {
     rowIndex: number;
     columnIndex: number;
-  } | null,
+  } | null;
+};
+
+export type CanvasHoverPixelChangeHandler = (
+  params: CanvasHoverPixelChangeParams,
 ) => void;
 
 export type GridIndices = {

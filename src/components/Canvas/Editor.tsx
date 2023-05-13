@@ -13,7 +13,12 @@ import GridLayer from "./GridLayer";
 import InteractionLayer from "./InteractionLayer";
 import {
   BrushTool,
+  CanvasBrushChangeParams,
+  CanvasDataChangeParams,
   CanvasEvents,
+  CanvasGridChangeParams,
+  CanvasHoverPixelChangeParams,
+  CanvasStrokeEndParams,
   ColorChangeItem,
   Coord,
   GridIndices,
@@ -161,29 +166,54 @@ export default class Editor extends EventDispatcher {
     this.element.addEventListener("wheel", this.handleWheel);
   }
 
-  emitGridEvent() {
+  emitCurrentGridStatus() {
     const data = this.dataLayer.getData();
     const dimensions = {
       columnCount: this.getColumnCount(),
       rowCount: this.getRowCount(),
     };
     const indices = getGridIndicesFromData(data);
-    this.emit(CanvasEvents.GRID_CHANGE, dimensions, indices);
+    this.emitGridChangeEvent({
+      dimensions,
+      indices,
+    });
   }
 
-  emitHoverPixelChangeEvent() {
-    this.emit(
-      CanvasEvents.HOVER_PIXEL_CHANGE,
-      this.interactionLayer.getHoveredPixel(),
-    );
+  emitCurrentHoverPixelStatus() {
+    this.emitHoverPixelChangeEvent({
+      indices: this.interactionLayer.getHoveredPixel(),
+    });
   }
 
-  emitDataEvent() {
-    this.emit(CanvasEvents.DATA_CHANGE, this.dataLayer.getCopiedData());
+  emitCurrentData() {
+    this.emitDataChangeEvent(this.dataLayer.getCopiedData());
   }
 
-  emitBrushChangeEvent() {
-    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushTool);
+  emitCurrentBrushTool() {
+    this.emitBrushChangeEvent({
+      brushColor: this.brushColor,
+      brushTool: this.brushTool,
+    });
+  }
+
+  emitDataChangeEvent(params: CanvasDataChangeParams) {
+    this.emit(CanvasEvents.DATA_CHANGE, params);
+  }
+
+  emitGridChangeEvent(params: CanvasGridChangeParams) {
+    this.emit(CanvasEvents.GRID_CHANGE, params);
+  }
+
+  emitStrokeEndEvent(params: CanvasStrokeEndParams) {
+    this.emit(CanvasEvents.STROKE_END, params);
+  }
+
+  emitHoverPixelChangeEvent(params: CanvasHoverPixelChangeParams) {
+    this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, params);
+  }
+
+  emitBrushChangeEvent(params: CanvasBrushChangeParams) {
+    this.emit(CanvasEvents.BRUSH_CHANGE, params);
   }
 
   // background related functions ⬇
@@ -257,12 +287,18 @@ export default class Editor extends EventDispatcher {
       this.interactionLayer.setSelectedArea(null);
       this.interactionLayer.setSelectingArea(null);
     }
-    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushTool);
+    this.emitBrushChangeEvent({
+      brushColor: this.brushColor,
+      brushTool: this.brushTool,
+    });
   }
 
   changeBrushColor(color: string) {
     this.brushColor = color;
-    this.emit(CanvasEvents.BRUSH_CHANGE, this.brushColor, this.brushTool);
+    this.emitBrushChangeEvent({
+      brushColor: this.brushColor,
+      brushTool: this.brushTool,
+    });
   }
 
   setBrushColor(color: string) {
@@ -835,11 +871,11 @@ export default class Editor extends EventDispatcher {
         this.recordInteractionColorChangeAction(pixelModifyItems);
       }
       if (strokedPixelModifyItems.length !== 0) {
-        this.emit(
-          CanvasEvents.STROKE_END,
-          strokedPixelModifyItems,
-          this.dataLayer.getCopiedData(),
-        );
+        this.emitStrokeEndEvent({
+          strokedPixels: strokedPixelModifyItems,
+          data: this.dataLayer.getCopiedData(),
+          strokeTool: this.brushTool,
+        });
       }
 
       const capturedData = interactionLayer.getCapturedData();
@@ -963,7 +999,7 @@ export default class Editor extends EventDispatcher {
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places
       const updatedData = this.dataLayer.getCopiedData();
-      this.emit(CanvasEvents.DATA_CHANGE, updatedData);
+      this.emitDataChangeEvent(updatedData);
       const updatedColumnCount = getColumnCountFromData(updatedData);
       const updatedRowCount = getRowCountFromData(updatedData);
       const updatedDimensions = {
@@ -971,11 +1007,11 @@ export default class Editor extends EventDispatcher {
         columnCount: updatedColumnCount,
       };
       const updatedGridIndices = getGridIndicesFromData(updatedData);
-      this.emit(
-        CanvasEvents.GRID_CHANGE,
-        updatedDimensions,
-        updatedGridIndices,
-      );
+      this.emitGridChangeEvent({
+        dimensions: updatedDimensions,
+        indices: updatedGridIndices,
+      });
+
       this.relayDataDimensionsToLayers();
       // deletes the records of the current user
       interactionLayer.deleteErasedPixelRecord(CurrentDeviceUserId);
@@ -1140,7 +1176,7 @@ export default class Editor extends EventDispatcher {
     // we don't need to relay data dimensions to layers because there will be no
     // row column change in erasePixels
     this.recordAction(new ColorChangeAction(dataForAction));
-    this.emit(CanvasEvents.DATA_CHANGE, this.dataLayer.getCopiedData());
+    this.emitDataChangeEvent(this.dataLayer.getCopiedData());
     this.renderAll();
   }
 
@@ -1160,7 +1196,7 @@ export default class Editor extends EventDispatcher {
     }
     this.relayDataDimensionsToLayers();
     this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
-    this.emit(CanvasEvents.DATA_CHANGE, this.dataLayer.getCopiedData());
+    this.emitDataChangeEvent(this.dataLayer.getCopiedData());
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.renderAll();
   }
@@ -1316,7 +1352,9 @@ export default class Editor extends EventDispatcher {
       }
     } else {
       if (pixelIndex) {
-        this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
+        this.emitHoverPixelChangeEvent({
+          indices: null,
+        });
         this.drawPixelInInteractionLayer(
           pixelIndex.rowIndex,
           pixelIndex.columnIndex,
@@ -1454,7 +1492,9 @@ export default class Editor extends EventDispatcher {
             hoveredPixel.rowIndex !== pixelIndex.rowIndex ||
             hoveredPixel.columnIndex !== pixelIndex.columnIndex
           ) {
-            this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, pixelIndex);
+            this.emitHoverPixelChangeEvent({
+              indices: pixelIndex,
+            });
           }
 
           this.interactionLayer.setHoveredPixel({
@@ -1467,7 +1507,9 @@ export default class Editor extends EventDispatcher {
         }
       } else {
         if (hoveredPixel !== null) {
-          this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
+          this.emitHoverPixelChangeEvent({
+            indices: null,
+          });
           this.interactionLayer.setHoveredPixel(null);
           this.renderInteractionLayer();
         }
@@ -1610,9 +1652,13 @@ export default class Editor extends EventDispatcher {
     );
     const newData = this.dataLayer.getCopiedData();
     if (effectiveColorChangeItems.length > 0) {
-      this.emit(CanvasEvents.STROKE_END, effectiveColorChangeItems, newData);
+      this.emitStrokeEndEvent({
+        strokedPixels: effectiveColorChangeItems,
+        data: newData,
+        strokeTool: BrushTool.SELECT,
+      });
       // only emit data change event when there is a change
-      this.emit(CanvasEvents.DATA_CHANGE, newData);
+      this.emitDataChangeEvent(newData);
     }
 
     // ⬆️ this part is for recording the action
@@ -1672,7 +1718,9 @@ export default class Editor extends EventDispatcher {
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
     touchy(this.element, removeEvent, "mousemove", this.handleExtension);
     if (this.gridLayer.getHoveredButton() !== null) {
-      this.emit(CanvasEvents.HOVER_PIXEL_CHANGE, null);
+      this.emitHoverPixelChangeEvent({
+        indices: null,
+      });
     }
     this.gridLayer.setHoveredButton(null);
     return;
