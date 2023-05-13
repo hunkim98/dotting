@@ -1228,6 +1228,7 @@ export default class Editor extends EventDispatcher {
         // we will move the selected area if the mouse is in the previous selected area
         // remove the selecting area if it exists
         this.interactionLayer.setSelectingArea(null);
+        const previousSelectedArea = this.interactionLayer.getSelectedArea()!;
         const data = this.dataLayer.getData();
         const rowCount = this.dataLayer.getRowCount();
         const columnCount = this.dataLayer.getColumnCount();
@@ -1236,7 +1237,7 @@ export default class Editor extends EventDispatcher {
         const sortedRowKeys = rowKeys.sort((a, b) => a - b);
         const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
         const { includedPixelsIndices } = convertWorldPosAreaToPixelGridArea(
-          this.interactionLayer.getSelectedArea()!,
+          previousSelectedArea,
           rowCount,
           columnCount,
           this.gridSquareLength,
@@ -1275,6 +1276,7 @@ export default class Editor extends EventDispatcher {
         this.dataLayer.erasePixels(filteredSelectedAreaPixels);
         this.interactionLayer.setSelectedAreaPixels(selectedAreaPixels);
         this.interactionLayer.setMovingSelectedPixels(selectedAreaPixels);
+        this.interactionLayer.setMovingSelectedArea(previousSelectedArea);
         this.dataLayer.render();
         this.interactionLayer.render();
 
