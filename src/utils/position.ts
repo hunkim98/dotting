@@ -216,11 +216,11 @@ export const getDoesAreaOverlapPixelgrid = (
     x: (columnCount / 2) * gridSquareLength,
     y: (rowCount / 2) * gridSquareLength,
   };
-  return !(
-    areaTopLeftPos.x >= pixelGridRightBottomPoint.x ||
-    areaTopLeftPos.y >= pixelGridRightBottomPoint.y ||
-    areaBottomRightPos.x <= pixelGridLeftTopPoint.x ||
-    areaBottomRightPos.y <= pixelGridLeftTopPoint.y
+  return (
+    areaTopLeftPos.x <= pixelGridRightBottomPoint.x ||
+    areaTopLeftPos.y <= pixelGridRightBottomPoint.y ||
+    areaBottomRightPos.x >= pixelGridLeftTopPoint.x ||
+    areaBottomRightPos.y >= pixelGridLeftTopPoint.y
   );
 };
 

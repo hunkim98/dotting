@@ -30,6 +30,7 @@ import {
 import { Action, ActionType } from "../../actions/Action";
 import { ColorChangeAction } from "../../actions/ColorChangeAction";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
+import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import {
   createColumnKeyOrderMapfromData,
@@ -41,6 +42,7 @@ import {
   getRowKeysFromData,
 } from "../../utils/data";
 import EventDispatcher from "../../utils/eventDispatcher";
+import { generatePixelId } from "../../utils/identifier";
 import {
   convertCartesianToScreen,
   diffPoints,
@@ -62,8 +64,6 @@ import Stack from "../../utils/stack";
 import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
 import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
-import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
-import { generatePixelId } from "../../utils/identifier";
 
 export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;
@@ -1296,7 +1296,6 @@ export default class Editor extends EventDispatcher {
         // we will move the selected area if the mouse is in the previous selected area
         // remove the selecting area if it exists
         this.interactionLayer.setSelectingArea(null);
-        const previousSelectedArea = this.interactionLayer.getSelectedArea()!;
         const data = this.dataLayer.getData();
         const rowCount = this.dataLayer.getRowCount();
         const columnCount = this.dataLayer.getColumnCount();
@@ -1312,6 +1311,10 @@ export default class Editor extends EventDispatcher {
           sortedRowKeys,
           sortedColumnKeys,
         );
+        if (!includedPixelsIndices) {
+          this.interactionLayer.setSelectedArea(null);
+          return;
+        }
         const selectedAreaPixels: Array<ColorChangeItem> = [];
         for (const index of includedPixelsIndices) {
           const rowIndex = index.rowIndex;
