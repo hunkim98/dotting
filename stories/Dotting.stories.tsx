@@ -1,22 +1,18 @@
-import React, { useRef } from "react";
+import React from "react";
 
-import { BrushTool, DottingData } from "../src/components/Canvas/types";
-import DottingComponent, {
-  DottingProps,
-  DottingRef,
-} from "../src/components/Dotting";
 import {
-  enumOptions,
   generateComponentControl,
   generateComponentControlForEnum,
 } from "./utils/componentControl";
 import { KeysEnum, StoriesComponentItem } from "./utils/types";
+import { BrushTool } from "../src/components/Canvas/types";
+import DottingComponent, { DottingProps } from "../src/components/Dotting";
 
 //blog.harveydelaney.com/creating-your-own-react-component-library/
 
 const DottingComponentArgTypes: KeysEnum<
   DottingProps,
-  StoriesComponentItem<any>
+  StoriesComponentItem<unknown>
 > = {
   width: generateComponentControl<DottingProps["width"]>({
     description:
