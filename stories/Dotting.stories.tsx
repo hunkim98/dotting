@@ -1,12 +1,107 @@
 import React, { useRef } from "react";
 
-import { DottingData } from "../src/components/Canvas/types";
+import { BrushTool, DottingData } from "../src/components/Canvas/types";
 import DottingComponent, {
   DottingProps,
   DottingRef,
 } from "../src/components/Dotting";
+import {
+  enumOptions,
+  generateComponentControl,
+  generateComponentControlForEnum,
+} from "./utils/componentControl";
+import { KeysEnum, StoriesComponentItem } from "./utils/types";
 
 //blog.harveydelaney.com/creating-your-own-react-component-library/
+
+const DottingComponentArgTypes: KeysEnum<
+  DottingProps,
+  StoriesComponentItem<any>
+> = {
+  width: generateComponentControl<DottingProps["width"]>({
+    description:
+      "The width of the canvas. When you assign a string to width, it should be a valid CSS length value such as `100%`.",
+    defaultValue: 300,
+    disable: false,
+  }),
+  height: generateComponentControl<DottingProps["height"]>({
+    description:
+      "The height of the canvas. When you assign a string to height, it should be a valid CSS length value such as `100%`.",
+    defaultValue: 300,
+    disable: false,
+  }),
+  style: generateComponentControl<DottingProps["style"]>({
+    description: "The style object for the canvas",
+    disable: true,
+  }),
+  gridStrokeColor: generateComponentControl<DottingProps["gridStrokeColor"]>({
+    description: "The stroke color of the grid",
+    disable: false,
+  }),
+  gridStrokeWidth: generateComponentControl<DottingProps["gridStrokeWidth"]>({
+    defaultValue: 1,
+    description: "The stroke width of the grid",
+    disable: false,
+  }),
+  isGridVisible: generateComponentControl<DottingProps["isGridVisible"]>({
+    defaultValue: true,
+    description: "If set to `true` the grid lines will be visible",
+    disable: false,
+  }),
+  backgroundMode: generateComponentControl<DottingProps["backgroundMode"]>({
+    defaultValue: "checkerboard",
+    description: "The background mode of the canvas.",
+    disable: false,
+  }),
+  backgroundColor: generateComponentControl<DottingProps["backgroundColor"]>({
+    defaultValue: "#c9c9c9",
+    description: "The background color of the canvas.",
+    disable: false,
+  }),
+  backgroundAlpha: generateComponentControl<DottingProps["backgroundAlpha"]>({
+    defaultValue: 0.5,
+    description: "The background alpha of the canvas.",
+    disable: false,
+  }),
+  initData: generateComponentControl<DottingProps["initData"]>({
+    description: "The initial data that you want to draw on the canvas",
+    disable: true,
+  }),
+  isPanZoomable: generateComponentControl<DottingProps["isPanZoomable"]>({
+    description: "If set to `true` the canvas will be pan and zoomable",
+    defaultValue: true,
+    disable: false,
+  }),
+  isGridFixed: generateComponentControl<DottingProps["isGridFixed"]>({
+    defaultValue: false,
+    description: "If set to `true` the grid will not be extendable",
+    disable: false,
+  }),
+  ref: generateComponentControl<DottingProps["ref"]>({
+    description:
+      "The ref object that you would like to connect to the Dotting Canvas.\
+      You must pass the `DottingRef` object as props if you would like to use hooks",
+    disable: true,
+  }),
+  brushTool: generateComponentControlForEnum<DottingProps["brushTool"]>({
+    defaultValue: BrushTool.DOT,
+    description: "The brush tool is for changing the brush tool",
+    enumProp: BrushTool,
+    disable: false,
+  }),
+  brushColor: generateComponentControl<DottingProps["brushColor"]>({
+    defaultValue: "#FF0000",
+    description:
+      "The brush color for drawing the grid.\
+      You can make a `useState` for tracking brushColor \
+      You can also use `useBrush` hook to change the brush color later.",
+    disable: false,
+  }),
+  indicatorData: generateComponentControl<DottingProps["indicatorData"]>({
+    description: "The indicator data that you want to draw on the canvas.",
+    disable: true,
+  }),
+};
 
 export default {
   title: "Components/Dotting",
@@ -24,77 +119,7 @@ export default {
       },
     },
   },
-  argTypes: {
-    width: {
-      description:
-        "The width of the canvas. When you assign a string to width, it should be a valid CSS length value such as `100%`.",
-      defaultValue: 300,
-    },
-    height: {
-      description:
-        "The height of the canvas. When you assign a string to height, it should be a valid CSS length value such as `100%`.",
-      defaultValue: 300,
-    },
-    ref: {
-      description:
-        "The ref object that you would like to connect to the Dotting Canvas.\
-     You must pass the `DottingRef` object as props if you would like to use hooks",
-      control: { disable: true },
-    },
-    initData: {
-      description: "The initial data that you want to draw on the canvas",
-      control: { disable: true },
-    },
-    isPanZoomable: {
-      description: "If set to `true` the canvas will be pan and zoomable",
-      defaultValue: true,
-      table: {
-        defaultValue: { summary: true },
-      },
-    },
-    isGridVisible: {
-      defaultValue: true,
-      description: "If set to `true` the grid lines will be visible",
-      table: {
-        defaultValue: { summary: true },
-      },
-    },
-    isGridFixed: {
-      defaultValue: false,
-      description: "If set to `true` the grid will not be extendable",
-      table: {
-        defaultValue: {
-          summary: false,
-        },
-      },
-    },
-    initBrushColor: {
-      defaultValue: "#FF0000",
-      control: {
-        disable: true,
-      },
-      description:
-        "The initial brush color for drawing the grid.\
-        You can use `useBrush` hook to change the brush color later.",
-      table: {
-        type: {
-          summary: "string",
-        },
-        defaultValue: { summary: "#FF0000" },
-      },
-    },
-    initIndicatorData: {
-      defaultValue: [],
-      control: {
-        disable: true,
-      },
-      description:
-        "The initial indicator data for the canvas. You can change the indicator data later with `useDotting` hook.",
-      table: {
-        defaultValue: { summary: "[]" },
-      },
-    },
-  },
+  argTypes: DottingComponentArgTypes,
 };
 
 export const Dotting = (args: DottingProps) => {
@@ -102,9 +127,19 @@ export const Dotting = (args: DottingProps) => {
     <DottingComponent
       width={args.width}
       height={args.height}
-      isPanZoomable={args.isPanZoomable}
+      style={undefined}
+      gridStrokeColor={args.gridStrokeColor}
+      gridStrokeWidth={args.gridStrokeWidth}
       isGridVisible={args.isGridVisible}
+      backgroundMode={args.backgroundMode}
+      backgroundColor={args.backgroundColor}
+      backgroundAlpha={args.backgroundAlpha}
+      initData={undefined}
+      isPanZoomable={args.isPanZoomable}
       isGridFixed={args.isGridFixed}
+      brushColor={args.brushColor}
+      brushTool={args.brushTool}
+      indicatorData={[]}
     />
   );
 };

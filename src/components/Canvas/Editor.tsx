@@ -218,7 +218,7 @@ export default class Editor extends EventDispatcher {
 
   // background related functions ⬇
   setBackgroundMode(backgroundMode?: "checkerboard" | "color") {
-    this.backgroundLayer.setBackgroundColor(backgroundMode);
+    this.backgroundLayer.setBackgroundMode(backgroundMode);
     this.renderBackgroundLayer();
   }
 
