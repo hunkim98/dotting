@@ -30,14 +30,17 @@ export interface DottingProps {
   gridStrokeWidth?: number;
   isGridVisible?: boolean;
   backgroundMode?: "checkerboard" | "color";
-  backgroundColor?: React.CSSProperties["color"];
+  backgroundColor?: string;
   backgroundAlpha?: number;
   initData?: Array<Array<PixelData>>;
-  initIndicatorData?: Array<PixelModifyItem>;
   isPanZoomable?: boolean;
   isGridFixed?: boolean;
   ref?: ForwardedRef<DottingRef>;
-  initBrushColor?: string;
+  brushTool?: BrushTool;
+  brushColor?: string;
+  indicatorData?: Array<PixelModifyItem>;
+  // initIndicatorData?: Array<PixelModifyItem>;
+  // initBrushColor?: string;
 }
 
 export interface DottingRef {
@@ -263,6 +266,47 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   }, [editor, containerRef, props.height, props.width]);
 
   useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    if (props.indicatorData) {
+      editor.setIndicatorPixels(props.indicatorData);
+    }
+  }, [editor, props.indicatorData]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    if (props.brushColor) {
+      editor.setBrushColor(props.brushColor);
+    }
+    if (props.brushTool) {
+      editor.setBrushTool(props.brushTool);
+    }
+  }, [editor, props.brushColor, props.brushTool]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    if (props.backgroundAlpha) {
+      editor.setBackgroundAlpha(props.backgroundAlpha);
+    }
+    if (props.backgroundColor) {
+      editor.setBackgroundColor(props.backgroundColor);
+    }
+    if (props.backgroundMode) {
+      editor.setBackgroundMode(props.backgroundMode);
+    }
+  }, [
+    editor,
+    props.backgroundMode,
+    props.backgroundAlpha,
+    props.backgroundColor,
+  ]);
+
+  useEffect(() => {
     if (!gridCanvas || !interactionCanvas || !dataCanvas || !backgroundCanvas) {
       return;
     }
@@ -283,10 +327,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     editor.setGridStrokeColor(props.gridStrokeColor);
 
     editor.setGridStrokeWidth(props.gridStrokeWidth);
-
-    editor.setBrushColor(props.initBrushColor);
-
-    editor.setIndicatorPixels(props.initIndicatorData);
 
     setEditor(editor);
 
