@@ -328,13 +328,43 @@ export default class Editor extends EventDispatcher {
   }
 
   styleMouseCursor = () => {
-    if (
-      this.mouseMode !== MouseMode.PANNING &&
-      this.mouseMode !== MouseMode.EXTENDING
-    ) {
-      this.element.style.cursor = `url("/cursor/${this.mouseMode}.cur"), auto`;
+    const hoveredButton = this.gridLayer.getHoveredButton();
+    if (hoveredButton) {
+      switch (hoveredButton) {
+        case ButtonDirection.TOP:
+          this.element.style.cursor = `ns-resize`;
+          break;
+        case ButtonDirection.BOTTOM:
+          this.element.style.cursor = `ns-resize`;
+          break;
+        case ButtonDirection.LEFT:
+          this.element.style.cursor = `ew-resize`;
+          break;
+        case ButtonDirection.RIGHT:
+          this.element.style.cursor = `ew-resize`;
+          break;
+      }
     } else {
-      this.element.style.cursor = `default`;
+      switch (this.brushTool) {
+        case BrushTool.DOT:
+          this.element.style.cursor = `crosshair`;
+          break;
+        case BrushTool.ERASER:
+          this.element.style.cursor = `crosshair`;
+          break;
+        case BrushTool.PAINT_BUCKET:
+          this.element.style.cursor = `crosshair`;
+          break;
+        case BrushTool.SELECT:
+          this.element.style.cursor = `crosshair`;
+          if (this.interactionLayer.getSelectedArea()) {
+            this.element.style.cursor = `grab`;
+          }
+          break;
+        default:
+          this.element.style.cursor = `default`;
+          break;
+      }
     }
   };
 
@@ -1358,6 +1388,8 @@ export default class Editor extends EventDispatcher {
 
   onMouseMove(evt: TouchyEvent) {
     evt.preventDefault();
+    this.styleMouseCursor();
+
     const mouseCartCoord = getMouseCartCoord(
       evt,
       this.element,
