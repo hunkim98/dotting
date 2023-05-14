@@ -1,9 +1,9 @@
 import React, { useCallback, useRef } from "react";
 
+import { useDotting } from "../../src";
 import { BrushTool } from "../../src/components/Canvas/types";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useBrush from "../../src/hooks/useBrush";
-import { useDotting } from "../../src";
 
 const ChangeBrushTool = () => {
   const ref = useRef<DottingRef>(null);

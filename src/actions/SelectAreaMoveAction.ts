@@ -1,6 +1,6 @@
+import { Action, ActionType } from "./Action";
 import { BrushTool, ColorChangeItem } from "../components/Canvas/types";
 import { Coord } from "../utils/types";
-import { Action, ActionType } from "./Action";
 
 export class SelectAreaMoveAction extends Action {
   type = ActionType.SelectAreaMove;
