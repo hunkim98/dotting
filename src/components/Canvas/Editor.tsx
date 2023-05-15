@@ -1354,7 +1354,7 @@ export default class Editor extends EventDispatcher {
         // move the pixels to interaction layer
       }
     } else {
-      if (pixelIndex) {
+      if (pixelIndex && this.brushTool !== BrushTool.NONE) {
         this.emitHoverPixelChangeEvent({
           indices: null,
         });
