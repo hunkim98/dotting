@@ -41,6 +41,7 @@ export enum BrushTool {
   ERASER = "ERASER",
   PAINT_BUCKET = "PAINT_BUCKET",
   SELECT = "SELECT",
+  NONE = "NONE",
 }
 
 export type CanvasDataChangeParams = { data: DottingData };
