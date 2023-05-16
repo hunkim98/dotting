@@ -870,9 +870,9 @@ export default class Editor extends EventDispatcher {
         // record single player mode color change action
         this.recordInteractionColorChangeAction(pixelModifyItems);
       }
-      if (strokedPixelModifyItems.length !== 0) {
+      if (pixelModifyItems.length !== 0) {
         this.emitStrokeEndEvent({
-          strokedPixels: strokedPixelModifyItems,
+          strokedPixels: pixelModifyItems,
           data: this.dataLayer.getCopiedData(),
           strokeTool: this.brushTool,
         });
