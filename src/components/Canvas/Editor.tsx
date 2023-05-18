@@ -104,6 +104,14 @@ export default class Editor extends EventDispatcher {
 
   private mouseDownWorldPos: Coord | null = null;
   private mouseMoveWorldPos: Coord = { x: 0, y: 0 };
+  private previousMouseMovePixelIndex = {
+    rowIndex: 0,
+    columnIndex: 0,
+  };
+  private mouseUpPixelIndex = {
+    rowIndex: 0,
+    columnIndex: 0,
+  };
   // TODO: why do we need this? For games?
   private isInteractionEnabled = true;
   // We need isInteractionApplicable to allow multiplayer
@@ -1480,6 +1488,78 @@ export default class Editor extends EventDispatcher {
     } else {
       if (pixelIndex) {
         if (this.mouseMode === MouseMode.DRAWING) {
+          let currentIndex = pixelIndex;
+          const previousIndex = this.previousMouseMovePixelIndex;
+          const previousMouseUpIndex = this.mouseUpPixelIndex;
+          // 마지막 mouseup이 grid 바깥으로 갔을때
+          if (
+            previousMouseUpIndex === null ||
+            previousMouseUpIndex.columnIndex === previousIndex.columnIndex ||
+            previousMouseUpIndex.rowIndex === previousIndex.rowIndex
+          ) {
+            currentIndex = previousIndex;
+          }
+
+          if (
+            Math.abs(currentIndex.columnIndex - previousIndex.columnIndex) >
+              1 ||
+            Math.abs(currentIndex.rowIndex - previousIndex.rowIndex) > 1
+          ) {
+            const Bresenham = (
+              point1: {
+                rowIndex: number;
+                columnIndex: number;
+              },
+              point2: {
+                rowIndex: number;
+                columnIndex: number;
+              },
+            ) => {
+              let { rowIndex: x1, columnIndex: y1 } = point1;
+              const { rowIndex: x2, columnIndex: y2 } = point2;
+              const tempArray: number[][] = [];
+
+              const dx = Math.abs(x2 - x1);
+              const dy = Math.abs(y2 - y1);
+              const sx = x1 < x2 ? 1 : -1;
+              const sy = y1 < y2 ? 1 : -1;
+
+              let err = (dx > dy ? dx : -dy) / 2;
+
+              // eslint-disable-next-line no-constant-condition
+              while (true) {
+                tempArray.push([y1, x1]);
+                if (x1 === x2 && y1 === y2) {
+                  break;
+                }
+                if (err > -dx) {
+                  err -= dy;
+                  x1 += sx;
+                }
+                if (x1 === x2 && y1 === y2) {
+                  break;
+                }
+                if (err < dy) {
+                  err += dx;
+                  y1 += sy;
+                }
+                if (x1 === x2 && y1 === y2) {
+                  break;
+                }
+              }
+              return tempArray;
+            };
+            const missingPoints = Bresenham(currentIndex, previousIndex);
+
+            if (missingPoints.length) {
+              missingPoints.forEach(point => {
+                this.drawPixelInInteractionLayer(point[1], point[0]);
+              });
+            }
+          }
+
+          this.previousMouseMovePixelIndex = pixelIndex;
+
           this.drawPixelInInteractionLayer(
             pixelIndex.rowIndex,
             pixelIndex.columnIndex,
@@ -1679,7 +1759,7 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.renderSelection(movingSelectedArea);
   }
 
-  onMouseUp(evt: TouchEvent) {
+  onMouseUp(evt: TouchyEvent) {
     evt.preventDefault();
     this.relayInteractionDataToDataLayer();
     this.mouseMode = MouseMode.PANNING;
@@ -1709,6 +1789,27 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setHoveredButton(null);
     // we make mouse down world position null
     this.mouseDownWorldPos = null;
+
+    const mouseCartCoord = getMouseCartCoord(
+      evt,
+      this.element,
+      this.panZoom,
+      this.dpr,
+    );
+    const gridIndices = this.dataLayer.getGridIndices();
+    const mouseUpIndex = getPixelIndexFromMouseCartCoord(
+      mouseCartCoord,
+      this.getRowCount(),
+      this.getColumnCount(),
+      this.gridSquareLength,
+      gridIndices.topRowIndex,
+      gridIndices.leftColumnIndex,
+    );
+    if (mouseUpIndex) {
+      this.mouseUpPixelIndex = mouseUpIndex;
+    } else {
+      this.mouseUpPixelIndex = null;
+    }
     return;
   }
 
