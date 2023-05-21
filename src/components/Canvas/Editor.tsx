@@ -89,8 +89,8 @@ export default class Editor extends EventDispatcher {
   private brushColor = "#FF0000";
   private gridSquareLength: number = DefaultGridSquareLength;
   private maxHistoryCount = 100;
-  private undoHistory: Stack<Action> = new Stack();
-  private redoHistory: Stack<Action> = new Stack();
+  private undoHistory: Array<Action> = [];
+  private redoHistory: Array<Action> = [];
   private extensionPoint: {
     lastMousePos: Coord;
     direction: ButtonDirection | null;
@@ -1119,15 +1119,15 @@ export default class Editor extends EventDispatcher {
   }
 
   recordAction(action: Action) {
-    if (this.undoHistory.size() >= this.maxHistoryCount) {
+    if (this.undoHistory.length >= this.maxHistoryCount) {
       this.undoHistory.shift();
     }
     this.undoHistory.push(action);
-    this.redoHistory.clear();
+    this.redoHistory = [];
   }
 
   undo() {
-    if (this.undoHistory.isEmpty()) {
+    if (this.undoHistory.length === 0) {
       return;
     }
     const action = this.undoHistory.pop()!;
@@ -1149,7 +1149,7 @@ export default class Editor extends EventDispatcher {
   }
 
   redo() {
-    if (this.redoHistory.isEmpty()) {
+    if (this.redoHistory.length === 0) {
       return;
     }
     const action = this.redoHistory.pop()!;
