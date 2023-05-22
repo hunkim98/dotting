@@ -109,3 +109,58 @@ export function lerpRanges(
   const ratio = (value - range1Start) / (range1End - range1Start);
   return range2Start + (range2End - range2Start) * ratio;
 }
+
+export function drawLine(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+): number[][] {
+  const startPosition = { x1, y1 };
+  const endPosition = { x2, y2 };
+
+  const width = x2 - x1;
+  const height = y2 - y1;
+
+  const isGradualSlope = Math.abs(width) >= Math.abs(height);
+  const directionX = width >= 0 ? 1 : -1;
+  const directionY = height >= 0 ? 1 : -1;
+
+  const fw = directionX * width;
+  const fh = directionY * height;
+
+  let f = isGradualSlope ? fh * 2 - fw : 2 * fw - fh;
+  const f1 = isGradualSlope ? 2 * fh : 2 * fw;
+  const f2 = isGradualSlope ? 2 * (fh - fw) : 2 * (fw - fh);
+
+  let x = startPosition.x1;
+  let y = startPosition.y1;
+
+  const missingPoints: number[][] = [];
+
+  if (isGradualSlope) {
+    while (x != endPosition.x2) {
+      missingPoints.push([x, y]);
+      if (f < 0) {
+        f += f1;
+      } else {
+        f += f2;
+        y += directionY;
+      }
+      x += directionX;
+    }
+  } else {
+    while (y != endPosition.y2) {
+      missingPoints.push([x, y]);
+      if (f < 0) {
+        f += f1;
+      } else {
+        f += f2;
+        x += directionX;
+      }
+      y += directionY;
+    }
+  }
+
+  return missingPoints;
+}
