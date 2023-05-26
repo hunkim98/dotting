@@ -47,7 +47,6 @@ import { generatePixelId } from "../../utils/identifier";
 import {
   convertCartesianToScreen,
   diffPoints,
-  getBressenhamIndices,
   getScreenPoint,
   lerpRanges,
 } from "../../utils/math";
@@ -1494,7 +1493,7 @@ export default class Editor extends EventDispatcher {
             this.gridSquareLength,
             this.dataLayer.getData(),
           );
-          if (missingIndices && missingIndices.length) {
+          if (missingIndices?.length) {
             missingIndices.forEach(point => {
               this.drawPixelInInteractionLayer(
                 point.rowIndex,

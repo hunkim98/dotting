@@ -187,8 +187,8 @@ export const getInBetweenPixelIndicesfromCoords = (
     if (!previousIndex || !pixelIndex) return;
 
     if (
-      Math.abs(pixelIndex.columnIndex - previousIndex.columnIndex) > 1 ||
-      Math.abs(pixelIndex.rowIndex - previousIndex.rowIndex) > 1
+      Math.abs(pixelIndex.columnIndex - previousIndex.columnIndex) >= 1 ||
+      Math.abs(pixelIndex.rowIndex - previousIndex.rowIndex) >= 1
     ) {
       const missingIndices = getBressenhamIndices(
         previousIndex.rowIndex,
