@@ -38,6 +38,7 @@ import {
   getColumnCountFromData,
   getColumnKeysFromData,
   getGridIndicesFromData,
+  getInBetweenPixelIndicesfromCoords,
   getRowCountFromData,
   getRowKeysFromData,
 } from "../../utils/data";
@@ -46,7 +47,7 @@ import { generatePixelId } from "../../utils/identifier";
 import {
   convertCartesianToScreen,
   diffPoints,
-  drawLine,
+  getBressenhamIndices,
   getScreenPoint,
   lerpRanges,
 } from "../../utils/math";
@@ -1388,54 +1389,6 @@ export default class Editor extends EventDispatcher {
     }
   }
 
-  fillMissingIndices(previousCoord: Coord, currentCoord: Coord) {
-    if (!previousCoord || !currentCoord) return;
-
-    const gridIndices = this.dataLayer.getGridIndices();
-    const pixelIndex = getPixelIndexFromMouseCartCoord(
-      currentCoord,
-      this.getRowCount(),
-      this.getColumnCount(),
-      this.gridSquareLength,
-      gridIndices.topRowIndex,
-      gridIndices.leftColumnIndex,
-    );
-
-    if (
-      Math.abs(currentCoord.x - previousCoord.x) >= this.gridSquareLength ||
-      Math.abs(currentCoord.y - previousCoord.y) >= this.gridSquareLength
-    ) {
-      const previousIndex = getPixelIndexFromMouseCartCoord(
-        previousCoord,
-        this.getRowCount(),
-        this.getColumnCount(),
-        this.gridSquareLength,
-        gridIndices.topRowIndex,
-        gridIndices.leftColumnIndex,
-      );
-      if (!previousIndex) return;
-
-      if (
-        (previousIndex &&
-          Math.abs(pixelIndex.columnIndex - previousIndex.columnIndex) > 1) ||
-        Math.abs(pixelIndex.rowIndex - previousIndex.rowIndex) > 1
-      ) {
-        const missingIndices = drawLine(
-          previousIndex.rowIndex,
-          previousIndex.columnIndex,
-          pixelIndex.rowIndex,
-          pixelIndex.columnIndex,
-        );
-
-        if (missingIndices.length) {
-          missingIndices.forEach(point => {
-            this.drawPixelInInteractionLayer(point[0], point[1]);
-          });
-        }
-      }
-    }
-  }
-
   onMouseMove(evt: TouchyEvent) {
     evt.preventDefault();
     this.styleMouseCursor();
@@ -1534,10 +1487,21 @@ export default class Editor extends EventDispatcher {
             pixelIndex.rowIndex,
             pixelIndex.columnIndex,
           );
-          this.fillMissingIndices(
-            this.mouseMoveWorldPos,
+
+          const missingIndices = getInBetweenPixelIndicesfromCoords(
             this.previousMouseMoveWorldPos,
+            this.mouseMoveWorldPos,
+            this.gridSquareLength,
+            this.dataLayer.getData(),
           );
+          if (missingIndices && missingIndices.length) {
+            missingIndices.forEach(point => {
+              this.drawPixelInInteractionLayer(
+                point.rowIndex,
+                point.columnIndex,
+              );
+            });
+          }
           this.renderInteractionLayer();
           if (this.brushTool === BrushTool.ERASER) {
             this.renderErasedPixelsFromInteractionLayerInDataLayer();

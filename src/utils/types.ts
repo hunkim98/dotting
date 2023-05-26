@@ -14,3 +14,8 @@ export type Indices = {
   leftColumnIndex: number;
   rightColumnIndex: number;
 };
+
+export type Index = {
+  rowIndex: number;
+  columnIndex: number;
+};

@@ -1,4 +1,4 @@
-import { Coord, PanZoom } from "./types";
+import { Coord, Index, PanZoom } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const degToRad = (degrees: number) => {
@@ -110,12 +110,12 @@ export function lerpRanges(
   return range2Start + (range2End - range2Start) * ratio;
 }
 
-export function drawLine(
+export function getBressenhamIndices(
   x1: number,
   y1: number,
   x2: number,
   y2: number,
-): number[][] {
+): Index[] {
   const startPosition = { x1, y1 };
   const endPosition = { x2, y2 };
 
@@ -136,11 +136,11 @@ export function drawLine(
   let x = startPosition.x1;
   let y = startPosition.y1;
 
-  const missingPoints: number[][] = [];
+  const missingPoints: Index[] = [];
 
   if (isGradualSlope) {
     while (x != endPosition.x2) {
-      missingPoints.push([x, y]);
+      missingPoints.push({ rowIndex: x, columnIndex: y });
       if (f < 0) {
         f += f1;
       } else {
@@ -151,7 +151,7 @@ export function drawLine(
     }
   } else {
     while (y != endPosition.y2) {
-      missingPoints.push([x, y]);
+      missingPoints.push({ rowIndex: x, columnIndex: y });
       if (f < 0) {
         f += f1;
       } else {
