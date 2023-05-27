@@ -32,6 +32,11 @@ import { ColorChangeAction } from "../../actions/ColorChangeAction";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
+import { BaseWorker } from "../../brushWorkers/BaseWorker";
+import { Dot } from "../../brushWorkers/Dot";
+import { Eraser } from "../../brushWorkers/Eraser";
+import { PaintBucket } from "../../brushWorkers/PaintBucket";
+import { Select } from "../../brushWorkers/Select";
 import {
   createColumnKeyOrderMapfromData,
   createRowKeyOrderMapfromData,
@@ -61,7 +66,6 @@ import {
   getDoesAreaOverlapPixelgrid,
 } from "../../utils/position";
 import Queue from "../../utils/queue";
-import Stack from "../../utils/stack";
 import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
 import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
@@ -102,6 +106,7 @@ export default class Editor extends EventDispatcher {
   private isPanZoomable = true;
   private mouseMode: MouseMode = MouseMode.PANNING;
   private brushTool: BrushTool = BrushTool.DOT;
+  private brushWorker: BaseWorker = null;
 
   private mouseDownWorldPos: Coord | null = null;
   private mouseMoveWorldPos: Coord = { x: 0, y: 0 };
@@ -149,6 +154,8 @@ export default class Editor extends EventDispatcher {
     );
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
+
+    this.brushWorker = this.createBrushWorker(this.brushTool);
 
     this.initialize();
   }
@@ -283,8 +290,13 @@ export default class Editor extends EventDispatcher {
   }
 
   setBrushTool(tool: BrushTool) {
+    if (this.brushTool === tool) {
+      return;
+    }
     this.brushTool = tool;
+    this.brushWorker = this.createBrushWorker(tool); // TODO: memo?
     this.styleMouseCursor();
+
     if (this.brushTool !== BrushTool.SELECT) {
       this.interactionLayer.setSelectedArea(null);
       this.interactionLayer.setSelectingArea(null);
@@ -293,6 +305,43 @@ export default class Editor extends EventDispatcher {
       brushColor: this.brushColor,
       brushTool: this.brushTool,
     });
+  }
+
+  createBrushWorker(tool: BrushTool): BaseWorker {
+    if (tool === BrushTool.DOT) {
+      return new Dot(
+        this.dataLayer.getData(),
+        this.brushColor,
+        this.mouseMode,
+        this.interactionLayer,
+      );
+    }
+    if (tool === BrushTool.ERASER) {
+      return new Eraser(
+        this.dataLayer.getData(),
+        this.brushColor,
+        this.mouseMode,
+        this.interactionLayer,
+      );
+    }
+    if (tool === BrushTool.PAINT_BUCKET) {
+      return new PaintBucket(
+        this.dataLayer.getData(),
+        this.brushColor,
+        this.mouseMode,
+        this.dataLayer.getCopiedData(),
+        this.interactionLayer,
+      );
+    }
+    if (tool === BrushTool.SELECT) {
+      return new Select(
+        this.dataLayer.getData(),
+        this.brushColor,
+        this.mouseMode,
+        this.interactionLayer,
+      );
+    }
+    throw new TypeError(`Tool ${tool} is undefined.`);
   }
 
   changeBrushColor(color: string) {
@@ -331,43 +380,7 @@ export default class Editor extends EventDispatcher {
 
   styleMouseCursor = () => {
     const hoveredButton = this.gridLayer.getHoveredButton();
-    if (hoveredButton) {
-      switch (hoveredButton) {
-        case ButtonDirection.TOP:
-          this.element.style.cursor = `ns-resize`;
-          break;
-        case ButtonDirection.BOTTOM:
-          this.element.style.cursor = `ns-resize`;
-          break;
-        case ButtonDirection.LEFT:
-          this.element.style.cursor = `ew-resize`;
-          break;
-        case ButtonDirection.RIGHT:
-          this.element.style.cursor = `ew-resize`;
-          break;
-      }
-    } else {
-      switch (this.brushTool) {
-        case BrushTool.DOT:
-          this.element.style.cursor = `crosshair`;
-          break;
-        case BrushTool.ERASER:
-          this.element.style.cursor = `crosshair`;
-          break;
-        case BrushTool.PAINT_BUCKET:
-          this.element.style.cursor = `crosshair`;
-          break;
-        case BrushTool.SELECT:
-          this.element.style.cursor = `crosshair`;
-          if (this.interactionLayer.getSelectedArea()) {
-            this.element.style.cursor = `grab`;
-          }
-          break;
-        default:
-          this.element.style.cursor = `default`;
-          break;
-      }
-    }
+    this.brushWorker.styleMouseCursor(hoveredButton, this.element);
   };
 
   detectButtonClicked(coord: Coord): ButtonDirection | null {
@@ -810,35 +823,7 @@ export default class Editor extends EventDispatcher {
 
   // this will be only used by the current device user
   private drawPixelInInteractionLayer(rowIndex: number, columnIndex: number) {
-    const interactionLayer = this.interactionLayer;
-    const data = this.dataLayer.getData();
-    if (this.brushTool === BrushTool.ERASER) {
-      const previousColor = data.get(rowIndex)?.get(columnIndex).color;
-      interactionLayer.addToErasedPixelRecords(CurrentDeviceUserId, {
-        rowIndex,
-        columnIndex,
-        color: "",
-        previousColor,
-      });
-    } else if (this.brushTool === BrushTool.DOT) {
-      const previousColor = data.get(rowIndex)?.get(columnIndex).color;
-      interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
-        rowIndex,
-        columnIndex,
-        color: this.brushColor,
-        previousColor,
-      });
-    } else if (this.brushTool === BrushTool.PAINT_BUCKET) {
-      const gridIndices = getGridIndicesFromData(data);
-      const initialSelectedColor = data.get(rowIndex)?.get(columnIndex)?.color;
-      if (initialSelectedColor === this.brushColor) {
-        return;
-      }
-      this.paintSameColorRegion(initialSelectedColor, gridIndices, {
-        rowIndex,
-        columnIndex,
-      });
-    }
+    this.brushWorker.drawPixelInInteractionLayer(rowIndex, columnIndex);
     this.renderInteractionLayer();
   }
 
@@ -1112,7 +1097,7 @@ export default class Editor extends EventDispatcher {
       case ActionType.SelectAreaMove:
         const selectAreamoveAction = action as SelectAreaMoveAction;
         this.dataLayer.updatePixelColors(selectAreamoveAction.data);
-        this.brushTool = BrushTool.SELECT;
+        this.setBrushTool(BrushTool.SELECT);
         this.interactionLayer.setSelectedArea(
           selectAreamoveAction.newSelectedArea,
         );
@@ -1201,52 +1186,6 @@ export default class Editor extends EventDispatcher {
     this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.renderAll();
-  }
-
-  // this will be only used by the current device user
-  private paintSameColorRegion(
-    initialColor: string,
-    gridIndices: Indices,
-    currentIndices: { rowIndex: number; columnIndex: number },
-  ): void {
-    const interactionLayer = this.interactionLayer;
-    const indicesQueue = new Queue<{
-      rowIndex: number;
-      columnIndex: number;
-    }>();
-    indicesQueue.enqueue(currentIndices);
-    interactionLayer.setCapturedData(this.dataLayer.getCopiedData());
-    const data = this.interactionLayer.getCapturedData()!;
-    while (indicesQueue.size() > 0) {
-      const { rowIndex, columnIndex } = indicesQueue.dequeue()!;
-      if (!isValidIndicesRange(rowIndex, columnIndex, gridIndices)) {
-        continue;
-      }
-
-      const currentPixel = data.get(rowIndex)?.get(columnIndex);
-      if (!currentPixel || currentPixel?.color !== initialColor) {
-        continue;
-      }
-      const color = this.brushColor;
-      const previousColor = data.get(rowIndex)!.get(columnIndex)!.color;
-      data.get(rowIndex).get(columnIndex)!.color = color;
-      // paint same color region is recorded in stroked pixels
-      interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
-        rowIndex,
-        columnIndex,
-        color,
-        previousColor,
-      });
-      [
-        { rowIndex: rowIndex - 1, columnIndex },
-        { rowIndex: rowIndex + 1, columnIndex },
-        { rowIndex, columnIndex: columnIndex - 1 },
-        { rowIndex, columnIndex: columnIndex + 1 },
-      ].forEach(({ rowIndex, columnIndex }) => {
-        indicesQueue.enqueue({ rowIndex, columnIndex });
-      });
-    }
-    interactionLayer.resetCapturedData();
   }
 
   onMouseDown(evt: TouchyEvent) {
