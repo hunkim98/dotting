@@ -23,6 +23,10 @@ jobs:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.0
         with:
+          # The below two are based on the example from
+          # https://github.com/rossjrw/pr-preview-action
+          force: false
+          clean-exclude: pr-preview/
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages # The branch the action should deploy to.
           FOLDER: storybook-static # The folder that the build-storybook script generates files.
