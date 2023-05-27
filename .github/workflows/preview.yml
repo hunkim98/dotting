@@ -29,3 +29,4 @@ jobs:
           source-dir: ./storybook-static/
           preview-branch: main
           umbrella-dir: docs/pr-preview
+          token: ${{ secrets.GITHUB_TOKEN }}
