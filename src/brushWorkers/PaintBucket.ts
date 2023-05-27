@@ -205,7 +205,7 @@ export class PaintBucket extends BaseWorker {
   //   }
   // }
 
-  // mouseUp() {
-  //   return;
-  // }
+  mouseUp() {
+    return;
+  }
 }

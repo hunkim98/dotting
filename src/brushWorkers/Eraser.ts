@@ -151,7 +151,7 @@ export class Eraser extends BaseWorker {
   //   }
   // }
 
-  // mouseUp() {
-  //   return;
-  // }
+  mouseUp() {
+    return;
+  }
 }

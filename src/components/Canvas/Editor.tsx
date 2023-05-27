@@ -338,6 +338,9 @@ export default class Editor extends EventDispatcher {
         this.dataLayer.getData(),
         this.brushColor,
         this.mouseMode,
+        this.dataLayer.getRowCount(),
+        this.dataLayer.getColumnCount(),
+        this.gridSquareLength,
         this.interactionLayer,
       );
     }
@@ -1640,25 +1643,14 @@ export default class Editor extends EventDispatcher {
     evt.preventDefault();
     this.relayInteractionDataToDataLayer();
     this.mouseMode = MouseMode.PANNING;
-    if (this.brushTool === BrushTool.SELECT) {
-      this.relaySelectingAreaToSelectedArea();
-      this.relayMovingSelectedAreaToSelectedArea();
-      // get the updated selected area
-      const selectedArea = this.interactionLayer.getSelectedArea();
-      const doesSelectedAreaExistInGrid = getDoesAreaOverlapPixelgrid(
-        selectedArea,
-        this.dataLayer.getRowCount(),
-        this.dataLayer.getColumnCount(),
-        this.gridSquareLength,
-      );
-      if (!doesSelectedAreaExistInGrid) {
-        this.interactionLayer.setMovingSelectedArea(null);
-        this.interactionLayer.setMovingSelectedPixels(null);
-        this.interactionLayer.setSelectedArea(null);
-        this.interactionLayer.setSelectedAreaPixels(null);
-        this.gridLayer.render();
-      }
-    }
+
+    // TODO & QUESTION
+    this.brushWorker.mouseUp(
+      this.relaySelectingAreaToSelectedArea.bind(this),
+      this.relayMovingSelectedAreaToSelectedArea.bind(this),
+      this.gridLayer.render.bind(this.gridLayer),
+    );
+
     touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
     touchy(this.element, removeEvent, "mousemove", this.handleExtension);

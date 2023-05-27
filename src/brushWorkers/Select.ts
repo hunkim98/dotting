@@ -25,18 +25,27 @@ export class Select extends BaseWorker {
   private data: DottingData;
   private brushColor: string;
   private mouseMode: MouseMode;
+  private rowCount: number;
+  private columnCount: number;
+  private gridSquareLength: number;
   private interactionLayer: InteractionLayer;
 
   constructor(
     data: DottingData,
     brushColor: string,
     mouseMode: MouseMode,
+    rowCount: number,
+    columnCount: number,
+    gridSquareLength: number,
     interactionLayer: InteractionLayer,
   ) {
     super();
     this.data = data;
     this.brushColor = brushColor;
     this.mouseMode = mouseMode;
+    this.rowCount = rowCount;
+    this.columnCount = columnCount;
+    this.gridSquareLength = gridSquareLength;
     this.interactionLayer = interactionLayer;
   }
 
@@ -243,23 +252,23 @@ export class Select extends BaseWorker {
   //   return;
   // }
 
-  // mouseUp() {
-  //   this.editor.relaySelectingAreaToSelectedArea();
-  //   this.editor.relayMovingSelectedAreaToSelectedArea();
-  //   // get the updated selected area
-  //   const selectedArea = this.editor.getInteractionLayer().getSelectedArea();
-  //   const doesSelectedAreaExistInGrid = getDoesAreaOverlapPixelgrid(
-  //     selectedArea,
-  //     this.editor.getDataLayer().getRowCount(),
-  //     this.editor.getDataLayer().getColumnCount(),
-  //     this.editor.getGridSquareLength(),
-  //   );
-  //   if (!doesSelectedAreaExistInGrid) {
-  //     this.editor.getInteractionLayer().setMovingSelectedArea(null);
-  //     this.editor.getInteractionLayer().setMovingSelectedPixels(null);
-  //     this.editor.getInteractionLayer().setSelectedArea(null);
-  //     this.editor.getInteractionLayer().setSelectedAreaPixels(null);
-  //     this.editor.getGridLayer().render();
-  //   }
-  // }
+  mouseUp(selectingCallback, movingCallback, renderCallback) {
+    selectingCallback();
+    movingCallback();
+    // get the updated selected area
+    const selectedArea = this.interactionLayer.getSelectedArea();
+    const doesSelectedAreaExistInGrid = getDoesAreaOverlapPixelgrid(
+      selectedArea,
+      this.rowCount,
+      this.columnCount,
+      this.gridSquareLength,
+    );
+    if (!doesSelectedAreaExistInGrid) {
+      this.interactionLayer.setMovingSelectedArea(null);
+      this.interactionLayer.setMovingSelectedPixels(null);
+      this.interactionLayer.setSelectedArea(null);
+      this.interactionLayer.setSelectedAreaPixels(null);
+      renderCallback();
+    }
+  }
 }

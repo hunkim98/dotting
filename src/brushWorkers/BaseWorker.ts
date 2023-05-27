@@ -19,7 +19,7 @@ export abstract class BaseWorker {
     element: HTMLCanvasElement,
   ): void;
 
-  // abstract mouseUp(): void;
+  abstract mouseUp(selectingCallback, movingCallback, renderCallback): void;
 
   // abstract mouseDown(
   //   mouseCartCoord?: Coord,

@@ -163,7 +163,7 @@ export class Dot extends BaseWorker {
   //   }
   // }
 
-  // mouseUp() {
-  //   return;
-  // }
+  mouseUp() {
+    return;
+  }
 }
