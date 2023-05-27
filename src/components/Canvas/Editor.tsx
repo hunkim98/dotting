@@ -38,6 +38,7 @@ import {
   getColumnCountFromData,
   getColumnKeysFromData,
   getGridIndicesFromData,
+  getInBetweenPixelIndicesfromCoords,
   getRowCountFromData,
   getRowKeysFromData,
 } from "../../utils/data";
@@ -104,6 +105,7 @@ export default class Editor extends EventDispatcher {
 
   private mouseDownWorldPos: Coord | null = null;
   private mouseMoveWorldPos: Coord = { x: 0, y: 0 };
+  private previousMouseMoveWorldPos: Coord | null = null;
   // TODO: why do we need this? For games?
   private isInteractionEnabled = true;
   // We need isInteractionApplicable to allow multiplayer
@@ -1484,6 +1486,21 @@ export default class Editor extends EventDispatcher {
             pixelIndex.rowIndex,
             pixelIndex.columnIndex,
           );
+
+          const missingIndices = getInBetweenPixelIndicesfromCoords(
+            this.previousMouseMoveWorldPos,
+            this.mouseMoveWorldPos,
+            this.gridSquareLength,
+            this.dataLayer.getData(),
+          );
+          if (missingIndices?.length) {
+            missingIndices.forEach(point => {
+              this.drawPixelInInteractionLayer(
+                point.rowIndex,
+                point.columnIndex,
+              );
+            });
+          }
           this.renderInteractionLayer();
           if (this.brushTool === BrushTool.ERASER) {
             this.renderErasedPixelsFromInteractionLayerInDataLayer();
@@ -1529,6 +1546,7 @@ export default class Editor extends EventDispatcher {
         }
       }
     }
+    this.previousMouseMoveWorldPos = this.mouseMoveWorldPos;
   }
 
   relaySelectingAreaToSelectedArea() {
@@ -1679,7 +1697,7 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.renderSelection(movingSelectedArea);
   }
 
-  onMouseUp(evt: TouchEvent) {
+  onMouseUp(evt: TouchyEvent) {
     evt.preventDefault();
     this.relayInteractionDataToDataLayer();
     this.mouseMode = MouseMode.PANNING;
@@ -1709,6 +1727,7 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setHoveredButton(null);
     // we make mouse down world position null
     this.mouseDownWorldPos = null;
+    this.previousMouseMoveWorldPos = null;
     return;
   }
 

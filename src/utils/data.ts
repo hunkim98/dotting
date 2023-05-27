@@ -1,8 +1,11 @@
+import { getBressenhamIndices } from "./math";
+import { getPixelIndexFromMouseCartCoord } from "./position";
 import {
   DottingData,
   GridIndices,
   PixelData,
   PixelModifyItem,
+  Coord,
 } from "../components/Canvas/types";
 
 export const getGridIndicesFromData = (data: DottingData): GridIndices => {
@@ -150,4 +153,53 @@ export const createColumnKeyOrderMapfromData = (data: DottingData) => {
     columnKeyOrderMap.set(key, index);
   });
   return columnKeyOrderMap;
+};
+
+export const getInBetweenPixelIndicesfromCoords = (
+  previousCoord: Coord,
+  currentCoord: Coord,
+  gridSquareLength: number,
+  data: DottingData,
+) => {
+  if (!previousCoord || !currentCoord || !gridSquareLength) return;
+
+  if (
+    Math.abs(currentCoord.x - previousCoord.x) >= gridSquareLength ||
+    Math.abs(currentCoord.y - previousCoord.y) >= gridSquareLength
+  ) {
+    const gridIndices = getGridIndicesFromData(data);
+    const pixelIndex = getPixelIndexFromMouseCartCoord(
+      currentCoord,
+      getRowCountFromData(data),
+      getColumnCountFromData(data),
+      gridSquareLength,
+      gridIndices.topRowIndex,
+      gridIndices.leftColumnIndex,
+    );
+    const previousIndex = getPixelIndexFromMouseCartCoord(
+      previousCoord,
+      getRowCountFromData(data),
+      getColumnCountFromData(data),
+      gridSquareLength,
+      gridIndices.topRowIndex,
+      gridIndices.leftColumnIndex,
+    );
+    if (!previousIndex || !pixelIndex) return;
+
+    if (
+      Math.abs(pixelIndex.columnIndex - previousIndex.columnIndex) >= 1 ||
+      Math.abs(pixelIndex.rowIndex - previousIndex.rowIndex) >= 1
+    ) {
+      const missingIndices = getBressenhamIndices(
+        previousIndex.rowIndex,
+        previousIndex.columnIndex,
+        pixelIndex.rowIndex,
+        pixelIndex.columnIndex,
+      );
+
+      if (missingIndices.length > 0) {
+        return missingIndices;
+      }
+    }
+  }
 };
