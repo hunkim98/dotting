@@ -28,5 +28,7 @@ jobs:
         with:
           source-dir: ./storybook-static/
           preview-branch: preview
+          # custom-url: https://pr-${{ github.event.number }}.example.com
+          custom-url: dotting-preview.netlify.app
           # umbrella-dir: docs/pr-preview
           token: ${{ secrets.GITHUB_TOKEN }}
