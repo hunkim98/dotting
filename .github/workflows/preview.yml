@@ -27,6 +27,6 @@ jobs:
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./storybook-static/
-          preview-branch: main
-          umbrella-dir: docs/pr-preview
+          preview-branch: preview
+          # umbrella-dir: docs/pr-preview
           token: ${{ secrets.GITHUB_TOKEN }}
