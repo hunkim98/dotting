@@ -63,12 +63,8 @@ import {
   getPointFromTouchyEvent,
   convertWorldPosAreaToPixelGridArea,
   returnScrollOffsetFromMouseOffset,
-  getDoesAreaOverlapPixelgrid,
 } from "../../utils/position";
-import Queue from "../../utils/queue";
 import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
-import { Indices } from "../../utils/types";
-import { isValidIndicesRange } from "../../utils/validation";
 
 export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;
@@ -311,7 +307,6 @@ export default class Editor extends EventDispatcher {
     if (tool === BrushTool.DOT) {
       return new Dot(
         this.dataLayer.getData(),
-        this.brushColor,
         this.mouseMode,
         this.interactionLayer,
       );
@@ -319,7 +314,6 @@ export default class Editor extends EventDispatcher {
     if (tool === BrushTool.ERASER) {
       return new Eraser(
         this.dataLayer.getData(),
-        this.brushColor,
         this.mouseMode,
         this.interactionLayer,
       );
@@ -327,7 +321,6 @@ export default class Editor extends EventDispatcher {
     if (tool === BrushTool.PAINT_BUCKET) {
       return new PaintBucket(
         this.dataLayer.getData(),
-        this.brushColor,
         this.mouseMode,
         this.dataLayer.getCopiedData(),
         this.interactionLayer,
@@ -336,12 +329,12 @@ export default class Editor extends EventDispatcher {
     if (tool === BrushTool.SELECT) {
       return new Select(
         this.dataLayer.getData(),
-        this.brushColor,
         this.mouseMode,
         this.dataLayer.getRowCount(),
         this.dataLayer.getColumnCount(),
         this.gridSquareLength,
         this.interactionLayer,
+        this.mouseDownWorldPos,
       );
     }
     throw new TypeError(`Tool ${tool} is undefined.`);
@@ -826,7 +819,11 @@ export default class Editor extends EventDispatcher {
 
   // this will be only used by the current device user
   private drawPixelInInteractionLayer(rowIndex: number, columnIndex: number) {
-    this.brushWorker.drawPixelInInteractionLayer(rowIndex, columnIndex);
+    this.brushWorker.drawPixelInInteractionLayer(
+      this.brushColor,
+      rowIndex,
+      columnIndex,
+    );
     this.renderInteractionLayer();
   }
 

@@ -19,34 +19,21 @@ export abstract class BaseWorker {
     element: HTMLCanvasElement,
   ): void;
 
-  abstract mouseUp(selectingCallback, movingCallback, renderCallback): void;
-
-  // abstract mouseDown(
-  //   mouseCartCoord?: Coord,
-  //   pixelIndex?: {
-  //     rowIndex: number;
-  //     columnIndex: number;
-  //   },
-  // ): void;
-
-  // abstract mouseMove(
-  //   mouseCartCoord: Coord,
-  //   pixelIndex: {
-  //     rowIndex: number;
-  //     columnIndex: number;
-  //   },
-  //   hoveredPixel: {
-  //     rowIndex: number;
-  //     columnIndex: number;
-  //     color: string;
-  //   },
-  // ): void;
-
   abstract drawPixelInInteractionLayer(
+    brushColor: string,
     rowIndex: number,
     columnIndex: number,
   ): void;
 
-  // CAUTION: bind this
-  // If there are any other methods that need to be bound, add them here
+  abstract mouseUp(selectingCallback, movingCallback, renderCallback): void;
+
+  abstract mouseDown(
+    mouseCartCoord?: Coord,
+    pixelIndex?: {
+      rowIndex: number;
+      columnIndex: number;
+    },
+  ): void;
+
+  abstract mouseMove(): void;
 }

@@ -1,52 +1,39 @@
 import { BaseWorker, BrushWorker } from "./BaseWorker";
 import { ButtonDirection, MouseMode } from "../components/Canvas/config";
-import Editor from "../components/Canvas/Editor";
 import InteractionLayer from "../components/Canvas/InteractionLayer";
-import {
-  BrushTool,
-  ColorChangeItem,
-  DottingData,
-} from "../components/Canvas/types";
-import {
-  getColumnKeysFromData,
-  getGridIndicesFromData,
-  getRowKeysFromData,
-} from "../utils/data";
-import {
-  convertWorldPosAreaToPixelGridArea,
-  getDoesAreaOverlapPixelgrid,
-  getIsPointInsideRegion,
-} from "../utils/position";
+import { BrushTool, DottingData } from "../components/Canvas/types";
+import { getDoesAreaOverlapPixelgrid } from "../utils/position";
+import { Coord } from "../utils/types";
 
 export class Select extends BaseWorker {
   toolType = BrushTool.SELECT;
   workerType = BrushWorker.Select;
 
   private data: DottingData;
-  private brushColor: string;
   private mouseMode: MouseMode;
   private rowCount: number;
   private columnCount: number;
   private gridSquareLength: number;
   private interactionLayer: InteractionLayer;
+  private mouseDownWorldPos: Coord;
 
   constructor(
     data: DottingData,
-    brushColor: string,
     mouseMode: MouseMode,
     rowCount: number,
     columnCount: number,
     gridSquareLength: number,
     interactionLayer: InteractionLayer,
+    mouseDownWorldPos: Coord,
   ) {
     super();
     this.data = data;
-    this.brushColor = brushColor;
     this.mouseMode = mouseMode;
     this.rowCount = rowCount;
     this.columnCount = columnCount;
     this.gridSquareLength = gridSquareLength;
     this.interactionLayer = interactionLayer;
+    this.mouseDownWorldPos = mouseDownWorldPos;
   }
 
   getToolType(): BrushTool {
@@ -85,173 +72,89 @@ export class Select extends BaseWorker {
     return;
   }
 
-  // mouseDown() {
-  //   // brush tool select also means mouse is drawng
-  //   // TODO: needs to modify the mousemode to be more specific
-  //   this.editor.setMouseMode(MouseMode.DRAWING);
+  // TODO: (select) vs (dot, eraser, paintBucket)
+  mouseDown() {
+    //   // brush tool select also means mouse is drawng
+    //   // TODO: needs to modify the mousemode to be more specific
+    //   this.mouseMode = MouseMode.DRAWING;
+    //   const previousSelectedArea = this.interactionLayer.getSelectedArea();
+    //   let isMouseCoordInSelectedArea = false;
+    //   if (previousSelectedArea) {
+    //     isMouseCoordInSelectedArea = getIsPointInsideRegion(
+    //       this.mouseDownWorldPos,
+    //       previousSelectedArea,
+    //     );
+    //   }
+    //   // we need to reset the selected area if the mouse is not in the previous selected area
+    //   if (!isMouseCoordInSelectedArea) {
+    //     this.interactionLayer.setSelectedArea(null);
+    //     this.interactionLayer.setSelectingArea({
+    //       startWorldPos: this.mouseDownWorldPos,
+    //       endWorldPos: this.mouseDownWorldPos,
+    //     });
+    //   } else {
+    //     // we will move the selected area if the mouse is in the previous selected area
+    //     // remove the selecting area if it exists
+    //     this.interactionLayer.setSelectingArea(null);
+    //     const data = this.data;
+    //     const rowCount = this.rowCount;
+    //     const columnCount = this.columnCount;
+    //     const rowKeys = getRowKeysFromData(data);
+    //     const columnKeys = getColumnKeysFromData(data);
+    //     const sortedRowKeys = rowKeys.sort((a, b) => a - b);
+    //     const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
+    //     const { includedPixelsIndices } = convertWorldPosAreaToPixelGridArea(
+    //       previousSelectedArea,
+    //       rowCount,
+    //       columnCount,
+    //       this.gridSquareLength,
+    //       sortedRowKeys,
+    //       sortedColumnKeys,
+    //     );
+    //     if (!includedPixelsIndices) {
+    //       this.interactionLayer.setSelectedArea(null);
+    //       return;
+    //     }
+    //     const selectedAreaPixels: Array<ColorChangeItem> = [];
+    //     for (const index of includedPixelsIndices) {
+    //       const rowIndex = index.rowIndex;
+    //       const columnIndex = index.columnIndex;
+    //       const color = data.get(rowIndex).get(columnIndex)?.color;
+    //       if (color) {
+    //         selectedAreaPixels.push({
+    //           rowIndex,
+    //           columnIndex,
+    //           previousColor: color,
+    //           color: "",
+    //         });
+    //       }
+    //     }
+    //     const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
+    //       getGridIndicesFromData(data);
+    //     // erase pixels from data layer first
+    //     const filteredSelectedAreaPixels = selectedAreaPixels.filter(
+    //       ({ rowIndex, columnIndex }) =>
+    //         rowIndex >= topRowIndex &&
+    //         rowIndex <= bottomRowIndex &&
+    //         columnIndex >= leftColumnIndex &&
+    //         columnIndex <= rightColumnIndex,
+    //     );
+    //     this.dataLayer.erasePixels(filteredSelectedAreaPixels);
+    //     this.interactionLayer.setSelectedAreaPixels(selectedAreaPixels);
+    //     this.interactionLayer.setMovingSelectedPixels(selectedAreaPixels);
+    //     this.interactionLayer.setMovingSelectedArea(previousSelectedArea);
+    //     this.dataLayer.render();
+    //     this.interactionLayer.render();
+    //     // move the pixels to interaction layer
+    //   }
+  }
 
-  //   const previousSelectedArea = this.editor
-  //     .getInteractionLayer()
-  //     .getSelectedArea();
-  //   let isMouseCoordInSelectedArea = false;
-  //   if (previousSelectedArea) {
-  //     isMouseCoordInSelectedArea = getIsPointInsideRegion(
-  //       this.editor.getMouseDownWorldPos(),
-  //       previousSelectedArea,
-  //     );
-  //   }
-  //   // we need to reset the selected area if the mouse is not in the previous selected area
-  //   if (!isMouseCoordInSelectedArea) {
-  //     this.editor.getInteractionLayer().setSelectedArea(null);
-  //     this.editor.getInteractionLayer().setSelectingArea({
-  //       startWorldPos: this.editor.getMouseDownWorldPos(),
-  //       endWorldPos: this.editor.getMouseDownWorldPos(),
-  //     });
-  //   } else {
-  //     // we will move the selected area if the mouse is in the previous selected area
-  //     // remove the selecting area if it exists
-  //     this.editor.getInteractionLayer().setSelectingArea(null);
-  //     const data = this.editor.getDataLayer().getData();
-  //     const rowCount = this.editor.getDataLayer().getRowCount();
-  //     const columnCount = this.editor.getDataLayer().getColumnCount();
-  //     const rowKeys = getRowKeysFromData(data);
-  //     const columnKeys = getColumnKeysFromData(data);
-  //     const sortedRowKeys = rowKeys.sort((a, b) => a - b);
-  //     const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
-  //     const gridSquareLength = this.editor.getGridSquareLength();
-  //     const { includedPixelsIndices } = convertWorldPosAreaToPixelGridArea(
-  //       previousSelectedArea,
-  //       rowCount,
-  //       columnCount,
-  //       gridSquareLength,
-  //       sortedRowKeys,
-  //       sortedColumnKeys,
-  //     );
-  //     if (!includedPixelsIndices) {
-  //       this.editor.getInteractionLayer().setSelectedArea(null);
-  //       return;
-  //     }
-  //     const selectedAreaPixels: Array<ColorChangeItem> = [];
-  //     for (const index of includedPixelsIndices) {
-  //       const rowIndex = index.rowIndex;
-  //       const columnIndex = index.columnIndex;
-  //       const color = data.get(rowIndex).get(columnIndex)?.color;
-  //       if (color) {
-  //         selectedAreaPixels.push({
-  //           rowIndex,
-  //           columnIndex,
-  //           previousColor: color,
-  //           color: "",
-  //         });
-  //       }
-  //     }
-  //     const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
-  //       getGridIndicesFromData(data);
-  //     // erase pixels from data layer first
-  //     const filteredSelectedAreaPixels = selectedAreaPixels.filter(
-  //       ({ rowIndex, columnIndex }) =>
-  //         rowIndex >= topRowIndex &&
-  //         rowIndex <= bottomRowIndex &&
-  //         columnIndex >= leftColumnIndex &&
-  //         columnIndex <= rightColumnIndex,
-  //     );
+  // TODO
+  mouseMove() {
+    return;
+  }
 
-  //     this.editor.getDataLayer().erasePixels(filteredSelectedAreaPixels);
-  //     this.editor
-  //       .getInteractionLayer()
-  //       .setSelectedAreaPixels(selectedAreaPixels);
-  //     this.editor
-  //       .getInteractionLayer()
-  //       .setMovingSelectedPixels(selectedAreaPixels);
-  //     this.editor
-  //       .getInteractionLayer()
-  //       .setMovingSelectedArea(previousSelectedArea);
-  //     this.editor.getDataLayer().render();
-  //     this.editor.getInteractionLayer().render();
-  //   }
-  // }
-
-  // mouseMove(mouseCartCoord, pixelIndex, hoveredPixel) {
-  //   //   const previousSelectingArea = this.editor
-  //   //     .getInteractionLayer()
-  //   //     .getSelectingArea();
-  //   //   const previousSelectedArea = this.editor
-  //   //     .getInteractionLayer()
-  //   //     .getSelectedArea();
-  //   //   const previousSelectedAreaPixels = this.editor
-  //   //     .getInteractionLayer()
-  //   //     .getSelectedAreaPixels();
-  //   //   const movingSelectedPixels = this.editor
-  //   //     .getInteractionLayer()
-  //   //     .getMovingSelectedPixels();
-  //   //   // mouseDownWorldPos may be null
-  //   //   if (
-  //   //     movingSelectedPixels &&
-  //   //     this.editor.getMouseDownWorldPos() &&
-  //   //     previousSelectedArea
-  //   //   ) {
-  //   //     const mouseMoveDistance = diffPoints(
-  //   //       this.editor.getMouseDownWorldPos(),
-  //   //       this.editor.getMouseMoveWorldPos(),
-  //   //     );
-  //   //     console.log(mouseMoveDistance);
-  //   //     const pixelWiseDeltaX = Math.round(
-  //   //       mouseMoveDistance.x / this.editor.getGridSquareLength(),
-  //   //     );
-  //   //     const pixelWiseDeltaY = Math.round(
-  //   //       mouseMoveDistance.y / this.editor.getGridSquareLength(),
-  //   //     );
-  //   //     const newMovingSelectedPixels = previousSelectedAreaPixels.map(pixel => {
-  //   //       return {
-  //   //         ...pixel,
-  //   //         rowIndex: pixel.rowIndex - pixelWiseDeltaY,
-  //   //         columnIndex: pixel.columnIndex - pixelWiseDeltaX,
-  //   //       };
-  //   //     });
-  //   //     this.editor.getInteractionLayer().setMovingSelectedArea({
-  //   //       startWorldPos: {
-  //   //         x:
-  //   //           previousSelectedArea.startWorldPos.x -
-  //   //           pixelWiseDeltaX * this.editor.getGridSquareLength(),
-  //   //         y:
-  //   //           previousSelectedArea.startWorldPos.y -
-  //   //           pixelWiseDeltaY * this.editor.getGridSquareLength(),
-  //   //       },
-  //   //       endWorldPos: {
-  //   //         x:
-  //   //           previousSelectedArea.endWorldPos.x -
-  //   //           pixelWiseDeltaX * this.editor.getGridSquareLength(),
-  //   //         y:
-  //   //           previousSelectedArea.endWorldPos.y -
-  //   //           pixelWiseDeltaY * this.editor.getGridSquareLength(),
-  //   //       },
-  //   //     });
-  //   //     this.editor
-  //   //       .getInteractionLayer()
-  //   //       .setMovingSelectedPixels(newMovingSelectedPixels);
-  //   //     const selectedArea = this.editor
-  //   //       .getInteractionLayer()
-  //   //       .getMovingSelectedArea();
-  //   //     this.editor.getGridLayer().render();
-  //   //     this.editor.getGridLayer().renderSelection(selectedArea);
-  //   //     this.editor.getInteractionLayer().render();
-  //   //     return;
-  //   //   }
-  //   //   if (previousSelectingArea !== null) {
-  //   //     this.editor.getInteractionLayer().setSelectingArea({
-  //   //       startWorldPos: this.editor.getMouseDownWorldPos(),
-  //   //       endWorldPos: this.editor.getMouseDownWorldPos(),
-  //   //     });
-  //   //     const selectingArea = this.editor
-  //   //       .getInteractionLayer()
-  //   //       .getSelectingArea()!;
-  //   //     this.editor.renderGridLayer();
-  //   //     this.editor.getGridLayer().renderSelection(selectingArea);
-  //   //     return;
-  //   //   }
-  //   return;
-  // }
-
+  // QUESTION: implement without callback func
   mouseUp(selectingCallback, movingCallback, renderCallback) {
     selectingCallback();
     movingCallback();
