@@ -108,6 +108,7 @@ export default class Editor extends EventDispatcher {
   private brushTool: BrushTool = BrushTool.DOT;
 
   private mouseDownWorldPos: Coord | null = null;
+  private mouseDownPanZoom: PanZoom | null = null;
   private mouseMoveWorldPos: Coord = { x: 0, y: 0 };
   private previousMouseMoveWorldPos: Coord | null = null;
   // TODO: why do we need this? For games?
@@ -135,10 +136,6 @@ export default class Editor extends EventDispatcher {
     this.dataLayer = new DataLayer({ canvas: dataCanvas, initData: initData });
     const initRowCount = this.dataLayer.getRowCount();
     const initColumnCount = this.dataLayer.getColumnCount();
-    this.panZoom.offset = {
-      x: -initColumnCount * this.gridSquareLength * 0.5,
-      y: -initRowCount * this.gridSquareLength * 0.5,
-    };
     this.gridLayer = new GridLayer({
       columnCount: initColumnCount,
       rowCount: initRowCount,
@@ -155,7 +152,6 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
-    this.relayPanZoomToOtherLayers();
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
 
@@ -574,16 +570,17 @@ export default class Editor extends EventDispatcher {
       // we will copy the data to interaction layer
       interactionLayer.setCapturedData(this.dataLayer.getCopiedData());
     }
-    const minAmountForExtension = this.gridSquareLength / 2;
+    const minAmountForExtension = this.gridSquareLength;
     if (window.TouchEvent && evt instanceof TouchEvent) {
       if (evt.touches.length > 1) {
         return;
       }
     }
+    const mouseDownPanZoom = this.mouseDownPanZoom!;
     const mouseCartCoord = getMouseCartCoord(
       evt,
       this.element,
-      this.panZoom,
+      mouseDownPanZoom,
       this.dpr,
     );
     const buttonDirection = this.extensionPoint.direction;
@@ -593,7 +590,7 @@ export default class Editor extends EventDispatcher {
     );
     const mouseOffsetDegree = diffPoints(
       this.mouseDownWorldPos,
-      this.mouseMoveWorldPos,
+      mouseCartCoord,
     );
     const mouseOffsetChangeYAmount =
       mouseOffsetDegree.y > 0
@@ -691,16 +688,16 @@ export default class Editor extends EventDispatcher {
     const baseRowCount = getRowCountFromData(interactionCapturedData);
     const baseColumnCount = getColumnCountFromData(interactionCapturedData);
     if (direction === ButtonDirection.TOP) {
-      // this.setPanZoom({
-      //   offset: {
-      //     x: this.panZoom.offset.x,
-      //     y:
-      //       this.panZoom.offset.y -
-      //       (this.gridSquareLength / 2) * amount * this.panZoom.scale,
-      //   },
-      //   baseRowCount,
-      //   baseColumnCount,
-      // });
+      this.setPanZoom({
+        offset: {
+          x: this.panZoom.offset.x,
+          y:
+            this.panZoom.offset.y -
+            (this.gridSquareLength / 2) * amount * this.panZoom.scale,
+        },
+        baseRowCount,
+        baseColumnCount,
+      });
       // this.extensionPoint.lastMousePos.y -=
       //   (this.gridSquareLength / 2) * amount;
     } else if (direction === ButtonDirection.BOTTOM) {
@@ -1342,6 +1339,13 @@ export default class Editor extends EventDispatcher {
       x: mouseCartCoord.x,
       y: mouseCartCoord.y,
     };
+    this.mouseDownPanZoom = {
+      offset: {
+        x: this.panZoom.offset.x,
+        y: this.panZoom.offset.y,
+      },
+      scale: this.panZoom.scale,
+    };
     const gridIndices = this.dataLayer.getGridIndices();
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       mouseCartCoord,
@@ -1805,6 +1809,9 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setHoveredButton(null);
     // we make mouse down world position null
     this.mouseDownWorldPos = null;
+    this.mouseDownPanZoom = null;
+    this.extensionPoint.offsetXAmount = 0;
+    this.extensionPoint.offsetYAmount = 0;
     this.previousMouseMoveWorldPos = null;
     return;
   }

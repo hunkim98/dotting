@@ -78,6 +78,15 @@ export function getWorldPoint(point: Coord, panZoom: PanZoom): Coord {
   return { x: (point.x - offset.x) / scale, y: (point.y - offset.y) / scale };
 }
 
+export function getWorldPointWithoutPanConsideration(
+  point: Coord,
+  panZoom: PanZoom,
+): Coord {
+  const { scale } = panZoom;
+
+  return { x: point.x / scale, y: point.y / scale };
+}
+
 export function convertScreenPointToCartesian(
   canvas: HTMLCanvasElement,
   screenPoint: Coord,
