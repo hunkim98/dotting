@@ -95,9 +95,13 @@ export default class Editor extends EventDispatcher {
   private extensionPoint: {
     lastMousePos: Coord;
     direction: ButtonDirection | null;
+    offsetYAmount: number;
+    offsetXAmount: number;
   } = {
     lastMousePos: { x: 0, y: 0 },
     direction: null,
+    offsetYAmount: 0,
+    offsetXAmount: 0,
   };
   private isPanZoomable = true;
   private mouseMode: MouseMode = MouseMode.PANNING;
@@ -131,6 +135,10 @@ export default class Editor extends EventDispatcher {
     this.dataLayer = new DataLayer({ canvas: dataCanvas, initData: initData });
     const initRowCount = this.dataLayer.getRowCount();
     const initColumnCount = this.dataLayer.getColumnCount();
+    this.panZoom.offset = {
+      x: -initColumnCount * this.gridSquareLength * 0.5,
+      y: -initRowCount * this.gridSquareLength * 0.5,
+    };
     this.gridLayer = new GridLayer({
       columnCount: initColumnCount,
       rowCount: initRowCount,
@@ -147,6 +155,7 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
+    this.relayPanZoomToOtherLayers();
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
 
@@ -546,11 +555,15 @@ export default class Editor extends EventDispatcher {
       this.panZoom.offset = correctedOffset;
     }
     // relay updated information to layers
+    this.relayPanZoomToOtherLayers();
+    // we must render all when panzoom changes!
+    this.renderAll();
+  }
+
+  relayPanZoomToOtherLayers() {
     this.dataLayer.setPanZoom(this.panZoom);
     this.gridLayer.setPanZoom(this.panZoom);
     this.interactionLayer.setPanZoom(this.panZoom);
-    // we must render all when panzoom changes!
-    this.renderAll();
   }
 
   handleExtension = (evt: TouchyEvent) => {
@@ -574,42 +587,91 @@ export default class Editor extends EventDispatcher {
       this.dpr,
     );
     const buttonDirection = this.extensionPoint.direction;
-    const extensionAmount = diffPoints(
+    const extensionDegree = diffPoints(
       this.extensionPoint.lastMousePos,
       mouseCartCoord,
     );
+    const mouseOffsetDegree = diffPoints(
+      this.mouseDownWorldPos,
+      this.mouseMoveWorldPos,
+    );
+    const mouseOffsetChangeYAmount =
+      mouseOffsetDegree.y > 0
+        ? Math.floor(mouseOffsetDegree.y / minAmountForExtension)
+        : Math.ceil(mouseOffsetDegree.y / minAmountForExtension);
+    const mouseOffsetChangeXAmount =
+      mouseOffsetDegree.x > 0
+        ? Math.floor(mouseOffsetDegree.x / minAmountForExtension)
+        : Math.ceil(mouseOffsetDegree.x / minAmountForExtension);
+    const extendYTimes =
+      extensionDegree.y > 0
+        ? Math.floor(extensionDegree.y / minAmountForExtension)
+        : Math.ceil(extensionDegree.y / minAmountForExtension);
+    const extendXTimes =
+      extensionDegree.x > 0
+        ? Math.floor(extensionDegree.x / minAmountForExtension)
+        : Math.ceil(extensionDegree.x / minAmountForExtension);
+    console.log(
+      "this is mouse offset change y  amount ",
+      mouseOffsetChangeYAmount,
+    );
+    if (
+      Math.abs(mouseOffsetChangeYAmount) == 0 &&
+      Math.abs(mouseOffsetChangeXAmount) == 0
+    ) {
+      return;
+    }
+    const changeYAmountDiff =
+      mouseOffsetChangeYAmount - this.extensionPoint.offsetYAmount;
+    console.log("amount to increase", changeYAmountDiff);
+    const changeXAmountDiff =
+      mouseOffsetChangeXAmount - this.extensionPoint.offsetXAmount;
+
+    if (Math.abs(changeYAmountDiff) == 0 && Math.abs(changeXAmountDiff) == 0) {
+      return;
+    }
 
     if (buttonDirection) {
       switch (buttonDirection) {
         case ButtonDirection.TOP:
-          if (extensionAmount.y > minAmountForExtension) {
-            this.extendInteractionGrid(ButtonDirection.TOP);
-          } else if (extensionAmount.y < -minAmountForExtension) {
-            this.shortenInteractionGrid(ButtonDirection.TOP);
+          if (changeYAmountDiff > 0) {
+            this.extendInteractionGridBy(
+              ButtonDirection.TOP,
+              changeYAmountDiff,
+            );
+          } else {
+            this.shortenInteractionGridBy(
+              ButtonDirection.TOP,
+              -changeYAmountDiff,
+            );
           }
           break;
         case ButtonDirection.BOTTOM:
-          if (extensionAmount.y < -minAmountForExtension) {
-            this.extendInteractionGrid(ButtonDirection.BOTTOM);
-          } else if (extensionAmount.y > minAmountForExtension) {
-            this.shortenInteractionGrid(ButtonDirection.BOTTOM);
+          if (extensionDegree.y < -minAmountForExtension) {
+            this.extendInteractionGridBy(ButtonDirection.BOTTOM, -extendYTimes);
+          } else if (extensionDegree.y > minAmountForExtension) {
+            this.shortenInteractionGridBy(ButtonDirection.BOTTOM, extendYTimes);
           }
           break;
         case ButtonDirection.LEFT:
-          if (extensionAmount.x > minAmountForExtension) {
-            this.extendInteractionGrid(ButtonDirection.LEFT);
-          } else if (extensionAmount.x < -minAmountForExtension) {
-            this.shortenInteractionGrid(ButtonDirection.LEFT);
+          if (extensionDegree.x > minAmountForExtension) {
+            this.extendInteractionGridBy(ButtonDirection.LEFT, extendXTimes);
+          } else if (extensionDegree.x < -minAmountForExtension) {
+            this.shortenInteractionGridBy(ButtonDirection.LEFT, -extendXTimes);
           }
           break;
         case ButtonDirection.RIGHT:
-          if (extensionAmount.x < -minAmountForExtension) {
-            this.extendInteractionGrid(ButtonDirection.RIGHT);
-          } else if (extensionAmount.x > minAmountForExtension) {
-            this.shortenInteractionGrid(ButtonDirection.RIGHT);
+          if (extensionDegree.x < -minAmountForExtension) {
+            this.extendInteractionGridBy(ButtonDirection.RIGHT, -extendXTimes);
+          } else if (extensionDegree.x > minAmountForExtension) {
+            this.shortenInteractionGridBy(ButtonDirection.RIGHT, extendXTimes);
           }
           break;
       }
+      this.extensionPoint.lastMousePos.x = mouseCartCoord.x;
+      this.extensionPoint.lastMousePos.y = mouseCartCoord.y;
+      this.extensionPoint.offsetXAmount = mouseOffsetChangeXAmount;
+      this.extensionPoint.offsetYAmount = mouseOffsetChangeYAmount;
       this.interactionLayer.setCriterionDataForRendering(
         this.interactionLayer.getCapturedData(),
       );
@@ -617,100 +679,114 @@ export default class Editor extends EventDispatcher {
     }
   };
 
-  // we have extend interaction grid inside editor because we must change the panzoom too
-  private extendInteractionGrid(direction: ButtonDirection) {
+  private extendInteractionGridBy(direction: ButtonDirection, amount: number) {
     const interactionLayer = this.interactionLayer;
-    interactionLayer.extendCapturedData(direction);
-    // this.renderInteractionLayer();
-    const interactionCapturedData = interactionLayer.getCapturedData()!;
+    const interactionCapturedData = interactionLayer.getCapturedData();
+    if (!interactionCapturedData) {
+      return;
+    }
+    for (let i = 0; i < amount; i++) {
+      interactionLayer.extendCapturedData(direction);
+    }
     const baseRowCount = getRowCountFromData(interactionCapturedData);
     const baseColumnCount = getColumnCountFromData(interactionCapturedData);
     if (direction === ButtonDirection.TOP) {
-      this.setPanZoom({
-        offset: {
-          x: this.panZoom.offset.x,
-          y:
-            this.panZoom.offset.y -
-            (this.gridSquareLength / 2) * this.panZoom.scale,
-        },
-        baseRowCount,
-        baseColumnCount,
-      });
-      this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
+      // this.setPanZoom({
+      //   offset: {
+      //     x: this.panZoom.offset.x,
+      //     y:
+      //       this.panZoom.offset.y -
+      //       (this.gridSquareLength / 2) * amount * this.panZoom.scale,
+      //   },
+      //   baseRowCount,
+      //   baseColumnCount,
+      // });
+      // this.extensionPoint.lastMousePos.y -=
+      //   (this.gridSquareLength / 2) * amount;
     } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
           y:
             this.panZoom.offset.y +
-            (this.gridSquareLength / 2) * this.panZoom.scale,
+            (this.gridSquareLength / 2) * amount * this.panZoom.scale,
         },
         baseRowCount,
         baseColumnCount,
       });
-      this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
+      // this.extensionPoint.lastMousePos.y +=
+      //   (this.gridSquareLength / 2) * amount;
     } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
           x:
             this.panZoom.offset.x -
-            (this.gridSquareLength / 2) * this.panZoom.scale,
+            (this.gridSquareLength / 2) * amount * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
         baseRowCount,
         baseColumnCount,
       });
-      this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
+      this.extensionPoint.lastMousePos.x -=
+        (this.gridSquareLength / 2) * amount;
     } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
           x:
             this.panZoom.offset.x +
-            (this.gridSquareLength / 2) * this.panZoom.scale,
+            (this.gridSquareLength / 2) * amount * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
         baseRowCount,
         baseColumnCount,
       });
-      this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
+      // this.extensionPoint.lastMousePos.x +=
+      //   (this.gridSquareLength / 2) * amount;
     }
   }
 
-  // we have extend interaction grid inside editor because we must change the panzoom too
-  private shortenInteractionGrid(direction: ButtonDirection) {
+  private shortenInteractionGridBy(direction: ButtonDirection, amount: number) {
     const interactionLayer = this.interactionLayer;
-    const isShortened = interactionLayer.shortenCapturedData(direction);
-    if (!isShortened) {
+    let shortenAmount = 0;
+    for (let i = 0; i < amount; i++) {
+      const isShortened = interactionLayer.shortenCapturedData(direction);
+      if (isShortened) {
+        shortenAmount++;
+      }
+    }
+    // we do not need to shorten the grid when shortenAmount is 0
+    if (!shortenAmount) {
       return;
     }
     const interactionCapturedData = interactionLayer.getCapturedData()!;
     const baseRowCount = getRowCountFromData(interactionCapturedData);
     const baseColumnCount = getColumnCountFromData(interactionCapturedData);
-    // this.renderInteractionLayer();
     if (direction === ButtonDirection.TOP) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
           y:
             this.panZoom.offset.y +
-            (this.gridSquareLength / 2) * this.panZoom.scale,
+            (this.gridSquareLength / 2) * shortenAmount * this.panZoom.scale,
         },
         baseColumnCount,
         baseRowCount,
       });
-      this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
+      // this.extensionPoint.lastMousePos.y +=
+      //   (this.gridSquareLength / 2) * shortenAmount;
     } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
           y:
             this.panZoom.offset.y -
-            (this.gridSquareLength / 2) * this.panZoom.scale,
+            (this.gridSquareLength / 2) * shortenAmount * this.panZoom.scale,
         },
         baseColumnCount,
         baseRowCount,
       });
-      this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
+      this.extensionPoint.lastMousePos.y -=
+        (this.gridSquareLength / 2) * shortenAmount;
     } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
@@ -722,19 +798,21 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-      this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
+      // this.extensionPoint.lastMousePos.x +=
+      //   (this.gridSquareLength / 2) * shortenAmount;
     } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
           x:
             this.panZoom.offset.x -
-            (this.gridSquareLength / 2) * this.panZoom.scale,
+            (this.gridSquareLength / 2) * shortenAmount * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
         baseColumnCount,
         baseRowCount,
       });
-      this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
+      // this.extensionPoint.lastMousePos.x -=
+      //   (this.gridSquareLength / 2) * shortenAmount;
     }
   }
 
