@@ -93,12 +93,10 @@ export default class Editor extends EventDispatcher {
   private undoHistory: Array<Action> = [];
   private redoHistory: Array<Action> = [];
   private extensionPoint: {
-    lastMousePos: Coord;
     direction: ButtonDirection | null;
     offsetYAmount: number;
     offsetXAmount: number;
   } = {
-    lastMousePos: { x: 0, y: 0 },
     direction: null,
     offsetYAmount: 0,
     offsetXAmount: 0,
@@ -584,10 +582,6 @@ export default class Editor extends EventDispatcher {
       this.dpr,
     );
     const buttonDirection = this.extensionPoint.direction;
-    const extensionDegree = diffPoints(
-      this.extensionPoint.lastMousePos,
-      mouseCartCoord,
-    );
     const mouseOffsetDegree = diffPoints(
       this.mouseDownWorldPos,
       mouseCartCoord,
@@ -600,18 +594,6 @@ export default class Editor extends EventDispatcher {
       mouseOffsetDegree.x > 0
         ? Math.floor(mouseOffsetDegree.x / minAmountForExtension)
         : Math.ceil(mouseOffsetDegree.x / minAmountForExtension);
-    const extendYTimes =
-      extensionDegree.y > 0
-        ? Math.floor(extensionDegree.y / minAmountForExtension)
-        : Math.ceil(extensionDegree.y / minAmountForExtension);
-    const extendXTimes =
-      extensionDegree.x > 0
-        ? Math.floor(extensionDegree.x / minAmountForExtension)
-        : Math.ceil(extensionDegree.x / minAmountForExtension);
-    console.log(
-      "this is mouse offset change y  amount ",
-      mouseOffsetChangeYAmount,
-    );
     if (
       Math.abs(mouseOffsetChangeYAmount) == 0 &&
       Math.abs(mouseOffsetChangeXAmount) == 0
@@ -620,7 +602,6 @@ export default class Editor extends EventDispatcher {
     }
     const changeYAmountDiff =
       mouseOffsetChangeYAmount - this.extensionPoint.offsetYAmount;
-    console.log("amount to increase", changeYAmountDiff);
     const changeXAmountDiff =
       mouseOffsetChangeXAmount - this.extensionPoint.offsetXAmount;
 
@@ -644,29 +625,45 @@ export default class Editor extends EventDispatcher {
           }
           break;
         case ButtonDirection.BOTTOM:
-          if (extensionDegree.y < -minAmountForExtension) {
-            this.extendInteractionGridBy(ButtonDirection.BOTTOM, -extendYTimes);
-          } else if (extensionDegree.y > minAmountForExtension) {
-            this.shortenInteractionGridBy(ButtonDirection.BOTTOM, extendYTimes);
+          if (changeYAmountDiff < 0) {
+            this.extendInteractionGridBy(
+              ButtonDirection.BOTTOM,
+              -changeYAmountDiff,
+            );
+          } else {
+            this.shortenInteractionGridBy(
+              ButtonDirection.BOTTOM,
+              changeYAmountDiff,
+            );
           }
           break;
         case ButtonDirection.LEFT:
-          if (extensionDegree.x > minAmountForExtension) {
-            this.extendInteractionGridBy(ButtonDirection.LEFT, extendXTimes);
-          } else if (extensionDegree.x < -minAmountForExtension) {
-            this.shortenInteractionGridBy(ButtonDirection.LEFT, -extendXTimes);
+          if (changeXAmountDiff > 0) {
+            this.extendInteractionGridBy(
+              ButtonDirection.LEFT,
+              changeXAmountDiff,
+            );
+          } else {
+            this.shortenInteractionGridBy(
+              ButtonDirection.LEFT,
+              -changeXAmountDiff,
+            );
           }
           break;
         case ButtonDirection.RIGHT:
-          if (extensionDegree.x < -minAmountForExtension) {
-            this.extendInteractionGridBy(ButtonDirection.RIGHT, -extendXTimes);
-          } else if (extensionDegree.x > minAmountForExtension) {
-            this.shortenInteractionGridBy(ButtonDirection.RIGHT, extendXTimes);
+          if (changeXAmountDiff < 0) {
+            this.extendInteractionGridBy(
+              ButtonDirection.RIGHT,
+              -changeXAmountDiff,
+            );
+          } else {
+            this.shortenInteractionGridBy(
+              ButtonDirection.RIGHT,
+              changeXAmountDiff,
+            );
           }
           break;
       }
-      this.extensionPoint.lastMousePos.x = mouseCartCoord.x;
-      this.extensionPoint.lastMousePos.y = mouseCartCoord.y;
       this.extensionPoint.offsetXAmount = mouseOffsetChangeXAmount;
       this.extensionPoint.offsetYAmount = mouseOffsetChangeYAmount;
       this.interactionLayer.setCriterionDataForRendering(
@@ -698,8 +695,6 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-      // this.extensionPoint.lastMousePos.y -=
-      //   (this.gridSquareLength / 2) * amount;
     } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
@@ -711,8 +706,6 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-      // this.extensionPoint.lastMousePos.y +=
-      //   (this.gridSquareLength / 2) * amount;
     } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
@@ -724,8 +717,6 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-      this.extensionPoint.lastMousePos.x -=
-        (this.gridSquareLength / 2) * amount;
     } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
@@ -737,8 +728,6 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-      // this.extensionPoint.lastMousePos.x +=
-      //   (this.gridSquareLength / 2) * amount;
     }
   }
 
@@ -769,8 +758,6 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-      // this.extensionPoint.lastMousePos.y +=
-      //   (this.gridSquareLength / 2) * shortenAmount;
     } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
@@ -782,21 +769,17 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-      this.extensionPoint.lastMousePos.y -=
-        (this.gridSquareLength / 2) * shortenAmount;
     } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
           x:
             this.panZoom.offset.x +
-            (this.gridSquareLength / 2) * this.panZoom.scale,
+            (this.gridSquareLength / 2) * shortenAmount * this.panZoom.scale,
           y: this.panZoom.offset.y,
         },
         baseColumnCount,
         baseRowCount,
       });
-      // this.extensionPoint.lastMousePos.x +=
-      //   (this.gridSquareLength / 2) * shortenAmount;
     } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
@@ -808,8 +791,6 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-      // this.extensionPoint.lastMousePos.x -=
-      //   (this.gridSquareLength / 2) * shortenAmount;
     }
   }
 
@@ -1453,10 +1434,10 @@ export default class Editor extends EventDispatcher {
       if (!isGridFixed) {
         const buttonDirection = this.detectButtonClicked(mouseCartCoord);
         if (buttonDirection) {
-          this.extensionPoint.lastMousePos = {
-            x: mouseCartCoord.x,
-            y: mouseCartCoord.y,
-          };
+          // this.extensionPoint.lastMousePos = {
+          //   x: mouseCartCoord.x,
+          //   y: mouseCartCoord.y,
+          // };
           this.extensionPoint.direction = buttonDirection;
           this.mouseMode = MouseMode.EXTENDING;
           touchy(this.element, addEvent, "mousemove", this.handleExtension);
