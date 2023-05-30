@@ -1434,10 +1434,6 @@ export default class Editor extends EventDispatcher {
       if (!isGridFixed) {
         const buttonDirection = this.detectButtonClicked(mouseCartCoord);
         if (buttonDirection) {
-          // this.extensionPoint.lastMousePos = {
-          //   x: mouseCartCoord.x,
-          //   y: mouseCartCoord.y,
-          // };
           this.extensionPoint.direction = buttonDirection;
           this.mouseMode = MouseMode.EXTENDING;
           touchy(this.element, addEvent, "mousemove", this.handleExtension);
