@@ -815,7 +815,7 @@ export default class Editor extends EventDispatcher {
 
   handleWheel = (e: WheelEvent) => {
     e.preventDefault();
-    if (!this.isPanZoomable) {
+    if (!this.isPanZoomable || this.mouseMode === MouseMode.EXTENDING) {
       return;
     }
     if (e.ctrlKey) {
