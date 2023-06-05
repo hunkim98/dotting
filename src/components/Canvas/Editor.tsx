@@ -5,7 +5,7 @@ import {
   DefaultMinScale,
   DefaultZoomSensitivity,
   MouseMode,
-  ButtonDirection,
+  Direction,
   CurrentDeviceUserId,
 } from "./config";
 import DataLayer from "./DataLayer";
@@ -93,7 +93,7 @@ export default class Editor extends EventDispatcher {
   private undoHistory: Array<Action> = [];
   private redoHistory: Array<Action> = [];
   private extensionPoint: {
-    direction: ButtonDirection | null;
+    direction: Direction | null;
     offsetYAmount: number;
     offsetXAmount: number;
   } = {
@@ -336,16 +336,16 @@ export default class Editor extends EventDispatcher {
     const hoveredButton = this.gridLayer.getHoveredButton();
     if (hoveredButton) {
       switch (hoveredButton) {
-        case ButtonDirection.TOP:
+        case Direction.TOP:
           this.element.style.cursor = `ns-resize`;
           break;
-        case ButtonDirection.BOTTOM:
+        case Direction.BOTTOM:
           this.element.style.cursor = `ns-resize`;
           break;
-        case ButtonDirection.LEFT:
+        case Direction.LEFT:
           this.element.style.cursor = `ew-resize`;
           break;
-        case ButtonDirection.RIGHT:
+        case Direction.RIGHT:
           this.element.style.cursor = `ew-resize`;
           break;
         case ButtonDirection.TOPLEFT:
@@ -385,7 +385,7 @@ export default class Editor extends EventDispatcher {
     }
   };
 
-  detectButtonClicked(coord: Coord): ButtonDirection | null {
+  detectButtonClicked(coord: Coord): Direction | null {
     const { top, bottom, right, left } = this.gridLayer.getButtonsDimensions();
     const x = coord.x;
     const y = coord.y;
@@ -411,21 +411,21 @@ export default class Editor extends EventDispatcher {
       y >= top.y - scaledYHeight + top.height &&
       y <= top.y + top.height
     ) {
-      return ButtonDirection.TOP;
+      return Direction.TOP;
     } else if (
       x >= bottom.x &&
       x <= bottom.x + bottom.width &&
       y >= bottom.y &&
       y <= bottom.y + scaledYHeight
     ) {
-      return ButtonDirection.BOTTOM;
+      return Direction.BOTTOM;
     } else if (
       x >= left.x - scaledXWidth + left.width &&
       x <= left.x + left.width &&
       y >= left.y &&
       y <= left.y + left.height
     ) {
-      return ButtonDirection.LEFT;
+      return Direction.LEFT;
     } else if (
       x >= right.x &&
       x <= right.x + scaledXWidth &&
@@ -655,7 +655,7 @@ export default class Editor extends EventDispatcher {
 
     if (buttonDirection) {
       switch (buttonDirection) {
-        case ButtonDirection.TOP:
+        case Direction.TOP:
           if (changeYAmountDiff > 0) {
             this.extendInteractionGridBy(ButtonDirection.TOP, {
               x: 0,
@@ -668,7 +668,7 @@ export default class Editor extends EventDispatcher {
             });
           }
           break;
-        case ButtonDirection.BOTTOM:
+        case Direction.BOTTOM:
           if (changeYAmountDiff < 0) {
             this.extendInteractionGridBy(ButtonDirection.BOTTOM, {
               x: 0,
@@ -681,7 +681,7 @@ export default class Editor extends EventDispatcher {
             });
           }
           break;
-        case ButtonDirection.LEFT:
+        case Direction.LEFT:
           if (changeXAmountDiff > 0) {
             this.extendInteractionGridBy(ButtonDirection.LEFT, {
               x: changeXAmountDiff,
@@ -694,7 +694,7 @@ export default class Editor extends EventDispatcher {
             });
           }
           break;
-        case ButtonDirection.RIGHT:
+        case Direction.RIGHT:
           if (changeXAmountDiff < 0) {
             this.extendInteractionGridBy(ButtonDirection.RIGHT, {
               x: -changeXAmountDiff,
@@ -838,7 +838,7 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-    } else if (direction === ButtonDirection.BOTTOM) {
+    } else if (direction === Direction.BOTTOM) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
@@ -847,7 +847,7 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-    } else if (direction === ButtonDirection.LEFT) {
+    } else if (direction === Direction.LEFT) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x - panZoomDiff.x,
@@ -856,7 +856,7 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-    } else if (direction === ButtonDirection.RIGHT) {
+    } else if (direction === Direction.RIGHT) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x + panZoomDiff.x,
@@ -971,7 +971,7 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-    } else if (direction === ButtonDirection.BOTTOM) {
+    } else if (direction === Direction.BOTTOM) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
@@ -980,7 +980,7 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-    } else if (direction === ButtonDirection.LEFT) {
+    } else if (direction === Direction.LEFT) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x + panZoomDiff.x,
@@ -989,7 +989,7 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-    } else if (direction === ButtonDirection.RIGHT) {
+    } else if (direction === Direction.RIGHT) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x - panZoomDiff.x,
@@ -1199,90 +1199,90 @@ export default class Editor extends EventDispatcher {
         // const swipedPixels = interactionLayer.getSwipedPixels();
         // let deletedPixels = [];
         let amount = 0;
-        let direction: ButtonDirection | null = null;
+        let direction: Direction | null = null;
         let startIndex = 0;
         let isExtendingAction = true;
         if (topRowDiff < 0) {
           amount = -topRowDiff;
           this.dataLayer.extendGridBy(
-            ButtonDirection.TOP,
+            Direction.TOP,
             amount,
             dataGridIndices.topRowIndex,
           );
-          direction = ButtonDirection.TOP;
+          direction = Direction.TOP;
           startIndex = dataGridIndices.topRowIndex;
           isExtendingAction = true;
         } else if (topRowDiff > 0) {
           amount = topRowDiff;
           this.dataLayer.shortenGridBy(
-            ButtonDirection.TOP,
+            Direction.TOP,
             amount,
             dataGridIndices.topRowIndex,
           );
-          direction = ButtonDirection.TOP;
+          direction = Direction.TOP;
           startIndex = dataGridIndices.topRowIndex;
           isExtendingAction = false;
         }
         if (leftColumnDiff < 0) {
           amount = -leftColumnDiff;
           this.dataLayer.extendGridBy(
-            ButtonDirection.LEFT,
+            Direction.LEFT,
             amount,
             dataGridIndices.leftColumnIndex,
           );
-          direction = ButtonDirection.LEFT;
+          direction = Direction.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
           isExtendingAction = true;
         } else if (leftColumnDiff > 0) {
           amount = leftColumnDiff;
           this.dataLayer.shortenGridBy(
-            ButtonDirection.LEFT,
+            Direction.LEFT,
             amount,
             dataGridIndices.leftColumnIndex,
           );
-          direction = ButtonDirection.LEFT;
+          direction = Direction.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
           isExtendingAction = false;
         }
         if (bottomRowDiff > 0) {
           amount = bottomRowDiff;
           this.dataLayer.extendGridBy(
-            ButtonDirection.BOTTOM,
+            Direction.BOTTOM,
             amount,
             dataGridIndices.bottomRowIndex,
           );
-          direction = ButtonDirection.BOTTOM;
+          direction = Direction.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
           isExtendingAction = true;
         } else if (bottomRowDiff < 0) {
           amount = -bottomRowDiff;
           this.dataLayer.shortenGridBy(
-            ButtonDirection.BOTTOM,
+            Direction.BOTTOM,
             amount,
             dataGridIndices.bottomRowIndex,
           );
-          direction = ButtonDirection.BOTTOM;
+          direction = Direction.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
           isExtendingAction = false;
         }
         if (rightColumnDiff > 0) {
           amount = rightColumnDiff;
           this.dataLayer.extendGridBy(
-            ButtonDirection.RIGHT,
+            Direction.RIGHT,
             amount,
             dataGridIndices.rightColumnIndex,
           );
-          direction = ButtonDirection.RIGHT;
+          direction = Direction.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
           isExtendingAction = true;
         } else if (rightColumnDiff < 0) {
           amount = -rightColumnDiff;
           this.dataLayer.shortenGridBy(
-            ButtonDirection.RIGHT,
+            Direction.RIGHT,
             amount,
             dataGridIndices.rightColumnIndex,
           );
-          direction = ButtonDirection.RIGHT;
+          direction = Direction.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
           isExtendingAction = false;
         }
@@ -1328,7 +1328,7 @@ export default class Editor extends EventDispatcher {
 
   // this will only record one action
   recordInteractionSizeChangeAction(
-    direction: ButtonDirection,
+    direction: Direction,
     deletedPixels: Array<PixelModifyItem>,
     amount: number,
     startIndex: number,
@@ -1692,8 +1692,6 @@ export default class Editor extends EventDispatcher {
 
   onMouseMove(evt: TouchyEvent) {
     evt.preventDefault();
-    this.styleMouseCursor();
-
     const mouseCartCoord = getMouseCartCoord(
       evt,
       this.element,
@@ -1704,6 +1702,7 @@ export default class Editor extends EventDispatcher {
       x: mouseCartCoord.x,
       y: mouseCartCoord.y,
     };
+    this.styleMouseCursor();
     const gridIndices = this.dataLayer.getGridIndices();
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       mouseCartCoord,

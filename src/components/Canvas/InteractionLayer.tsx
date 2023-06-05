@@ -2,7 +2,7 @@ import { BaseLayer } from "./BaseLayer";
 import {
   DefaultGridSquareLength,
   UserId,
-  ButtonDirection,
+  Direction,
   TemporaryUserId,
 } from "./config";
 import {
@@ -51,6 +51,8 @@ export default class InteractionLayer extends BaseLayer {
     startWorldPos: Coord;
     endWorldPos: Coord;
   } | null = null;
+
+  private selecteAreaExtendDirection: Direction | null = null;
 
   private movingSelectedArea: {
     startWorldPos: Coord;
@@ -220,24 +222,16 @@ export default class InteractionLayer extends BaseLayer {
     }
     const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
       getGridIndicesFromData(this.capturedData);
-    if (
-      direction === ButtonDirection.TOP ||
-      direction === ButtonDirection.BOTTOM
-    ) {
+    if (direction === Direction.TOP || direction === Direction.BOTTOM) {
       const newRowIndex =
-        direction === ButtonDirection.TOP
-          ? topRowIndex - 1
-          : bottomRowIndex + 1;
+        direction === Direction.TOP ? topRowIndex - 1 : bottomRowIndex + 1;
       // this.swipedPixels = this.swipedPixels.filter(
       //   swipedPixel => swipedPixel.rowIndex !== newRowIndex,
       // );
       addRowToData(this.capturedData, newRowIndex);
-    } else if (
-      direction === ButtonDirection.LEFT ||
-      direction === ButtonDirection.RIGHT
-    ) {
+    } else if (direction === Direction.LEFT || direction === Direction.RIGHT) {
       const newColumnIndex =
-        direction === ButtonDirection.LEFT
+        direction === Direction.LEFT
           ? leftColumnIndex - 1
           : rightColumnIndex + 1;
       // this.swipedPixels = this.swipedPixels.filter(
@@ -247,7 +241,7 @@ export default class InteractionLayer extends BaseLayer {
     }
   }
 
-  shortenCapturedData(direction: ButtonDirection): boolean {
+  shortenCapturedData(direction: Direction): boolean {
     if (!this.capturedData) {
       throw new Error("There is no captured data");
     }
@@ -264,7 +258,7 @@ export default class InteractionLayer extends BaseLayer {
         return false;
       }
       const swipedRowIndex =
-        direction === ButtonDirection.TOP ? topRowIndex : bottomRowIndex;
+        direction === Direction.TOP ? topRowIndex : bottomRowIndex;
       const swipedRowPixels = extractColoredPixelsFromRow(
         this.capturedData,
         swipedRowIndex,
@@ -280,7 +274,7 @@ export default class InteractionLayer extends BaseLayer {
         return false;
       }
       const swipedColumnIndex =
-        direction === ButtonDirection.LEFT ? leftColumnIndex : rightColumnIndex;
+        direction === Direction.LEFT ? leftColumnIndex : rightColumnIndex;
       const swipedColumnPixels = extractColoredPixelsFromColumn(
         this.capturedData,
         swipedColumnIndex,
