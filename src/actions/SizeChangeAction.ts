@@ -1,9 +1,9 @@
 import { Action, ActionType } from "./Action";
-import { ButtonDirection } from "../components/Canvas/config";
+import { Direction } from "../components/Canvas/config";
 import { PixelModifyItem } from "../components/Canvas/types";
 
 export interface ChangeAmountData {
-  direction: ButtonDirection;
+  direction: Direction;
   amount: number;
   startIndex: number;
 }
@@ -28,13 +28,13 @@ export class SizeChangeAction extends Action {
       this.changeAmounts.map(item => {
         let newStartIndex = item.startIndex;
         if (
-          item.direction === ButtonDirection.TOP ||
-          item.direction === ButtonDirection.LEFT
+          item.direction === Direction.TOP ||
+          item.direction === Direction.LEFT
         ) {
           newStartIndex = item.startIndex - item.amount;
         } else if (
-          item.direction === ButtonDirection.BOTTOM ||
-          item.direction === ButtonDirection.RIGHT
+          item.direction === Direction.BOTTOM ||
+          item.direction === Direction.RIGHT
         ) {
           newStartIndex = item.startIndex + item.amount;
         }
