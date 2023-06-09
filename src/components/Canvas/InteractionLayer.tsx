@@ -24,7 +24,12 @@ import {
   getGridIndicesFromData,
   getRowCountFromData,
 } from "../../utils/data";
-import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
+import {
+  convertCartesianToScreen,
+  getScreenPoint,
+  lerpRanges,
+} from "../../utils/math";
+import { getAreaTopLeftAndBottomRight } from "../../utils/position";
 
 export default class InteractionLayer extends BaseLayer {
   // We make this a map to allow for multiple users to interact with the canvas
@@ -214,6 +219,93 @@ export default class InteractionLayer extends BaseLayer {
 
   getMinimumCount() {
     return this.minimumCount;
+  }
+
+  detectSelectedAreaExtendDirection(
+    coord: Coord,
+    minScale: number,
+    maxScale: number,
+  ) {
+    if (!this.selectedArea) {
+      return null;
+    }
+    const extensionAllowanceRatio = 2;
+    const strokeTouchingRange = 2;
+    const scaledYHeight = lerpRanges(
+      this.panZoom.scale,
+      // this range is inverted because height has to be smaller when zoomed in
+      maxScale,
+      minScale,
+      strokeTouchingRange,
+      strokeTouchingRange * extensionAllowanceRatio,
+    );
+    const scaledXWidth = lerpRanges(
+      this.panZoom.scale,
+      maxScale,
+      minScale,
+      strokeTouchingRange,
+      strokeTouchingRange * extensionAllowanceRatio,
+    );
+    const x = coord.x;
+    const y = coord.y;
+    const { areaTopLeftPos, areaBottomRightPos } = getAreaTopLeftAndBottomRight(
+      this.selectedArea,
+    );
+    const top = {
+      x: areaTopLeftPos.x,
+      y: areaTopLeftPos.y,
+      width: areaBottomRightPos.x - areaTopLeftPos.x,
+      height: scaledYHeight,
+    };
+    const bottom = {
+      x: areaTopLeftPos.x,
+      y: areaBottomRightPos.y,
+      width: areaBottomRightPos.x - areaTopLeftPos.x,
+      height: scaledYHeight,
+    };
+    const left = {
+      x: areaTopLeftPos.x,
+      y: areaTopLeftPos.y,
+      width: scaledXWidth,
+      height: areaBottomRightPos.y - areaTopLeftPos.y,
+    };
+    const right = {
+      x: areaBottomRightPos.x,
+      y: areaTopLeftPos.y,
+      width: scaledXWidth,
+      height: areaBottomRightPos.y - areaTopLeftPos.y,
+    };
+    if (
+      x >= top.x &&
+      x <= top.x + top.width &&
+      y >= top.y - scaledYHeight + top.height &&
+      y <= top.y + top.height
+    ) {
+      return Direction.TOP;
+    } else if (
+      x >= bottom.x &&
+      x <= bottom.x + bottom.width &&
+      y >= bottom.y &&
+      y <= bottom.y + scaledYHeight
+    ) {
+      return Direction.BOTTOM;
+    } else if (
+      x >= left.x - scaledXWidth + left.width &&
+      x <= left.x + left.width &&
+      y >= left.y &&
+      y <= left.y + left.height
+    ) {
+      return Direction.LEFT;
+    } else if (
+      x >= right.x &&
+      x <= right.x + scaledXWidth &&
+      y >= right.y &&
+      y <= right.y + right.height
+    ) {
+      return Direction.RIGHT;
+    } else {
+      return null;
+    }
   }
 
   extendCapturedData(direction: ButtonDirection) {
