@@ -651,6 +651,7 @@ export default class Editor extends EventDispatcher {
 
     const baseRowCount = getRowCountFromData(interactionCapturedData);
     const baseColumnCount = getColumnCountFromData(interactionCapturedData);
+    const minimumCount = interactionLayer.getMinimumCount();
 
     if (buttonDirection) {
       switch (buttonDirection) {
@@ -663,7 +664,7 @@ export default class Editor extends EventDispatcher {
           } else {
             this.shortenInteractionGridBy(ButtonDirection.TOP, {
               x: 0,
-              y: baseRowCount > 2 ? -changeYAmountDiff : 0,
+              y: baseRowCount > minimumCount ? -changeYAmountDiff : 0,
             });
           }
           break;
@@ -676,7 +677,7 @@ export default class Editor extends EventDispatcher {
           } else {
             this.shortenInteractionGridBy(ButtonDirection.BOTTOM, {
               x: 0,
-              y: baseRowCount > 2 ? changeYAmountDiff : 0,
+              y: baseRowCount > minimumCount ? changeYAmountDiff : 0,
             });
           }
           break;
@@ -688,7 +689,7 @@ export default class Editor extends EventDispatcher {
             });
           } else {
             this.shortenInteractionGridBy(ButtonDirection.LEFT, {
-              x: baseColumnCount > 2 ? -changeXAmountDiff : 0,
+              x: baseColumnCount > minimumCount ? -changeXAmountDiff : 0,
               y: 0,
             });
           }
@@ -701,7 +702,7 @@ export default class Editor extends EventDispatcher {
             });
           } else {
             this.shortenInteractionGridBy(ButtonDirection.RIGHT, {
-              x: baseColumnCount > 2 ? changeXAmountDiff : 0,
+              x: baseColumnCount > minimumCount ? changeXAmountDiff : 0,
               y: 0,
             });
           }
@@ -714,8 +715,8 @@ export default class Editor extends EventDispatcher {
             });
           } else {
             this.shortenInteractionGridBy(ButtonDirection.TOPLEFT, {
-              x: baseColumnCount > 2 ? -changeXAmountDiff : 0,
-              y: baseRowCount > 2 ? -changeYAmountDiff : 0,
+              x: baseColumnCount > minimumCount ? -changeXAmountDiff : 0,
+              y: baseRowCount > minimumCount ? -changeYAmountDiff : 0,
             });
           }
           break;
@@ -727,8 +728,8 @@ export default class Editor extends EventDispatcher {
             });
           } else {
             this.shortenInteractionGridBy(ButtonDirection.TOPRIGHT, {
-              x: baseColumnCount > 2 ? changeXAmountDiff : 0,
-              y: baseRowCount > 2 ? -changeYAmountDiff : 0,
+              x: baseColumnCount > minimumCount ? changeXAmountDiff : 0,
+              y: baseRowCount > minimumCount ? -changeYAmountDiff : 0,
             });
           }
           break;
@@ -740,8 +741,8 @@ export default class Editor extends EventDispatcher {
             });
           } else {
             this.shortenInteractionGridBy(ButtonDirection.BOTTOMLEFT, {
-              x: baseColumnCount > 2 ? -changeXAmountDiff : 0,
-              y: baseRowCount > 2 ? changeYAmountDiff : 0,
+              x: baseColumnCount > minimumCount ? -changeXAmountDiff : 0,
+              y: baseRowCount > minimumCount ? changeYAmountDiff : 0,
             });
           }
           break;
@@ -753,8 +754,8 @@ export default class Editor extends EventDispatcher {
             });
           } else {
             this.shortenInteractionGridBy(ButtonDirection.BOTTOMRIGHT, {
-              x: baseColumnCount > 2 ? changeXAmountDiff : 0,
-              y: baseRowCount > 2 ? changeYAmountDiff : 0,
+              x: baseColumnCount > minimumCount ? changeXAmountDiff : 0,
+              y: baseRowCount > minimumCount ? changeYAmountDiff : 0,
             });
           }
           break;
