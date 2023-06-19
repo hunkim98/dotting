@@ -14,6 +14,10 @@ export enum ButtonDirection {
   BOTTOM = "BOTTOM",
   LEFT = "LEFT",
   RIGHT = "RIGHT",
+  TOPLEFT = "TOPLEFT",
+  TOPRIGHT = "TOPRIGHT",
+  BOTTOMLEFT = "BOTTOMLEFT",
+  BOTTOMRIGHT = "BOTTOMRIGHT",
 }
 
 export const DefaultPixelDataDimensions = {

@@ -76,6 +76,8 @@ export default class InteractionLayer extends BaseLayer {
 
   private gridSquareLength: number = DefaultGridSquareLength;
 
+  private minimumCount = 2;
+
   constructor({
     columnCount,
     rowCount,
@@ -208,6 +210,10 @@ export default class InteractionLayer extends BaseLayer {
     return this.indicatorPixels;
   }
 
+  getMinimumCount() {
+    return this.minimumCount;
+  }
+
   extendCapturedData(direction: ButtonDirection) {
     if (!this.capturedData) {
       throw new Error("There is no captured data");
@@ -254,7 +260,7 @@ export default class InteractionLayer extends BaseLayer {
       direction === ButtonDirection.TOP ||
       direction === ButtonDirection.BOTTOM
     ) {
-      if (rowCount <= 2) {
+      if (rowCount <= this.minimumCount) {
         return false;
       }
       const swipedRowIndex =
@@ -270,7 +276,7 @@ export default class InteractionLayer extends BaseLayer {
       direction === ButtonDirection.LEFT ||
       direction === ButtonDirection.RIGHT
     ) {
-      if (columnCount <= 2) {
+      if (columnCount <= this.minimumCount) {
         return false;
       }
       const swipedColumnIndex =

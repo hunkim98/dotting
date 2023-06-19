@@ -4,7 +4,7 @@ import {
   DefaultButtonHeight,
   DefaultGridSquareLength,
 } from "./config";
-import { Coord } from "./types";
+import { ButtonDimensions, Coord } from "./types";
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 import { drawArrowHead, drawExtendButton } from "../../utils/shapes";
 
@@ -19,33 +19,61 @@ export default class GridLayer extends BaseLayer {
   private buttonHeight: number = DefaultButtonHeight;
   private buttonMargin: number = DefaultButtonHeight / 2 + 5;
   private hoveredButton: ButtonDirection | null = null;
-  private topButtonDimensions: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } = { x: 0, y: 0, width: 0, height: 0 };
+  private topButtonDimensions: ButtonDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
 
-  private bottomButtonDimensions: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } = { x: 0, y: 0, width: 0, height: 0 };
+  private bottomButtonDimensions: ButtonDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
 
-  private leftButtonDimensions: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } = { x: 0, y: 0, width: 0, height: 0 };
+  private leftButtonDimensions: ButtonDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
 
-  private rightButtonDimensions: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } = { x: 0, y: 0, width: 0, height: 0 };
+  private rightButtonDimensions: ButtonDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
+
+  private topLeftButtonDimensions: ButtonDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
+
+  private topRightButtonDimensions: ButtonDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
+
+  private bottomLeftButtonDimensions: ButtonDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
+
+  private bottomRightButtonDimensions: ButtonDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
 
   constructor({
     columnCount,
@@ -125,6 +153,10 @@ export default class GridLayer extends BaseLayer {
       bottom: this.bottomButtonDimensions,
       left: this.leftButtonDimensions,
       right: this.rightButtonDimensions,
+      topLeft: this.topLeftButtonDimensions,
+      topRight: this.topRightButtonDimensions,
+      bottomLeft: this.bottomLeftButtonDimensions,
+      bottomRight: this.bottomRightButtonDimensions,
     };
   }
 
@@ -150,6 +182,19 @@ export default class GridLayer extends BaseLayer {
       buttonPos.y = -gridsHeight / 2 - this.buttonMargin - buttonHeight / 2;
     } else if (direction === ButtonDirection.BOTTOM) {
       buttonPos.x = -gridsWidth / 2;
+      buttonPos.y = gridsHeight / 2 + this.buttonMargin - buttonHeight / 2;
+    } else if (direction === ButtonDirection.TOPLEFT) {
+      // FIXME cleanup codes
+      buttonPos.x = -gridsWidth / 2 - this.buttonMargin - buttonWidth / 2;
+      buttonPos.y = -gridsHeight / 2 - this.buttonMargin - buttonHeight / 2;
+    } else if (direction === ButtonDirection.TOPRIGHT) {
+      buttonPos.x = gridsWidth / 2 + this.buttonMargin - buttonWidth / 2;
+      buttonPos.y = -gridsHeight / 2 - this.buttonMargin - buttonHeight / 2;
+    } else if (direction === ButtonDirection.BOTTOMLEFT) {
+      buttonPos.x = -gridsWidth / 2 - this.buttonMargin - buttonWidth / 2;
+      buttonPos.y = gridsHeight / 2 + this.buttonMargin - buttonHeight / 2;
+    } else if (direction === ButtonDirection.BOTTOMRIGHT) {
+      buttonPos.x = gridsWidth / 2 + this.buttonMargin - buttonWidth / 2;
       buttonPos.y = gridsHeight / 2 + this.buttonMargin - buttonHeight / 2;
     } else {
       throw new Error("Invalid button direction");
@@ -321,6 +366,62 @@ export default class GridLayer extends BaseLayer {
     );
   }
 
+  drawDiagonalButtons(color: string, direction: ButtonDirection) {
+    const height = this.buttonHeight,
+      width = this.buttonHeight;
+    const { screenPos, worldPos } = this.findLeftTopPosForButton(
+      direction,
+      width,
+      height,
+    );
+    drawExtendButton(
+      this.ctx,
+      screenPos,
+      color,
+      width,
+      height,
+      this.panZoom.scale,
+    );
+    switch (direction) {
+      case ButtonDirection.TOPLEFT: {
+        this.topLeftButtonDimensions = {
+          x: worldPos.x,
+          y: worldPos.y,
+          width,
+          height,
+        };
+        break;
+      }
+      case ButtonDirection.TOPRIGHT: {
+        this.topRightButtonDimensions = {
+          x: worldPos.x,
+          y: worldPos.y,
+          width,
+          height,
+        };
+        break;
+      }
+      case ButtonDirection.BOTTOMLEFT: {
+        this.bottomLeftButtonDimensions = {
+          x: worldPos.x,
+          y: worldPos.y,
+          width,
+          height,
+        };
+        break;
+      }
+      case ButtonDirection.BOTTOMRIGHT: {
+        this.bottomRightButtonDimensions = {
+          x: worldPos.x,
+          y: worldPos.y,
+          width,
+          height,
+        };
+        break;
+      }
+    }
+  }
+
   drawButtons() {
     const buttonBackgroundColor = "#c8c8c8";
     const onHoverbuttonBackgroundColor = "#b2b2b2";
@@ -343,6 +444,19 @@ export default class GridLayer extends BaseLayer {
       this.hoveredButton === ButtonDirection.RIGHT
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
+    );
+    [
+      ButtonDirection.TOPLEFT,
+      ButtonDirection.TOPRIGHT,
+      ButtonDirection.BOTTOMLEFT,
+      ButtonDirection.BOTTOMRIGHT,
+    ].forEach(direction =>
+      this.drawDiagonalButtons(
+        this.hoveredButton === direction
+          ? onHoverbuttonBackgroundColor
+          : buttonBackgroundColor,
+        direction,
+      ),
     );
   }
 
