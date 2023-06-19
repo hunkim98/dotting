@@ -3,6 +3,13 @@ export interface Coord {
   y: number;
 }
 
+export interface Dimensions {
+  width: number;
+  height: number;
+}
+
+export type ButtonDimensions = Coord & Dimensions;
+
 export type PanZoom = {
   scale: number;
   offset: Coord;
