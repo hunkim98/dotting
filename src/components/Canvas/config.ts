@@ -9,7 +9,7 @@ export const DefaultGridSquareLength = 20;
 
 export const DefaultButtonHeight = 20;
 
-export enum Direction {
+export enum ButtonDirection {
   TOP = "TOP",
   BOTTOM = "BOTTOM",
   LEFT = "LEFT",
@@ -46,6 +46,6 @@ export const TemporaryUserId = "temporary-user-id";
 export type UserId = string;
 
 export type DimensionChangeRecord = {
-  direction: Direction;
+  direction: ButtonDirection;
   amount: number;
 } | null;

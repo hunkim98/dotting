@@ -1,6 +1,6 @@
 import { BaseLayer } from "./BaseLayer";
 import {
-  Direction,
+  ButtonDirection,
   DefaultGridSquareLength,
   DefaultPixelDataDimensions,
 } from "./config";
@@ -114,41 +114,45 @@ export default class DataLayer extends BaseLayer {
     this.data = data;
   }
 
-  shortenGridBy(direction: Direction, amount: number, startIndex: number) {
+  shortenGridBy(
+    direction: ButtonDirection,
+    amount: number,
+    startIndex: number,
+  ) {
     const shouldIncreaseIndex =
-      direction === Direction.TOP || direction === Direction.LEFT;
+      direction === ButtonDirection.TOP || direction === ButtonDirection.LEFT;
     for (let i = 0; i < amount; i++) {
       const index = startIndex + (shouldIncreaseIndex ? i : -i);
       this.shortenGrid(direction, index);
     }
   }
 
-  shortenGrid(direction: Direction, index: number) {
+  shortenGrid(direction: ButtonDirection, index: number) {
     const { columnCount, rowCount } = this.getDimensions();
     const rowKeys = getRowKeysFromData(this.data);
     const columnKeys = getColumnKeysFromData(this.data);
-    if (direction === Direction.TOP) {
+    if (direction === ButtonDirection.TOP) {
       if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
       }
       const swipedPixels = extractColoredPixelsFromRow(this.data, index);
       this.swipedPixels.push(...swipedPixels);
       deleteRowOfData(this.data, index);
-    } else if (direction === Direction.BOTTOM) {
+    } else if (direction === ButtonDirection.BOTTOM) {
       if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
       }
       const swipedPixels = extractColoredPixelsFromRow(this.data, index);
       this.swipedPixels.push(...swipedPixels);
       deleteRowOfData(this.data, index);
-    } else if (direction === Direction.LEFT) {
+    } else if (direction === ButtonDirection.LEFT) {
       if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }
       const swipedPixels = extractColoredPixelsFromColumn(this.data, index);
       this.swipedPixels.push(...swipedPixels);
       deleteColumnOfData(this.data, index);
-    } else if (direction === Direction.RIGHT) {
+    } else if (direction === ButtonDirection.RIGHT) {
       if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }
@@ -183,12 +187,12 @@ export default class DataLayer extends BaseLayer {
       const amount = currentCanvasIndices.topRowIndex - minRowIndex;
 
       this.extendGridBy(
-        Direction.TOP,
+        ButtonDirection.TOP,
         amount,
         currentCanvasIndices.topRowIndex,
       );
       changeAmounts.push({
-        direction: Direction.TOP,
+        direction: ButtonDirection.TOP,
         amount,
         startIndex: currentCanvasIndices.topRowIndex,
       });
@@ -196,12 +200,12 @@ export default class DataLayer extends BaseLayer {
     if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
       const amount = maxRowIndex - currentCanvasIndices.bottomRowIndex;
       this.extendGridBy(
-        Direction.BOTTOM,
+        ButtonDirection.BOTTOM,
         amount,
         currentCanvasIndices.bottomRowIndex,
       );
       changeAmounts.push({
-        direction: Direction.BOTTOM,
+        direction: ButtonDirection.BOTTOM,
         amount,
         startIndex: currentCanvasIndices.bottomRowIndex,
       });
@@ -209,12 +213,12 @@ export default class DataLayer extends BaseLayer {
     if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
       const amount = currentCanvasIndices.leftColumnIndex - minColumnIndex;
       this.extendGridBy(
-        Direction.LEFT,
+        ButtonDirection.LEFT,
         amount,
         currentCanvasIndices.leftColumnIndex,
       );
       changeAmounts.push({
-        direction: Direction.LEFT,
+        direction: ButtonDirection.LEFT,
         amount,
         startIndex: currentCanvasIndices.leftColumnIndex,
       });
@@ -222,12 +226,12 @@ export default class DataLayer extends BaseLayer {
     if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
       const amount = maxColumnIndex - currentCanvasIndices.rightColumnIndex;
       this.extendGridBy(
-        Direction.RIGHT,
+        ButtonDirection.RIGHT,
         amount,
         currentCanvasIndices.rightColumnIndex,
       );
       changeAmounts.push({
-        direction: Direction.RIGHT,
+        direction: ButtonDirection.RIGHT,
         amount,
         startIndex: currentCanvasIndices.rightColumnIndex,
       });
@@ -262,23 +266,24 @@ export default class DataLayer extends BaseLayer {
     return { dataForAction };
   }
 
-  extendGridBy(direction: Direction, amount: number, startIndex: number) {
+  extendGridBy(direction: ButtonDirection, amount: number, startIndex: number) {
     const shouldIncreaseIndex =
-      direction === Direction.BOTTOM || direction === Direction.RIGHT;
+      direction === ButtonDirection.BOTTOM ||
+      direction === ButtonDirection.RIGHT;
     for (let i = 1; i <= amount; i++) {
       const index = startIndex + (shouldIncreaseIndex ? i : -i);
       this.extendGrid(direction, index);
     }
   }
 
-  extendGrid(direction: Direction, index: number) {
-    if (direction === Direction.TOP) {
+  extendGrid(direction: ButtonDirection, index: number) {
+    if (direction === ButtonDirection.TOP) {
       addRowToData(this.data, index);
-    } else if (direction === Direction.BOTTOM) {
+    } else if (direction === ButtonDirection.BOTTOM) {
       addRowToData(this.data, index);
-    } else if (direction === Direction.LEFT) {
+    } else if (direction === ButtonDirection.LEFT) {
       addColumnToData(this.data, index);
-    } else if (direction === Direction.RIGHT) {
+    } else if (direction === ButtonDirection.RIGHT) {
       addColumnToData(this.data, index);
     }
   }

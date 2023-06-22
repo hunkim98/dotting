@@ -2,7 +2,7 @@ import { BaseLayer } from "./BaseLayer";
 import {
   DefaultGridSquareLength,
   UserId,
-  Direction,
+  ButtonDirection,
   TemporaryUserId,
 } from "./config";
 import {
@@ -57,7 +57,7 @@ export default class InteractionLayer extends BaseLayer {
     endWorldPos: Coord;
   } | null = null;
 
-  private selecteAreaExtendDirection: Direction | null = null;
+  private selecteAreaExtendDirection: ButtonDirection | null = null;
 
   private movingSelectedArea: {
     startWorldPos: Coord;
@@ -281,28 +281,28 @@ export default class InteractionLayer extends BaseLayer {
       y >= top.y - scaledYHeight + top.height &&
       y <= top.y + top.height
     ) {
-      return Direction.TOP;
+      return ButtonDirection.TOP;
     } else if (
       x >= bottom.x &&
       x <= bottom.x + bottom.width &&
       y >= bottom.y &&
       y <= bottom.y + scaledYHeight
     ) {
-      return Direction.BOTTOM;
+      return ButtonDirection.BOTTOM;
     } else if (
       x >= left.x - scaledXWidth + left.width &&
       x <= left.x + left.width &&
       y >= left.y &&
       y <= left.y + left.height
     ) {
-      return Direction.LEFT;
+      return ButtonDirection.LEFT;
     } else if (
       x >= right.x &&
       x <= right.x + scaledXWidth &&
       y >= right.y &&
       y <= right.y + right.height
     ) {
-      return Direction.RIGHT;
+      return ButtonDirection.RIGHT;
     } else {
       return null;
     }
@@ -314,16 +314,24 @@ export default class InteractionLayer extends BaseLayer {
     }
     const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
       getGridIndicesFromData(this.capturedData);
-    if (direction === Direction.TOP || direction === Direction.BOTTOM) {
+    if (
+      direction === ButtonDirection.TOP ||
+      direction === ButtonDirection.BOTTOM
+    ) {
       const newRowIndex =
-        direction === Direction.TOP ? topRowIndex - 1 : bottomRowIndex + 1;
+        direction === ButtonDirection.TOP
+          ? topRowIndex - 1
+          : bottomRowIndex + 1;
       // this.swipedPixels = this.swipedPixels.filter(
       //   swipedPixel => swipedPixel.rowIndex !== newRowIndex,
       // );
       addRowToData(this.capturedData, newRowIndex);
-    } else if (direction === Direction.LEFT || direction === Direction.RIGHT) {
+    } else if (
+      direction === ButtonDirection.LEFT ||
+      direction === ButtonDirection.RIGHT
+    ) {
       const newColumnIndex =
-        direction === Direction.LEFT
+        direction === ButtonDirection.LEFT
           ? leftColumnIndex - 1
           : rightColumnIndex + 1;
       // this.swipedPixels = this.swipedPixels.filter(
@@ -333,7 +341,7 @@ export default class InteractionLayer extends BaseLayer {
     }
   }
 
-  shortenCapturedData(direction: Direction): boolean {
+  shortenCapturedData(direction: ButtonDirection): boolean {
     if (!this.capturedData) {
       throw new Error("There is no captured data");
     }
@@ -350,7 +358,7 @@ export default class InteractionLayer extends BaseLayer {
         return false;
       }
       const swipedRowIndex =
-        direction === Direction.TOP ? topRowIndex : bottomRowIndex;
+        direction === ButtonDirection.TOP ? topRowIndex : bottomRowIndex;
       const swipedRowPixels = extractColoredPixelsFromRow(
         this.capturedData,
         swipedRowIndex,
@@ -366,7 +374,7 @@ export default class InteractionLayer extends BaseLayer {
         return false;
       }
       const swipedColumnIndex =
-        direction === Direction.LEFT ? leftColumnIndex : rightColumnIndex;
+        direction === ButtonDirection.LEFT ? leftColumnIndex : rightColumnIndex;
       const swipedColumnPixels = extractColoredPixelsFromColumn(
         this.capturedData,
         swipedColumnIndex,

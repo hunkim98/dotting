@@ -5,7 +5,7 @@ import {
   DefaultMinScale,
   DefaultZoomSensitivity,
   MouseMode,
-  Direction,
+  ButtonDirection,
   CurrentDeviceUserId,
 } from "./config";
 import DataLayer from "./DataLayer";
@@ -93,7 +93,7 @@ export default class Editor extends EventDispatcher {
   private undoHistory: Array<Action> = [];
   private redoHistory: Array<Action> = [];
   private extensionPoint: {
-    direction: Direction | null;
+    direction: ButtonDirection | null;
     offsetYAmount: number;
     offsetXAmount: number;
   } = {
@@ -336,16 +336,16 @@ export default class Editor extends EventDispatcher {
     const hoveredButton = this.gridLayer.getHoveredButton();
     if (hoveredButton) {
       switch (hoveredButton) {
-        case Direction.TOP:
+        case ButtonDirection.TOP:
           this.element.style.cursor = `ns-resize`;
           break;
-        case Direction.BOTTOM:
+        case ButtonDirection.BOTTOM:
           this.element.style.cursor = `ns-resize`;
           break;
-        case Direction.LEFT:
+        case ButtonDirection.LEFT:
           this.element.style.cursor = `ew-resize`;
           break;
-        case Direction.RIGHT:
+        case ButtonDirection.RIGHT:
           this.element.style.cursor = `ew-resize`;
           break;
         case ButtonDirection.TOPLEFT:
@@ -385,7 +385,7 @@ export default class Editor extends EventDispatcher {
     }
   };
 
-  detectButtonClicked(coord: Coord): Direction | null {
+  detectButtonClicked(coord: Coord): ButtonDirection | null {
     const { top, bottom, right, left } = this.gridLayer.getButtonsDimensions();
     const x = coord.x;
     const y = coord.y;
@@ -411,21 +411,21 @@ export default class Editor extends EventDispatcher {
       y >= top.y - scaledYHeight + top.height &&
       y <= top.y + top.height
     ) {
-      return Direction.TOP;
+      return ButtonDirection.TOP;
     } else if (
       x >= bottom.x &&
       x <= bottom.x + bottom.width &&
       y >= bottom.y &&
       y <= bottom.y + scaledYHeight
     ) {
-      return Direction.BOTTOM;
+      return ButtonDirection.BOTTOM;
     } else if (
       x >= left.x - scaledXWidth + left.width &&
       x <= left.x + left.width &&
       y >= left.y &&
       y <= left.y + left.height
     ) {
-      return Direction.LEFT;
+      return ButtonDirection.LEFT;
     } else if (
       x >= right.x &&
       x <= right.x + scaledXWidth &&
@@ -655,7 +655,7 @@ export default class Editor extends EventDispatcher {
 
     if (buttonDirection) {
       switch (buttonDirection) {
-        case Direction.TOP:
+        case ButtonDirection.TOP:
           if (changeYAmountDiff > 0) {
             this.extendInteractionGridBy(ButtonDirection.TOP, {
               x: 0,
@@ -668,7 +668,7 @@ export default class Editor extends EventDispatcher {
             });
           }
           break;
-        case Direction.BOTTOM:
+        case ButtonDirection.BOTTOM:
           if (changeYAmountDiff < 0) {
             this.extendInteractionGridBy(ButtonDirection.BOTTOM, {
               x: 0,
@@ -681,7 +681,7 @@ export default class Editor extends EventDispatcher {
             });
           }
           break;
-        case Direction.LEFT:
+        case ButtonDirection.LEFT:
           if (changeXAmountDiff > 0) {
             this.extendInteractionGridBy(ButtonDirection.LEFT, {
               x: changeXAmountDiff,
@@ -694,7 +694,7 @@ export default class Editor extends EventDispatcher {
             });
           }
           break;
-        case Direction.RIGHT:
+        case ButtonDirection.RIGHT:
           if (changeXAmountDiff < 0) {
             this.extendInteractionGridBy(ButtonDirection.RIGHT, {
               x: -changeXAmountDiff,
@@ -838,7 +838,7 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-    } else if (direction === Direction.BOTTOM) {
+    } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
@@ -847,7 +847,7 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-    } else if (direction === Direction.LEFT) {
+    } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x - panZoomDiff.x,
@@ -856,7 +856,7 @@ export default class Editor extends EventDispatcher {
         baseRowCount,
         baseColumnCount,
       });
-    } else if (direction === Direction.RIGHT) {
+    } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x + panZoomDiff.x,
@@ -971,7 +971,7 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-    } else if (direction === Direction.BOTTOM) {
+    } else if (direction === ButtonDirection.BOTTOM) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
@@ -980,7 +980,7 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-    } else if (direction === Direction.LEFT) {
+    } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x + panZoomDiff.x,
@@ -989,7 +989,7 @@ export default class Editor extends EventDispatcher {
         baseColumnCount,
         baseRowCount,
       });
-    } else if (direction === Direction.RIGHT) {
+    } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x - panZoomDiff.x,
@@ -1199,90 +1199,90 @@ export default class Editor extends EventDispatcher {
         // const swipedPixels = interactionLayer.getSwipedPixels();
         // let deletedPixels = [];
         let amount = 0;
-        let direction: Direction | null = null;
+        let direction: ButtonDirection | null = null;
         let startIndex = 0;
         let isExtendingAction = true;
         if (topRowDiff < 0) {
           amount = -topRowDiff;
           this.dataLayer.extendGridBy(
-            Direction.TOP,
+            ButtonDirection.TOP,
             amount,
             dataGridIndices.topRowIndex,
           );
-          direction = Direction.TOP;
+          direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
           isExtendingAction = true;
         } else if (topRowDiff > 0) {
           amount = topRowDiff;
           this.dataLayer.shortenGridBy(
-            Direction.TOP,
+            ButtonDirection.TOP,
             amount,
             dataGridIndices.topRowIndex,
           );
-          direction = Direction.TOP;
+          direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
           isExtendingAction = false;
         }
         if (leftColumnDiff < 0) {
           amount = -leftColumnDiff;
           this.dataLayer.extendGridBy(
-            Direction.LEFT,
+            ButtonDirection.LEFT,
             amount,
             dataGridIndices.leftColumnIndex,
           );
-          direction = Direction.LEFT;
+          direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
           isExtendingAction = true;
         } else if (leftColumnDiff > 0) {
           amount = leftColumnDiff;
           this.dataLayer.shortenGridBy(
-            Direction.LEFT,
+            ButtonDirection.LEFT,
             amount,
             dataGridIndices.leftColumnIndex,
           );
-          direction = Direction.LEFT;
+          direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
           isExtendingAction = false;
         }
         if (bottomRowDiff > 0) {
           amount = bottomRowDiff;
           this.dataLayer.extendGridBy(
-            Direction.BOTTOM,
+            ButtonDirection.BOTTOM,
             amount,
             dataGridIndices.bottomRowIndex,
           );
-          direction = Direction.BOTTOM;
+          direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
           isExtendingAction = true;
         } else if (bottomRowDiff < 0) {
           amount = -bottomRowDiff;
           this.dataLayer.shortenGridBy(
-            Direction.BOTTOM,
+            ButtonDirection.BOTTOM,
             amount,
             dataGridIndices.bottomRowIndex,
           );
-          direction = Direction.BOTTOM;
+          direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
           isExtendingAction = false;
         }
         if (rightColumnDiff > 0) {
           amount = rightColumnDiff;
           this.dataLayer.extendGridBy(
-            Direction.RIGHT,
+            ButtonDirection.RIGHT,
             amount,
             dataGridIndices.rightColumnIndex,
           );
-          direction = Direction.RIGHT;
+          direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
           isExtendingAction = true;
         } else if (rightColumnDiff < 0) {
           amount = -rightColumnDiff;
           this.dataLayer.shortenGridBy(
-            Direction.RIGHT,
+            ButtonDirection.RIGHT,
             amount,
             dataGridIndices.rightColumnIndex,
           );
-          direction = Direction.RIGHT;
+          direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
           isExtendingAction = false;
         }
@@ -1328,7 +1328,7 @@ export default class Editor extends EventDispatcher {
 
   // this will only record one action
   recordInteractionSizeChangeAction(
-    direction: Direction,
+    direction: ButtonDirection,
     deletedPixels: Array<PixelModifyItem>,
     amount: number,
     startIndex: number,

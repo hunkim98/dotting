@@ -1,6 +1,6 @@
 import { BaseLayer } from "./BaseLayer";
 import {
-  Direction,
+  ButtonDirection,
   DefaultButtonHeight,
   DefaultGridSquareLength,
 } from "./config";
@@ -18,23 +18,13 @@ export default class GridLayer extends BaseLayer {
   private gridSquareLength: number = DefaultGridSquareLength;
   private buttonHeight: number = DefaultButtonHeight;
   private buttonMargin: number = DefaultButtonHeight / 2 + 5;
-<<<<<<< HEAD
   private hoveredButton: ButtonDirection | null = null;
-  private topButtonDimensions: ButtonDimensions = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-  };
-=======
-  private hoveredButton: Direction | null = null;
   private topButtonDimensions: {
     x: number;
     y: number;
     width: number;
     height: number;
   } = { x: 0, y: 0, width: 0, height: 0 };
->>>>>>> 466dcbc (Change button direction name to direction)
 
   private bottomButtonDimensions: ButtonDimensions = {
     x: 0,
@@ -153,7 +143,7 @@ export default class GridLayer extends BaseLayer {
     return this.gridStrokeWidth;
   }
 
-  setHoveredButton(hoveredButton: Direction | null) {
+  setHoveredButton(hoveredButton: ButtonDirection | null) {
     this.hoveredButton = hoveredButton;
   }
 
@@ -171,7 +161,7 @@ export default class GridLayer extends BaseLayer {
   }
 
   findLeftTopPosForButton(
-    direction: Direction,
+    direction: ButtonDirection,
     buttonWidth: number,
     buttonHeight: number,
   ) {
@@ -181,16 +171,16 @@ export default class GridLayer extends BaseLayer {
       x: gridsWidth / 2 + this.buttonMargin,
       y: -gridsHeight / 2,
     };
-    if (direction === Direction.LEFT) {
+    if (direction === ButtonDirection.LEFT) {
       buttonPos.x = -gridsWidth / 2 - this.buttonMargin - buttonWidth / 2;
       buttonPos.y = -gridsHeight / 2;
-    } else if (direction === Direction.RIGHT) {
+    } else if (direction === ButtonDirection.RIGHT) {
       buttonPos.x = gridsWidth / 2 + this.buttonMargin - buttonWidth / 2;
       buttonPos.y = -gridsHeight / 2;
-    } else if (direction === Direction.TOP) {
+    } else if (direction === ButtonDirection.TOP) {
       buttonPos.x = -gridsWidth / 2;
       buttonPos.y = -gridsHeight / 2 - this.buttonMargin - buttonHeight / 2;
-    } else if (direction === Direction.BOTTOM) {
+    } else if (direction === ButtonDirection.BOTTOM) {
       buttonPos.x = -gridsWidth / 2;
       buttonPos.y = gridsHeight / 2 + this.buttonMargin - buttonHeight / 2;
     } else if (direction === ButtonDirection.TOPLEFT) {
@@ -228,7 +218,7 @@ export default class GridLayer extends BaseLayer {
     const width = this.buttonHeight;
     const height = this.rowCount * this.gridSquareLength;
     const { screenPos, worldPos } = this.findLeftTopPosForButton(
-      Direction.RIGHT,
+      ButtonDirection.RIGHT,
       width,
       height,
     );
@@ -266,7 +256,7 @@ export default class GridLayer extends BaseLayer {
     const width = this.buttonHeight;
     const height = this.rowCount * this.gridSquareLength;
     const { screenPos, worldPos } = this.findLeftTopPosForButton(
-      Direction.LEFT,
+      ButtonDirection.LEFT,
       width,
       height,
     );
@@ -304,7 +294,7 @@ export default class GridLayer extends BaseLayer {
     const width = this.columnCount * this.gridSquareLength;
     const height = this.buttonHeight;
     const { screenPos, worldPos } = this.findLeftTopPosForButton(
-      Direction.TOP,
+      ButtonDirection.TOP,
       width,
       height,
     );
@@ -342,7 +332,7 @@ export default class GridLayer extends BaseLayer {
     const width = this.columnCount * this.gridSquareLength;
     const height = this.buttonHeight;
     const { screenPos, worldPos } = this.findLeftTopPosForButton(
-      Direction.BOTTOM,
+      ButtonDirection.BOTTOM,
       width,
       height,
     );
@@ -436,22 +426,22 @@ export default class GridLayer extends BaseLayer {
     const buttonBackgroundColor = "#c8c8c8";
     const onHoverbuttonBackgroundColor = "#b2b2b2";
     this.drawTopButton(
-      this.hoveredButton === Direction.TOP
+      this.hoveredButton === ButtonDirection.TOP
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );
     this.drawBottomButton(
-      this.hoveredButton === Direction.BOTTOM
+      this.hoveredButton === ButtonDirection.BOTTOM
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );
     this.drawLeftButton(
-      this.hoveredButton === Direction.LEFT
+      this.hoveredButton === ButtonDirection.LEFT
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );
     this.drawRightButton(
-      this.hoveredButton === Direction.RIGHT
+      this.hoveredButton === ButtonDirection.RIGHT
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );

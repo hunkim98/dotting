@@ -1,6 +1,6 @@
 import { Action, ActionType } from "./Action";
 import { ChangeAmountData } from "./SizeChangeAction";
-import { Direction } from "../components/Canvas/config";
+import { ButtonDirection } from "../components/Canvas/config";
 import { ColorChangeItem } from "../components/Canvas/types";
 
 export class ColorSizeChangeAction extends Action {
@@ -27,8 +27,8 @@ export class ColorSizeChangeAction extends Action {
       this.changeAmounts.map(item => {
         let newStartIndex = item.startIndex;
         if (
-          item.direction === Direction.TOP ||
-          item.direction === Direction.LEFT
+          item.direction === ButtonDirection.TOP ||
+          item.direction === ButtonDirection.LEFT
         ) {
           // if(wasExtendAction){
           // startIndex was starting point for extending
@@ -39,8 +39,8 @@ export class ColorSizeChangeAction extends Action {
           // change to extend
           // }
         } else if (
-          item.direction === Direction.BOTTOM ||
-          item.direction === Direction.RIGHT
+          item.direction === ButtonDirection.BOTTOM ||
+          item.direction === ButtonDirection.RIGHT
         ) {
           newStartIndex = item.startIndex + item.amount;
         }
