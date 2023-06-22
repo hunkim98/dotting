@@ -1,6 +1,6 @@
 import React from "react";
 
-import { MouseMode, Direction } from "./config";
+import { MouseMode, ButtonDirection } from "./config";
 import {
   BrushTool,
   CanvasEvents,
@@ -79,7 +79,7 @@ export default class Canvas extends EventDispatcher {
 
   private mouseMode: MouseMode = MouseMode.PANNING;
 
-  private hoveredButton: Direction | null = null;
+  private hoveredButton: ButtonDirection | null = null;
 
   private brushColor: string;
 
@@ -113,14 +113,14 @@ export default class Canvas extends EventDispatcher {
 
   private extensionPoint: {
     lastMousePos: Coord;
-    direction: Direction | null;
+    direction: ButtonDirection | null;
   } = {
     lastMousePos: this.origin,
     direction: null,
   };
 
   private mouseDownGridInfo: {
-    direction: Direction;
+    direction: ButtonDirection;
     indices: GridIndices;
   } | null = null;
 
@@ -327,7 +327,7 @@ export default class Canvas extends EventDispatcher {
 
   //http://jsfiddle.net/dX9Y3/
 
-  detectMouseOnButton(coord: Coord): Direction | null {
+  detectMouseOnButton(coord: Coord): ButtonDirection | null {
     const gridsHeight = this.gridSquareLength * this.getRowCount();
     const gridsWidth = this.gridSquareLength * this.getColumnCount();
     const topButtonPos: Coord = {
@@ -382,34 +382,34 @@ export default class Canvas extends EventDispatcher {
       y >= topButtonRect.y &&
       y <= topButtonRect.y + topButtonRect.height
     ) {
-      return Direction.TOP;
+      return ButtonDirection.TOP;
     } else if (
       x >= bottomButtonRect.x &&
       x <= bottomButtonRect.x + bottomButtonRect.width &&
       y >= bottomButtonRect.y &&
       y <= bottomButtonRect.y + bottomButtonRect.height
     ) {
-      return Direction.BOTTOM;
+      return ButtonDirection.BOTTOM;
     } else if (
       x >= leftButtonRect.x &&
       x <= leftButtonRect.x + leftButtonRect.width &&
       y >= leftButtonRect.y &&
       y <= leftButtonRect.y + leftButtonRect.height
     ) {
-      return Direction.LEFT;
+      return ButtonDirection.LEFT;
     } else if (
       x >= rightButtonRect.x &&
       x <= rightButtonRect.x + rightButtonRect.width &&
       y >= rightButtonRect.y &&
       y <= rightButtonRect.y + rightButtonRect.height
     ) {
-      return Direction.RIGHT;
+      return ButtonDirection.RIGHT;
     } else {
       return null;
     }
   }
 
-  detectButtonClicked(coord: Coord): Direction | null {
+  detectButtonClicked(coord: Coord): ButtonDirection | null {
     return this.detectMouseOnButton(coord);
   }
 
@@ -601,22 +601,22 @@ export default class Canvas extends EventDispatcher {
     const buttonBackgroundColor = "#c8c8c8";
     const onHoverbuttonBackgroundColor = "#b2b2b2";
     this.drawTopButton(
-      this.hoveredButton === Direction.TOP
+      this.hoveredButton === ButtonDirection.TOP
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );
     this.drawBottomButton(
-      this.hoveredButton === Direction.BOTTOM
+      this.hoveredButton === ButtonDirection.BOTTOM
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );
     this.drawLeftButton(
-      this.hoveredButton === Direction.LEFT
+      this.hoveredButton === ButtonDirection.LEFT
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );
     this.drawRightButton(
-      this.hoveredButton === Direction.RIGHT
+      this.hoveredButton === ButtonDirection.RIGHT
         ? onHoverbuttonBackgroundColor
         : buttonBackgroundColor,
     );
@@ -940,10 +940,10 @@ export default class Canvas extends EventDispatcher {
         index--
       ) {
         amount++;
-        this.extendGrid(Direction.TOP);
+        this.extendGrid(ButtonDirection.TOP);
       }
       changeAmounts.push({
-        direction: Direction.TOP,
+        direction: ButtonDirection.TOP,
         amount,
         startIndex: currentCanvasIndices.topRowIndex,
       });
@@ -956,10 +956,10 @@ export default class Canvas extends EventDispatcher {
         index++
       ) {
         amount++;
-        this.extendGrid(Direction.BOTTOM);
+        this.extendGrid(ButtonDirection.BOTTOM);
       }
       changeAmounts.push({
-        direction: Direction.BOTTOM,
+        direction: ButtonDirection.BOTTOM,
         amount,
         startIndex: currentCanvasIndices.bottomRowIndex,
       });
@@ -972,10 +972,10 @@ export default class Canvas extends EventDispatcher {
         index--
       ) {
         amount++;
-        this.extendGrid(Direction.LEFT);
+        this.extendGrid(ButtonDirection.LEFT);
       }
       changeAmounts.push({
-        direction: Direction.LEFT,
+        direction: ButtonDirection.LEFT,
         amount,
         startIndex: currentCanvasIndices.leftColumnIndex,
       });
@@ -988,10 +988,10 @@ export default class Canvas extends EventDispatcher {
         index++
       ) {
         amount++;
-        this.extendGrid(Direction.RIGHT);
+        this.extendGrid(ButtonDirection.RIGHT);
       }
       changeAmounts.push({
-        direction: Direction.RIGHT,
+        direction: ButtonDirection.RIGHT,
         amount,
         startIndex: currentCanvasIndices.rightColumnIndex,
       });
@@ -1378,39 +1378,39 @@ export default class Canvas extends EventDispatcher {
 
     if (buttonDirection) {
       switch (buttonDirection) {
-        case Direction.TOP:
+        case ButtonDirection.TOP:
           if (extensionAmount.y > minAmountForExtension) {
-            this.extendGrid(Direction.TOP);
+            this.extendGrid(ButtonDirection.TOP);
             this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
           } else if (extensionAmount.y < -minAmountForExtension) {
-            this.shortenGrid(Direction.TOP);
+            this.shortenGrid(ButtonDirection.TOP);
             this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
           }
           break;
-        case Direction.BOTTOM:
+        case ButtonDirection.BOTTOM:
           if (extensionAmount.y < -minAmountForExtension) {
-            this.extendGrid(Direction.BOTTOM);
+            this.extendGrid(ButtonDirection.BOTTOM);
             this.extensionPoint.lastMousePos.y += this.gridSquareLength / 2;
           } else if (extensionAmount.y > minAmountForExtension) {
-            this.shortenGrid(Direction.BOTTOM);
+            this.shortenGrid(ButtonDirection.BOTTOM);
             this.extensionPoint.lastMousePos.y -= this.gridSquareLength / 2;
           }
           break;
-        case Direction.LEFT:
+        case ButtonDirection.LEFT:
           if (extensionAmount.x > minAmountForExtension) {
-            this.extendGrid(Direction.LEFT);
+            this.extendGrid(ButtonDirection.LEFT);
             this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
           } else if (extensionAmount.x < -minAmountForExtension) {
-            this.shortenGrid(Direction.LEFT);
+            this.shortenGrid(ButtonDirection.LEFT);
             this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
           }
           break;
-        case Direction.RIGHT:
+        case ButtonDirection.RIGHT:
           if (extensionAmount.x < -minAmountForExtension) {
-            this.extendGrid(Direction.RIGHT);
+            this.extendGrid(ButtonDirection.RIGHT);
             this.extensionPoint.lastMousePos.x += this.gridSquareLength / 2;
           } else if (extensionAmount.x > minAmountForExtension) {
-            this.shortenGrid(Direction.RIGHT);
+            this.shortenGrid(ButtonDirection.RIGHT);
             this.extensionPoint.lastMousePos.x -= this.gridSquareLength / 2;
           }
           break;
@@ -1419,7 +1419,7 @@ export default class Canvas extends EventDispatcher {
     }
   };
 
-  extendGrid(direction: Direction) {
+  extendGrid(direction: ButtonDirection) {
     const gridIndices = this.getGridIndices();
     const currentTopIndex = gridIndices.topRowIndex;
     const currentLeftIndex = gridIndices.leftColumnIndex;
@@ -1427,7 +1427,7 @@ export default class Canvas extends EventDispatcher {
     const currentRightIndex = gridIndices.rightColumnIndex;
 
     switch (direction) {
-      case Direction.TOP:
+      case ButtonDirection.TOP:
         const newTopIndex = currentTopIndex - 1;
         this.data.set(newTopIndex, new Map());
         for (let i = currentLeftIndex; i <= currentRightIndex; i++) {
@@ -1442,7 +1442,7 @@ export default class Canvas extends EventDispatcher {
           },
         });
         break;
-      case Direction.BOTTOM:
+      case ButtonDirection.BOTTOM:
         const newBottomIndex = currentBottomIndex + 1;
         this.data.set(newBottomIndex, new Map());
         for (let i = currentLeftIndex; i <= currentRightIndex; i++) {
@@ -1457,7 +1457,7 @@ export default class Canvas extends EventDispatcher {
           },
         });
         break;
-      case Direction.LEFT:
+      case ButtonDirection.LEFT:
         const newLeftIndex = currentLeftIndex - 1;
         for (let i = currentTopIndex; i <= currentBottomIndex; i++) {
           this.data.get(i)!.set(newLeftIndex, { color: "" });
@@ -1472,7 +1472,7 @@ export default class Canvas extends EventDispatcher {
         });
 
         break;
-      case Direction.RIGHT:
+      case ButtonDirection.RIGHT:
         const newRightIndex = currentRightIndex + 1;
         for (let i = currentTopIndex; i <= currentBottomIndex; i++) {
           this.data.get(i)!.set(newRightIndex, { color: "" });
@@ -1509,7 +1509,7 @@ export default class Canvas extends EventDispatcher {
     this.render();
   }
 
-  shortenGrid(direction: Direction) {
+  shortenGrid(direction: ButtonDirection) {
     const allRowKeys = Array.from(this.data.keys());
     const allColumnKeys = Array.from(this.data.get(allRowKeys[0])!.keys());
     const currentTopIndex = Math.min(...allRowKeys);
@@ -1517,7 +1517,7 @@ export default class Canvas extends EventDispatcher {
     const currentBottomIndex = currentTopIndex + this.getRowCount() - 1;
     const currentRightIndex = currentLeftIndex + this.getColumnCount() - 1;
     switch (direction) {
-      case Direction.TOP:
+      case ButtonDirection.TOP:
         if (allRowKeys.length <= 2) {
           break;
         }
@@ -1546,7 +1546,7 @@ export default class Canvas extends EventDispatcher {
           },
         });
         break;
-      case Direction.BOTTOM:
+      case ButtonDirection.BOTTOM:
         if (allRowKeys.length <= 2) {
           break;
         }
@@ -1576,7 +1576,7 @@ export default class Canvas extends EventDispatcher {
         });
 
         break;
-      case Direction.LEFT:
+      case ButtonDirection.LEFT:
         if (allColumnKeys.length <= 2) {
           break;
         }
@@ -1607,7 +1607,7 @@ export default class Canvas extends EventDispatcher {
         });
 
         break;
-      case Direction.RIGHT:
+      case ButtonDirection.RIGHT:
         if (allColumnKeys.length <= 2) {
           break;
         }
@@ -1730,7 +1730,7 @@ export default class Canvas extends EventDispatcher {
     const deletedPixels = this.swipedPixels;
     let sizeChangeAmount = 0;
     const currentGridIndices = this.getGridIndices();
-    if (extensionDirection === Direction.TOP) {
+    if (extensionDirection === ButtonDirection.TOP) {
       sizeChangeAmount =
         this.mouseDownGridInfo!.indices.topRowIndex -
         currentGridIndices.topRowIndex;
@@ -1743,7 +1743,7 @@ export default class Canvas extends EventDispatcher {
           },
         ]),
       );
-    } else if (extensionDirection === Direction.BOTTOM) {
+    } else if (extensionDirection === ButtonDirection.BOTTOM) {
       sizeChangeAmount =
         currentGridIndices.bottomRowIndex -
         this.mouseDownGridInfo!.indices.bottomRowIndex;
@@ -1756,7 +1756,7 @@ export default class Canvas extends EventDispatcher {
           },
         ]),
       );
-    } else if (extensionDirection === Direction.LEFT) {
+    } else if (extensionDirection === ButtonDirection.LEFT) {
       sizeChangeAmount =
         this.mouseDownGridInfo!.indices.leftColumnIndex -
         currentGridIndices.leftColumnIndex;
