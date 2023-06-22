@@ -1,13 +1,16 @@
-import { BaseWorker, BrushWorker } from "./BaseWorker";
+import {
+  SelectionWorker,
+  SelectionWorkerType,
+} from "./selectionWorker/SelectionWorker";
 import { ButtonDirection, MouseMode } from "../components/Canvas/config";
 import InteractionLayer from "../components/Canvas/InteractionLayer";
 import { BrushTool, DottingData } from "../components/Canvas/types";
 import { getDoesAreaOverlapPixelgrid } from "../utils/position";
 import { Coord } from "../utils/types";
 
-export class Select extends BaseWorker {
+export class Select extends SelectionWorker {
   toolType = BrushTool.SELECT;
-  workerType = BrushWorker.Select;
+  workerType = SelectionWorkerType.Select;
 
   private data: DottingData;
   private mouseMode: MouseMode;
@@ -40,7 +43,7 @@ export class Select extends BaseWorker {
     return this.toolType;
   }
 
-  getWorkerType(): BrushWorker {
+  getWorkerType(): SelectionWorkerType {
     return this.workerType;
   }
 
