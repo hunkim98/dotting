@@ -287,7 +287,6 @@ export default class Editor extends EventDispatcher {
 
   setBrushTool(tool: BrushTool) {
     this.brushTool = tool;
-    this.styleMouseCursor();
     if (this.brushTool !== BrushTool.SELECT) {
       this.interactionLayer.setSelectedArea(null);
       this.interactionLayer.setSelectingArea(null);
@@ -332,7 +331,7 @@ export default class Editor extends EventDispatcher {
     return this.dataLayer.getGridIndices();
   }
 
-  styleMouseCursor = () => {
+  styleMouseCursor = (mouseCoord: Coord) => {
     const hoveredButton = this.gridLayer.getHoveredButton();
     if (hoveredButton) {
       switch (hoveredButton) {
@@ -375,7 +374,25 @@ export default class Editor extends EventDispatcher {
         case BrushTool.SELECT:
           this.element.style.cursor = `crosshair`;
           if (this.interactionLayer.getSelectedArea()) {
-            this.element.style.cursor = `grab`;
+            const direction =
+              this.interactionLayer.detectSelectedAreaExtendDirection(
+                mouseCoord,
+              );
+            if (direction) {
+              if (
+                direction === ButtonDirection.TOP ||
+                direction === ButtonDirection.BOTTOM
+              ) {
+                this.element.style.cursor = `ns-resize`;
+              } else if (
+                direction === ButtonDirection.LEFT ||
+                direction === ButtonDirection.RIGHT
+              ) {
+                this.element.style.cursor = `ew-resize`;
+              }
+            } else {
+              this.element.style.cursor = `grab`;
+            }
           }
           break;
         default:
@@ -1702,7 +1719,7 @@ export default class Editor extends EventDispatcher {
       x: mouseCartCoord.x,
       y: mouseCartCoord.y,
     };
-    this.styleMouseCursor();
+    this.styleMouseCursor(mouseCartCoord);
     const gridIndices = this.dataLayer.getGridIndices();
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       mouseCartCoord,

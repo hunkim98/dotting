@@ -4,6 +4,8 @@ import {
   UserId,
   ButtonDirection,
   TemporaryUserId,
+  DefaultMaxScale,
+  DefaultMinScale,
 } from "./config";
 import {
   ColorChangeItem,
@@ -221,11 +223,7 @@ export default class InteractionLayer extends BaseLayer {
     return this.minimumCount;
   }
 
-  detectSelectedAreaExtendDirection(
-    coord: Coord,
-    minScale: number,
-    maxScale: number,
-  ) {
+  detectSelectedAreaExtendDirection(coord: Coord): ButtonDirection {
     if (!this.selectedArea) {
       return null;
     }
@@ -234,15 +232,15 @@ export default class InteractionLayer extends BaseLayer {
     const scaledYHeight = lerpRanges(
       this.panZoom.scale,
       // this range is inverted because height has to be smaller when zoomed in
-      maxScale,
-      minScale,
+      DefaultMaxScale,
+      DefaultMinScale,
       strokeTouchingRange,
       strokeTouchingRange * extensionAllowanceRatio,
     );
     const scaledXWidth = lerpRanges(
       this.panZoom.scale,
-      maxScale,
-      minScale,
+      DefaultMaxScale,
+      DefaultMinScale,
       strokeTouchingRange,
       strokeTouchingRange * extensionAllowanceRatio,
     );
