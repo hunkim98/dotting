@@ -379,16 +379,31 @@ export default class Editor extends EventDispatcher {
                 mouseCoord,
               );
             if (direction) {
-              if (
-                direction === ButtonDirection.TOP ||
-                direction === ButtonDirection.BOTTOM
-              ) {
-                this.element.style.cursor = `ns-resize`;
-              } else if (
-                direction === ButtonDirection.LEFT ||
-                direction === ButtonDirection.RIGHT
-              ) {
-                this.element.style.cursor = `ew-resize`;
+              switch (direction) {
+                case ButtonDirection.TOP:
+                  this.element.style.cursor = `ns-resize`;
+                  break;
+                case ButtonDirection.BOTTOM:
+                  this.element.style.cursor = `ns-resize`;
+                  break;
+                case ButtonDirection.LEFT:
+                  this.element.style.cursor = `ew-resize`;
+                  break;
+                case ButtonDirection.RIGHT:
+                  this.element.style.cursor = `ew-resize`;
+                  break;
+                case ButtonDirection.TOPLEFT:
+                  this.element.style.cursor = "nw-resize";
+                  break;
+                case ButtonDirection.TOPRIGHT:
+                  this.element.style.cursor = "ne-resize";
+                  break;
+                case ButtonDirection.BOTTOMLEFT:
+                  this.element.style.cursor = "sw-resize";
+                  break;
+                case ButtonDirection.BOTTOMRIGHT:
+                  this.element.style.cursor = "se-resize";
+                  break;
               }
             } else {
               this.element.style.cursor = `grab`;
@@ -1604,7 +1619,20 @@ export default class Editor extends EventDispatcher {
       this.mouseMode = MouseMode.DRAWING;
       const previousSelectedArea = this.interactionLayer.getSelectedArea();
       let isMouseCoordInSelectedArea = false;
+
       if (previousSelectedArea) {
+        const directionToExtendSelectedArea =
+          this.interactionLayer.detectSelectedAreaExtendDirection(
+            this.mouseDownWorldPos,
+          );
+        this.interactionLayer.setDirectionToExtendSelectedArea(
+          directionToExtendSelectedArea,
+        );
+        // if there is a direction to extend selected area, we don't need to do anything else
+        if (directionToExtendSelectedArea !== null) {
+          return;
+        }
+        // there is a selected area in the interaction layer
         isMouseCoordInSelectedArea = getIsPointInsideRegion(
           this.mouseDownWorldPos,
           previousSelectedArea,
@@ -1719,6 +1747,7 @@ export default class Editor extends EventDispatcher {
       x: mouseCartCoord.x,
       y: mouseCartCoord.y,
     };
+
     this.styleMouseCursor(mouseCartCoord);
     const gridIndices = this.dataLayer.getGridIndices();
     const pixelIndex = getPixelIndexFromMouseCartCoord(
@@ -1738,6 +1767,12 @@ export default class Editor extends EventDispatcher {
       const movingSelectedPixels =
         this.interactionLayer.getMovingSelectedPixels();
       // mouseDownWorldPos may be null
+      const directionToExtendSelectedArea =
+        this.interactionLayer.getDirectionToExtendSelectedArea();
+      if (directionToExtendSelectedArea !== null) {
+        // if there is a direction to extend selected area, it means that there is a selected area
+        console.log(directionToExtendSelectedArea);
+      }
       if (
         movingSelectedPixels &&
         this.mouseDownWorldPos &&
@@ -2043,6 +2078,7 @@ export default class Editor extends EventDispatcher {
     touchy(this.element, removeEvent, "mousemove", this.handleExtension);
     this.pinchZoomDiff = undefined;
     this.gridLayer.setHoveredButton(null);
+    this.interactionLayer.setDirectionToExtendSelectedArea(null);
     // we make mouse down world position null
     this.mouseDownWorldPos = null;
     this.mouseDownPanZoom = null;
