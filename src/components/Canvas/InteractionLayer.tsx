@@ -59,7 +59,7 @@ export default class InteractionLayer extends BaseLayer {
     endWorldPos: Coord;
   } | null = null;
 
-  private selecteAreaExtendDirection: ButtonDirection | null = null;
+  private directionToExtendSelectedArea: ButtonDirection | null = null;
 
   private movingSelectedArea: {
     startWorldPos: Coord;
@@ -105,6 +105,10 @@ export default class InteractionLayer extends BaseLayer {
     return this.capturedData;
   }
 
+  getDirectionToExtendSelectedArea() {
+    return this.directionToExtendSelectedArea;
+  }
+
   getCapturedDataOriginalIndices() {
     return this.capturedDataOriginalIndices;
   }
@@ -115,6 +119,10 @@ export default class InteractionLayer extends BaseLayer {
 
   setDataLayerRowCount(rowCount: number) {
     this.dataLayerRowCount = rowCount;
+  }
+
+  setDirectionToExtendSelectedArea(direction: ButtonDirection | null) {
+    this.directionToExtendSelectedArea = direction;
   }
 
   setSelectedArea(area: { startWorldPos: Coord; endWorldPos: Coord } | null) {
@@ -223,12 +231,12 @@ export default class InteractionLayer extends BaseLayer {
     return this.minimumCount;
   }
 
-  detectSelectedAreaExtendDirection(coord: Coord): ButtonDirection {
+  detectSelectedAreaExtendDirection(coord: Coord): ButtonDirection | null {
     if (!this.selectedArea) {
       return null;
     }
     const extensionAllowanceRatio = 2;
-    const strokeTouchingRange = 2;
+    const strokeTouchingRange = 6;
     const scaledYHeight = lerpRanges(
       this.panZoom.scale,
       // this range is inverted because height has to be smaller when zoomed in
@@ -273,34 +281,63 @@ export default class InteractionLayer extends BaseLayer {
       width: scaledXWidth,
       height: areaBottomRightPos.y - areaTopLeftPos.y,
     };
+    const cornerSquareHalfLength = left.width;
     if (
-      x >= top.x &&
-      x <= top.x + top.width &&
-      y >= top.y - scaledYHeight + top.height &&
-      y <= top.y + top.height
+      x >= top.x + cornerSquareHalfLength &&
+      x <= top.x + top.width - cornerSquareHalfLength &&
+      y >= top.y - cornerSquareHalfLength &&
+      y <= top.y + cornerSquareHalfLength
     ) {
       return ButtonDirection.TOP;
     } else if (
-      x >= bottom.x &&
-      x <= bottom.x + bottom.width &&
-      y >= bottom.y &&
-      y <= bottom.y + scaledYHeight
+      x >= bottom.x + cornerSquareHalfLength &&
+      x <= bottom.x + bottom.width - cornerSquareHalfLength &&
+      y >= bottom.y - cornerSquareHalfLength &&
+      y <= bottom.y + cornerSquareHalfLength
     ) {
       return ButtonDirection.BOTTOM;
     } else if (
-      x >= left.x - scaledXWidth + left.width &&
-      x <= left.x + left.width &&
-      y >= left.y &&
-      y <= left.y + left.height
+      x >= left.x - cornerSquareHalfLength &&
+      x <= left.x + cornerSquareHalfLength &&
+      y >= left.y + cornerSquareHalfLength &&
+      y <= left.y + left.height - cornerSquareHalfLength
     ) {
       return ButtonDirection.LEFT;
     } else if (
-      x >= right.x &&
-      x <= right.x + scaledXWidth &&
-      y >= right.y &&
-      y <= right.y + right.height
+      x >= right.x - cornerSquareHalfLength &&
+      x <= right.x + cornerSquareHalfLength &&
+      y >= right.y + cornerSquareHalfLength &&
+      y <= right.y + right.height - cornerSquareHalfLength
     ) {
       return ButtonDirection.RIGHT;
+    } else if (
+      x >= top.x - cornerSquareHalfLength &&
+      x <= top.x + cornerSquareHalfLength &&
+      y >= top.y - cornerSquareHalfLength &&
+      y <= top.y + cornerSquareHalfLength
+    ) {
+      return ButtonDirection.TOPLEFT;
+    } else if (
+      x >= right.x - cornerSquareHalfLength &&
+      x <= right.x + cornerSquareHalfLength &&
+      y >= right.y - cornerSquareHalfLength &&
+      y <= right.y + cornerSquareHalfLength
+    ) {
+      return ButtonDirection.TOPRIGHT;
+    } else if (
+      x >= bottom.x - cornerSquareHalfLength &&
+      x <= bottom.x + cornerSquareHalfLength &&
+      y >= bottom.y - cornerSquareHalfLength &&
+      y <= bottom.y + cornerSquareHalfLength
+    ) {
+      return ButtonDirection.BOTTOMLEFT;
+    } else if (
+      x >= right.x - cornerSquareHalfLength &&
+      x <= right.x + cornerSquareHalfLength &&
+      y >= bottom.y - cornerSquareHalfLength &&
+      y <= bottom.y + cornerSquareHalfLength
+    ) {
+      return ButtonDirection.BOTTOMRIGHT;
     } else {
       return null;
     }
