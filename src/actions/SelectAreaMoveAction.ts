@@ -1,18 +1,22 @@
 import { Action, ActionType } from "./Action";
-import { BrushTool, ColorChangeItem } from "../components/Canvas/types";
+import {
+  BrushTool,
+  ColorChangeItem,
+  SelectAreaRange,
+} from "../components/Canvas/types";
 import { Coord } from "../utils/types";
 
 export class SelectAreaMoveAction extends Action {
   type = ActionType.SelectAreaMove;
   data: Array<ColorChangeItem>;
   tool = BrushTool.SELECT;
-  previousSelectedArea: { startWorldPos: Coord; endWorldPos: Coord } | null;
-  newSelectedArea: { startWorldPos: Coord; endWorldPos: Coord } | null;
+  previousSelectedArea: SelectAreaRange | null;
+  newSelectedArea: SelectAreaRange | null;
 
   constructor(
     data: Array<ColorChangeItem>,
-    previousSelectedArea: { startWorldPos: Coord; endWorldPos: Coord } | null,
-    newSelectedArea: { startWorldPos: Coord; endWorldPos: Coord } | null,
+    previousSelectedArea: SelectAreaRange | null,
+    newSelectedArea: SelectAreaRange | null,
   ) {
     super();
     this.data = data;

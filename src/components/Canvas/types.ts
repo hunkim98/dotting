@@ -104,3 +104,10 @@ export type GridIndices = {
   leftColumnIndex: number;
   rightColumnIndex: number;
 };
+
+export type SelectAreaRange = {
+  startWorldPos: Coord;
+  endWorldPos: Coord;
+  startPixelIndex: Omit<PixelModifyItem, "color">;
+  endPixelIndex: Omit<PixelModifyItem, "color">;
+};
