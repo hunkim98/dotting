@@ -13,6 +13,7 @@ import {
   DottingData,
   GridIndices,
   PixelModifyItem,
+  SelectAreaRange,
 } from "./types";
 import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
 import {
@@ -51,20 +52,18 @@ export default class InteractionLayer extends BaseLayer {
 
   private dataLayerColumnCount: number;
 
-  private selectingArea: { startWorldPos: Coord; endWorldPos: Coord } | null =
-    null;
+  private selectingArea: Omit<
+    SelectAreaRange,
+    "startPixelIndex" | "endPixelIndex"
+  > | null = null;
 
-  private selectedArea: {
-    startWorldPos: Coord;
-    endWorldPos: Coord;
-  } | null = null;
+  private selectedArea: SelectAreaRange | null = null;
+
+  private capturedOriginalSelectedArea: SelectAreaRange | null = null;
 
   private directionToExtendSelectedArea: ButtonDirection | null = null;
 
-  private movingSelectedArea: {
-    startWorldPos: Coord;
-    endWorldPos: Coord;
-  } | null = null;
+  private movingSelectedArea: SelectAreaRange | null = null;
 
   private movingSelectedPixels: Array<ColorChangeItem> | null = null;
 
@@ -125,11 +124,13 @@ export default class InteractionLayer extends BaseLayer {
     this.directionToExtendSelectedArea = direction;
   }
 
-  setSelectedArea(area: { startWorldPos: Coord; endWorldPos: Coord } | null) {
+  setSelectedArea(area: SelectAreaRange | null) {
     this.selectedArea = area;
   }
 
-  setSelectingArea(area: { startWorldPos: Coord; endWorldPos: Coord } | null) {
+  setSelectingArea(
+    area: Omit<SelectAreaRange, "startPixelIndex" | "endPixelIndex"> | null,
+  ) {
     this.selectingArea = area;
   }
 
@@ -137,12 +138,7 @@ export default class InteractionLayer extends BaseLayer {
     this.movingSelectedPixels = pixels;
   }
 
-  setMovingSelectedArea(
-    area: {
-      startWorldPos: Coord;
-      endWorldPos: Coord;
-    } | null,
-  ) {
+  setMovingSelectedArea(area: SelectAreaRange | null) {
     this.movingSelectedArea = area;
   }
 
@@ -165,6 +161,11 @@ export default class InteractionLayer extends BaseLayer {
     this.capturedData = null;
     this.capturedDataOriginalIndices = null;
     this.deleteStrokePixelRecord(TemporaryUserId);
+  }
+
+  resetExtendSelectedArea() {
+    this.directionToExtendSelectedArea = null;
+    this.capturedOriginalSelectedArea = null;
   }
 
   getHoveredPixel() {
@@ -349,12 +350,9 @@ export default class InteractionLayer extends BaseLayer {
 
   extendSelectedAreaSideWays(direction: ButtonDirection, extendToCoord: Coord) {
     // startWorldPos is the top left point
-    const currentSelectedAreaWidth =
-      this.selectedArea.endWorldPos.x - this.selectedArea.startWorldPos.x;
-    const currentSelectedAreaHeight =
-      this.selectedArea.endWorldPos.y - this.selectedArea.startWorldPos.y;
     if (direction === ButtonDirection.TOP) {
-      const originPoint = this.selectedArea.endWorldPos;
+      const originPixelIndex = this.selectedArea.endPixelIndex;
+      let comparePixelIndex = this.selectedArea.startPixelIndex;
       // we extend the selected area to the top
       const unroundedExtensionHeight =
         this.selectedArea.endWorldPos.y - extendToCoord.y;
@@ -362,16 +360,43 @@ export default class InteractionLayer extends BaseLayer {
         unroundedExtensionHeight / this.gridSquareLength,
       );
       const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
-      if (heightPixelCount < this.minimumCount) {
+      if (heightPixelCount < 1) {
+        comparePixelIndex = {
+          rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+          columnIndex: this.selectedArea.endPixelIndex.columnIndex - 1,
+        };
+        this.setSelectedArea({
+          startWorldPos: {
+            x: this.selectedArea.startWorldPos.x,
+            y: this.selectedArea.endWorldPos.y - this.gridSquareLength,
+          },
+          endWorldPos: this.selectedArea.endWorldPos,
+          startPixelIndex: {
+            rowIndex: this.selectedArea.startPixelIndex.rowIndex,
+            columnIndex: this.selectedArea.endPixelIndex.columnIndex - 1,
+          },
+          endPixelIndex: comparePixelIndex,
+        });
+      } else {
+        comparePixelIndex = {
+          rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+          columnIndex:
+            this.selectedArea.endPixelIndex.columnIndex - heightPixelCount,
+        };
+        this.setSelectedArea({
+          startWorldPos: {
+            x: this.selectedArea.startWorldPos.x,
+            y: this.selectedArea.endWorldPos.y - roundedExtensionHeight,
+          },
+          endWorldPos: this.selectedArea.endWorldPos,
+          startPixelIndex: comparePixelIndex,
+          endPixelIndex: this.selectedArea.endPixelIndex,
+        });
+      }
+      for (const item in this.selectedAreaPixels) {
+        const extensionRatio = heightPixelCount / originPixelIndex.rowIndex;
         return;
       }
-      this.setSelectedArea({
-        startWorldPos: {
-          x: this.selectedArea.startWorldPos.x,
-          y: this.selectedArea.endWorldPos.y - roundedExtensionHeight,
-        },
-        endWorldPos: this.selectedArea.endWorldPos,
-      });
     } else if (direction === ButtonDirection.BOTTOM) {
       const originPoint = this.selectedArea.startWorldPos;
       // we extend the selected area to the bottom
@@ -381,7 +406,19 @@ export default class InteractionLayer extends BaseLayer {
         unroundedExtensionHeight / this.gridSquareLength,
       );
       const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
-      if (heightPixelCount < this.minimumCount) {
+      if (heightPixelCount < 1) {
+        this.setSelectedArea({
+          startWorldPos: this.selectedArea.startWorldPos,
+          endWorldPos: {
+            x: this.selectedArea.endWorldPos.x,
+            y: this.selectedArea.startWorldPos.y + this.gridSquareLength,
+          },
+          startPixelIndex: this.selectedArea.startPixelIndex,
+          endPixelIndex: {
+            rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+            columnIndex: this.selectedArea.startPixelIndex.columnIndex + 1,
+          },
+        });
         return;
       }
       this.setSelectedArea({
@@ -389,6 +426,12 @@ export default class InteractionLayer extends BaseLayer {
         endWorldPos: {
           x: this.selectedArea.endWorldPos.x,
           y: this.selectedArea.startWorldPos.y + roundedExtensionHeight,
+        },
+        startPixelIndex: this.selectedArea.startPixelIndex,
+        endPixelIndex: {
+          rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+          columnIndex:
+            this.selectedArea.startPixelIndex.columnIndex + heightPixelCount,
         },
       });
     } else if (direction === ButtonDirection.LEFT) {
@@ -400,7 +443,7 @@ export default class InteractionLayer extends BaseLayer {
         unroundedExtensionWidth / this.gridSquareLength,
       );
       const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
-      if (widthPixelCount < this.minimumCount) {
+      if (widthPixelCount < 1) {
         return;
       }
       this.setSelectedArea({
@@ -409,6 +452,12 @@ export default class InteractionLayer extends BaseLayer {
           y: this.selectedArea.startWorldPos.y,
         },
         endWorldPos: this.selectedArea.endWorldPos,
+        startPixelIndex: {
+          rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+          columnIndex:
+            this.selectedArea.endPixelIndex.columnIndex - widthPixelCount,
+        },
+        endPixelIndex: this.selectedArea.endPixelIndex,
       });
     } else if (direction === ButtonDirection.RIGHT) {
       const originPoint = this.selectedArea.startWorldPos;
@@ -419,7 +468,7 @@ export default class InteractionLayer extends BaseLayer {
         unroundedExtensionWidth / this.gridSquareLength,
       );
       const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
-      if (widthPixelCount < this.minimumCount) {
+      if (widthPixelCount < 1) {
         return;
       }
       this.setSelectedArea({
@@ -427,6 +476,12 @@ export default class InteractionLayer extends BaseLayer {
         endWorldPos: {
           x: this.selectedArea.startWorldPos.x + roundedExtensionWidth,
           y: this.selectedArea.endWorldPos.y,
+        },
+        startPixelIndex: this.selectedArea.startPixelIndex,
+        endPixelIndex: {
+          rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+          columnIndex:
+            this.selectedArea.startPixelIndex.columnIndex + widthPixelCount,
         },
       });
     }
@@ -437,16 +492,16 @@ export default class InteractionLayer extends BaseLayer {
     direction: ButtonDirection,
     extendToCoord: Coord,
   ) {
-    if (!this.selectedArea) {
+    if (!this.selectedArea || !this.capturedOriginalSelectedArea) {
       return;
     }
     if (direction === ButtonDirection.TOPLEFT) {
-      const originPoint = this.selectedArea.endWorldPos;
+      const originPoint = this.capturedOriginalSelectedArea.endWorldPos;
       // we extend the selected area to the top left
       const unroundedExtensionHeight =
-        this.selectedArea.endWorldPos.y - extendToCoord.y;
+        this.capturedOriginalSelectedArea.endWorldPos.y - extendToCoord.y;
       const unroundedExtensionWidth =
-        this.selectedArea.endWorldPos.x - extendToCoord.x;
+        this.capturedOriginalSelectedArea.endWorldPos.x - extendToCoord.x;
       const heightPixelCount = Math.round(
         unroundedExtensionHeight / this.gridSquareLength,
       );
@@ -456,22 +511,34 @@ export default class InteractionLayer extends BaseLayer {
 
       const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
       const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
-      if (heightPixelCount >= this.minimumCount) {
+      if (heightPixelCount >= 1) {
         this.setSelectedArea({
           startWorldPos: {
             x: this.selectedArea.startWorldPos.x,
             y: this.selectedArea.endWorldPos.y - roundedExtensionHeight,
           },
           endWorldPos: this.selectedArea.endWorldPos,
+          startPixelIndex: {
+            rowIndex:
+              this.selectedArea.endPixelIndex.rowIndex - heightPixelCount,
+            columnIndex: this.selectedArea.startPixelIndex.columnIndex,
+          },
+          endPixelIndex: this.selectedArea.endPixelIndex,
         });
       }
-      if (widthPixelCount >= this.minimumCount) {
+      if (widthPixelCount >= 1) {
         this.setSelectedArea({
           startWorldPos: {
             x: this.selectedArea.endWorldPos.x - roundedExtensionWidth,
             y: this.selectedArea.startWorldPos.y,
           },
           endWorldPos: this.selectedArea.endWorldPos,
+          startPixelIndex: {
+            rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+            columnIndex:
+              this.selectedArea.endPixelIndex.columnIndex - widthPixelCount,
+          },
+          endPixelIndex: this.selectedArea.endPixelIndex,
         });
       }
     } else if (direction === ButtonDirection.TOPRIGHT) {
@@ -489,21 +556,33 @@ export default class InteractionLayer extends BaseLayer {
       );
       const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
       const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
-      if (heightPixelCount >= this.minimumCount) {
+      if (heightPixelCount >= 1) {
         this.setSelectedArea({
           startWorldPos: {
             x: this.selectedArea.startWorldPos.x,
             y: this.selectedArea.endWorldPos.y - roundedExtensionHeight,
           },
           endWorldPos: this.selectedArea.endWorldPos,
+          startPixelIndex: {
+            rowIndex:
+              this.selectedArea.endPixelIndex.rowIndex - heightPixelCount,
+            columnIndex: this.selectedArea.startPixelIndex.columnIndex,
+          },
+          endPixelIndex: this.selectedArea.endPixelIndex,
         });
       }
-      if (widthPixelCount >= this.minimumCount) {
+      if (widthPixelCount >= 1) {
         this.setSelectedArea({
           startWorldPos: this.selectedArea.startWorldPos,
           endWorldPos: {
             x: this.selectedArea.startWorldPos.x + roundedExtensionWidth,
             y: this.selectedArea.endWorldPos.y,
+          },
+          startPixelIndex: this.selectedArea.startPixelIndex,
+          endPixelIndex: {
+            rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+            columnIndex:
+              this.selectedArea.startPixelIndex.columnIndex + widthPixelCount,
           },
         });
       }
@@ -522,22 +601,34 @@ export default class InteractionLayer extends BaseLayer {
       );
       const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
       const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
-      if (heightPixelCount >= this.minimumCount) {
+      if (heightPixelCount >= 1) {
         this.setSelectedArea({
           startWorldPos: this.selectedArea.startWorldPos,
           endWorldPos: {
             x: this.selectedArea.endWorldPos.x,
             y: this.selectedArea.startWorldPos.y + roundedExtensionHeight,
           },
+          startPixelIndex: this.selectedArea.startPixelIndex,
+          endPixelIndex: {
+            rowIndex: this.selectedArea.startPixelIndex.rowIndex,
+            columnIndex:
+              this.selectedArea.endPixelIndex.columnIndex + heightPixelCount,
+          },
         });
       }
-      if (widthPixelCount >= this.minimumCount) {
+      if (widthPixelCount >= 1) {
         this.setSelectedArea({
           startWorldPos: {
             x: this.selectedArea.endWorldPos.x - roundedExtensionWidth,
             y: this.selectedArea.startWorldPos.y,
           },
           endWorldPos: this.selectedArea.endWorldPos,
+          startPixelIndex: {
+            rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+            columnIndex:
+              this.selectedArea.startPixelIndex.columnIndex - widthPixelCount,
+          },
+          endPixelIndex: this.selectedArea.endPixelIndex,
         });
       }
     } else if (direction === ButtonDirection.BOTTOMRIGHT) {
@@ -555,21 +646,33 @@ export default class InteractionLayer extends BaseLayer {
       );
       const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
       const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
-      if (heightPixelCount >= this.minimumCount) {
+      if (heightPixelCount >= 1) {
         this.setSelectedArea({
           startWorldPos: this.selectedArea.startWorldPos,
           endWorldPos: {
             x: this.selectedArea.endWorldPos.x,
             y: this.selectedArea.startWorldPos.y + roundedExtensionHeight,
           },
+          startPixelIndex: this.selectedArea.startPixelIndex,
+          endPixelIndex: {
+            rowIndex: this.selectedArea.startPixelIndex.rowIndex,
+            columnIndex:
+              this.selectedArea.endPixelIndex.columnIndex + heightPixelCount,
+          },
         });
       }
-      if (widthPixelCount >= this.minimumCount) {
+      if (widthPixelCount >= 1) {
         this.setSelectedArea({
           startWorldPos: this.selectedArea.startWorldPos,
           endWorldPos: {
             x: this.selectedArea.startWorldPos.x + roundedExtensionWidth,
             y: this.selectedArea.endWorldPos.y,
+          },
+          startPixelIndex: this.selectedArea.startPixelIndex,
+          endPixelIndex: {
+            rowIndex: this.selectedArea.endPixelIndex.rowIndex,
+            columnIndex:
+              this.selectedArea.startPixelIndex.columnIndex + widthPixelCount,
           },
         });
       }
@@ -579,6 +682,9 @@ export default class InteractionLayer extends BaseLayer {
   extendSelectedArea(direction: ButtonDirection, extendToCoord: Coord) {
     if (!this.selectedArea) {
       return;
+    }
+    if (this.capturedOriginalSelectedArea === null) {
+      this.capturedOriginalSelectedArea = this.selectedArea;
     }
     switch (direction) {
       case ButtonDirection.TOP:

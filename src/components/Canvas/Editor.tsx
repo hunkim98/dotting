@@ -61,7 +61,6 @@ import {
   getDoesAreaOverlapPixelgrid,
 } from "../../utils/position";
 import Queue from "../../utils/queue";
-import Stack from "../../utils/stack";
 import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
 import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
@@ -1656,7 +1655,7 @@ export default class Editor extends EventDispatcher {
       } else {
         // we will move the selected area if the mouse is in the previous selected area
         // remove the selecting area if it exists
-        this.interactionLayer.setDirectionToExtendSelectedArea(null);
+        this.interactionLayer.resetExtendSelectedArea();
         this.interactionLayer.setSelectingArea(null);
         const data = this.dataLayer.getData();
         const rowCount = this.dataLayer.getRowCount();
@@ -1828,6 +1827,19 @@ export default class Editor extends EventDispatcher {
               previousSelectedArea.endWorldPos.y -
               pixelWiseDeltaY * this.gridSquareLength,
           },
+          startPixelIndex: {
+            rowIndex:
+              previousSelectedArea.startPixelIndex.rowIndex - pixelWiseDeltaY,
+            columnIndex:
+              previousSelectedArea.startPixelIndex.columnIndex -
+              pixelWiseDeltaX,
+          },
+          endPixelIndex: {
+            rowIndex:
+              previousSelectedArea.endPixelIndex.rowIndex - pixelWiseDeltaY,
+            columnIndex:
+              previousSelectedArea.endPixelIndex.columnIndex - pixelWiseDeltaX,
+          },
         });
         this.interactionLayer.setMovingSelectedPixels(newMovingSelectedPixels);
         const selectedArea = this.interactionLayer.getMovingSelectedArea();
@@ -1938,6 +1950,11 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.setSelectedArea({
           startWorldPos: region.startWorldPos,
           endWorldPos: region.endWorldPos,
+          startPixelIndex: region.includedPixelsIndices[0],
+          endPixelIndex:
+            region.includedPixelsIndices[
+              region.includedPixelsIndices.length - 1
+            ],
         });
         const pixelData = this.dataLayer.getData();
         const regionPixelItems: Array<ColorChangeItem> = [];
@@ -2092,7 +2109,7 @@ export default class Editor extends EventDispatcher {
     touchy(this.element, removeEvent, "mousemove", this.handleExtension);
     this.pinchZoomDiff = undefined;
     this.gridLayer.setHoveredButton(null);
-    this.interactionLayer.setDirectionToExtendSelectedArea(null);
+    this.interactionLayer.resetExtendSelectedArea();
     // we make mouse down world position null
     this.mouseDownWorldPos = null;
     this.mouseDownPanZoom = null;
