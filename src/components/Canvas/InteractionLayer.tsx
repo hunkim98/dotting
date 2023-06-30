@@ -254,32 +254,36 @@ export default class InteractionLayer extends BaseLayer {
     );
     const x = coord.x;
     const y = coord.y;
-    const { areaTopLeftPos, areaBottomRightPos } = getAreaTopLeftAndBottomRight(
-      this.selectedArea,
-    );
+    // const { areaTopLeftPos, areaBottomRightPos } = getAreaTopLeftAndBottomRight(
+    // this.selectedArea,
+    // );
+    const selectedAreaWidth =
+      this.selectedArea.endWorldPos.x - this.selectedArea.startWorldPos.x;
+    const selectedAreaHeight =
+      this.selectedArea.endWorldPos.y - this.selectedArea.startWorldPos.y;
     const top = {
-      x: areaTopLeftPos.x,
-      y: areaTopLeftPos.y,
-      width: areaBottomRightPos.x - areaTopLeftPos.x,
+      x: this.selectedArea.startWorldPos.x,
+      y: this.selectedArea.startWorldPos.y,
+      width: selectedAreaWidth,
       height: scaledYHeight,
     };
     const bottom = {
-      x: areaTopLeftPos.x,
-      y: areaBottomRightPos.y,
-      width: areaBottomRightPos.x - areaTopLeftPos.x,
+      x: this.selectedArea.startWorldPos.x,
+      y: this.selectedArea.endWorldPos.y,
+      width: selectedAreaWidth,
       height: scaledYHeight,
     };
     const left = {
-      x: areaTopLeftPos.x,
-      y: areaTopLeftPos.y,
+      x: this.selectedArea.startWorldPos.x,
+      y: this.selectedArea.startWorldPos.y,
       width: scaledXWidth,
-      height: areaBottomRightPos.y - areaTopLeftPos.y,
+      height: selectedAreaHeight,
     };
     const right = {
-      x: areaBottomRightPos.x,
-      y: areaTopLeftPos.y,
+      x: this.selectedArea.endWorldPos.x,
+      y: this.selectedArea.startWorldPos.y,
       width: scaledXWidth,
-      height: areaBottomRightPos.y - areaTopLeftPos.y,
+      height: selectedAreaHeight,
     };
     const cornerSquareHalfLength = left.width;
     if (
@@ -340,6 +344,76 @@ export default class InteractionLayer extends BaseLayer {
       return ButtonDirection.BOTTOMRIGHT;
     } else {
       return null;
+    }
+  }
+
+  extendSelectedAreaSideWays(direction: ButtonDirection, extendToCoord: Coord) {
+    // startWorldPos is the top left point
+    const currentSelectedAreaWidth =
+      this.selectedArea.endWorldPos.x - this.selectedArea.startWorldPos.x;
+    const currentSelectedAreaHeight =
+      this.selectedArea.endWorldPos.y - this.selectedArea.startWorldPos.y;
+    if (direction === ButtonDirection.TOP) {
+      const originPoint = this.selectedArea.endWorldPos;
+      // we extend the selected area to the top
+      const unroundedExtensionHeight =
+        this.selectedArea.endWorldPos.y - extendToCoord.y;
+      const heightPixelCount = Math.round(
+        unroundedExtensionHeight / this.gridSquareLength,
+      );
+      const roundedExtensionHeight =
+        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
+        this.gridSquareLength;
+      if (heightPixelCount < this.minimumCount) {
+        return;
+      }
+      this.setSelectedArea({
+        startWorldPos: {
+          x: this.selectedArea.startWorldPos.x,
+          y: this.selectedArea.endWorldPos.y - roundedExtensionHeight,
+        },
+        endWorldPos: this.selectedArea.endWorldPos,
+      });
+    } else if (direction === ButtonDirection.BOTTOM) {
+      return;
+    } else if (direction === ButtonDirection.LEFT) {
+      return;
+    } else if (direction === ButtonDirection.RIGHT) {
+      return;
+    }
+    return;
+  }
+
+  extendSelectedAreaDiagonally(direction: ButtonDirection) {
+    const originPoint = this.selectedArea.startWorldPos;
+    return;
+  }
+
+  extendSelectedArea(direction: ButtonDirection, extendToCoord: Coord) {
+    if (!this.selectedArea) {
+      return;
+    }
+    const { areaTopLeftPos, areaBottomRightPos } = getAreaTopLeftAndBottomRight(
+      this.selectedArea,
+    );
+    switch (direction) {
+      case ButtonDirection.TOP:
+        this.extendSelectedAreaSideWays(ButtonDirection.TOP, extendToCoord);
+        break;
+      case ButtonDirection.BOTTOM:
+        break;
+      case ButtonDirection.LEFT:
+        break;
+      case ButtonDirection.RIGHT:
+        break;
+      case ButtonDirection.TOPLEFT:
+        break;
+      case ButtonDirection.TOPRIGHT:
+        break;
+      case ButtonDirection.BOTTOMLEFT:
+        break;
+      case ButtonDirection.BOTTOMRIGHT:
+        break;
     }
   }
 

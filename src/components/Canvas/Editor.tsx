@@ -1628,15 +1628,16 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.setDirectionToExtendSelectedArea(
           directionToExtendSelectedArea,
         );
-        // if there is a direction to extend selected area, we don't need to do anything else
-        if (directionToExtendSelectedArea !== null) {
-          return;
-        }
+
         // there is a selected area in the interaction layer
         isMouseCoordInSelectedArea = getIsPointInsideRegion(
           this.mouseDownWorldPos,
           previousSelectedArea,
         );
+        // if there is a direction to extend selected area, we don't need to do anything else
+        if (directionToExtendSelectedArea !== null) {
+          return;
+        }
       }
       // we need to reset the selected area if the mouse is not in the previous selected area
       if (!isMouseCoordInSelectedArea) {
@@ -1648,6 +1649,7 @@ export default class Editor extends EventDispatcher {
       } else {
         // we will move the selected area if the mouse is in the previous selected area
         // remove the selecting area if it exists
+        this.interactionLayer.setDirectionToExtendSelectedArea(null);
         this.interactionLayer.setSelectingArea(null);
         const data = this.dataLayer.getData();
         const rowCount = this.dataLayer.getRowCount();
@@ -1771,7 +1773,7 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.getDirectionToExtendSelectedArea();
       if (directionToExtendSelectedArea !== null) {
         // if there is a direction to extend selected area, it means that there is a selected area
-        console.log(directionToExtendSelectedArea);
+        console.log(directionToExtendSelectedArea, "hi");
       }
       if (
         movingSelectedPixels &&
