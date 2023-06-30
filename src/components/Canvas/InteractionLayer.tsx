@@ -375,44 +375,271 @@ export default class InteractionLayer extends BaseLayer {
         endWorldPos: this.selectedArea.endWorldPos,
       });
     } else if (direction === ButtonDirection.BOTTOM) {
-      return;
+      const originPoint = this.selectedArea.startWorldPos;
+      // we extend the selected area to the bottom
+      const unroundedExtensionHeight =
+        extendToCoord.y - this.selectedArea.startWorldPos.y;
+      const heightPixelCount = Math.round(
+        unroundedExtensionHeight / this.gridSquareLength,
+      );
+      const roundedExtensionHeight =
+        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
+        this.gridSquareLength;
+      if (heightPixelCount < this.minimumCount) {
+        return;
+      }
+      this.setSelectedArea({
+        startWorldPos: this.selectedArea.startWorldPos,
+        endWorldPos: {
+          x: this.selectedArea.endWorldPos.x,
+          y: this.selectedArea.startWorldPos.y + roundedExtensionHeight,
+        },
+      });
     } else if (direction === ButtonDirection.LEFT) {
-      return;
+      const originPoint = this.selectedArea.endWorldPos;
+      // we extend the selected area to the left
+      const unroundedExtensionWidth =
+        this.selectedArea.endWorldPos.x - extendToCoord.x;
+      const widthPixelCount = Math.round(
+        unroundedExtensionWidth / this.gridSquareLength,
+      );
+      const roundedExtensionWidth =
+        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
+        this.gridSquareLength;
+      if (widthPixelCount < this.minimumCount) {
+        return;
+      }
+      this.setSelectedArea({
+        startWorldPos: {
+          x: this.selectedArea.endWorldPos.x - roundedExtensionWidth,
+          y: this.selectedArea.startWorldPos.y,
+        },
+        endWorldPos: this.selectedArea.endWorldPos,
+      });
     } else if (direction === ButtonDirection.RIGHT) {
-      return;
+      const originPoint = this.selectedArea.startWorldPos;
+      // we extend the selected area to the right
+      const unroundedExtensionWidth =
+        extendToCoord.x - this.selectedArea.startWorldPos.x;
+      const widthPixelCount = Math.round(
+        unroundedExtensionWidth / this.gridSquareLength,
+      );
+      const roundedExtensionWidth =
+        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
+        this.gridSquareLength;
+      if (widthPixelCount < this.minimumCount) {
+        return;
+      }
+      this.setSelectedArea({
+        startWorldPos: this.selectedArea.startWorldPos,
+        endWorldPos: {
+          x: this.selectedArea.startWorldPos.x + roundedExtensionWidth,
+          y: this.selectedArea.endWorldPos.y,
+        },
+      });
     }
     return;
   }
 
-  extendSelectedAreaDiagonally(direction: ButtonDirection) {
-    const originPoint = this.selectedArea.startWorldPos;
-    return;
+  extendSelectedAreaDiagonally(
+    direction: ButtonDirection,
+    extendToCoord: Coord,
+  ) {
+    if (!this.selectedArea) {
+      return;
+    }
+    if (direction === ButtonDirection.TOPLEFT) {
+      const originPoint = this.selectedArea.endWorldPos;
+      // we extend the selected area to the top left
+      const unroundedExtensionHeight =
+        this.selectedArea.endWorldPos.y - extendToCoord.y;
+      const unroundedExtensionWidth =
+        this.selectedArea.endWorldPos.x - extendToCoord.x;
+      const heightPixelCount = Math.round(
+        unroundedExtensionHeight / this.gridSquareLength,
+      );
+      const widthPixelCount = Math.round(
+        unroundedExtensionWidth / this.gridSquareLength,
+      );
+
+      const roundedExtensionHeight =
+        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
+        this.gridSquareLength;
+      const roundedExtensionWidth =
+        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
+        this.gridSquareLength;
+      if (heightPixelCount >= this.minimumCount) {
+        this.setSelectedArea({
+          startWorldPos: {
+            x: this.selectedArea.startWorldPos.x,
+            y: this.selectedArea.endWorldPos.y - roundedExtensionHeight,
+          },
+          endWorldPos: this.selectedArea.endWorldPos,
+        });
+      }
+      if (widthPixelCount >= this.minimumCount) {
+        this.setSelectedArea({
+          startWorldPos: {
+            x: this.selectedArea.endWorldPos.x - roundedExtensionWidth,
+            y: this.selectedArea.startWorldPos.y,
+          },
+          endWorldPos: this.selectedArea.endWorldPos,
+        });
+      }
+    } else if (direction === ButtonDirection.TOPRIGHT) {
+      const originPoint = this.selectedArea.startWorldPos;
+      // we extend the selected area to the top right
+      const unroundedExtensionHeight =
+        this.selectedArea.endWorldPos.y - extendToCoord.y;
+      const unroundedExtensionWidth =
+        extendToCoord.x - this.selectedArea.startWorldPos.x;
+      const heightPixelCount = Math.round(
+        unroundedExtensionHeight / this.gridSquareLength,
+      );
+      const widthPixelCount = Math.round(
+        unroundedExtensionWidth / this.gridSquareLength,
+      );
+      const roundedExtensionHeight =
+        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
+        this.gridSquareLength;
+      const roundedExtensionWidth =
+        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
+        this.gridSquareLength;
+      if (heightPixelCount >= this.minimumCount) {
+        this.setSelectedArea({
+          startWorldPos: {
+            x: this.selectedArea.startWorldPos.x,
+            y: this.selectedArea.endWorldPos.y - roundedExtensionHeight,
+          },
+          endWorldPos: this.selectedArea.endWorldPos,
+        });
+      }
+      if (widthPixelCount >= this.minimumCount) {
+        this.setSelectedArea({
+          startWorldPos: this.selectedArea.startWorldPos,
+          endWorldPos: {
+            x: this.selectedArea.startWorldPos.x + roundedExtensionWidth,
+            y: this.selectedArea.endWorldPos.y,
+          },
+        });
+      }
+    } else if (direction === ButtonDirection.BOTTOMLEFT) {
+      const originPoint = this.selectedArea.endWorldPos;
+      // we extend the selected area to the bottom left
+      const unroundedExtensionHeight =
+        extendToCoord.y - this.selectedArea.startWorldPos.y;
+      const unroundedExtensionWidth =
+        this.selectedArea.endWorldPos.x - extendToCoord.x;
+      const heightPixelCount = Math.round(
+        unroundedExtensionHeight / this.gridSquareLength,
+      );
+      const widthPixelCount = Math.round(
+        unroundedExtensionWidth / this.gridSquareLength,
+      );
+      const roundedExtensionHeight =
+        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
+        this.gridSquareLength;
+      const roundedExtensionWidth =
+        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
+        this.gridSquareLength;
+      if (heightPixelCount >= this.minimumCount) {
+        this.setSelectedArea({
+          startWorldPos: this.selectedArea.startWorldPos,
+          endWorldPos: {
+            x: this.selectedArea.endWorldPos.x,
+            y: this.selectedArea.startWorldPos.y + roundedExtensionHeight,
+          },
+        });
+      }
+      if (widthPixelCount >= this.minimumCount) {
+        this.setSelectedArea({
+          startWorldPos: {
+            x: this.selectedArea.endWorldPos.x - roundedExtensionWidth,
+            y: this.selectedArea.startWorldPos.y,
+          },
+          endWorldPos: this.selectedArea.endWorldPos,
+        });
+      }
+    } else if (direction === ButtonDirection.BOTTOMRIGHT) {
+      const originPoint = this.selectedArea.startWorldPos;
+      // we extend the selected area to the bottom right
+      const unroundedExtensionHeight =
+        extendToCoord.y - this.selectedArea.startWorldPos.y;
+      const unroundedExtensionWidth =
+        extendToCoord.x - this.selectedArea.startWorldPos.x;
+      const heightPixelCount = Math.round(
+        unroundedExtensionHeight / this.gridSquareLength,
+      );
+      const widthPixelCount = Math.round(
+        unroundedExtensionWidth / this.gridSquareLength,
+      );
+      const roundedExtensionHeight =
+        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
+        this.gridSquareLength;
+      const roundedExtensionWidth =
+        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
+        this.gridSquareLength;
+      if (heightPixelCount >= this.minimumCount) {
+        this.setSelectedArea({
+          startWorldPos: this.selectedArea.startWorldPos,
+          endWorldPos: {
+            x: this.selectedArea.endWorldPos.x,
+            y: this.selectedArea.startWorldPos.y + roundedExtensionHeight,
+          },
+        });
+      }
+      if (widthPixelCount >= this.minimumCount) {
+        this.setSelectedArea({
+          startWorldPos: this.selectedArea.startWorldPos,
+          endWorldPos: {
+            x: this.selectedArea.startWorldPos.x + roundedExtensionWidth,
+            y: this.selectedArea.endWorldPos.y,
+          },
+        });
+      }
+    }
   }
 
   extendSelectedArea(direction: ButtonDirection, extendToCoord: Coord) {
     if (!this.selectedArea) {
       return;
     }
-    const { areaTopLeftPos, areaBottomRightPos } = getAreaTopLeftAndBottomRight(
-      this.selectedArea,
-    );
     switch (direction) {
       case ButtonDirection.TOP:
         this.extendSelectedAreaSideWays(ButtonDirection.TOP, extendToCoord);
         break;
       case ButtonDirection.BOTTOM:
+        this.extendSelectedAreaSideWays(ButtonDirection.BOTTOM, extendToCoord);
         break;
       case ButtonDirection.LEFT:
+        this.extendSelectedAreaSideWays(ButtonDirection.LEFT, extendToCoord);
         break;
       case ButtonDirection.RIGHT:
+        this.extendSelectedAreaSideWays(ButtonDirection.RIGHT, extendToCoord);
         break;
       case ButtonDirection.TOPLEFT:
+        this.extendSelectedAreaDiagonally(
+          ButtonDirection.TOPLEFT,
+          extendToCoord,
+        );
         break;
       case ButtonDirection.TOPRIGHT:
+        this.extendSelectedAreaDiagonally(
+          ButtonDirection.TOPRIGHT,
+          extendToCoord,
+        );
         break;
       case ButtonDirection.BOTTOMLEFT:
+        this.extendSelectedAreaDiagonally(
+          ButtonDirection.BOTTOMLEFT,
+          extendToCoord,
+        );
         break;
       case ButtonDirection.BOTTOMRIGHT:
+        this.extendSelectedAreaDiagonally(
+          ButtonDirection.BOTTOMRIGHT,
+          extendToCoord,
+        );
         break;
     }
   }
