@@ -373,7 +373,8 @@ export default class Editor extends EventDispatcher {
           break;
         case BrushTool.SELECT:
           this.element.style.cursor = `crosshair`;
-          if (this.interactionLayer.getSelectedArea()) {
+          const selectedArea = this.interactionLayer.getSelectedArea();
+          if (selectedArea) {
             const direction =
               this.interactionLayer.detectSelectedAreaExtendDirection(
                 mouseCoord,
@@ -406,7 +407,13 @@ export default class Editor extends EventDispatcher {
                   break;
               }
             } else {
-              this.element.style.cursor = `grab`;
+              const isMouseCoordInSelectedArea = getIsPointInsideRegion(
+                mouseCoord,
+                selectedArea,
+              );
+              if (isMouseCoordInSelectedArea) {
+                this.element.style.cursor = `grab`;
+              }
             }
           }
           break;
