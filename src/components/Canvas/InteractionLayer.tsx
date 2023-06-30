@@ -361,9 +361,7 @@ export default class InteractionLayer extends BaseLayer {
       const heightPixelCount = Math.round(
         unroundedExtensionHeight / this.gridSquareLength,
       );
-      const roundedExtensionHeight =
-        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
-        this.gridSquareLength;
+      const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
       if (heightPixelCount < this.minimumCount) {
         return;
       }
@@ -382,9 +380,7 @@ export default class InteractionLayer extends BaseLayer {
       const heightPixelCount = Math.round(
         unroundedExtensionHeight / this.gridSquareLength,
       );
-      const roundedExtensionHeight =
-        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
-        this.gridSquareLength;
+      const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
       if (heightPixelCount < this.minimumCount) {
         return;
       }
@@ -403,9 +399,7 @@ export default class InteractionLayer extends BaseLayer {
       const widthPixelCount = Math.round(
         unroundedExtensionWidth / this.gridSquareLength,
       );
-      const roundedExtensionWidth =
-        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
-        this.gridSquareLength;
+      const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
       if (widthPixelCount < this.minimumCount) {
         return;
       }
@@ -424,9 +418,7 @@ export default class InteractionLayer extends BaseLayer {
       const widthPixelCount = Math.round(
         unroundedExtensionWidth / this.gridSquareLength,
       );
-      const roundedExtensionWidth =
-        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
-        this.gridSquareLength;
+      const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
       if (widthPixelCount < this.minimumCount) {
         return;
       }
@@ -462,12 +454,8 @@ export default class InteractionLayer extends BaseLayer {
         unroundedExtensionWidth / this.gridSquareLength,
       );
 
-      const roundedExtensionHeight =
-        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
-        this.gridSquareLength;
-      const roundedExtensionWidth =
-        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
-        this.gridSquareLength;
+      const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
+      const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
       if (heightPixelCount >= this.minimumCount) {
         this.setSelectedArea({
           startWorldPos: {
@@ -499,12 +487,8 @@ export default class InteractionLayer extends BaseLayer {
       const widthPixelCount = Math.round(
         unroundedExtensionWidth / this.gridSquareLength,
       );
-      const roundedExtensionHeight =
-        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
-        this.gridSquareLength;
-      const roundedExtensionWidth =
-        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
-        this.gridSquareLength;
+      const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
+      const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
       if (heightPixelCount >= this.minimumCount) {
         this.setSelectedArea({
           startWorldPos: {
@@ -536,12 +520,8 @@ export default class InteractionLayer extends BaseLayer {
       const widthPixelCount = Math.round(
         unroundedExtensionWidth / this.gridSquareLength,
       );
-      const roundedExtensionHeight =
-        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
-        this.gridSquareLength;
-      const roundedExtensionWidth =
-        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
-        this.gridSquareLength;
+      const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
+      const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
       if (heightPixelCount >= this.minimumCount) {
         this.setSelectedArea({
           startWorldPos: this.selectedArea.startWorldPos,
@@ -573,12 +553,8 @@ export default class InteractionLayer extends BaseLayer {
       const widthPixelCount = Math.round(
         unroundedExtensionWidth / this.gridSquareLength,
       );
-      const roundedExtensionHeight =
-        Math.floor(unroundedExtensionHeight / this.gridSquareLength) *
-        this.gridSquareLength;
-      const roundedExtensionWidth =
-        Math.floor(unroundedExtensionWidth / this.gridSquareLength) *
-        this.gridSquareLength;
+      const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
+      const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
       if (heightPixelCount >= this.minimumCount) {
         this.setSelectedArea({
           startWorldPos: this.selectedArea.startWorldPos,
