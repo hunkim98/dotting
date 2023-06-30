@@ -1773,7 +1773,12 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.getDirectionToExtendSelectedArea();
       if (directionToExtendSelectedArea !== null) {
         // if there is a direction to extend selected area, it means that there is a selected area
-        console.log(directionToExtendSelectedArea, "hi");
+        this.interactionLayer.extendSelectedArea(
+          directionToExtendSelectedArea,
+          this.mouseMoveWorldPos,
+        );
+        this.gridLayer.render();
+        this.gridLayer.renderSelection(this.interactionLayer.getSelectedArea());
       }
       if (
         movingSelectedPixels &&
