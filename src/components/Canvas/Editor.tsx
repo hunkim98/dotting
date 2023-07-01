@@ -1642,6 +1642,9 @@ export default class Editor extends EventDispatcher {
         );
         // if there is a direction to extend selected area, we don't need to do anything else
         if (directionToExtendSelectedArea !== null) {
+          this.dataLayer.erasePixels(
+            this.interactionLayer.getSelectedAreaPixels()!,
+          );
           return;
         }
       }
@@ -1785,6 +1788,7 @@ export default class Editor extends EventDispatcher {
         );
         this.gridLayer.render();
         this.gridLayer.renderSelection(this.interactionLayer.getSelectedArea());
+        this.interactionLayer.render();
       }
       if (
         movingSelectedPixels &&
