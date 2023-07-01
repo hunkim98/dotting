@@ -383,3 +383,85 @@ export const returnScrollOffsetFromMouseOffset = (
 
   return offset;
 };
+
+export const getRelativeCornerWordPosOfPixelToOrigin = (
+  // the pixelIndex passed as a parameter should be an integer
+  pixelIndex: {
+    rowIndex: number;
+    columnIndex: number;
+  },
+  originPixelIndex: { rowIndex: number; columnIndex: number },
+  gridSquareLength: number,
+) => {
+  // it will return world pos relative to originpixel word pos
+  // the origin will be set to 0,0
+
+  return {
+    topLeft: {
+      x:
+        (pixelIndex.columnIndex - originPixelIndex.columnIndex) *
+        gridSquareLength,
+      y: (pixelIndex.rowIndex - originPixelIndex.rowIndex) * gridSquareLength,
+    },
+    topRight: {
+      x:
+        (pixelIndex.columnIndex - originPixelIndex.columnIndex + 1) *
+        gridSquareLength,
+      y: (pixelIndex.rowIndex - originPixelIndex.rowIndex) * gridSquareLength,
+    },
+    bottomLeft: {
+      x:
+        (pixelIndex.columnIndex - originPixelIndex.columnIndex) *
+        gridSquareLength,
+      y:
+        (pixelIndex.rowIndex - originPixelIndex.rowIndex + 1) *
+        gridSquareLength,
+    },
+    bottomRight: {
+      x:
+        (pixelIndex.columnIndex - originPixelIndex.columnIndex + 1) *
+        gridSquareLength,
+      y:
+        (pixelIndex.rowIndex - originPixelIndex.rowIndex + 1) *
+        gridSquareLength,
+    },
+  };
+};
+
+export const getCornerPixelIndices = (
+  // the pixelIndex passed as a parameter should be an integer
+  centerPixelIndex: {
+    rowIndex: number;
+    columnIndex: number;
+  },
+  halvedHeight: number,
+  halvedWidth: number,
+) => {
+  const baseCenterPixelIndex = {
+    rowIndex: Math.floor(centerPixelIndex.rowIndex) + 0.5,
+    columnIndex: Math.floor(centerPixelIndex.columnIndex) + 0.5,
+  };
+  console.log("baseCenterPixelIndex", baseCenterPixelIndex);
+  console.log(
+    "floor",
+    Math.floor(baseCenterPixelIndex.columnIndex + halvedWidth),
+  );
+  return {
+    topLeft: {
+      rowIndex: Math.round(centerPixelIndex.rowIndex - halvedHeight),
+      columnIndex: Math.round(centerPixelIndex.columnIndex - halvedWidth),
+    },
+    topRight: {
+      rowIndex: Math.round(centerPixelIndex.rowIndex - halvedHeight),
+      columnIndex: Math.floor(centerPixelIndex.columnIndex + halvedWidth),
+    },
+    bottomLeft: {
+      rowIndex: Math.floor(centerPixelIndex.rowIndex + halvedHeight),
+      columnIndex: Math.round(centerPixelIndex.columnIndex - halvedWidth),
+    },
+    bottomRight: {
+      rowIndex: Math.floor(centerPixelIndex.rowIndex + halvedHeight),
+      columnIndex: Math.floor(centerPixelIndex.columnIndex + halvedWidth),
+    },
+  };
+};

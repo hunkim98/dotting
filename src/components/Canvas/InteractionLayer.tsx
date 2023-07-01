@@ -32,7 +32,11 @@ import {
   getScreenPoint,
   lerpRanges,
 } from "../../utils/math";
-import { getAreaTopLeftAndBottomRight } from "../../utils/position";
+import {
+  getAreaTopLeftAndBottomRight,
+  getCornerPixelIndices,
+  getRelativeCornerWordPosOfPixelToOrigin,
+} from "../../utils/position";
 
 export default class InteractionLayer extends BaseLayer {
   // We make this a map to allow for multiple users to interact with the canvas
@@ -67,7 +71,12 @@ export default class InteractionLayer extends BaseLayer {
 
   private movingSelectedPixels: Array<ColorChangeItem> | null = null;
 
+  private extendingSelectedPixels: Array<ColorChangeItem | null> | null = null;
+
   private selectedAreaPixels: Array<ColorChangeItem> | null = null;
+
+  private capturedOriginalSelectedAreaPixels: Array<ColorChangeItem> | null =
+    null;
 
   // this is to prevent other user's grid change from being applied to the canvas
   // when this is not null we will not render data layer
@@ -138,6 +147,10 @@ export default class InteractionLayer extends BaseLayer {
     this.movingSelectedPixels = pixels;
   }
 
+  setExtendingSelectedPixels(pixels: Array<ColorChangeItem | null> | null) {
+    this.extendingSelectedPixels = pixels;
+  }
+
   setMovingSelectedArea(area: SelectAreaRange | null) {
     this.movingSelectedArea = area;
   }
@@ -165,7 +178,17 @@ export default class InteractionLayer extends BaseLayer {
 
   resetExtendSelectedArea() {
     this.directionToExtendSelectedArea = null;
-    this.capturedOriginalSelectedArea = null;
+    if (this.selectedArea !== null) {
+      this.capturedOriginalSelectedArea = { ...this.selectedArea };
+    } else {
+      this.capturedOriginalSelectedArea = null;
+    }
+
+    if (this.selectedArea !== null) {
+      this.capturedOriginalSelectedAreaPixels = [...this.selectedAreaPixels!];
+    } else {
+      this.capturedOriginalSelectedAreaPixels = [];
+    }
   }
 
   getHoveredPixel() {
@@ -350,9 +373,20 @@ export default class InteractionLayer extends BaseLayer {
 
   extendSelectedAreaSideWays(direction: ButtonDirection, extendToCoord: Coord) {
     // startWorldPos is the top left point
+    const originalSelectAreaHeightPixelOffset =
+      this.capturedOriginalSelectedArea.endPixelIndex.rowIndex -
+      this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+    const originalSelectAreaWidthPixelCount =
+      this.capturedOriginalSelectedArea.endPixelIndex.columnIndex -
+      this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+      1;
+    let comparePixelIndex = this.selectedArea.startPixelIndex;
     if (direction === ButtonDirection.TOP) {
-      const originPixelIndex = this.selectedArea.endPixelIndex;
-      let comparePixelIndex = this.selectedArea.startPixelIndex;
+      const originPixelIndex = {
+        rowIndex: this.capturedOriginalSelectedArea.endPixelIndex.rowIndex,
+        columnIndex:
+          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex,
+      };
       // we extend the selected area to the top
       const unroundedExtensionHeight =
         this.selectedArea.endWorldPos.y - extendToCoord.y;
@@ -363,7 +397,7 @@ export default class InteractionLayer extends BaseLayer {
       if (heightPixelCount < 1) {
         comparePixelIndex = {
           rowIndex: this.selectedArea.endPixelIndex.rowIndex,
-          columnIndex: this.selectedArea.endPixelIndex.columnIndex - 1,
+          columnIndex: this.selectedArea.endPixelIndex.columnIndex,
         };
         this.setSelectedArea({
           startWorldPos: {
@@ -371,17 +405,14 @@ export default class InteractionLayer extends BaseLayer {
             y: this.selectedArea.endWorldPos.y - this.gridSquareLength,
           },
           endWorldPos: this.selectedArea.endWorldPos,
-          startPixelIndex: {
-            rowIndex: this.selectedArea.startPixelIndex.rowIndex,
-            columnIndex: this.selectedArea.endPixelIndex.columnIndex - 1,
-          },
-          endPixelIndex: comparePixelIndex,
+          startPixelIndex: comparePixelIndex,
+          endPixelIndex: this.selectedArea.endPixelIndex,
         });
       } else {
         comparePixelIndex = {
-          rowIndex: this.selectedArea.endPixelIndex.rowIndex,
-          columnIndex:
-            this.selectedArea.endPixelIndex.columnIndex - heightPixelCount,
+          rowIndex:
+            this.selectedArea.endPixelIndex.rowIndex - heightPixelCount + 1,
+          columnIndex: this.selectedArea.endPixelIndex.columnIndex,
         };
         this.setSelectedArea({
           startWorldPos: {
@@ -393,10 +424,56 @@ export default class InteractionLayer extends BaseLayer {
           endPixelIndex: this.selectedArea.endPixelIndex,
         });
       }
-      for (const item in this.selectedAreaPixels) {
-        const extensionRatio = heightPixelCount / originPixelIndex.rowIndex;
-        return;
+      const modifyRatio =
+        (originPixelIndex.rowIndex - comparePixelIndex.rowIndex) /
+        originalSelectAreaHeightPixelOffset;
+      console.log(modifyRatio);
+      const pixelsToColor: Array<ColorChangeItem> = [];
+      for (const item of this.capturedOriginalSelectedAreaPixels) {
+        const pixelDistanceFromOrigin = {
+          rowOffset: item.rowIndex - originPixelIndex.rowIndex,
+          columnOffset: item.columnIndex - originPixelIndex.columnIndex,
+        };
+        // only the row is offsetted
+        const newPixelIndex = {
+          rowIndex:
+            originPixelIndex.rowIndex +
+            pixelDistanceFromOrigin.rowOffset * modifyRatio,
+          columnIndex:
+            originPixelIndex.columnIndex + pixelDistanceFromOrigin.columnOffset,
+        };
+        const originPixelWorldPos = {
+          x: this.capturedOriginalSelectedArea.startWorldPos.x,
+          y: this.capturedOriginalSelectedArea.startWorldPos.y,
+        };
+        const halvedPixelSquareHeight = (modifyRatio * 0.5) / 2;
+        const halvedPixelSquareWidth = 0.5;
+        const cornerPixelIndices = getCornerPixelIndices(
+          newPixelIndex,
+          halvedPixelSquareHeight,
+          halvedPixelSquareWidth,
+        );
+        // console.log(cornerPixelIndices, "item");
+        for (
+          let i = cornerPixelIndices.topLeft.columnIndex;
+          i <= cornerPixelIndices.topRight.columnIndex;
+          i += 0.5
+        ) {
+          for (
+            let j = cornerPixelIndices.topLeft.rowIndex;
+            j <= cornerPixelIndices.bottomRight.rowIndex;
+            j += 0.5
+          ) {
+            pixelsToColor.push({
+              columnIndex: i,
+              rowIndex: j,
+              color: item.color,
+              previousColor: item.previousColor,
+            });
+          }
+        }
       }
+      this.setExtendingSelectedPixels(pixelsToColor);
     } else if (direction === ButtonDirection.BOTTOM) {
       const originPoint = this.selectedArea.startWorldPos;
       // we extend the selected area to the bottom
@@ -685,6 +762,10 @@ export default class InteractionLayer extends BaseLayer {
     }
     if (this.capturedOriginalSelectedArea === null) {
       this.capturedOriginalSelectedArea = this.selectedArea;
+    }
+    if (this.capturedOriginalSelectedAreaPixels === null) {
+      // copy
+      this.capturedOriginalSelectedAreaPixels = [...this.selectedAreaPixels];
     }
     switch (direction) {
       case ButtonDirection.TOP:
@@ -998,6 +1079,36 @@ export default class InteractionLayer extends BaseLayer {
     ctx.restore();
   }
 
+  renderExtendingSelectedPixels(
+    correctedLeftTopScreenPoint: Coord,
+    squareLength: number,
+  ) {
+    if (
+      this.extendingSelectedPixels === null ||
+      this.extendingSelectedPixels.length == 0
+    ) {
+      return;
+    }
+    const ctx = this.ctx;
+    ctx.save();
+    for (const item of this.extendingSelectedPixels) {
+      const color = item.previousColor;
+      ctx.fillStyle = color;
+      const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
+      const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
+      if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
+        continue;
+      }
+      ctx.fillRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+    }
+    ctx.restore();
+  }
+
   renderIndicatorPixels(
     correctedLeftTopScreenPoint: Coord,
     squareLength: number,
@@ -1100,5 +1211,9 @@ export default class InteractionLayer extends BaseLayer {
     //draw indicator pixels on top of the canvas
     this.renderHoveredPixel(correctedLeftTopScreenPoint, squareLength);
     this.renderMovingSelectedPixels(correctedLeftTopScreenPoint, squareLength);
+    this.renderExtendingSelectedPixels(
+      correctedLeftTopScreenPoint,
+      squareLength,
+    );
   }
 }
