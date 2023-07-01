@@ -441,27 +441,22 @@ export const getCornerPixelIndices = (
     rowIndex: Math.floor(centerPixelIndex.rowIndex) + 0.5,
     columnIndex: Math.floor(centerPixelIndex.columnIndex) + 0.5,
   };
-  console.log("baseCenterPixelIndex", baseCenterPixelIndex);
-  console.log(
-    "floor",
-    Math.floor(baseCenterPixelIndex.columnIndex + halvedWidth),
-  );
   return {
     topLeft: {
-      rowIndex: Math.round(centerPixelIndex.rowIndex - halvedHeight),
-      columnIndex: Math.round(centerPixelIndex.columnIndex - halvedWidth),
+      rowIndex: Math.floor(baseCenterPixelIndex.rowIndex - halvedHeight),
+      columnIndex: Math.round(baseCenterPixelIndex.columnIndex - halvedWidth),
     },
     topRight: {
-      rowIndex: Math.round(centerPixelIndex.rowIndex - halvedHeight),
-      columnIndex: Math.floor(centerPixelIndex.columnIndex + halvedWidth),
+      rowIndex: Math.floor(baseCenterPixelIndex.rowIndex - halvedHeight),
+      columnIndex: Math.ceil(baseCenterPixelIndex.columnIndex + halvedWidth),
     },
     bottomLeft: {
-      rowIndex: Math.floor(centerPixelIndex.rowIndex + halvedHeight),
-      columnIndex: Math.round(centerPixelIndex.columnIndex - halvedWidth),
+      rowIndex: Math.ceil(baseCenterPixelIndex.rowIndex + halvedHeight),
+      columnIndex: Math.floor(baseCenterPixelIndex.columnIndex - halvedWidth),
     },
     bottomRight: {
-      rowIndex: Math.floor(centerPixelIndex.rowIndex + halvedHeight),
-      columnIndex: Math.floor(centerPixelIndex.columnIndex + halvedWidth),
+      rowIndex: Math.ceil(baseCenterPixelIndex.rowIndex + halvedHeight),
+      columnIndex: Math.ceil(baseCenterPixelIndex.columnIndex + halvedWidth),
     },
   };
 };

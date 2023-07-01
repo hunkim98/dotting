@@ -178,6 +178,7 @@ export default class InteractionLayer extends BaseLayer {
 
   resetExtendSelectedArea() {
     this.directionToExtendSelectedArea = null;
+    this.extendingSelectedPixels = null;
     if (this.selectedArea !== null) {
       this.capturedOriginalSelectedArea = { ...this.selectedArea };
     } else {
@@ -442,11 +443,7 @@ export default class InteractionLayer extends BaseLayer {
           columnIndex:
             originPixelIndex.columnIndex + pixelDistanceFromOrigin.columnOffset,
         };
-        const originPixelWorldPos = {
-          x: this.capturedOriginalSelectedArea.startWorldPos.x,
-          y: this.capturedOriginalSelectedArea.startWorldPos.y,
-        };
-        const halvedPixelSquareHeight = (modifyRatio * 0.5) / 2;
+        const halvedPixelSquareHeight = modifyRatio * 0.5;
         const halvedPixelSquareWidth = 0.5;
         const cornerPixelIndices = getCornerPixelIndices(
           newPixelIndex,
@@ -456,13 +453,13 @@ export default class InteractionLayer extends BaseLayer {
         // console.log(cornerPixelIndices, "item");
         for (
           let i = cornerPixelIndices.topLeft.columnIndex;
-          i <= cornerPixelIndices.topRight.columnIndex;
-          i += 0.5
+          i < cornerPixelIndices.topRight.columnIndex;
+          i += 1
         ) {
           for (
             let j = cornerPixelIndices.topLeft.rowIndex;
-            j <= cornerPixelIndices.bottomRight.rowIndex;
-            j += 0.5
+            j < cornerPixelIndices.bottomRight.rowIndex;
+            j += 1
           ) {
             pixelsToColor.push({
               columnIndex: i,
