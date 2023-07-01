@@ -1643,8 +1643,13 @@ export default class Editor extends EventDispatcher {
         // if there is a direction to extend selected area, we don't need to do anything else
         if (directionToExtendSelectedArea !== null) {
           this.dataLayer.erasePixels(
-            this.interactionLayer.getSelectedAreaPixels()!,
+            this.interactionLayer.getSelectedAreaPixels(),
           );
+          this.interactionLayer.setExtendingSelectedPixels(
+            this.interactionLayer.getSelectedAreaPixels(),
+          );
+          this.dataLayer.render();
+          this.interactionLayer.render();
           return;
         }
       }

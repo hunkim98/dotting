@@ -398,7 +398,7 @@ export default class InteractionLayer extends BaseLayer {
       if (heightPixelCount < 1) {
         comparePixelIndex = {
           rowIndex: this.selectedArea.endPixelIndex.rowIndex,
-          columnIndex: this.selectedArea.endPixelIndex.columnIndex,
+          columnIndex: this.selectedArea.startPixelIndex.columnIndex,
         };
         this.setSelectedArea({
           startWorldPos: {
@@ -413,7 +413,7 @@ export default class InteractionLayer extends BaseLayer {
         comparePixelIndex = {
           rowIndex:
             this.selectedArea.endPixelIndex.rowIndex - heightPixelCount + 1,
-          columnIndex: this.selectedArea.endPixelIndex.columnIndex,
+          columnIndex: this.selectedArea.startPixelIndex.columnIndex,
         };
         this.setSelectedArea({
           startWorldPos: {
@@ -428,7 +428,6 @@ export default class InteractionLayer extends BaseLayer {
       const modifyRatio =
         (originPixelIndex.rowIndex - comparePixelIndex.rowIndex) /
         originalSelectAreaHeightPixelOffset;
-      console.log(modifyRatio);
       const pixelsToColor: Array<ColorChangeItem> = [];
       for (const item of this.capturedOriginalSelectedAreaPixels) {
         const pixelDistanceFromOrigin = {
@@ -461,6 +460,14 @@ export default class InteractionLayer extends BaseLayer {
             j < cornerPixelIndices.bottomRight.rowIndex;
             j += 1
           ) {
+            if (
+              i < this.selectedArea.startPixelIndex.columnIndex ||
+              i > this.selectedArea.endPixelIndex.columnIndex ||
+              j < this.selectedArea.startPixelIndex.rowIndex ||
+              j > this.selectedArea.endPixelIndex.rowIndex
+            ) {
+              continue;
+            }
             pixelsToColor.push({
               columnIndex: i,
               rowIndex: j,
