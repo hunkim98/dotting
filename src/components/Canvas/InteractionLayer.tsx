@@ -170,6 +170,13 @@ export default class InteractionLayer extends BaseLayer {
     );
   }
 
+  setCapturedOriginalSelectedAreaPixels(
+    capturedOriginalSelectedAreaPixels: Array<ColorChangeItem> | null,
+  ) {
+    this.capturedOriginalSelectedAreaPixels =
+      capturedOriginalSelectedAreaPixels;
+  }
+
   resetCapturedData() {
     this.capturedData = null;
     this.capturedDataOriginalIndices = null;
@@ -202,6 +209,10 @@ export default class InteractionLayer extends BaseLayer {
 
   getMovingSelectedArea() {
     return this.movingSelectedArea;
+  }
+
+  getExtendingSelectedPixels() {
+    return this.extendingSelectedPixels;
   }
 
   setHoveredPixel(
