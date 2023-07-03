@@ -518,41 +518,6 @@ export const getOverlappingPixelIndicesForModifiedPixels = (
         pixelsToColor.push(pixelIndex);
       }
     }
-    // only the row is offsetted
-    // const newPixelIndex = {
-    //   rowIndex:
-    //     originPixelIndex.rowIndex +
-    //     pixelDistanceFromOrigin.rowOffset * modifyPixelHeightRatio,
-    //   columnIndex:
-    //     originPixelIndex.columnIndex +
-    //     pixelDistanceFromOrigin.columnOffset * modifyPixelWidthRatio,
-    // };
-    // const halvedPixelSquareHeight = modifyPixelHeightRatio * 0.5;
-    // const halvedPixelSquareWidth = modifyPixelWidthRatio * 0.5;
-    // const cornerPixelIndices = getCornerPixelIndices(
-    //   newPixelIndex,
-    //   halvedPixelSquareHeight,
-    //   halvedPixelSquareWidth,
-    // );
-    // // console.log(cornerPixelIndices, "item");
-    // for (
-    //   let i = cornerPixelIndices.topLeft.columnIndex;
-    //   i < cornerPixelIndices.topRight.columnIndex;
-    //   i += 1
-    // ) {
-    //   for (
-    //     let j = cornerPixelIndices.topLeft.rowIndex;
-    //     j < cornerPixelIndices.bottomRight.rowIndex;
-    //     j += 1
-    //   ) {
-    //     pixelsToColor.push({
-    //       columnIndex: i,
-    //       rowIndex: j,
-    //       color: item.color,
-    //       previousColor: item.previousColor,
-    //     });
-    //   }
-    // }
   }
   return pixelsToColor;
 };
