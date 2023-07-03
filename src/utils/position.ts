@@ -467,6 +467,7 @@ export const getOverlappingPixelIndicesForModifiedPixels = (
   originPixelIndex: { rowIndex: number; columnIndex: number },
   modifyPixelWidthRatio: number,
   modifyPixelHeightRatio: number,
+  gridSquareLength: number,
 ) => {
   const pixelsToColor: Array<ColorChangeItem> = [];
   for (const item of originalPixels) {
@@ -474,41 +475,84 @@ export const getOverlappingPixelIndicesForModifiedPixels = (
       rowOffset: item.rowIndex - originPixelIndex.rowIndex,
       columnOffset: item.columnIndex - originPixelIndex.columnIndex,
     };
-    // only the row is offsetted
-    const newPixelIndex = {
-      rowIndex:
-        originPixelIndex.rowIndex +
-        pixelDistanceFromOrigin.rowOffset * modifyPixelHeightRatio,
-      columnIndex:
-        originPixelIndex.columnIndex +
-        pixelDistanceFromOrigin.columnOffset * modifyPixelWidthRatio,
+    const pixelWordPosOffset = {
+      x: pixelDistanceFromOrigin.columnOffset * gridSquareLength,
+      y: pixelDistanceFromOrigin.rowOffset * gridSquareLength,
     };
-    const halvedPixelSquareHeight = modifyPixelHeightRatio * 0.5;
-    const halvedPixelSquareWidth = modifyPixelWidthRatio * 0.5;
-    const cornerPixelIndices = getCornerPixelIndices(
-      newPixelIndex,
-      halvedPixelSquareHeight,
-      halvedPixelSquareWidth,
-    );
-    // console.log(cornerPixelIndices, "item");
+    const cornerWorldPos = {
+      topLeft: {
+        x: pixelWordPosOffset.x * modifyPixelWidthRatio,
+        y: pixelWordPosOffset.y * modifyPixelHeightRatio,
+      },
+      topRight: {
+        x: (pixelWordPosOffset.x + gridSquareLength) * modifyPixelWidthRatio,
+        y: pixelWordPosOffset.y * modifyPixelHeightRatio,
+      },
+      bottomLeft: {
+        x: pixelWordPosOffset.x * modifyPixelWidthRatio,
+        y: (pixelWordPosOffset.y + gridSquareLength) * modifyPixelHeightRatio,
+      },
+      bottomRight: {
+        x: (pixelWordPosOffset.x + gridSquareLength) * modifyPixelWidthRatio,
+        y: (pixelWordPosOffset.y + gridSquareLength) * modifyPixelHeightRatio,
+      },
+    };
     for (
-      let i = cornerPixelIndices.topLeft.columnIndex;
-      i < cornerPixelIndices.topRight.columnIndex;
-      i += 1
+      let i = cornerWorldPos.topLeft.x;
+      i < cornerWorldPos.topRight.x;
+      i += gridSquareLength
     ) {
       for (
-        let j = cornerPixelIndices.topLeft.rowIndex;
-        j < cornerPixelIndices.bottomRight.rowIndex;
-        j += 1
+        let j = cornerWorldPos.topLeft.y;
+        j < cornerWorldPos.bottomLeft.y;
+        j += gridSquareLength
       ) {
-        pixelsToColor.push({
-          columnIndex: i,
-          rowIndex: j,
+        const pixelIndex = {
+          rowIndex:
+            originPixelIndex.rowIndex + Math.floor(j / gridSquareLength),
+          columnIndex:
+            originPixelIndex.columnIndex + Math.floor(i / gridSquareLength),
           color: item.color,
           previousColor: item.previousColor,
-        });
+        };
+        pixelsToColor.push(pixelIndex);
       }
     }
+    // only the row is offsetted
+    // const newPixelIndex = {
+    //   rowIndex:
+    //     originPixelIndex.rowIndex +
+    //     pixelDistanceFromOrigin.rowOffset * modifyPixelHeightRatio,
+    //   columnIndex:
+    //     originPixelIndex.columnIndex +
+    //     pixelDistanceFromOrigin.columnOffset * modifyPixelWidthRatio,
+    // };
+    // const halvedPixelSquareHeight = modifyPixelHeightRatio * 0.5;
+    // const halvedPixelSquareWidth = modifyPixelWidthRatio * 0.5;
+    // const cornerPixelIndices = getCornerPixelIndices(
+    //   newPixelIndex,
+    //   halvedPixelSquareHeight,
+    //   halvedPixelSquareWidth,
+    // );
+    // // console.log(cornerPixelIndices, "item");
+    // for (
+    //   let i = cornerPixelIndices.topLeft.columnIndex;
+    //   i < cornerPixelIndices.topRight.columnIndex;
+    //   i += 1
+    // ) {
+    //   for (
+    //     let j = cornerPixelIndices.topLeft.rowIndex;
+    //     j < cornerPixelIndices.bottomRight.rowIndex;
+    //     j += 1
+    //   ) {
+    //     pixelsToColor.push({
+    //       columnIndex: i,
+    //       rowIndex: j,
+    //       color: item.color,
+    //       previousColor: item.previousColor,
+    //     });
+    //   }
+    // }
   }
   return pixelsToColor;
 };

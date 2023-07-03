@@ -541,6 +541,7 @@ export default class InteractionLayer extends BaseLayer {
       originPixelIndex,
       modifyPixelWidthRatio,
       modifyPixelHeightRatio,
+      this.gridSquareLength,
     ).filter(
       item =>
         !(
