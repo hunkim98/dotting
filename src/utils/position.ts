@@ -1,6 +1,7 @@
 import { addPoints, diffPoints, getScreenPoint, getWorldPoint } from "./math";
 import { TouchyEvent } from "./touch";
 import { Coord, PanZoom } from "./types";
+import { ColorChangeItem } from "../components/Canvas/types";
 
 export const getPointFromTouchyEvent = (
   evt: TouchyEvent,
@@ -459,4 +460,55 @@ export const getCornerPixelIndices = (
       columnIndex: Math.ceil(baseCenterPixelIndex.columnIndex + halvedWidth),
     },
   };
+};
+
+export const getOverlappingPixelIndicesForModifiedPixels = (
+  originalPixels: Array<ColorChangeItem>,
+  originPixelIndex: { rowIndex: number; columnIndex: number },
+  modifyPixelWidthRatio: number,
+  modifyPixelHeightRatio: number,
+) => {
+  const pixelsToColor: Array<ColorChangeItem> = [];
+  for (const item of originalPixels) {
+    const pixelDistanceFromOrigin = {
+      rowOffset: item.rowIndex - originPixelIndex.rowIndex,
+      columnOffset: item.columnIndex - originPixelIndex.columnIndex,
+    };
+    // only the row is offsetted
+    const newPixelIndex = {
+      rowIndex:
+        originPixelIndex.rowIndex +
+        pixelDistanceFromOrigin.rowOffset * modifyPixelHeightRatio,
+      columnIndex:
+        originPixelIndex.columnIndex +
+        pixelDistanceFromOrigin.columnOffset * modifyPixelWidthRatio,
+    };
+    const halvedPixelSquareHeight = modifyPixelHeightRatio * 0.5;
+    const halvedPixelSquareWidth = modifyPixelWidthRatio * 0.5;
+    const cornerPixelIndices = getCornerPixelIndices(
+      newPixelIndex,
+      halvedPixelSquareHeight,
+      halvedPixelSquareWidth,
+    );
+    // console.log(cornerPixelIndices, "item");
+    for (
+      let i = cornerPixelIndices.topLeft.columnIndex;
+      i < cornerPixelIndices.topRight.columnIndex;
+      i += 1
+    ) {
+      for (
+        let j = cornerPixelIndices.topLeft.rowIndex;
+        j < cornerPixelIndices.bottomRight.rowIndex;
+        j += 1
+      ) {
+        pixelsToColor.push({
+          columnIndex: i,
+          rowIndex: j,
+          color: item.color,
+          previousColor: item.previousColor,
+        });
+      }
+    }
+  }
+  return pixelsToColor;
 };

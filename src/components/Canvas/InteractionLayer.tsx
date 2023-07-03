@@ -35,6 +35,7 @@ import {
 import {
   getAreaTopLeftAndBottomRight,
   getCornerPixelIndices,
+  getOverlappingPixelIndicesForModifiedPixels,
   getRelativeCornerWordPosOfPixelToOrigin,
 } from "../../utils/position";
 
@@ -388,195 +389,168 @@ export default class InteractionLayer extends BaseLayer {
     const originalSelectAreaHeightPixelOffset =
       this.capturedOriginalSelectedArea.endPixelIndex.rowIndex -
       this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
-    const originalSelectAreaWidthPixelCount =
+    const originalSelectAreaWidthPixelOffset =
       this.capturedOriginalSelectedArea.endPixelIndex.columnIndex -
-      this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
-      1;
-    let comparePixelIndex = this.selectedArea.startPixelIndex;
+      this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+    const originPixelIndex = {
+      rowIndex: this.capturedOriginalSelectedArea.startPixelIndex.rowIndex,
+      columnIndex: this.capturedOriginalSelectedArea.endPixelIndex.columnIndex,
+    };
+    let modifyPixelWidthRatio = 1;
+    let modifyPixelHeightRatio = 1;
+
     if (direction === ButtonDirection.TOP) {
-      const originPixelIndex = {
-        rowIndex: this.capturedOriginalSelectedArea.endPixelIndex.rowIndex,
-        columnIndex:
-          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex,
-      };
       // we extend the selected area to the top
-      const unroundedExtensionHeight =
-        this.selectedArea.endWorldPos.y - extendToCoord.y;
-      const heightPixelCount = Math.round(
-        unroundedExtensionHeight / this.gridSquareLength,
+      const extensionOffset = this.selectedArea.endWorldPos.y - extendToCoord.y;
+      let heightPixelCount = Math.round(
+        extensionOffset / this.gridSquareLength,
       );
-      const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
       if (heightPixelCount < 1) {
-        comparePixelIndex = {
-          rowIndex: this.selectedArea.endPixelIndex.rowIndex,
-          columnIndex: this.selectedArea.startPixelIndex.columnIndex,
-        };
-        this.setSelectedArea({
-          startWorldPos: {
-            x: this.selectedArea.startWorldPos.x,
-            y: this.selectedArea.endWorldPos.y - this.gridSquareLength,
-          },
-          endWorldPos: this.selectedArea.endWorldPos,
-          startPixelIndex: comparePixelIndex,
-          endPixelIndex: this.selectedArea.endPixelIndex,
-        });
-      } else {
-        comparePixelIndex = {
-          rowIndex:
-            this.selectedArea.endPixelIndex.rowIndex - heightPixelCount + 1,
-          columnIndex: this.selectedArea.startPixelIndex.columnIndex,
-        };
-        this.setSelectedArea({
-          startWorldPos: {
-            x: this.selectedArea.startWorldPos.x,
-            y: this.selectedArea.endWorldPos.y - roundedExtensionHeight,
-          },
-          endWorldPos: this.selectedArea.endWorldPos,
-          startPixelIndex: comparePixelIndex,
-          endPixelIndex: this.selectedArea.endPixelIndex,
-        });
+        heightPixelCount = 1;
       }
-      const modifyRatio =
+      originPixelIndex.rowIndex =
+        this.capturedOriginalSelectedArea.endPixelIndex.rowIndex;
+      originPixelIndex.columnIndex =
+        this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+      const comparePixelIndex = {
+        rowIndex:
+          this.selectedArea.endPixelIndex.rowIndex - heightPixelCount + 1,
+        columnIndex: this.selectedArea.startPixelIndex.columnIndex,
+      };
+      this.setSelectedArea({
+        startWorldPos: {
+          x: this.selectedArea.startWorldPos.x,
+          y:
+            this.selectedArea.endWorldPos.y -
+            heightPixelCount * this.gridSquareLength,
+        },
+        endWorldPos: this.selectedArea.endWorldPos,
+        startPixelIndex: comparePixelIndex,
+        endPixelIndex: this.selectedArea.endPixelIndex,
+      });
+      modifyPixelHeightRatio =
         (originPixelIndex.rowIndex - comparePixelIndex.rowIndex) /
         originalSelectAreaHeightPixelOffset;
-      const pixelsToColor: Array<ColorChangeItem> = [];
-      for (const item of this.capturedOriginalSelectedAreaPixels) {
-        const pixelDistanceFromOrigin = {
-          rowOffset: item.rowIndex - originPixelIndex.rowIndex,
-          columnOffset: item.columnIndex - originPixelIndex.columnIndex,
-        };
-        // only the row is offsetted
-        const newPixelIndex = {
-          rowIndex:
-            originPixelIndex.rowIndex +
-            pixelDistanceFromOrigin.rowOffset * modifyRatio,
-          columnIndex:
-            originPixelIndex.columnIndex + pixelDistanceFromOrigin.columnOffset,
-        };
-        const halvedPixelSquareHeight = modifyRatio * 0.5;
-        const halvedPixelSquareWidth = 0.5;
-        const cornerPixelIndices = getCornerPixelIndices(
-          newPixelIndex,
-          halvedPixelSquareHeight,
-          halvedPixelSquareWidth,
-        );
-        // console.log(cornerPixelIndices, "item");
-        for (
-          let i = cornerPixelIndices.topLeft.columnIndex;
-          i < cornerPixelIndices.topRight.columnIndex;
-          i += 1
-        ) {
-          for (
-            let j = cornerPixelIndices.topLeft.rowIndex;
-            j < cornerPixelIndices.bottomRight.rowIndex;
-            j += 1
-          ) {
-            if (
-              i < this.selectedArea.startPixelIndex.columnIndex ||
-              i > this.selectedArea.endPixelIndex.columnIndex ||
-              j < this.selectedArea.startPixelIndex.rowIndex ||
-              j > this.selectedArea.endPixelIndex.rowIndex
-            ) {
-              continue;
-            }
-            pixelsToColor.push({
-              columnIndex: i,
-              rowIndex: j,
-              color: item.color,
-              previousColor: item.previousColor,
-            });
-          }
-        }
-      }
-      this.setExtendingSelectedPixels(pixelsToColor);
     } else if (direction === ButtonDirection.BOTTOM) {
-      const originPoint = this.selectedArea.startWorldPos;
       // we extend the selected area to the bottom
-      const unroundedExtensionHeight =
+      const extensionOffset =
         extendToCoord.y - this.selectedArea.startWorldPos.y;
-      const heightPixelCount = Math.round(
-        unroundedExtensionHeight / this.gridSquareLength,
+      let heightPixelCount = Math.round(
+        extensionOffset / this.gridSquareLength,
       );
-      const roundedExtensionHeight = heightPixelCount * this.gridSquareLength;
       if (heightPixelCount < 1) {
-        this.setSelectedArea({
-          startWorldPos: this.selectedArea.startWorldPos,
-          endWorldPos: {
-            x: this.selectedArea.endWorldPos.x,
-            y: this.selectedArea.startWorldPos.y + this.gridSquareLength,
-          },
-          startPixelIndex: this.selectedArea.startPixelIndex,
-          endPixelIndex: {
-            rowIndex: this.selectedArea.endPixelIndex.rowIndex,
-            columnIndex: this.selectedArea.startPixelIndex.columnIndex + 1,
-          },
-        });
-        return;
+        heightPixelCount = 1;
       }
+      originPixelIndex.rowIndex =
+        this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+      originPixelIndex.columnIndex =
+        this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+      const comparePixelIndex = {
+        rowIndex:
+          this.selectedArea.startPixelIndex.rowIndex + heightPixelCount - 1,
+        columnIndex: this.selectedArea.startPixelIndex.columnIndex,
+      };
       this.setSelectedArea({
         startWorldPos: this.selectedArea.startWorldPos,
         endWorldPos: {
           x: this.selectedArea.endWorldPos.x,
-          y: this.selectedArea.startWorldPos.y + roundedExtensionHeight,
+          y:
+            this.selectedArea.startWorldPos.y +
+            heightPixelCount * this.gridSquareLength,
         },
         startPixelIndex: this.selectedArea.startPixelIndex,
         endPixelIndex: {
-          rowIndex: this.selectedArea.endPixelIndex.rowIndex,
-          columnIndex:
-            this.selectedArea.startPixelIndex.columnIndex + heightPixelCount,
+          rowIndex: comparePixelIndex.rowIndex,
+          columnIndex: this.selectedArea.endPixelIndex.columnIndex,
         },
       });
+      modifyPixelHeightRatio =
+        (comparePixelIndex.rowIndex - originPixelIndex.rowIndex) /
+        originalSelectAreaHeightPixelOffset;
     } else if (direction === ButtonDirection.LEFT) {
-      const originPoint = this.selectedArea.endWorldPos;
       // we extend the selected area to the left
-      const unroundedExtensionWidth =
-        this.selectedArea.endWorldPos.x - extendToCoord.x;
-      const widthPixelCount = Math.round(
-        unroundedExtensionWidth / this.gridSquareLength,
-      );
-      const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
+      const extensionOffset = this.selectedArea.endWorldPos.x - extendToCoord.x;
+      let widthPixelCount = Math.round(extensionOffset / this.gridSquareLength);
       if (widthPixelCount < 1) {
-        return;
+        widthPixelCount = 1;
       }
+      originPixelIndex.rowIndex =
+        this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+      originPixelIndex.columnIndex =
+        this.capturedOriginalSelectedArea.endPixelIndex.columnIndex;
+      const comparePixelIndex = {
+        rowIndex: this.selectedArea.startPixelIndex.rowIndex,
+        columnIndex:
+          this.selectedArea.endPixelIndex.columnIndex - widthPixelCount + 1,
+      };
       this.setSelectedArea({
         startWorldPos: {
-          x: this.selectedArea.endWorldPos.x - roundedExtensionWidth,
+          x:
+            this.selectedArea.endWorldPos.x -
+            widthPixelCount * this.gridSquareLength,
           y: this.selectedArea.startWorldPos.y,
         },
         endWorldPos: this.selectedArea.endWorldPos,
         startPixelIndex: {
-          rowIndex: this.selectedArea.endPixelIndex.rowIndex,
-          columnIndex:
-            this.selectedArea.endPixelIndex.columnIndex - widthPixelCount,
+          rowIndex: this.selectedArea.startPixelIndex.rowIndex,
+          columnIndex: comparePixelIndex.columnIndex,
         },
         endPixelIndex: this.selectedArea.endPixelIndex,
       });
+      modifyPixelWidthRatio =
+        (originPixelIndex.columnIndex - comparePixelIndex.columnIndex) /
+        originalSelectAreaWidthPixelOffset;
     } else if (direction === ButtonDirection.RIGHT) {
-      const originPoint = this.selectedArea.startWorldPos;
       // we extend the selected area to the right
-      const unroundedExtensionWidth =
+      const extensionOffset =
         extendToCoord.x - this.selectedArea.startWorldPos.x;
       const widthPixelCount = Math.round(
-        unroundedExtensionWidth / this.gridSquareLength,
+        extensionOffset / this.gridSquareLength,
       );
-      const roundedExtensionWidth = widthPixelCount * this.gridSquareLength;
       if (widthPixelCount < 1) {
         return;
       }
+      originPixelIndex.rowIndex = this.selectedArea.startPixelIndex.rowIndex;
+      originPixelIndex.columnIndex =
+        this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+      const comparePixelIndex = {
+        rowIndex: this.selectedArea.startPixelIndex.rowIndex,
+        columnIndex:
+          this.selectedArea.startPixelIndex.columnIndex + widthPixelCount - 1,
+      };
       this.setSelectedArea({
         startWorldPos: this.selectedArea.startWorldPos,
         endWorldPos: {
-          x: this.selectedArea.startWorldPos.x + roundedExtensionWidth,
+          x:
+            this.selectedArea.startWorldPos.x +
+            widthPixelCount * this.gridSquareLength,
           y: this.selectedArea.endWorldPos.y,
         },
         startPixelIndex: this.selectedArea.startPixelIndex,
         endPixelIndex: {
           rowIndex: this.selectedArea.endPixelIndex.rowIndex,
-          columnIndex:
-            this.selectedArea.startPixelIndex.columnIndex + widthPixelCount,
+          columnIndex: comparePixelIndex.columnIndex,
         },
       });
+      modifyPixelWidthRatio =
+        (comparePixelIndex.columnIndex - originPixelIndex.columnIndex) /
+        originalSelectAreaWidthPixelOffset;
     }
+    const filteredPixelsToColor = getOverlappingPixelIndicesForModifiedPixels(
+      this.capturedOriginalSelectedAreaPixels,
+      originPixelIndex,
+      modifyPixelWidthRatio,
+      modifyPixelHeightRatio,
+    ).filter(
+      item =>
+        !(
+          item.columnIndex < this.selectedArea.startPixelIndex.columnIndex ||
+          item.columnIndex > this.selectedArea.endPixelIndex.columnIndex ||
+          item.rowIndex < this.selectedArea.startPixelIndex.rowIndex ||
+          item.rowIndex > this.selectedArea.endPixelIndex.rowIndex
+        ),
+    );
+    this.setExtendingSelectedPixels(filteredPixelsToColor);
     return;
   }
 
