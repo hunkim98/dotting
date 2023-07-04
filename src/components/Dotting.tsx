@@ -609,6 +609,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       onKeyDown={e => {
         editor?.onKeyDown(e);
       }}
+      onKeyUp={e => {
+        editor?.onKeyUp(e);
+      }}
     >
       <canvas
         ref={gotBackgroundCanvasRef}
