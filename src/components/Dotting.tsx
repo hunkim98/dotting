@@ -595,15 +595,20 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   return (
     <div
-      style={{ width: props.width, height: props.height, position: "relative" }}
+      style={{
+        width: props.width,
+        height: props.height,
+        position: "relative",
+        outline: "none",
+      }}
       ref={containerRef}
-      // onKeyDown={(e) => {
-      //   console.log(e.code, e.ctrlKey, e.metaKey);
-      //   if (e.code === "KeyZ" && (e.ctrlKey || e.metaKey)) {
-      //     canvas?.undo();
-      //   }
-      // }}
-      // tabIndex={0}
+      tabIndex={1}
+      onMouseDown={() => {
+        containerRef.current?.focus();
+      }}
+      onKeyDown={e => {
+        editor?.onKeyDown(e);
+      }}
     >
       <canvas
         ref={gotBackgroundCanvasRef}
