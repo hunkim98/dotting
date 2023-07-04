@@ -416,9 +416,10 @@ export default class InteractionLayer extends BaseLayer {
           (originalSelectAreaHeightPixelOffset + 1) % 2 === 0;
         originPixelIndex.rowIndex =
           this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
-          (originalSelectAreaHeightPixelOffset + 1) / 2;
+          (originalSelectAreaHeightPixelOffset + 2) / 2;
         originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.endPixelIndex.columnIndex;
+          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+          (originalSelectAreaWidthPixelOffset + 2) / 2;
         originWorldPos.y =
           this.capturedOriginalSelectedArea.startWorldPos.y +
           (this.capturedOriginalSelectedArea.endWorldPos.y -
@@ -447,11 +448,9 @@ export default class InteractionLayer extends BaseLayer {
             -(originalSelectAreaHeightPixelOffset - 1) / 2;
         }
         modifyPixelHeightRatio =
-          (this.selectedArea.startPixelIndex.rowIndex -
-            singleSideOffsetRowBy -
-            this.selectedArea.endPixelIndex.rowIndex +
-            singleSideOffsetRowBy) /
+          (originalSelectAreaHeightPixelOffset + 2 * singleSideOffsetRowBy) /
           originalSelectAreaHeightPixelOffset;
+
         this.setSelectedArea({
           startWorldPos: {
             x: this.selectedArea.startWorldPos.x,
@@ -469,13 +468,15 @@ export default class InteractionLayer extends BaseLayer {
             rowIndex:
               this.capturedOriginalSelectedArea.startPixelIndex.rowIndex -
               singleSideOffsetRowBy,
-            columnIndex: originPixelIndex.columnIndex,
+            columnIndex:
+              this.capturedOriginalSelectedArea.startPixelIndex.columnIndex,
           },
           endPixelIndex: {
             rowIndex:
               this.capturedOriginalSelectedArea.endPixelIndex.rowIndex +
               singleSideOffsetRowBy,
-            columnIndex: originPixelIndex.columnIndex,
+            columnIndex:
+              this.capturedOriginalSelectedArea.endPixelIndex.columnIndex,
           },
         });
       } else if (
