@@ -396,6 +396,10 @@ export default class InteractionLayer extends BaseLayer {
       rowIndex: this.capturedOriginalSelectedArea.startPixelIndex.rowIndex,
       columnIndex: this.capturedOriginalSelectedArea.endPixelIndex.columnIndex,
     };
+    const originWorldPos = {
+      x: this.capturedOriginalSelectedArea.startWorldPos.x,
+      y: this.capturedOriginalSelectedArea.endWorldPos.y,
+    };
     let modifyPixelWidthRatio = 1;
     let modifyPixelHeightRatio = 1;
 
@@ -412,6 +416,8 @@ export default class InteractionLayer extends BaseLayer {
         this.capturedOriginalSelectedArea.endPixelIndex.rowIndex;
       originPixelIndex.columnIndex =
         this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+      originWorldPos.y = this.capturedOriginalSelectedArea.endWorldPos.y;
+      originWorldPos.x = this.capturedOriginalSelectedArea.startWorldPos.x;
       const comparePixelIndex = {
         rowIndex:
           this.selectedArea.endPixelIndex.rowIndex - heightPixelCount + 1,
@@ -445,6 +451,8 @@ export default class InteractionLayer extends BaseLayer {
         this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
       originPixelIndex.columnIndex =
         this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+      originWorldPos.y = this.capturedOriginalSelectedArea.startWorldPos.y;
+      originWorldPos.x = this.capturedOriginalSelectedArea.startWorldPos.x;
       const comparePixelIndex = {
         rowIndex:
           this.selectedArea.startPixelIndex.rowIndex + heightPixelCount - 1,
@@ -478,6 +486,8 @@ export default class InteractionLayer extends BaseLayer {
         this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
       originPixelIndex.columnIndex =
         this.capturedOriginalSelectedArea.endPixelIndex.columnIndex;
+      originWorldPos.y = this.capturedOriginalSelectedArea.startWorldPos.y;
+      originWorldPos.x = this.capturedOriginalSelectedArea.endWorldPos.x;
       const comparePixelIndex = {
         rowIndex: this.selectedArea.startPixelIndex.rowIndex,
         columnIndex:
@@ -513,6 +523,8 @@ export default class InteractionLayer extends BaseLayer {
       originPixelIndex.rowIndex = this.selectedArea.startPixelIndex.rowIndex;
       originPixelIndex.columnIndex =
         this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+      originWorldPos.y = this.selectedArea.startWorldPos.y;
+      originWorldPos.x = this.capturedOriginalSelectedArea.startWorldPos.x;
       const comparePixelIndex = {
         rowIndex: this.selectedArea.startPixelIndex.rowIndex,
         columnIndex:
@@ -539,6 +551,7 @@ export default class InteractionLayer extends BaseLayer {
     const filteredPixelsToColor = getOverlappingPixelIndicesForModifiedPixels(
       this.capturedOriginalSelectedAreaPixels,
       originPixelIndex,
+      originWorldPos,
       modifyPixelWidthRatio,
       modifyPixelHeightRatio,
       this.gridSquareLength,

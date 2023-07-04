@@ -1,3 +1,5 @@
+import { KeyboardEvent } from "react";
+
 import BackgroundLayer from "./BackgroundLayer";
 import {
   DefaultGridSquareLength,
@@ -1094,6 +1096,16 @@ export default class Editor extends EventDispatcher {
     }
   }
 
+  handleKeyDown = (e: KeyboardEvent) => {
+    console.log(e.code);
+    if (e.code === "KeyZ" && (e.ctrlKey || e.metaKey)) {
+      this.undo();
+    }
+    if (e.code === "KeyY" && (e.ctrlKey || e.metaKey)) {
+      this.redo();
+    }
+  };
+
   handleWheel = (e: WheelEvent) => {
     e.preventDefault();
     if (!this.isPanZoomable || this.mouseMode === MouseMode.EXTENDING) {
@@ -1978,6 +1990,20 @@ export default class Editor extends EventDispatcher {
       }
     }
     this.previousMouseMoveWorldPos = this.mouseMoveWorldPos;
+  }
+
+  onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.code === "KeyZ" && (e.ctrlKey || e.metaKey)) {
+      this.undo();
+    } else if (e.code === "KeyY" && (e.ctrlKey || e.metaKey)) {
+      this.redo();
+    } else if (e.code === "Delete") {
+      if (this.interactionLayer.getSelectedArea()) {
+        return;
+      }
+    } else if (e.code === "Escape") {
+      this.setBrushTool(BrushTool.DOT);
+    }
   }
 
   relaySelectingAreaToSelectedArea() {
