@@ -2019,7 +2019,6 @@ export default class Editor extends EventDispatcher {
 
   onKeyUp(e: KeyboardEvent<HTMLDivElement>) {
     if (e.code === "AltLeft") {
-      console.log("alt up");
       this.isAltPressed = false;
     }
   }

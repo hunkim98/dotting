@@ -476,10 +476,15 @@ export const getOverlappingPixelIndicesForModifiedPixels = (
       rowOffset: item.rowIndex - originPixelIndex.rowIndex,
       columnOffset: item.columnIndex - originPixelIndex.columnIndex,
     };
+    // -3.5, -4.5
+    console.log(pixelDistanceFromOrigin, "distance from origin");
+    // 3.5, 4.5
+    console.log(originPixelIndex, "origin pixel index");
     const pixelWordPosOffset = {
       x: pixelDistanceFromOrigin.columnOffset * gridSquareLength,
       y: pixelDistanceFromOrigin.rowOffset * gridSquareLength,
     };
+    console.log(pixelWordPosOffset, "pixel word pos offset");
     const cornerWorldPos = {
       topLeft: {
         x: pixelWordPosOffset.x * modifyPixelWidthRatio,
@@ -509,10 +514,12 @@ export const getOverlappingPixelIndicesForModifiedPixels = (
         j += gridSquareLength
       ) {
         const pixelIndex = {
-          rowIndex:
+          rowIndex: Math.round(
             originPixelIndex.rowIndex + Math.floor(j / gridSquareLength),
-          columnIndex:
+          ),
+          columnIndex: Math.round(
             originPixelIndex.columnIndex + Math.floor(i / gridSquareLength),
+          ),
           color: item.color,
           previousColor: item.previousColor,
         };
