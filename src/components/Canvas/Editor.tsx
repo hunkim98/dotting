@@ -1702,7 +1702,9 @@ export default class Editor extends EventDispatcher {
           this.interactionLayer.setCapturedOriginalSelectedAreaPixels(
             filteredSelectedAreaPixels,
           );
-          this.dataLayer.erasePixels(filteredSelectedAreaPixels);
+          const { dataForAction } = this.dataLayer.erasePixels(
+            filteredSelectedAreaPixels,
+          );
           this.dataLayer.render();
           this.interactionLayer.render();
 
@@ -1997,12 +1999,17 @@ export default class Editor extends EventDispatcher {
       this.undo();
     } else if (e.code === "KeyY" && (e.ctrlKey || e.metaKey)) {
       this.redo();
-    } else if (e.code === "Delete") {
+    } else if (e.code === "Backspace" || e.code === "Delete") {
       if (this.interactionLayer.getSelectedArea()) {
-        return;
+        if (this.interactionLayer.getSelectedAreaPixels().length === 0) return;
+        const { dataForAction } = this.dataLayer.erasePixels(
+          this.interactionLayer.getSelectedAreaPixels(),
+        );
+        this.dataLayer.render();
       }
     } else if (e.code === "Escape") {
       this.setBrushTool(BrushTool.DOT);
+      this.gridLayer.render();
     }
   }
 
