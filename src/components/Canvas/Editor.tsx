@@ -103,6 +103,7 @@ export default class Editor extends EventDispatcher {
     offsetXAmount: 0,
   };
   private isPanZoomable = true;
+  private isAltPressed = false;
   private mouseMode: MouseMode = MouseMode.PANNING;
   private brushTool: BrushTool = BrushTool.DOT;
 
@@ -1847,6 +1848,7 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.extendSelectedArea(
           directionToExtendSelectedArea,
           this.mouseMoveWorldPos,
+          this.isAltPressed,
         );
         this.gridLayer.render();
         this.gridLayer.renderSelection(this.interactionLayer.getSelectedArea());
@@ -2010,6 +2012,15 @@ export default class Editor extends EventDispatcher {
     } else if (e.code === "Escape") {
       this.setBrushTool(BrushTool.DOT);
       this.gridLayer.render();
+    } else if (e.code === "AltLeft") {
+      this.isAltPressed = true;
+    }
+  }
+
+  onKeyUp(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.code === "AltLeft") {
+      console.log("alt up");
+      this.isAltPressed = false;
     }
   }
 
