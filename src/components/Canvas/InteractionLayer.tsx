@@ -473,7 +473,66 @@ export default class InteractionLayer extends BaseLayer {
         direction === ButtonDirection.LEFT ||
         direction === ButtonDirection.RIGHT
       ) {
-        return;
+        const wasOriginalAreaWidthEven =
+          (originalSelectAreaWidthPixelOffset + 1) % 2;
+        originPixelIndex.rowIndex =
+          this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
+          (originalSelectAreaHeightPixelOffset + 2) / 2;
+        originPixelIndex.columnIndex =
+          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+          (originalSelectAreaWidthPixelOffset + 2) / 2;
+        originWorldPos.y = this.capturedOriginalSelectedArea.startWorldPos.y;
+        originWorldPos.x =
+          this.capturedOriginalSelectedArea.startWorldPos.x +
+          (this.capturedOriginalSelectedArea.endWorldPos.x -
+            this.capturedOriginalSelectedArea.startWorldPos.x) /
+            2;
+        const extensionOffset =
+          direction === ButtonDirection.LEFT
+            ? this.capturedOriginalSelectedArea.startWorldPos.x -
+              extendToCoord.x
+            : extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
+        let singleSideOffsetColumnBy = Math.round(
+          extensionOffset / this.gridSquareLength,
+        );
+        let widthPixelCount =
+          originalSelectAreaWidthPixelOffset + 1 + singleSideOffsetColumnBy * 2;
+        if (widthPixelCount < 1 && !wasOriginalAreaWidthEven) {
+          // if original width is odd, and the new width is less than 1, then set it to 1
+          widthPixelCount = 1;
+          singleSideOffsetColumnBy = -originalSelectAreaWidthPixelOffset / 2;
+        }
+        modifyPixelWidthRatio =
+          (originalSelectAreaWidthPixelOffset + 2 * singleSideOffsetColumnBy) /
+          originalSelectAreaWidthPixelOffset;
+
+        this.setSelectedArea({
+          startWorldPos: {
+            x:
+              this.capturedOriginalSelectedArea.startWorldPos.x -
+              singleSideOffsetColumnBy * this.gridSquareLength,
+            y: this.capturedOriginalSelectedArea.startWorldPos.y,
+          },
+          endWorldPos: {
+            x:
+              this.capturedOriginalSelectedArea.endWorldPos.x +
+              singleSideOffsetColumnBy * this.gridSquareLength,
+            y: this.capturedOriginalSelectedArea.endWorldPos.y,
+          },
+          startPixelIndex: {
+            rowIndex:
+              this.capturedOriginalSelectedArea.startPixelIndex.rowIndex,
+            columnIndex:
+              this.capturedOriginalSelectedArea.startPixelIndex.columnIndex -
+              singleSideOffsetColumnBy,
+          },
+          endPixelIndex: {
+            rowIndex: this.capturedOriginalSelectedArea.endPixelIndex.rowIndex,
+            columnIndex:
+              this.capturedOriginalSelectedArea.endPixelIndex.columnIndex +
+              singleSideOffsetColumnBy,
+          },
+        });
       }
     } else {
       if (direction === ButtonDirection.TOP) {
