@@ -28,6 +28,7 @@ import {
   PanZoom,
   PixelData,
   PixelModifyItem,
+  SelectAreaRange,
 } from "./types";
 import { Action, ActionType } from "../../actions/Action";
 import { ColorChangeAction } from "../../actions/ColorChangeAction";
@@ -1655,57 +1656,18 @@ export default class Editor extends EventDispatcher {
         );
         // if there is a direction to extend selected area, we don't need to do anything else
         if (directionToExtendSelectedArea !== null) {
-          const data = this.dataLayer.getData();
-          const rowCount = this.dataLayer.getRowCount();
-          const columnCount = this.dataLayer.getColumnCount();
-          const rowKeys = getRowKeysFromData(data);
-          const columnKeys = getColumnKeysFromData(data);
-          const sortedRowKeys = rowKeys.sort((a, b) => a - b);
-          const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
-          const { includedPixelsIndices } = convertWorldPosAreaToPixelGridArea(
+          const coloredPixels = this.colorSelectedArea(
             previousSelectedArea,
-            rowCount,
-            columnCount,
-            this.gridSquareLength,
-            sortedRowKeys,
-            sortedColumnKeys,
+            "",
           );
-          const {
-            topRowIndex,
-            bottomRowIndex,
-            leftColumnIndex,
-            rightColumnIndex,
-          } = getGridIndicesFromData(data);
-          const selectedAreaPixels: Array<ColorChangeItem> = [];
-          for (const index of includedPixelsIndices) {
-            const rowIndex = index.rowIndex;
-            const columnIndex = index.columnIndex;
-            const color = data.get(rowIndex).get(columnIndex)?.color;
-            if (color) {
-              selectedAreaPixels.push({
-                rowIndex,
-                columnIndex,
-                previousColor: color,
-                color: "",
-              });
-            }
-          }
-          const filteredSelectedAreaPixels = selectedAreaPixels.filter(
-            ({ rowIndex, columnIndex }) =>
-              rowIndex >= topRowIndex &&
-              rowIndex <= bottomRowIndex &&
-              columnIndex >= leftColumnIndex &&
-              columnIndex <= rightColumnIndex,
-          );
-          this.interactionLayer.setExtendingSelectedPixels(
-            filteredSelectedAreaPixels,
+          this.interactionLayer.setExtendingSelectedPixels(coloredPixels);
+          this.interactionLayer.setCapturedOriginalSelectedArea(
+            previousSelectedArea,
           );
           this.interactionLayer.setCapturedOriginalSelectedAreaPixels(
-            filteredSelectedAreaPixels,
+            coloredPixels,
           );
-          const { dataForAction } = this.dataLayer.erasePixels(
-            filteredSelectedAreaPixels,
-          );
+          const { dataForAction } = this.dataLayer.erasePixels(coloredPixels);
           this.dataLayer.render();
           this.interactionLayer.render();
 
@@ -1723,57 +1685,11 @@ export default class Editor extends EventDispatcher {
         // we will move the selected area if the mouse is in the previous selected area
         // remove the selecting area if it exists
         this.interactionLayer.setSelectingArea(null);
-        const data = this.dataLayer.getData();
-        const rowCount = this.dataLayer.getRowCount();
-        const columnCount = this.dataLayer.getColumnCount();
-        const rowKeys = getRowKeysFromData(data);
-        const columnKeys = getColumnKeysFromData(data);
-        const sortedRowKeys = rowKeys.sort((a, b) => a - b);
-        const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
-        const { includedPixelsIndices } = convertWorldPosAreaToPixelGridArea(
-          previousSelectedArea,
-          rowCount,
-          columnCount,
-          this.gridSquareLength,
-          sortedRowKeys,
-          sortedColumnKeys,
-        );
-        if (!includedPixelsIndices) {
-          this.interactionLayer.setSelectedArea(null);
-          return;
-        }
-        const selectedAreaPixels: Array<ColorChangeItem> = [];
-        for (const index of includedPixelsIndices) {
-          const rowIndex = index.rowIndex;
-          const columnIndex = index.columnIndex;
-          const color = data.get(rowIndex).get(columnIndex)?.color;
-          if (color) {
-            selectedAreaPixels.push({
-              rowIndex,
-              columnIndex,
-              previousColor: color,
-              color: "",
-            });
-          }
-        }
-        const {
-          topRowIndex,
-          bottomRowIndex,
-          leftColumnIndex,
-          rightColumnIndex,
-        } = getGridIndicesFromData(data);
-        // erase pixels from data layer first
-        const filteredSelectedAreaPixels = selectedAreaPixels.filter(
-          ({ rowIndex, columnIndex }) =>
-            rowIndex >= topRowIndex &&
-            rowIndex <= bottomRowIndex &&
-            columnIndex >= leftColumnIndex &&
-            columnIndex <= rightColumnIndex,
-        );
+        const coloredPixels = this.colorSelectedArea(previousSelectedArea!, "");
 
-        this.dataLayer.erasePixels(filteredSelectedAreaPixels);
-        this.interactionLayer.setSelectedAreaPixels(selectedAreaPixels);
-        this.interactionLayer.setMovingSelectedPixels(selectedAreaPixels);
+        this.dataLayer.erasePixels(coloredPixels);
+        this.interactionLayer.setSelectedAreaPixels(coloredPixels);
+        this.interactionLayer.setMovingSelectedPixels(coloredPixels);
         this.interactionLayer.setMovingSelectedArea(previousSelectedArea);
         this.dataLayer.render();
         this.interactionLayer.render();
@@ -1807,6 +1723,51 @@ export default class Editor extends EventDispatcher {
       touchy(this.element, addEvent, "mousemove", this.handlePanning);
       touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
     }
+  }
+
+  private colorSelectedArea(
+    selectedArea: SelectAreaRange,
+    newColor: string,
+  ): Array<ColorChangeItem> {
+    const data = this.dataLayer.getData();
+    const rowCount = this.dataLayer.getRowCount();
+    const columnCount = this.dataLayer.getColumnCount();
+    const rowKeys = getRowKeysFromData(data);
+    const columnKeys = getColumnKeysFromData(data);
+    const sortedRowKeys = rowKeys.sort((a, b) => a - b);
+    const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
+    const { includedPixelsIndices } = convertWorldPosAreaToPixelGridArea(
+      selectedArea,
+      rowCount,
+      columnCount,
+      this.gridSquareLength,
+      sortedRowKeys,
+      sortedColumnKeys,
+    );
+    const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
+      getGridIndicesFromData(data);
+    const selectedAreaPixels: Array<ColorChangeItem> = [];
+    for (const index of includedPixelsIndices) {
+      const rowIndex = index.rowIndex;
+      const columnIndex = index.columnIndex;
+      const color = data.get(rowIndex).get(columnIndex)?.color;
+      if (color) {
+        selectedAreaPixels.push({
+          rowIndex,
+          columnIndex,
+          previousColor: color,
+          color: newColor,
+        });
+      }
+    }
+    const filteredSelectedAreaPixels = selectedAreaPixels.filter(
+      ({ rowIndex, columnIndex }) =>
+        rowIndex >= topRowIndex &&
+        rowIndex <= bottomRowIndex &&
+        columnIndex >= leftColumnIndex &&
+        columnIndex <= rightColumnIndex,
+    );
+    return filteredSelectedAreaPixels;
   }
 
   onMouseMove(evt: TouchyEvent) {
@@ -2013,12 +1974,35 @@ export default class Editor extends EventDispatcher {
       this.setBrushTool(BrushTool.DOT);
       this.gridLayer.render();
     } else if (e.code === "AltLeft") {
+      const pixelsThatAreCurrentlyExtending =
+        this.interactionLayer.getExtendingSelectedPixels();
+      const currentSelectedArea = this.interactionLayer.getSelectedArea();
+      if (pixelsThatAreCurrentlyExtending && currentSelectedArea) {
+        this.interactionLayer.setCapturedOriginalSelectedArea(
+          currentSelectedArea,
+        );
+        this.interactionLayer.setCapturedOriginalSelectedAreaPixels(
+          pixelsThatAreCurrentlyExtending,
+        );
+      }
       this.isAltPressed = true;
     }
   }
 
   onKeyUp(e: KeyboardEvent<HTMLDivElement>) {
     if (e.code === "AltLeft") {
+      const pixelsThatAreCurrentlyExtending =
+        this.interactionLayer.getExtendingSelectedPixels();
+      const currentSelectedArea = this.interactionLayer.getSelectedArea();
+      if (pixelsThatAreCurrentlyExtending && currentSelectedArea) {
+        this.interactionLayer.setCapturedOriginalSelectedArea(
+          currentSelectedArea,
+        );
+        this.interactionLayer.setCapturedOriginalSelectedAreaPixels(
+          pixelsThatAreCurrentlyExtending,
+        );
+      }
+
       this.isAltPressed = false;
     }
   }
@@ -2078,16 +2062,14 @@ export default class Editor extends EventDispatcher {
 
   relayExtendingSelectedAreaToSelectedArea() {
     // we must record the action
-    const extendSelectedAreaPixels =
+    if (this.interactionLayer.getExtendingSelectedPixels() === null) return;
+    const extendingSelectedAreaPixels =
       this.interactionLayer.getExtendingSelectedPixels();
-    if (!extendSelectedAreaPixels) {
-      return;
-    }
     const data = this.dataLayer.getData();
     const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
       getGridIndicesFromData(data);
     // we will not allow the selected area to expand the canvas
-    const filteredFinalSelectedAreaPixels = extendSelectedAreaPixels
+    const filteredFinalSelectedAreaPixels = extendingSelectedAreaPixels
       .filter(
         item =>
           item.rowIndex <= bottomRowIndex &&
@@ -2113,6 +2095,7 @@ export default class Editor extends EventDispatcher {
     );
     const finalSelectedArea = this.interactionLayer.getSelectedArea();
     this.interactionLayer.setExtendingSelectedPixels(null);
+    this.interactionLayer.setCapturedOriginalSelectedArea(null);
     this.interactionLayer.setCapturedOriginalSelectedAreaPixels(null);
     this.interactionLayer.setDirectionToExtendSelectedArea(null);
     this.gridLayer.render();
