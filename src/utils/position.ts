@@ -465,7 +465,6 @@ export const getCornerPixelIndices = (
 export const getOverlappingPixelIndicesForModifiedPixels = (
   originalPixels: Array<ColorChangeItem>,
   originPixelIndex: { rowIndex: number; columnIndex: number },
-  originWordPos: Coord,
   modifyPixelWidthRatio: number,
   modifyPixelHeightRatio: number,
   gridSquareLength: number,
