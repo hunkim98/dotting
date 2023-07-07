@@ -429,10 +429,10 @@ export default class InteractionLayer extends BaseLayer {
           ? extendToCoord.x -
             this.capturedBaseExtendingSelectedArea.endWorldPos.x
           : 0;
-      let singleSideOffsetRowBy = Math.floor(
+      let singleSideOffsetRowBy = Math.round(
         heightExtensionOffset / this.gridSquareLength,
       );
-      let singleSideOffsetColumnBy = Math.floor(
+      let singleSideOffsetColumnBy = Math.round(
         widthExtensionOffset / this.gridSquareLength,
       );
       let heightPixelCount =
@@ -646,10 +646,12 @@ export default class InteractionLayer extends BaseLayer {
     ).filter(
       item =>
         !(
-          item.columnIndex < this.selectedArea.startPixelIndex.columnIndex ||
-          item.columnIndex > this.selectedArea.endPixelIndex.columnIndex ||
-          item.rowIndex < this.selectedArea.startPixelIndex.rowIndex ||
-          item.rowIndex > this.selectedArea.endPixelIndex.rowIndex
+          item.columnIndex <
+            this.extendingSelectedArea.startPixelIndex.columnIndex ||
+          item.columnIndex >
+            this.extendingSelectedArea.endPixelIndex.columnIndex ||
+          item.rowIndex < this.extendingSelectedArea.startPixelIndex.rowIndex ||
+          item.rowIndex > this.extendingSelectedArea.endPixelIndex.rowIndex
         ),
     );
     this.setExtendingSelectedPixels(filteredPixelsToColor);
@@ -965,10 +967,12 @@ export default class InteractionLayer extends BaseLayer {
     ).filter(
       item =>
         !(
-          item.columnIndex < this.selectedArea.startPixelIndex.columnIndex ||
-          item.columnIndex > this.selectedArea.endPixelIndex.columnIndex ||
-          item.rowIndex < this.selectedArea.startPixelIndex.rowIndex ||
-          item.rowIndex > this.selectedArea.endPixelIndex.rowIndex
+          item.columnIndex <
+            this.extendingSelectedArea.startPixelIndex.columnIndex ||
+          item.columnIndex >
+            this.extendingSelectedArea.endPixelIndex.columnIndex ||
+          item.rowIndex < this.extendingSelectedArea.startPixelIndex.rowIndex ||
+          item.rowIndex > this.extendingSelectedArea.endPixelIndex.rowIndex
         ),
     );
     this.setExtendingSelectedPixels(filteredPixelsToColor);
