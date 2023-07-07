@@ -398,49 +398,73 @@ export default class InteractionLayer extends BaseLayer {
     let modifyPixelHeightRatio = 1;
 
     if (isAltPressed) {
+      const wasOriginalAreaHeightEven =
+        (originalSelectAreaHeightPixelOffset + 1) % 2 === 0;
+      const wasOriginalAreaWidthEven =
+        (originalSelectAreaWidthPixelOffset + 1) % 2 === 0;
+      originPixelIndex.rowIndex =
+        this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
+        (originalSelectAreaHeightPixelOffset + 2) / 2;
+      originPixelIndex.columnIndex =
+        this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+        (originalSelectAreaWidthPixelOffset + 2) / 2;
+      originWorldPos.y =
+        this.capturedOriginalSelectedArea.startWorldPos.y +
+        (this.capturedOriginalSelectedArea.endWorldPos.y -
+          this.capturedOriginalSelectedArea.startWorldPos.y) /
+          2;
+      originWorldPos.x =
+        this.capturedOriginalSelectedArea.startWorldPos.x +
+        (this.capturedOriginalSelectedArea.endWorldPos.x -
+          this.capturedOriginalSelectedArea.startWorldPos.x) /
+          2;
+      const heightExtensionOffset =
+        direction === ButtonDirection.TOP
+          ? this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y
+          : direction === ButtonDirection.BOTTOM
+          ? extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y
+          : 0;
+      const widthExtensionOffset =
+        direction === ButtonDirection.LEFT
+          ? this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x
+          : direction === ButtonDirection.RIGHT
+          ? extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x
+          : 0;
+      let singleSideOffsetRowBy = Math.floor(
+        heightExtensionOffset / this.gridSquareLength,
+      );
+      let singleSideOffsetColumnBy = Math.floor(
+        widthExtensionOffset / this.gridSquareLength,
+      );
+      let heightPixelCount =
+        originalSelectAreaHeightPixelOffset + 1 + singleSideOffsetRowBy * 2;
+      if (heightPixelCount < 1 && !wasOriginalAreaHeightEven) {
+        heightPixelCount = 1;
+        singleSideOffsetRowBy = -originalSelectAreaHeightPixelOffset / 2;
+      } else if (heightPixelCount < 2 && wasOriginalAreaHeightEven) {
+        heightPixelCount = 2;
+        singleSideOffsetRowBy = -(originalSelectAreaHeightPixelOffset - 1) / 2;
+      }
+      let widthPixelCount =
+        originalSelectAreaWidthPixelOffset + 1 + singleSideOffsetColumnBy * 2;
+      if (widthPixelCount < 1 && !wasOriginalAreaWidthEven) {
+        widthPixelCount = 1;
+        singleSideOffsetColumnBy = -originalSelectAreaWidthPixelOffset / 2;
+      } else if (widthPixelCount < 2 && wasOriginalAreaWidthEven) {
+        widthPixelCount = 2;
+        singleSideOffsetColumnBy =
+          -(originalSelectAreaWidthPixelOffset - 1) / 2;
+      }
+      modifyPixelHeightRatio =
+        (originalSelectAreaHeightPixelOffset + 2 * singleSideOffsetRowBy) /
+        originalSelectAreaHeightPixelOffset;
+      modifyPixelWidthRatio =
+        (originalSelectAreaWidthPixelOffset + 2 * singleSideOffsetColumnBy) /
+        originalSelectAreaWidthPixelOffset;
       if (
         direction === ButtonDirection.TOP ||
         direction === ButtonDirection.BOTTOM
       ) {
-        const wasOriginalAreaHeightEven =
-          (originalSelectAreaHeightPixelOffset + 1) % 2 === 0;
-        originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
-          (originalSelectAreaHeightPixelOffset + 2) / 2;
-        originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
-          (originalSelectAreaWidthPixelOffset + 2) / 2;
-        originWorldPos.y =
-          this.capturedOriginalSelectedArea.startWorldPos.y +
-          (this.capturedOriginalSelectedArea.endWorldPos.y -
-            this.capturedOriginalSelectedArea.startWorldPos.y) /
-            2;
-        originWorldPos.x = this.capturedOriginalSelectedArea.startWorldPos.x;
-        const extensionOffset =
-          direction === ButtonDirection.TOP
-            ? this.capturedOriginalSelectedArea.startWorldPos.y -
-              extendToCoord.y
-            : extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y;
-        let singleSideOffsetRowBy = Math.round(
-          extensionOffset / this.gridSquareLength,
-        );
-        // console.log(singleSideOffsetRowBy);
-        let heightPixelCount =
-          originalSelectAreaHeightPixelOffset + 1 + singleSideOffsetRowBy * 2;
-        if (heightPixelCount < 1 && !wasOriginalAreaHeightEven) {
-          // if original height is odd, and the new height is less than 1, then set it to 1
-          heightPixelCount = 1;
-          singleSideOffsetRowBy = -originalSelectAreaHeightPixelOffset / 2;
-        } else if (heightPixelCount < 2 && wasOriginalAreaHeightEven) {
-          // if original height is even, and the new height is less than 2, then set it to 2
-          heightPixelCount = 2;
-          singleSideOffsetRowBy =
-            -(originalSelectAreaHeightPixelOffset - 1) / 2;
-        }
-        modifyPixelHeightRatio =
-          (originalSelectAreaHeightPixelOffset + 2 * singleSideOffsetRowBy) /
-          originalSelectAreaHeightPixelOffset;
-
         this.setSelectedArea({
           startWorldPos: {
             x: this.capturedOriginalSelectedArea.startWorldPos.x,
@@ -473,44 +497,6 @@ export default class InteractionLayer extends BaseLayer {
         direction === ButtonDirection.LEFT ||
         direction === ButtonDirection.RIGHT
       ) {
-        const wasOriginalAreaWidthEven =
-          (originalSelectAreaWidthPixelOffset + 1) % 2;
-        originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
-          (originalSelectAreaHeightPixelOffset + 2) / 2;
-        originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
-          (originalSelectAreaWidthPixelOffset + 2) / 2;
-        originWorldPos.y = this.capturedOriginalSelectedArea.startWorldPos.y;
-        originWorldPos.x =
-          this.capturedOriginalSelectedArea.startWorldPos.x +
-          (this.capturedOriginalSelectedArea.endWorldPos.x -
-            this.capturedOriginalSelectedArea.startWorldPos.x) /
-            2;
-        const extensionOffset =
-          direction === ButtonDirection.LEFT
-            ? this.capturedOriginalSelectedArea.startWorldPos.x -
-              extendToCoord.x
-            : extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
-        let singleSideOffsetColumnBy = Math.round(
-          extensionOffset / this.gridSquareLength,
-        );
-        let widthPixelCount =
-          originalSelectAreaWidthPixelOffset + 1 + singleSideOffsetColumnBy * 2;
-        if (widthPixelCount < 1 && !wasOriginalAreaWidthEven) {
-          // if original width is odd, and the new width is less than 1, then set it to 1
-          widthPixelCount = 1;
-          singleSideOffsetColumnBy = -originalSelectAreaWidthPixelOffset / 2;
-        } else if (widthPixelCount < 2 && wasOriginalAreaWidthEven) {
-          // if original width is even, and the new width is less than 2, then set it to 2
-          widthPixelCount = 2;
-          singleSideOffsetColumnBy =
-            -(originalSelectAreaWidthPixelOffset - 1) / 2;
-        }
-        modifyPixelWidthRatio =
-          (originalSelectAreaWidthPixelOffset + 2 * singleSideOffsetColumnBy) /
-          originalSelectAreaWidthPixelOffset;
-
         this.setSelectedArea({
           startWorldPos: {
             x:
@@ -540,6 +526,41 @@ export default class InteractionLayer extends BaseLayer {
         });
       }
     } else {
+      const heightExtensionOffset =
+        direction === ButtonDirection.TOP
+          ? this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y
+          : direction === ButtonDirection.BOTTOM
+          ? extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y
+          : 0;
+      const widthExtensionOffset =
+        direction === ButtonDirection.LEFT
+          ? this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x
+          : direction === ButtonDirection.RIGHT
+          ? extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x
+          : 0;
+      let offsetRowBy = Math.round(
+        heightExtensionOffset / this.gridSquareLength,
+      );
+      let offsetColumnBy = Math.round(
+        widthExtensionOffset / this.gridSquareLength,
+      );
+      let heightPixelCount =
+        originalSelectAreaHeightPixelOffset + 1 + offsetRowBy;
+      let widthPixelCount =
+        originalSelectAreaWidthPixelOffset + 1 + offsetColumnBy;
+      if (heightPixelCount < 1) {
+        heightPixelCount = 1;
+        offsetRowBy = -originalSelectAreaHeightPixelOffset;
+      }
+      if (widthPixelCount < 1) {
+        widthPixelCount = 1;
+        offsetColumnBy = -originalSelectAreaWidthPixelOffset;
+      }
+      modifyPixelHeightRatio =
+        heightPixelCount / (originalSelectAreaHeightPixelOffset + 1);
+      modifyPixelWidthRatio =
+        widthPixelCount / (originalSelectAreaWidthPixelOffset + 1);
+
       if (direction === ButtonDirection.TOP) {
         originPixelIndex.rowIndex =
           this.capturedOriginalSelectedArea.endPixelIndex.rowIndex;
@@ -547,18 +568,6 @@ export default class InteractionLayer extends BaseLayer {
           this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
         originWorldPos.y = this.capturedOriginalSelectedArea.endWorldPos.y;
         originWorldPos.x = this.capturedOriginalSelectedArea.startWorldPos.x;
-        // we extend the selected area to the top
-        const extensionOffset =
-          this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y;
-        let offsetRowBy = Math.round(extensionOffset / this.gridSquareLength);
-        let heightPixelCount =
-          originalSelectAreaHeightPixelOffset + 1 + offsetRowBy;
-        if (heightPixelCount < 1) {
-          heightPixelCount = 1;
-          offsetRowBy = -originalSelectAreaHeightPixelOffset;
-        }
-        modifyPixelHeightRatio =
-          heightPixelCount / (originalSelectAreaHeightPixelOffset + 1);
         this.setSelectedArea({
           startWorldPos: {
             x: this.capturedOriginalSelectedArea.startWorldPos.x,
@@ -578,16 +587,6 @@ export default class InteractionLayer extends BaseLayer {
           endPixelIndex: this.capturedOriginalSelectedArea.endPixelIndex,
         });
       } else if (direction === ButtonDirection.BOTTOM) {
-        // we extend the selected area to the bottom
-        const extensionOffset =
-          extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y;
-        let offsetRowBy = Math.round(extensionOffset / this.gridSquareLength);
-        let heightPixelCount =
-          originalSelectAreaHeightPixelOffset + 1 + offsetRowBy;
-        if (heightPixelCount < 1) {
-          heightPixelCount = 1;
-          offsetRowBy = -originalSelectAreaHeightPixelOffset;
-        }
         originPixelIndex.rowIndex =
           this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
@@ -614,18 +613,6 @@ export default class InteractionLayer extends BaseLayer {
           },
         });
       } else if (direction === ButtonDirection.LEFT) {
-        // we extend the selected area to the left
-        const extensionOffset =
-          this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x;
-        let offsetColumnBy = Math.round(
-          extensionOffset / this.gridSquareLength,
-        );
-        let widthPixelCount =
-          originalSelectAreaWidthPixelOffset + 1 + offsetColumnBy;
-        if (widthPixelCount < 1) {
-          widthPixelCount = 1;
-          offsetColumnBy = -originalSelectAreaWidthPixelOffset;
-        }
         originPixelIndex.rowIndex =
           this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
@@ -653,18 +640,6 @@ export default class InteractionLayer extends BaseLayer {
           endPixelIndex: this.capturedOriginalSelectedArea.endPixelIndex,
         });
       } else if (direction === ButtonDirection.RIGHT) {
-        // we extend the selected area to the right
-        const extensionOffset =
-          extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
-        let offsetColumnBy = Math.round(
-          extensionOffset / this.gridSquareLength,
-        );
-        let widthPixelCount =
-          originalSelectAreaWidthPixelOffset + 1 + offsetColumnBy;
-        if (widthPixelCount < 1) {
-          widthPixelCount = 1;
-          offsetColumnBy = -originalSelectAreaWidthPixelOffset;
-        }
         originPixelIndex.rowIndex =
           this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
@@ -739,142 +714,131 @@ export default class InteractionLayer extends BaseLayer {
     let modifyPixelHeightRatio = 1;
 
     if (isAltPressed) {
-      if (
+      const wasOriginalAreaHeightEven =
+        (originalSelectAreaHeightPixelOffset + 1) % 2 === 0;
+      const wasOriginalAreaWidthEven =
+        (originalSelectAreaWidthPixelOffset + 1) % 2 === 0;
+      originPixelIndex.rowIndex =
+        this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
+        (originalSelectAreaHeightPixelOffset + 2) / 2;
+      originPixelIndex.columnIndex =
+        this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+        (originalSelectAreaWidthPixelOffset + 2) / 2;
+      originWorldPos.y =
+        this.capturedOriginalSelectedArea.startWorldPos.y +
+        (this.capturedOriginalSelectedArea.endWorldPos.y -
+          this.capturedOriginalSelectedArea.startWorldPos.y) /
+          2;
+      originWorldPos.x =
+        this.capturedOriginalSelectedArea.startWorldPos.x +
+        (this.capturedOriginalSelectedArea.endWorldPos.x -
+          this.capturedOriginalSelectedArea.startWorldPos.x) /
+          2;
+      const heightExtensionOffset =
         direction === ButtonDirection.TOPLEFT ||
-        direction === ButtonDirection.BOTTOMRIGHT
-      ) {
-        const wasOriginalAreaHeightEven =
-          (originalSelectAreaHeightPixelOffset + 1) % 2 === 0;
-        const wasOriginalAreaWidthEven =
-          (originalSelectAreaWidthPixelOffset + 1) % 2 === 0;
-        originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
-          (originalSelectAreaHeightPixelOffset + 2) / 2;
-        originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
-          (originalSelectAreaWidthPixelOffset + 2) / 2;
-        originWorldPos.y =
-          this.capturedOriginalSelectedArea.startWorldPos.y +
-          (this.capturedOriginalSelectedArea.endWorldPos.y -
-            this.capturedOriginalSelectedArea.startWorldPos.y) /
-            2;
-        originWorldPos.x =
-          this.capturedOriginalSelectedArea.startWorldPos.x +
-          (this.capturedOriginalSelectedArea.endWorldPos.x -
-            this.capturedOriginalSelectedArea.startWorldPos.x) /
-            2;
-        const heightExtensionOffset =
-          direction === ButtonDirection.TOPLEFT
-            ? this.capturedOriginalSelectedArea.startWorldPos.y -
-              extendToCoord.y
-            : extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y;
-        const widthExtensionOffset =
-          direction === ButtonDirection.TOPLEFT
-            ? this.capturedOriginalSelectedArea.startWorldPos.x -
-              extendToCoord.x
-            : extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
-        let singleSideOffsetRowBy = Math.round(
-          heightExtensionOffset / this.gridSquareLength,
-        );
-        let singleSideOffsetColumnBy = Math.round(
-          widthExtensionOffset / this.gridSquareLength,
-        );
-        let heightPixelCount =
-          originalSelectAreaHeightPixelOffset + 1 + singleSideOffsetRowBy * 2;
-        if (heightPixelCount < 1 && !wasOriginalAreaHeightEven) {
-          heightPixelCount = 1;
-          singleSideOffsetRowBy = -originalSelectAreaHeightPixelOffset / 2;
-        } else if (heightPixelCount < 2 && wasOriginalAreaHeightEven) {
-          heightPixelCount = 2;
-          singleSideOffsetRowBy =
-            -(originalSelectAreaHeightPixelOffset - 1) / 2;
-        }
-        let widthPixelCount =
-          originalSelectAreaWidthPixelOffset + 1 + singleSideOffsetColumnBy * 2;
-        if (widthPixelCount < 1 && !wasOriginalAreaWidthEven) {
-          widthPixelCount = 1;
-          singleSideOffsetColumnBy = -originalSelectAreaWidthPixelOffset / 2;
-        } else if (widthPixelCount < 2 && wasOriginalAreaWidthEven) {
-          widthPixelCount = 2;
-          singleSideOffsetColumnBy =
-            -(originalSelectAreaWidthPixelOffset - 1) / 2;
-        }
-        modifyPixelHeightRatio =
-          (originalSelectAreaHeightPixelOffset + 2 * singleSideOffsetRowBy) /
-          originalSelectAreaHeightPixelOffset;
-        modifyPixelWidthRatio =
-          (originalSelectAreaWidthPixelOffset + 2 * singleSideOffsetColumnBy) /
-          originalSelectAreaWidthPixelOffset;
-        this.setSelectedArea({
-          startWorldPos: {
-            x:
-              this.capturedOriginalSelectedArea.startWorldPos.x -
-              singleSideOffsetColumnBy * this.gridSquareLength,
-            y:
-              this.capturedOriginalSelectedArea.startWorldPos.y -
-              singleSideOffsetRowBy * this.gridSquareLength,
-          },
-          endWorldPos: {
-            x:
-              this.capturedOriginalSelectedArea.endWorldPos.x +
-              singleSideOffsetColumnBy * this.gridSquareLength,
-            y:
-              this.capturedOriginalSelectedArea.endWorldPos.y +
-              singleSideOffsetRowBy * this.gridSquareLength,
-          },
-          startPixelIndex: {
-            rowIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.rowIndex -
-              singleSideOffsetRowBy,
-            columnIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.columnIndex -
-              singleSideOffsetColumnBy,
-          },
-          endPixelIndex: {
-            rowIndex:
-              this.capturedOriginalSelectedArea.endPixelIndex.rowIndex +
-              singleSideOffsetRowBy,
-            columnIndex:
-              this.capturedOriginalSelectedArea.endPixelIndex.columnIndex +
-              singleSideOffsetColumnBy,
-          },
-        });
-        console.log(
-          this.selectedArea.startPixelIndex,
-          this.selectedArea.endPixelIndex,
-        );
-      } else if (
-        direction === ButtonDirection.TOPRIGHT ||
+        direction === ButtonDirection.TOPRIGHT
+          ? this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y
+          : extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y;
+      const widthExtensionOffset =
+        direction === ButtonDirection.TOPLEFT ||
         direction === ButtonDirection.BOTTOMLEFT
-      ) {
-        return;
+          ? this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x
+          : extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
+      let singleSideOffsetRowBy = Math.round(
+        heightExtensionOffset / this.gridSquareLength,
+      );
+      let singleSideOffsetColumnBy = Math.round(
+        widthExtensionOffset / this.gridSquareLength,
+      );
+      let heightPixelCount =
+        originalSelectAreaHeightPixelOffset + 1 + singleSideOffsetRowBy * 2;
+      if (heightPixelCount < 1 && !wasOriginalAreaHeightEven) {
+        heightPixelCount = 1;
+        singleSideOffsetRowBy = -originalSelectAreaHeightPixelOffset / 2;
+      } else if (heightPixelCount < 2 && wasOriginalAreaHeightEven) {
+        heightPixelCount = 2;
+        singleSideOffsetRowBy = -(originalSelectAreaHeightPixelOffset - 1) / 2;
       }
+      let widthPixelCount =
+        originalSelectAreaWidthPixelOffset + 1 + singleSideOffsetColumnBy * 2;
+      if (widthPixelCount < 1 && !wasOriginalAreaWidthEven) {
+        widthPixelCount = 1;
+        singleSideOffsetColumnBy = -originalSelectAreaWidthPixelOffset / 2;
+      } else if (widthPixelCount < 2 && wasOriginalAreaWidthEven) {
+        widthPixelCount = 2;
+        singleSideOffsetColumnBy =
+          -(originalSelectAreaWidthPixelOffset - 1) / 2;
+      }
+      modifyPixelHeightRatio =
+        (originalSelectAreaHeightPixelOffset + 2 * singleSideOffsetRowBy) /
+        originalSelectAreaHeightPixelOffset;
+      modifyPixelWidthRatio =
+        (originalSelectAreaWidthPixelOffset + 2 * singleSideOffsetColumnBy) /
+        originalSelectAreaWidthPixelOffset;
+      this.setSelectedArea({
+        startWorldPos: {
+          x:
+            this.capturedOriginalSelectedArea.startWorldPos.x -
+            singleSideOffsetColumnBy * this.gridSquareLength,
+          y:
+            this.capturedOriginalSelectedArea.startWorldPos.y -
+            singleSideOffsetRowBy * this.gridSquareLength,
+        },
+        endWorldPos: {
+          x:
+            this.capturedOriginalSelectedArea.endWorldPos.x +
+            singleSideOffsetColumnBy * this.gridSquareLength,
+          y:
+            this.capturedOriginalSelectedArea.endWorldPos.y +
+            singleSideOffsetRowBy * this.gridSquareLength,
+        },
+        startPixelIndex: {
+          rowIndex:
+            this.capturedOriginalSelectedArea.startPixelIndex.rowIndex -
+            singleSideOffsetRowBy,
+          columnIndex:
+            this.capturedOriginalSelectedArea.startPixelIndex.columnIndex -
+            singleSideOffsetColumnBy,
+        },
+        endPixelIndex: {
+          rowIndex:
+            this.capturedOriginalSelectedArea.endPixelIndex.rowIndex +
+            singleSideOffsetRowBy,
+          columnIndex:
+            this.capturedOriginalSelectedArea.endPixelIndex.columnIndex +
+            singleSideOffsetColumnBy,
+        },
+      });
     } else {
+      const heightExtensionOffset =
+        direction === ButtonDirection.TOPLEFT ||
+        direction === ButtonDirection.TOPRIGHT
+          ? this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y
+          : extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y;
+      const widthExtensionOffset =
+        direction === ButtonDirection.TOPLEFT ||
+        direction === ButtonDirection.BOTTOMLEFT
+          ? this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x
+          : extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
+      let offsetRowBy = Math.round(
+        heightExtensionOffset / this.gridSquareLength,
+      );
+      let offsetColumnBy = Math.round(
+        widthExtensionOffset / this.gridSquareLength,
+      );
+      let heightPixelCount =
+        originalSelectAreaHeightPixelOffset + 1 + offsetRowBy;
+      let widthPixelCount =
+        originalSelectAreaWidthPixelOffset + 1 + offsetColumnBy;
+      if (heightPixelCount < 1) {
+        heightPixelCount = 1;
+        offsetRowBy = -originalSelectAreaHeightPixelOffset;
+      }
+      if (widthPixelCount < 1) {
+        widthPixelCount = 1;
+        offsetColumnBy = -originalSelectAreaWidthPixelOffset;
+      }
       if (direction === ButtonDirection.TOPLEFT) {
-        const heightExtensionOffset =
-          this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y;
-        const widthExtensionOffset =
-          this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x;
-
-        let offsetRowBy = Math.round(
-          heightExtensionOffset / this.gridSquareLength,
-        );
-        let offsetColumnBy = Math.round(
-          widthExtensionOffset / this.gridSquareLength,
-        );
-        let heightPixelCount =
-          originalSelectAreaHeightPixelOffset + 1 + offsetRowBy;
-        let widthPixelCount =
-          originalSelectAreaWidthPixelOffset + 1 + offsetColumnBy;
-        // we extend the selected area to the top left
-        if (heightPixelCount < 1) {
-          heightPixelCount = 1;
-          offsetRowBy = -originalSelectAreaHeightPixelOffset;
-        }
-        if (widthPixelCount < 1) {
-          widthPixelCount = 1;
-          offsetColumnBy = -originalSelectAreaWidthPixelOffset;
-        }
         originPixelIndex.rowIndex =
           this.capturedOriginalSelectedArea.endPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
@@ -908,30 +872,6 @@ export default class InteractionLayer extends BaseLayer {
           endPixelIndex: this.capturedOriginalSelectedArea.endPixelIndex,
         });
       } else if (direction === ButtonDirection.TOPRIGHT) {
-        const heightExtensionOffset =
-          this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y;
-        const widthExtensionOffset =
-          extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
-
-        let offsetRowBy = Math.round(
-          heightExtensionOffset / this.gridSquareLength,
-        );
-        let offsetColumnBy = Math.round(
-          widthExtensionOffset / this.gridSquareLength,
-        );
-        let heightPixelCount =
-          originalSelectAreaHeightPixelOffset + 1 + offsetRowBy;
-        let widthPixelCount =
-          originalSelectAreaWidthPixelOffset + 1 + offsetColumnBy;
-        // we extend the selected area to the top right
-        if (heightPixelCount < 1) {
-          heightPixelCount = 1;
-          offsetRowBy = -originalSelectAreaHeightPixelOffset;
-        }
-        if (widthPixelCount < 1) {
-          widthPixelCount = 1;
-          offsetColumnBy = -originalSelectAreaWidthPixelOffset;
-        }
         originPixelIndex.rowIndex =
           this.capturedOriginalSelectedArea.endPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
@@ -972,31 +912,6 @@ export default class InteractionLayer extends BaseLayer {
           },
         });
       } else if (direction === ButtonDirection.BOTTOMLEFT) {
-        const heightExtensionOffset =
-          extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y;
-        const widthExtensionOffset =
-          this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x;
-
-        let offsetRowBy = Math.round(
-          heightExtensionOffset / this.gridSquareLength,
-        );
-        let offsetColumnBy = Math.round(
-          widthExtensionOffset / this.gridSquareLength,
-        );
-        let heightPixelCount =
-          originalSelectAreaHeightPixelOffset + 1 + offsetRowBy;
-        let widthPixelCount =
-          originalSelectAreaWidthPixelOffset + 1 + offsetColumnBy;
-
-        // we extend the selected area to the bottom left
-        if (heightPixelCount < 1) {
-          heightPixelCount = 1;
-          offsetRowBy = -originalSelectAreaHeightPixelOffset;
-        }
-        if (widthPixelCount < 1) {
-          widthPixelCount = 1;
-          offsetColumnBy = -originalSelectAreaWidthPixelOffset;
-        }
         originPixelIndex.rowIndex =
           this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
@@ -1038,29 +953,6 @@ export default class InteractionLayer extends BaseLayer {
           },
         });
       } else if (direction === ButtonDirection.BOTTOMRIGHT) {
-        const heightExtensionOffset =
-          extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y;
-        const widthExtensionOffset =
-          extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
-        let offsetRowBy = Math.round(
-          heightExtensionOffset / this.gridSquareLength,
-        );
-        let offsetColumnBy = Math.round(
-          widthExtensionOffset / this.gridSquareLength,
-        );
-        let heightPixelCount =
-          originalSelectAreaHeightPixelOffset + 1 + offsetRowBy;
-        let widthPixelCount =
-          originalSelectAreaWidthPixelOffset + 1 + offsetColumnBy;
-        // we extend the selected area to the bottom right
-        if (heightPixelCount < 1) {
-          heightPixelCount = 1;
-          offsetRowBy = -originalSelectAreaHeightPixelOffset;
-        }
-        if (widthPixelCount < 1) {
-          widthPixelCount = 1;
-          offsetColumnBy = -originalSelectAreaWidthPixelOffset;
-        }
         originPixelIndex.rowIndex =
           this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
