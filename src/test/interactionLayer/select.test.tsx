@@ -6,6 +6,7 @@ import { FakeMouseEvent } from "../../utils/testUtils";
 
 describe("Dotting Component", () => {
   let editor: Editor;
+  let canvasElement: HTMLCanvasElement;
   beforeEach(() => {
     const divElement = document.createElement("div");
     const interactionCanvas = divElement.appendChild(
@@ -24,16 +25,8 @@ describe("Dotting Component", () => {
     });
     mockEditor.setSize(800, 800);
     editor = mockEditor;
-  });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it("should render grid for select area", () => {
-    const canvasElement = editor.getCanvasElement();
-    const columnCount = editor.getColumnCount();
-    const rowCount = editor.getRowCount();
+    canvasElement = editor.getCanvasElement();
     // const gridSquareLength = editor.getGridSquareLength();
     editor.setBrushTool(BrushTool.SELECT);
     fireEvent(
@@ -57,7 +50,15 @@ describe("Dotting Component", () => {
         offsetY: canvasElement.height,
       }),
     );
+  });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("selects all the pixels in the canvas", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
     const selectedArea = editor.getSelectedArea();
     expect(selectedArea?.startPixelIndex).toStrictEqual({
       rowIndex: 0,
@@ -66,6 +67,44 @@ describe("Dotting Component", () => {
     expect(selectedArea?.endPixelIndex).toStrictEqual({
       rowIndex: rowCount - 1,
       columnIndex: columnCount - 1,
+    });
+  });
+
+  it("tests select area extension to top", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2,
+        offsetY: canvasElement.height / 2 - (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX: canvasElement.width / 2,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: canvasElement.width / 2,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    const selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startPixelIndex).toStrictEqual({
+      rowIndex: -1,
+      columnIndex: 0,
     });
   });
 });
