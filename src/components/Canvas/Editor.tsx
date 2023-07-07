@@ -334,6 +334,10 @@ export default class Editor extends EventDispatcher {
     return this.dataLayer.getGridIndices();
   }
 
+  getGridSquareLength() {
+    return this.gridSquareLength;
+  }
+
   styleMouseCursor = (mouseCoord: Coord) => {
     const hoveredButton = this.gridLayer.getHoveredButton();
     if (hoveredButton) {
@@ -1782,7 +1786,6 @@ export default class Editor extends EventDispatcher {
       x: mouseCartCoord.x,
       y: mouseCartCoord.y,
     };
-
     this.styleMouseCursor(mouseCartCoord);
     const gridIndices = this.dataLayer.getGridIndices();
     const pixelIndex = getPixelIndexFromMouseCartCoord(
@@ -1804,6 +1807,7 @@ export default class Editor extends EventDispatcher {
       // mouseDownWorldPos may be null
       const directionToExtendSelectedArea =
         this.interactionLayer.getDirectionToExtendSelectedArea();
+
       if (directionToExtendSelectedArea !== null) {
         // if there is a direction to extend selected area, it means that there is a selected area
         this.interactionLayer.extendSelectedArea(
@@ -1870,6 +1874,7 @@ export default class Editor extends EventDispatcher {
               previousSelectedArea.endPixelIndex.columnIndex - pixelWiseDeltaX,
           },
         });
+
         this.interactionLayer.setMovingSelectedPixels(newMovingSelectedPixels);
         const selectedArea = this.interactionLayer.getMovingSelectedArea();
         this.gridLayer.render();
@@ -1955,6 +1960,10 @@ export default class Editor extends EventDispatcher {
       }
     }
     this.previousMouseMoveWorldPos = this.mouseMoveWorldPos;
+  }
+
+  getSelectedArea() {
+    return this.interactionLayer.getSelectedArea();
   }
 
   onKeyDown(e: KeyboardEvent<HTMLDivElement>) {

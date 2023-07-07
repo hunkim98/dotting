@@ -710,6 +710,7 @@ export default class InteractionLayer extends BaseLayer {
   extendSelectedAreaDiagonally(
     direction: ButtonDirection,
     extendToCoord: Coord,
+    isAltPressed: boolean,
   ) {
     if (!this.selectedArea || !this.capturedOriginalSelectedArea) {
       return;
@@ -1049,24 +1050,28 @@ export default class InteractionLayer extends BaseLayer {
         this.extendSelectedAreaDiagonally(
           ButtonDirection.TOPLEFT,
           extendToCoord,
+          isAltPressed,
         );
         break;
       case ButtonDirection.TOPRIGHT:
         this.extendSelectedAreaDiagonally(
           ButtonDirection.TOPRIGHT,
           extendToCoord,
+          isAltPressed,
         );
         break;
       case ButtonDirection.BOTTOMLEFT:
         this.extendSelectedAreaDiagonally(
           ButtonDirection.BOTTOMLEFT,
           extendToCoord,
+          isAltPressed,
         );
         break;
       case ButtonDirection.BOTTOMRIGHT:
         this.extendSelectedAreaDiagonally(
           ButtonDirection.BOTTOMRIGHT,
           extendToCoord,
+          isAltPressed,
         );
         break;
     }
