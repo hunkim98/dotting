@@ -209,4 +209,176 @@ describe("Dotting Component", () => {
       columnIndex: columnCount,
     });
   });
+
+  it("tests select area extension to top left", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 - (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 - (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    const selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startPixelIndex).toStrictEqual({
+      rowIndex: -1,
+      columnIndex: -1,
+    });
+  });
+
+  it("tests select area extension to top right", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 + (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 - (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    const selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startPixelIndex.rowIndex).toBe(-1);
+    expect(selectedArea?.endPixelIndex.columnIndex).toBe(columnCount);
+  });
+
+  it("tests select area extension to bottom left", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 - (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 + (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength,
+      }),
+    );
+    const selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startPixelIndex.columnIndex).toBe(-1);
+    expect(selectedArea?.endPixelIndex.rowIndex).toBe(rowCount);
+  });
+
+  it("tests select area extension to bottom right", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 + (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 + (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength,
+      }),
+    );
+    const selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.endPixelIndex).toStrictEqual({
+      rowIndex: rowCount,
+      columnIndex: columnCount,
+    });
+  });
 });
