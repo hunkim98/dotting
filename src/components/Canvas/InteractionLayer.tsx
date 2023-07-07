@@ -64,20 +64,22 @@ export default class InteractionLayer extends BaseLayer {
 
   private selectedArea: SelectAreaRange | null = null;
 
-  private capturedOriginalSelectedArea: SelectAreaRange | null = null;
-
   private directionToExtendSelectedArea: ButtonDirection | null = null;
 
   private movingSelectedArea: SelectAreaRange | null = null;
 
   private movingSelectedPixels: Array<ColorChangeItem> | null = null;
 
+  private extendingSelectedArea: SelectAreaRange | null = null;
+
   private extendingSelectedPixels: Array<ColorChangeItem | null> | null = [];
 
-  private selectedAreaPixels: Array<ColorChangeItem> | null = null;
+  private capturedBaseExtendingSelectedArea: SelectAreaRange | null = null;
 
-  private capturedOriginalSelectedAreaPixels: Array<ColorChangeItem> | null =
+  private capturedBaseExtendingSelectedAreaPixels: Array<ColorChangeItem> | null =
     null;
+
+  private selectedAreaPixels: Array<ColorChangeItem> | null = null;
 
   // this is to prevent other user's grid change from being applied to the canvas
   // when this is not null we will not render data layer
@@ -148,12 +150,16 @@ export default class InteractionLayer extends BaseLayer {
     this.movingSelectedPixels = pixels;
   }
 
+  setMovingSelectedArea(area: SelectAreaRange | null) {
+    this.movingSelectedArea = area;
+  }
+
   setExtendingSelectedPixels(pixels: Array<ColorChangeItem | null> | null) {
     this.extendingSelectedPixels = pixels;
   }
 
-  setMovingSelectedArea(area: SelectAreaRange | null) {
-    this.movingSelectedArea = area;
+  setExtendingSelectedArea(area: SelectAreaRange | null) {
+    this.extendingSelectedArea = area;
   }
 
   setSelectedAreaPixels(pixelArray: Array<ColorChangeItem>) {
@@ -171,17 +177,17 @@ export default class InteractionLayer extends BaseLayer {
     );
   }
 
-  setCapturedOriginalSelectedArea(
-    capturedOriginalSelectedArea: SelectAreaRange | null,
+  setCapturedBaseExtendingSelectedArea(
+    capturedBaseExtendingSelectedArea: SelectAreaRange | null,
   ) {
-    this.capturedOriginalSelectedArea = capturedOriginalSelectedArea;
+    this.capturedBaseExtendingSelectedArea = capturedBaseExtendingSelectedArea;
   }
 
-  setCapturedOriginalSelectedAreaPixels(
-    capturedOriginalSelectedAreaPixels: Array<ColorChangeItem> | null,
+  setCapturedBaseExtendingSelectedAreaPixels(
+    capturedBaseExtendingSelectedAreaPixels: Array<ColorChangeItem> | null,
   ) {
-    this.capturedOriginalSelectedAreaPixels =
-      capturedOriginalSelectedAreaPixels;
+    this.capturedBaseExtendingSelectedAreaPixels =
+      capturedBaseExtendingSelectedAreaPixels;
   }
 
   resetCapturedData() {
@@ -200,6 +206,10 @@ export default class InteractionLayer extends BaseLayer {
 
   getMovingSelectedArea() {
     return this.movingSelectedArea;
+  }
+
+  getExtendingSelectedArea() {
+    return this.extendingSelectedArea;
   }
 
   getExtendingSelectedPixels() {
@@ -381,18 +391,18 @@ export default class InteractionLayer extends BaseLayer {
   ) {
     // startWorldPos is the top left point
     const originalSelectAreaHeightPixelOffset =
-      this.capturedOriginalSelectedArea.endPixelIndex.rowIndex -
-      this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+      this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex -
+      this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex;
     const originalSelectAreaWidthPixelOffset =
-      this.capturedOriginalSelectedArea.endPixelIndex.columnIndex -
-      this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+      this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex -
+      this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex;
     // initialize originPixelIndex to the center of the original selected area
     const originPixelIndex = {
       rowIndex:
-        this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
+        this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex +
         (originalSelectAreaHeightPixelOffset + 2) / 2,
       columnIndex:
-        this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+        this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex +
         (originalSelectAreaWidthPixelOffset + 2) / 2,
     };
     let modifyPixelWidthRatio = 1;
@@ -405,15 +415,19 @@ export default class InteractionLayer extends BaseLayer {
         (originalSelectAreaWidthPixelOffset + 1) % 2 === 0;
       const heightExtensionOffset =
         direction === ButtonDirection.TOP
-          ? this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y
+          ? this.capturedBaseExtendingSelectedArea.startWorldPos.y -
+            extendToCoord.y
           : direction === ButtonDirection.BOTTOM
-          ? extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y
+          ? extendToCoord.y -
+            this.capturedBaseExtendingSelectedArea.endWorldPos.y
           : 0;
       const widthExtensionOffset =
         direction === ButtonDirection.LEFT
-          ? this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x
+          ? this.capturedBaseExtendingSelectedArea.startWorldPos.x -
+            extendToCoord.x
           : direction === ButtonDirection.RIGHT
-          ? extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x
+          ? extendToCoord.x -
+            this.capturedBaseExtendingSelectedArea.endWorldPos.x
           : 0;
       let singleSideOffsetRowBy = Math.floor(
         heightExtensionOffset / this.gridSquareLength,
@@ -446,52 +460,56 @@ export default class InteractionLayer extends BaseLayer {
       modifyPixelWidthRatio =
         (originalSelectAreaWidthPixelOffset + 2 * singleSideOffsetColumnBy) /
         originalSelectAreaWidthPixelOffset;
-      this.setSelectedArea({
+      this.setExtendingSelectedArea({
         startWorldPos: {
           x:
-            this.capturedOriginalSelectedArea.startWorldPos.x -
+            this.capturedBaseExtendingSelectedArea.startWorldPos.x -
             singleSideOffsetColumnBy * this.gridSquareLength,
           y:
-            this.capturedOriginalSelectedArea.startWorldPos.y -
+            this.capturedBaseExtendingSelectedArea.startWorldPos.y -
             singleSideOffsetRowBy * this.gridSquareLength,
         },
         endWorldPos: {
           x:
-            this.capturedOriginalSelectedArea.endWorldPos.x +
+            this.capturedBaseExtendingSelectedArea.endWorldPos.x +
             singleSideOffsetColumnBy * this.gridSquareLength,
           y:
-            this.capturedOriginalSelectedArea.endWorldPos.y +
+            this.capturedBaseExtendingSelectedArea.endWorldPos.y +
             singleSideOffsetRowBy * this.gridSquareLength,
         },
         startPixelIndex: {
           rowIndex:
-            this.capturedOriginalSelectedArea.startPixelIndex.rowIndex -
+            this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex -
             singleSideOffsetRowBy,
           columnIndex:
-            this.capturedOriginalSelectedArea.startPixelIndex.columnIndex -
+            this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex -
             singleSideOffsetColumnBy,
         },
         endPixelIndex: {
           rowIndex:
-            this.capturedOriginalSelectedArea.endPixelIndex.rowIndex +
+            this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex +
             singleSideOffsetRowBy,
           columnIndex:
-            this.capturedOriginalSelectedArea.endPixelIndex.columnIndex +
+            this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex +
             singleSideOffsetColumnBy,
         },
       });
     } else {
       const heightExtensionOffset =
         direction === ButtonDirection.TOP
-          ? this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y
+          ? this.capturedBaseExtendingSelectedArea.startWorldPos.y -
+            extendToCoord.y
           : direction === ButtonDirection.BOTTOM
-          ? extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y
+          ? extendToCoord.y -
+            this.capturedBaseExtendingSelectedArea.endWorldPos.y
           : 0;
       const widthExtensionOffset =
         direction === ButtonDirection.LEFT
-          ? this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x
+          ? this.capturedBaseExtendingSelectedArea.startWorldPos.x -
+            extendToCoord.x
           : direction === ButtonDirection.RIGHT
-          ? extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x
+          ? extendToCoord.x -
+            this.capturedBaseExtendingSelectedArea.endWorldPos.x
           : 0;
       let offsetRowBy = Math.round(
         heightExtensionOffset / this.gridSquareLength,
@@ -518,46 +536,48 @@ export default class InteractionLayer extends BaseLayer {
 
       if (direction === ButtonDirection.TOP) {
         originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.endPixelIndex.rowIndex;
+          this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
-        this.setSelectedArea({
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex;
+        this.setExtendingSelectedArea({
           startWorldPos: {
-            x: this.capturedOriginalSelectedArea.startWorldPos.x,
+            x: this.capturedBaseExtendingSelectedArea.startWorldPos.x,
             y:
-              this.capturedOriginalSelectedArea.endWorldPos.y -
+              this.capturedBaseExtendingSelectedArea.endWorldPos.y -
               heightPixelCount * this.gridSquareLength,
           },
-          endWorldPos: this.capturedOriginalSelectedArea.endWorldPos,
+          endWorldPos: this.capturedBaseExtendingSelectedArea.endWorldPos,
           startPixelIndex: {
             rowIndex:
-              this.capturedOriginalSelectedArea.endPixelIndex.rowIndex -
+              this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex -
               heightPixelCount +
               1,
             columnIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.columnIndex,
+              this.capturedBaseExtendingSelectedArea.startPixelIndex
+                .columnIndex,
           },
-          endPixelIndex: this.capturedOriginalSelectedArea.endPixelIndex,
+          endPixelIndex: this.capturedBaseExtendingSelectedArea.endPixelIndex,
         });
       } else if (direction === ButtonDirection.BOTTOM) {
         originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex;
         modifyPixelHeightRatio =
           heightPixelCount / (originalSelectAreaHeightPixelOffset + 1);
-        this.setSelectedArea({
-          startWorldPos: this.capturedOriginalSelectedArea.startWorldPos,
+        this.setExtendingSelectedArea({
+          startWorldPos: this.capturedBaseExtendingSelectedArea.startWorldPos,
           endWorldPos: {
-            x: this.capturedOriginalSelectedArea.endWorldPos.x,
+            x: this.capturedBaseExtendingSelectedArea.endWorldPos.x,
             y:
-              this.capturedOriginalSelectedArea.startWorldPos.y +
+              this.capturedBaseExtendingSelectedArea.startWorldPos.y +
               heightPixelCount * this.gridSquareLength,
           },
-          startPixelIndex: this.capturedOriginalSelectedArea.startPixelIndex,
+          startPixelIndex:
+            this.capturedBaseExtendingSelectedArea.startPixelIndex,
           endPixelIndex: {
             rowIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
+              this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex +
               heightPixelCount -
               1,
             columnIndex: this.selectedArea.endPixelIndex.columnIndex,
@@ -565,49 +585,52 @@ export default class InteractionLayer extends BaseLayer {
         });
       } else if (direction === ButtonDirection.LEFT) {
         originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.endPixelIndex.columnIndex;
+          this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex;
         modifyPixelWidthRatio =
           widthPixelCount / (originalSelectAreaWidthPixelOffset + 1);
-        this.setSelectedArea({
+        this.setExtendingSelectedArea({
           startWorldPos: {
             x:
-              this.capturedOriginalSelectedArea.endWorldPos.x -
+              this.capturedBaseExtendingSelectedArea.endWorldPos.x -
               widthPixelCount * this.gridSquareLength,
-            y: this.capturedOriginalSelectedArea.startWorldPos.y,
+            y: this.capturedBaseExtendingSelectedArea.startWorldPos.y,
           },
-          endWorldPos: this.capturedOriginalSelectedArea.endWorldPos,
+          endWorldPos: this.capturedBaseExtendingSelectedArea.endWorldPos,
           startPixelIndex: {
             rowIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.rowIndex,
+              this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex,
             columnIndex:
-              this.capturedOriginalSelectedArea.endPixelIndex.columnIndex -
+              this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex -
               widthPixelCount +
               1,
           },
-          endPixelIndex: this.capturedOriginalSelectedArea.endPixelIndex,
+          endPixelIndex: this.capturedBaseExtendingSelectedArea.endPixelIndex,
         });
       } else if (direction === ButtonDirection.RIGHT) {
         originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex;
         modifyPixelWidthRatio =
           widthPixelCount / (originalSelectAreaWidthPixelOffset + 1);
-        this.setSelectedArea({
-          startWorldPos: this.capturedOriginalSelectedArea.startWorldPos,
+        this.setExtendingSelectedArea({
+          startWorldPos: this.capturedBaseExtendingSelectedArea.startWorldPos,
           endWorldPos: {
             x:
-              this.capturedOriginalSelectedArea.startWorldPos.x +
+              this.capturedBaseExtendingSelectedArea.startWorldPos.x +
               widthPixelCount * this.gridSquareLength,
-            y: this.capturedOriginalSelectedArea.endWorldPos.y,
+            y: this.capturedBaseExtendingSelectedArea.endWorldPos.y,
           },
-          startPixelIndex: this.capturedOriginalSelectedArea.startPixelIndex,
+          startPixelIndex:
+            this.capturedBaseExtendingSelectedArea.startPixelIndex,
           endPixelIndex: {
-            rowIndex: this.capturedOriginalSelectedArea.endPixelIndex.rowIndex,
+            rowIndex:
+              this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex,
             columnIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+              this.capturedBaseExtendingSelectedArea.startPixelIndex
+                .columnIndex +
               widthPixelCount -
               1,
           },
@@ -615,7 +638,7 @@ export default class InteractionLayer extends BaseLayer {
       }
     }
     const filteredPixelsToColor = getOverlappingPixelIndicesForModifiedPixels(
-      this.capturedOriginalSelectedAreaPixels,
+      this.capturedBaseExtendingSelectedAreaPixels,
       originPixelIndex,
       modifyPixelWidthRatio,
       modifyPixelHeightRatio,
@@ -638,19 +661,20 @@ export default class InteractionLayer extends BaseLayer {
     extendToCoord: Coord,
     isAltPressed: boolean,
   ) {
-    if (!this.selectedArea || !this.capturedOriginalSelectedArea) {
+    if (!this.selectedArea || !this.capturedBaseExtendingSelectedArea) {
       return;
     }
 
     const originalSelectAreaHeightPixelOffset =
-      this.capturedOriginalSelectedArea.endPixelIndex.rowIndex -
-      this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+      this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex -
+      this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex;
     const originalSelectAreaWidthPixelOffset =
-      this.capturedOriginalSelectedArea.endPixelIndex.columnIndex -
-      this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+      this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex -
+      this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex;
     const originPixelIndex = {
-      rowIndex: this.capturedOriginalSelectedArea.startPixelIndex.rowIndex,
-      columnIndex: this.capturedOriginalSelectedArea.endPixelIndex.columnIndex,
+      rowIndex: this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex,
+      columnIndex:
+        this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex,
     };
     let modifyPixelWidthRatio = 1;
     let modifyPixelHeightRatio = 1;
@@ -661,21 +685,25 @@ export default class InteractionLayer extends BaseLayer {
       const wasOriginalAreaWidthEven =
         (originalSelectAreaWidthPixelOffset + 1) % 2 === 0;
       originPixelIndex.rowIndex =
-        this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
+        this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex +
         (originalSelectAreaHeightPixelOffset + 2) / 2;
       originPixelIndex.columnIndex =
-        this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+        this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex +
         (originalSelectAreaWidthPixelOffset + 2) / 2;
       const heightExtensionOffset =
         direction === ButtonDirection.TOPLEFT ||
         direction === ButtonDirection.TOPRIGHT
-          ? this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y
-          : extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y;
+          ? this.capturedBaseExtendingSelectedArea.startWorldPos.y -
+            extendToCoord.y
+          : extendToCoord.y -
+            this.capturedBaseExtendingSelectedArea.endWorldPos.y;
       const widthExtensionOffset =
         direction === ButtonDirection.TOPLEFT ||
         direction === ButtonDirection.BOTTOMLEFT
-          ? this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x
-          : extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
+          ? this.capturedBaseExtendingSelectedArea.startWorldPos.x -
+            extendToCoord.x
+          : extendToCoord.x -
+            this.capturedBaseExtendingSelectedArea.endWorldPos.x;
       let singleSideOffsetRowBy = Math.round(
         heightExtensionOffset / this.gridSquareLength,
       );
@@ -707,37 +735,37 @@ export default class InteractionLayer extends BaseLayer {
       modifyPixelWidthRatio =
         (originalSelectAreaWidthPixelOffset + 2 * singleSideOffsetColumnBy) /
         originalSelectAreaWidthPixelOffset;
-      this.setSelectedArea({
+      this.setExtendingSelectedArea({
         startWorldPos: {
           x:
-            this.capturedOriginalSelectedArea.startWorldPos.x -
+            this.capturedBaseExtendingSelectedArea.startWorldPos.x -
             singleSideOffsetColumnBy * this.gridSquareLength,
           y:
-            this.capturedOriginalSelectedArea.startWorldPos.y -
+            this.capturedBaseExtendingSelectedArea.startWorldPos.y -
             singleSideOffsetRowBy * this.gridSquareLength,
         },
         endWorldPos: {
           x:
-            this.capturedOriginalSelectedArea.endWorldPos.x +
+            this.capturedBaseExtendingSelectedArea.endWorldPos.x +
             singleSideOffsetColumnBy * this.gridSquareLength,
           y:
-            this.capturedOriginalSelectedArea.endWorldPos.y +
+            this.capturedBaseExtendingSelectedArea.endWorldPos.y +
             singleSideOffsetRowBy * this.gridSquareLength,
         },
         startPixelIndex: {
           rowIndex:
-            this.capturedOriginalSelectedArea.startPixelIndex.rowIndex -
+            this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex -
             singleSideOffsetRowBy,
           columnIndex:
-            this.capturedOriginalSelectedArea.startPixelIndex.columnIndex -
+            this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex -
             singleSideOffsetColumnBy,
         },
         endPixelIndex: {
           rowIndex:
-            this.capturedOriginalSelectedArea.endPixelIndex.rowIndex +
+            this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex +
             singleSideOffsetRowBy,
           columnIndex:
-            this.capturedOriginalSelectedArea.endPixelIndex.columnIndex +
+            this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex +
             singleSideOffsetColumnBy,
         },
       });
@@ -745,13 +773,17 @@ export default class InteractionLayer extends BaseLayer {
       const heightExtensionOffset =
         direction === ButtonDirection.TOPLEFT ||
         direction === ButtonDirection.TOPRIGHT
-          ? this.capturedOriginalSelectedArea.startWorldPos.y - extendToCoord.y
-          : extendToCoord.y - this.capturedOriginalSelectedArea.endWorldPos.y;
+          ? this.capturedBaseExtendingSelectedArea.startWorldPos.y -
+            extendToCoord.y
+          : extendToCoord.y -
+            this.capturedBaseExtendingSelectedArea.endWorldPos.y;
       const widthExtensionOffset =
         direction === ButtonDirection.TOPLEFT ||
         direction === ButtonDirection.BOTTOMLEFT
-          ? this.capturedOriginalSelectedArea.startWorldPos.x - extendToCoord.x
-          : extendToCoord.x - this.capturedOriginalSelectedArea.endWorldPos.x;
+          ? this.capturedBaseExtendingSelectedArea.startWorldPos.x -
+            extendToCoord.x
+          : extendToCoord.x -
+            this.capturedBaseExtendingSelectedArea.endWorldPos.x;
       let offsetRowBy = Math.round(
         heightExtensionOffset / this.gridSquareLength,
       );
@@ -772,147 +804,152 @@ export default class InteractionLayer extends BaseLayer {
       }
       if (direction === ButtonDirection.TOPLEFT) {
         originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.endPixelIndex.rowIndex;
+          this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.endPixelIndex.columnIndex;
+          this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex;
         modifyPixelHeightRatio =
           heightPixelCount / (originalSelectAreaHeightPixelOffset + 1);
         modifyPixelWidthRatio =
           widthPixelCount / (originalSelectAreaWidthPixelOffset + 1);
-        this.setSelectedArea({
+        this.setExtendingSelectedArea({
           startWorldPos: {
             x:
-              this.capturedOriginalSelectedArea.endWorldPos.x -
+              this.capturedBaseExtendingSelectedArea.endWorldPos.x -
               widthPixelCount * this.gridSquareLength,
             y:
-              this.capturedOriginalSelectedArea.endWorldPos.y -
+              this.capturedBaseExtendingSelectedArea.endWorldPos.y -
               heightPixelCount * this.gridSquareLength,
           },
-          endWorldPos: this.capturedOriginalSelectedArea.endWorldPos,
+          endWorldPos: this.capturedBaseExtendingSelectedArea.endWorldPos,
           startPixelIndex: {
             rowIndex:
-              this.capturedOriginalSelectedArea.endPixelIndex.rowIndex -
+              this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex -
               heightPixelCount +
               1,
             columnIndex:
-              this.capturedOriginalSelectedArea.endPixelIndex.columnIndex -
+              this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex -
               widthPixelCount +
               1,
           },
-          endPixelIndex: this.capturedOriginalSelectedArea.endPixelIndex,
+          endPixelIndex: this.capturedBaseExtendingSelectedArea.endPixelIndex,
         });
       } else if (direction === ButtonDirection.TOPRIGHT) {
         originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.endPixelIndex.rowIndex;
+          this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex;
         modifyPixelHeightRatio =
           heightPixelCount / (originalSelectAreaHeightPixelOffset + 1);
         modifyPixelWidthRatio =
           widthPixelCount / (originalSelectAreaWidthPixelOffset + 1);
-        this.setSelectedArea({
+        this.setExtendingSelectedArea({
           startWorldPos: {
-            x: this.capturedOriginalSelectedArea.startWorldPos.x,
+            x: this.capturedBaseExtendingSelectedArea.startWorldPos.x,
             y:
-              this.capturedOriginalSelectedArea.endWorldPos.y -
+              this.capturedBaseExtendingSelectedArea.endWorldPos.y -
               heightPixelCount * this.gridSquareLength,
           },
           endWorldPos: {
             x:
-              this.capturedOriginalSelectedArea.startWorldPos.x +
+              this.capturedBaseExtendingSelectedArea.startWorldPos.x +
               widthPixelCount * this.gridSquareLength,
-            y: this.capturedOriginalSelectedArea.endWorldPos.y,
+            y: this.capturedBaseExtendingSelectedArea.endWorldPos.y,
           },
           startPixelIndex: {
             rowIndex:
-              this.capturedOriginalSelectedArea.endPixelIndex.rowIndex -
+              this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex -
               heightPixelCount +
               1,
             columnIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.columnIndex,
+              this.capturedBaseExtendingSelectedArea.startPixelIndex
+                .columnIndex,
           },
           endPixelIndex: {
-            rowIndex: this.capturedOriginalSelectedArea.endPixelIndex.rowIndex,
+            rowIndex:
+              this.capturedBaseExtendingSelectedArea.endPixelIndex.rowIndex,
             columnIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+              this.capturedBaseExtendingSelectedArea.startPixelIndex
+                .columnIndex +
               widthPixelCount -
               1,
           },
         });
       } else if (direction === ButtonDirection.BOTTOMLEFT) {
         originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.endPixelIndex.columnIndex;
+          this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex;
         modifyPixelHeightRatio =
           heightPixelCount / (originalSelectAreaHeightPixelOffset + 1);
         modifyPixelWidthRatio =
           widthPixelCount / (originalSelectAreaWidthPixelOffset + 1);
-        this.setSelectedArea({
+        this.setExtendingSelectedArea({
           startWorldPos: {
             x:
-              this.capturedOriginalSelectedArea.endWorldPos.x -
+              this.capturedBaseExtendingSelectedArea.endWorldPos.x -
               widthPixelCount * this.gridSquareLength,
-            y: this.capturedOriginalSelectedArea.startWorldPos.y,
+            y: this.capturedBaseExtendingSelectedArea.startWorldPos.y,
           },
           endWorldPos: {
-            x: this.capturedOriginalSelectedArea.endWorldPos.x,
+            x: this.capturedBaseExtendingSelectedArea.endWorldPos.x,
             y:
-              this.capturedOriginalSelectedArea.startWorldPos.y +
+              this.capturedBaseExtendingSelectedArea.startWorldPos.y +
               heightPixelCount * this.gridSquareLength,
           },
           startPixelIndex: {
             rowIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.rowIndex,
+              this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex,
             columnIndex:
-              this.capturedOriginalSelectedArea.endPixelIndex.columnIndex -
+              this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex -
               widthPixelCount +
               1,
           },
           endPixelIndex: {
             rowIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
+              this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex +
               heightPixelCount -
               1,
             columnIndex:
-              this.capturedOriginalSelectedArea.endPixelIndex.columnIndex,
+              this.capturedBaseExtendingSelectedArea.endPixelIndex.columnIndex,
           },
         });
       } else if (direction === ButtonDirection.BOTTOMRIGHT) {
         originPixelIndex.rowIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.rowIndex;
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex;
         originPixelIndex.columnIndex =
-          this.capturedOriginalSelectedArea.startPixelIndex.columnIndex;
+          this.capturedBaseExtendingSelectedArea.startPixelIndex.columnIndex;
         modifyPixelHeightRatio =
           heightPixelCount / (originalSelectAreaHeightPixelOffset + 1);
         modifyPixelWidthRatio =
           widthPixelCount / (originalSelectAreaWidthPixelOffset + 1);
-        this.setSelectedArea({
+        this.setExtendingSelectedArea({
           startWorldPos: {
-            x: this.capturedOriginalSelectedArea.startWorldPos.x,
-            y: this.capturedOriginalSelectedArea.startWorldPos.y,
+            x: this.capturedBaseExtendingSelectedArea.startWorldPos.x,
+            y: this.capturedBaseExtendingSelectedArea.startWorldPos.y,
           },
           endWorldPos: {
             x:
-              this.capturedOriginalSelectedArea.startWorldPos.x +
+              this.capturedBaseExtendingSelectedArea.startWorldPos.x +
               widthPixelCount * this.gridSquareLength,
             y:
-              this.capturedOriginalSelectedArea.startWorldPos.y +
+              this.capturedBaseExtendingSelectedArea.startWorldPos.y +
               heightPixelCount * this.gridSquareLength,
           },
           startPixelIndex: {
             rowIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.rowIndex,
+              this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex,
             columnIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.columnIndex,
+              this.capturedBaseExtendingSelectedArea.startPixelIndex
+                .columnIndex,
           },
           endPixelIndex: {
             rowIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.rowIndex +
+              this.capturedBaseExtendingSelectedArea.startPixelIndex.rowIndex +
               heightPixelCount -
               1,
             columnIndex:
-              this.capturedOriginalSelectedArea.startPixelIndex.columnIndex +
+              this.capturedBaseExtendingSelectedArea.startPixelIndex
+                .columnIndex +
               widthPixelCount -
               1,
           },
@@ -920,7 +957,7 @@ export default class InteractionLayer extends BaseLayer {
       }
     }
     const filteredPixelsToColor = getOverlappingPixelIndicesForModifiedPixels(
-      this.capturedOriginalSelectedAreaPixels,
+      this.capturedBaseExtendingSelectedAreaPixels,
       originPixelIndex,
       modifyPixelWidthRatio,
       modifyPixelHeightRatio,
@@ -945,12 +982,14 @@ export default class InteractionLayer extends BaseLayer {
     if (!this.selectedArea) {
       return;
     }
-    if (this.capturedOriginalSelectedArea === null) {
-      this.capturedOriginalSelectedArea = this.selectedArea;
+    if (this.capturedBaseExtendingSelectedArea === null) {
+      this.capturedBaseExtendingSelectedArea = this.selectedArea;
     }
-    if (this.capturedOriginalSelectedAreaPixels === null) {
+    if (this.capturedBaseExtendingSelectedAreaPixels === null) {
       // copy
-      this.capturedOriginalSelectedAreaPixels = [...this.selectedAreaPixels];
+      this.capturedBaseExtendingSelectedAreaPixels = [
+        ...this.selectedAreaPixels,
+      ];
     }
     switch (direction) {
       case ButtonDirection.TOP:
