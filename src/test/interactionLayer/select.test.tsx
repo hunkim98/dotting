@@ -1,5 +1,4 @@
-import { createEvent, fireEvent } from "@testing-library/react";
-import React, { KeyboardEvent } from "react";
+import { fireEvent } from "@testing-library/react";
 
 import Editor from "../../components/Canvas/Editor";
 import { BrushTool } from "../../components/Canvas/types";
@@ -609,7 +608,6 @@ describe("test for select tool", () => {
       }),
     );
     const selectedArea = editor.getSelectedArea();
-    console.log(selectedArea);
     expect(selectedArea?.startPixelIndex.columnIndex).toBe(-1);
     expect(selectedArea?.startPixelIndex.rowIndex).toBe(-1);
     expect(selectedArea?.endPixelIndex.columnIndex).toBe(columnCount);

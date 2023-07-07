@@ -1667,11 +1667,12 @@ export default class Editor extends EventDispatcher {
             previousSelectedArea,
             "",
           );
+          this.interactionLayer.setExtendingSelectedArea(previousSelectedArea);
           this.interactionLayer.setExtendingSelectedPixels(coloredPixels);
-          this.interactionLayer.setCapturedOriginalSelectedArea(
+          this.interactionLayer.setCapturedBaseExtendingSelectedArea(
             previousSelectedArea,
           );
-          this.interactionLayer.setCapturedOriginalSelectedAreaPixels(
+          this.interactionLayer.setCapturedBaseExtendingSelectedAreaPixels(
             coloredPixels,
           );
           const { dataForAction } = this.dataLayer.erasePixels(coloredPixels);
@@ -1819,7 +1820,9 @@ export default class Editor extends EventDispatcher {
           this.isAltPressed,
         );
         this.gridLayer.render();
-        this.gridLayer.renderSelection(this.interactionLayer.getSelectedArea());
+        this.gridLayer.renderSelection(
+          this.interactionLayer.getExtendingSelectedArea(),
+        );
         this.interactionLayer.render();
       }
       if (
@@ -1990,10 +1993,10 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.getExtendingSelectedPixels();
       const currentSelectedArea = this.interactionLayer.getSelectedArea();
       if (pixelsThatAreCurrentlyExtending && currentSelectedArea) {
-        this.interactionLayer.setCapturedOriginalSelectedArea(
+        this.interactionLayer.setCapturedBaseExtendingSelectedArea(
           currentSelectedArea,
         );
-        this.interactionLayer.setCapturedOriginalSelectedAreaPixels(
+        this.interactionLayer.setCapturedBaseExtendingSelectedAreaPixels(
           pixelsThatAreCurrentlyExtending,
         );
       }
@@ -2007,10 +2010,10 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.getExtendingSelectedPixels();
       const currentSelectedArea = this.interactionLayer.getSelectedArea();
       if (pixelsThatAreCurrentlyExtending && currentSelectedArea) {
-        this.interactionLayer.setCapturedOriginalSelectedArea(
+        this.interactionLayer.setCapturedBaseExtendingSelectedArea(
           currentSelectedArea,
         );
-        this.interactionLayer.setCapturedOriginalSelectedAreaPixels(
+        this.interactionLayer.setCapturedBaseExtendingSelectedAreaPixels(
           pixelsThatAreCurrentlyExtending,
         );
       }
@@ -2074,14 +2077,25 @@ export default class Editor extends EventDispatcher {
 
   relayExtendingSelectedAreaToSelectedArea() {
     // we must record the action
-    if (this.interactionLayer.getExtendingSelectedPixels() === null) return;
-    const extendingSelectedAreaPixels =
+    const previousSelectedArea = this.interactionLayer.getSelectedArea();
+    const previousSelectedAreaPixels =
+      this.interactionLayer.getSelectedAreaPixels();
+    const finalSelectedArea = this.interactionLayer.getExtendingSelectedArea();
+    const finalSelectedAreaPixels =
       this.interactionLayer.getExtendingSelectedPixels();
+    if (
+      !previousSelectedArea ||
+      !previousSelectedAreaPixels ||
+      !finalSelectedArea ||
+      !finalSelectedAreaPixels
+    ) {
+      return;
+    }
     const data = this.dataLayer.getData();
     const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
       getGridIndicesFromData(data);
     // we will not allow the selected area to expand the canvas
-    const filteredFinalSelectedAreaPixels = extendingSelectedAreaPixels
+    const filteredFinalSelectedAreaPixels = finalSelectedAreaPixels
       .filter(
         item =>
           item.rowIndex <= bottomRowIndex &&
@@ -2102,17 +2116,61 @@ export default class Editor extends EventDispatcher {
     const { dataForAction } = this.dataLayer.colorPixels(
       filteredFinalSelectedAreaPixels,
     );
+    const newSelectedAreaColorChangeItems = dataForAction;
+    const previousSelectedAreaColorChangeItems = previousSelectedAreaPixels;
+    this.recordAction(
+      new SelectAreaMoveAction(
+        [
+          ...newSelectedAreaColorChangeItems,
+          ...previousSelectedAreaColorChangeItems,
+        ],
+        previousSelectedArea,
+        finalSelectedArea,
+      ),
+    );
+    // we will use a map to remove the duplicated items
+    const effectiveColorChangeItemsMap = new Map<string, ColorChangeItem>();
+    // first we add the previous selected area items
+    // this is because we will override the previous selected area items
+    // with the new selected area items
+    for (const item of previousSelectedAreaColorChangeItems) {
+      effectiveColorChangeItemsMap.set(
+        generatePixelId(item.rowIndex, item.columnIndex),
+        item,
+      );
+    }
+    // then override the previous selected area items with the new selected area items
+    for (const item of newSelectedAreaColorChangeItems) {
+      effectiveColorChangeItemsMap.set(
+        generatePixelId(item.rowIndex, item.columnIndex),
+        item,
+      );
+    }
+    const effectiveColorChangeItems = Array.from(
+      effectiveColorChangeItemsMap.values(),
+    );
+    const newData = this.dataLayer.getCopiedData();
+    if (effectiveColorChangeItems.length > 0) {
+      this.emitStrokeEndEvent({
+        strokedPixels: effectiveColorChangeItems,
+        data: newData,
+        strokeTool: BrushTool.SELECT,
+      });
+      // only emit data change event when there is a change
+      this.emitDataChangeEvent({ data: newData });
+    }
+    this.interactionLayer.setSelectedArea(finalSelectedArea);
     this.interactionLayer.setSelectedAreaPixels(
       filteredFinalSelectedAreaPixels,
     );
-    const finalSelectedArea = this.interactionLayer.getSelectedArea();
+    this.interactionLayer.setExtendingSelectedArea(null);
     this.interactionLayer.setExtendingSelectedPixels(null);
-    this.interactionLayer.setCapturedOriginalSelectedArea(null);
-    this.interactionLayer.setCapturedOriginalSelectedAreaPixels(null);
     this.interactionLayer.setDirectionToExtendSelectedArea(null);
     this.gridLayer.render();
     this.gridLayer.renderSelection(finalSelectedArea);
-    this.interactionLayer.render();
+    this.interactionLayer.setSelectedAreaPixels(
+      filteredFinalSelectedAreaPixels,
+    );
   }
 
   relayMovingSelectedAreaToSelectedArea() {
