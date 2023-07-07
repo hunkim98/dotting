@@ -300,6 +300,10 @@ export default class Editor extends EventDispatcher {
     });
   }
 
+  setIsAltPressed(isAltPressed: boolean) {
+    this.isAltPressed = isAltPressed;
+  }
+
   changeBrushColor(color: string) {
     this.brushColor = color;
     this.emitBrushChangeEvent({
@@ -1965,7 +1969,7 @@ export default class Editor extends EventDispatcher {
     return this.interactionLayer.getSelectedArea();
   }
 
-  onKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+  onKeyDown(e: KeyboardEvent) {
     if (e.code === "KeyZ" && (e.ctrlKey || e.metaKey)) {
       this.undo();
     } else if (e.code === "KeyY" && (e.ctrlKey || e.metaKey)) {

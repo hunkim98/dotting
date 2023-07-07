@@ -1,10 +1,11 @@
 import { createEvent, fireEvent } from "@testing-library/react";
+import React, { KeyboardEvent } from "react";
 
 import Editor from "../../components/Canvas/Editor";
 import { BrushTool } from "../../components/Canvas/types";
 import { FakeMouseEvent } from "../../utils/testUtils";
 
-describe("Dotting Component", () => {
+describe("test for select tool", () => {
   let editor: Editor;
   let canvasElement: HTMLCanvasElement;
   beforeEach(() => {
@@ -23,11 +24,18 @@ describe("Dotting Component", () => {
       dataCanvas,
       backgroundCanvas,
     });
+    divElement.tabIndex = 1;
+    divElement.onmousedown = () => {
+      divElement.focus();
+    };
+    divElement.addEventListener("keydown", (e: any) => {
+      editor.onKeyDown(e);
+    });
+
     mockEditor.setSize(800, 800);
     editor = mockEditor;
-
+    // initialize the canvas with select tool selecting all the pixels
     canvasElement = editor.getCanvasElement();
-    // const gridSquareLength = editor.getGridSquareLength();
     editor.setBrushTool(BrushTool.SELECT);
     fireEvent(
       canvasElement,
@@ -380,5 +388,231 @@ describe("Dotting Component", () => {
       rowIndex: rowCount,
       columnIndex: columnCount,
     });
+  });
+
+  it("tests select area extension to top & bottom with alt pressed", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // we must first click the canvas to activate keydown events
+    // console.log(canvasElement.parentNode);
+    fireEvent(
+      canvasElement.parentNode!,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 - (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 - (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement.parentNode!,
+      new KeyboardEvent("keydown", {
+        key: "AltLeft",
+        code: "AltLeft",
+      }),
+    );
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2,
+        offsetY: canvasElement.height / 2 - (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX: canvasElement.width / 2,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: canvasElement.width / 2,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    const selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startPixelIndex.rowIndex).toBe(-1);
+    expect(selectedArea?.endPixelIndex.rowIndex).toBe(rowCount);
+  });
+
+  it("tests select area extension to left & right with alt pressed", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // we must first click the canvas to activate keydown events
+    fireEvent(
+      canvasElement.parentNode!,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 - (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 - (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement.parentNode!,
+      new KeyboardEvent("keydown", {
+        key: "AltLeft",
+        code: "AltLeft",
+      }),
+    );
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 - (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          gridSquareLength,
+        offsetY: canvasElement.height / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          gridSquareLength,
+        offsetY: canvasElement.height / 2,
+      }),
+    );
+    const selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startPixelIndex.columnIndex).toBe(-1);
+    expect(selectedArea?.endPixelIndex.columnIndex).toBe(columnCount);
+  });
+
+  it("tests select area extension to top left & bottom right with alt pressed", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // we must first click the canvas to activate keydown events
+    fireEvent(
+      canvasElement.parentNode!,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 - (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 - (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement.parentNode!,
+      new KeyboardEvent("keydown", {
+        key: "AltLeft",
+        code: "AltLeft",
+      }),
+    );
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 - (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 - (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          gridSquareLength,
+      }),
+    );
+    const selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startPixelIndex.columnIndex).toBe(-1);
+    expect(selectedArea?.startPixelIndex.rowIndex).toBe(-1);
+    expect(selectedArea?.endPixelIndex.columnIndex).toBe(columnCount);
+    expect(selectedArea?.endPixelIndex.rowIndex).toBe(rowCount);
+  });
+
+  it("tests select area extension to top right & bottom left with alt pressed", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // we must first click the canvas to activate keydown events
+    fireEvent(
+      canvasElement.parentNode!,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 - (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 - (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement.parentNode!,
+      new KeyboardEvent("keydown", {
+        key: "AltLeft",
+        code: "AltLeft",
+      }),
+    );
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 + (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 + (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength,
+      }),
+    );
+    const selectedArea = editor.getSelectedArea();
+    console.log(selectedArea);
+    expect(selectedArea?.startPixelIndex.columnIndex).toBe(-1);
+    expect(selectedArea?.startPixelIndex.rowIndex).toBe(-1);
+    expect(selectedArea?.endPixelIndex.columnIndex).toBe(columnCount);
+    expect(selectedArea?.endPixelIndex.rowIndex).toBe(rowCount);
   });
 });
