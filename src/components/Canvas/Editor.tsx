@@ -1103,7 +1103,6 @@ export default class Editor extends EventDispatcher {
   }
 
   handleKeyDown = (e: KeyboardEvent) => {
-    console.log(e.code);
     if (e.code === "KeyZ" && (e.ctrlKey || e.metaKey)) {
       this.undo();
     }

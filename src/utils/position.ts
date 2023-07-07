@@ -518,6 +518,12 @@ export const getOverlappingPixelIndicesForModifiedPixels = (
           color: item.color,
           previousColor: item.previousColor,
         };
+        // console.log(originPixelIndex, "originPixelIndex");
+        // console.log(
+        //   pixelIndex,
+
+        //   "pixelIndex",
+        // );
         pixelsToColor.push(pixelIndex);
       }
     }
