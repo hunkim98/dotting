@@ -13,7 +13,7 @@
     "build": "yarn clean && rollup -c",
     "dev": "start-storybook -p 6005",
     "storybook:build": "build-storybook",
-    "test": "jest",
+    "test": "jest -u",
     "test:watch": "jest --watch",
     "prepublishOnly": "yarn clean && yarn build",
     "link-local": "yarn link && cd node_modules/react && yarn link && cd ../react-dom && yarn link",
