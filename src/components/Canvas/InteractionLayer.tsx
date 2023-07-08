@@ -1441,8 +1441,8 @@ export default class InteractionLayer extends BaseLayer {
       ? getColumnCountFromData(this.capturedData)
       : this.dataLayerColumnCount;
     const leftTopPoint: Coord = {
-      x: -((columnCount / 2) * this.gridSquareLength),
-      y: -((rowCount / 2) * this.gridSquareLength),
+      x: 0,
+      y: 0,
     };
     const convertedLetTopScreenPoint = convertCartesianToScreen(
       this.element,

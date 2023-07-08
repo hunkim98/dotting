@@ -21,8 +21,8 @@ export enum ButtonDirection {
 }
 
 export const DefaultPixelDataDimensions = {
-  columnCount: 8,
-  rowCount: 6,
+  columnCount: 6,
+  rowCount: 20,
 };
 
 export enum MouseMode {

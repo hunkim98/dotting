@@ -172,30 +172,30 @@ export default class GridLayer extends BaseLayer {
       y: -gridsHeight / 2,
     };
     if (direction === ButtonDirection.LEFT) {
-      buttonPos.x = -gridsWidth / 2 - this.buttonMargin - buttonWidth / 2;
-      buttonPos.y = -gridsHeight / 2;
+      buttonPos.x = -this.buttonMargin - buttonWidth / 2;
+      buttonPos.y = 0;
     } else if (direction === ButtonDirection.RIGHT) {
-      buttonPos.x = gridsWidth / 2 + this.buttonMargin - buttonWidth / 2;
-      buttonPos.y = -gridsHeight / 2;
+      buttonPos.x = gridsWidth + this.buttonMargin - buttonWidth / 2;
+      buttonPos.y = 0;
     } else if (direction === ButtonDirection.TOP) {
-      buttonPos.x = -gridsWidth / 2;
-      buttonPos.y = -gridsHeight / 2 - this.buttonMargin - buttonHeight / 2;
+      buttonPos.x = 0;
+      buttonPos.y = -this.buttonMargin - buttonHeight / 2;
     } else if (direction === ButtonDirection.BOTTOM) {
-      buttonPos.x = -gridsWidth / 2;
-      buttonPos.y = gridsHeight / 2 + this.buttonMargin - buttonHeight / 2;
+      buttonPos.x = 0;
+      buttonPos.y = gridsHeight + this.buttonMargin - buttonHeight / 2;
     } else if (direction === ButtonDirection.TOPLEFT) {
       // FIXME cleanup codes
-      buttonPos.x = -gridsWidth / 2 - this.buttonMargin - buttonWidth / 2;
-      buttonPos.y = -gridsHeight / 2 - this.buttonMargin - buttonHeight / 2;
+      buttonPos.x = -this.buttonMargin - buttonWidth / 2;
+      buttonPos.y = -this.buttonMargin - buttonHeight / 2;
     } else if (direction === ButtonDirection.TOPRIGHT) {
-      buttonPos.x = gridsWidth / 2 + this.buttonMargin - buttonWidth / 2;
-      buttonPos.y = -gridsHeight / 2 - this.buttonMargin - buttonHeight / 2;
+      buttonPos.x = gridsWidth + this.buttonMargin - buttonWidth / 2;
+      buttonPos.y = -this.buttonMargin - buttonHeight / 2;
     } else if (direction === ButtonDirection.BOTTOMLEFT) {
-      buttonPos.x = -gridsWidth / 2 - this.buttonMargin - buttonWidth / 2;
-      buttonPos.y = gridsHeight / 2 + this.buttonMargin - buttonHeight / 2;
+      buttonPos.x = -this.buttonMargin - buttonWidth / 2;
+      buttonPos.y = gridsHeight + this.buttonMargin - buttonHeight / 2;
     } else if (direction === ButtonDirection.BOTTOMRIGHT) {
-      buttonPos.x = gridsWidth / 2 + this.buttonMargin - buttonWidth / 2;
-      buttonPos.y = gridsHeight / 2 + this.buttonMargin - buttonHeight / 2;
+      buttonPos.x = gridsWidth + this.buttonMargin - buttonWidth / 2;
+      buttonPos.y = gridsHeight + this.buttonMargin - buttonHeight / 2;
     } else {
       throw new Error("Invalid button direction");
     }
@@ -510,8 +510,8 @@ export default class GridLayer extends BaseLayer {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const leftTopPoint: Coord = {
-      x: -((this.columnCount / 2) * this.gridSquareLength),
-      y: -((this.rowCount / 2) * this.gridSquareLength),
+      x: 0,
+      y: 0,
     };
     const convertedScreenPoint = convertCartesianToScreen(
       this.element,

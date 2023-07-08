@@ -160,8 +160,8 @@ export const getPixelIndexFromMouseCartCoord = (
   currentLeftIndex: number,
 ) => {
   const leftTopPoint: Coord = {
-    x: -((columnCount / 2) * gridSquareLength),
-    y: -((rowCount / 2) * gridSquareLength),
+    x: 0,
+    y: 0,
   };
   if (
     mouseCartCoord.x > leftTopPoint.x &&
