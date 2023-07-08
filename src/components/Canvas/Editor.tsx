@@ -155,7 +155,6 @@ export default class Editor extends EventDispatcher {
     );
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
-
     this.initialize();
   }
 
@@ -590,40 +589,25 @@ export default class Editor extends EventDispatcher {
         columnCount * this.gridSquareLength * this.panZoom.scale > this.width;
 
       const minXPosition = isGridColumnsBiggerThanCanvas
-        ? this.width -
-          columnCount * this.gridSquareLength * this.panZoom.scale -
-          ((this.width - columnCount * this.gridSquareLength) *
-            this.panZoom.scale) /
-            2
-        : (-(this.width - columnCount * this.gridSquareLength) / 2) *
-          this.panZoom.scale;
+        ? -(columnCount * this.gridSquareLength * this.panZoom.scale) -
+          (this.width / 2) * this.panZoom.scale
+        : (-this.width / 2) * this.panZoom.scale;
 
       const minYPosition = isGridRowsBiggerThanCanvas
-        ? this.height -
-          rowCount * this.gridSquareLength * this.panZoom.scale -
-          ((this.height - rowCount * this.gridSquareLength) *
-            this.panZoom.scale) /
-            2
-        : (-(this.height - rowCount * this.gridSquareLength) / 2) *
-          this.panZoom.scale;
+        ? -rowCount * this.gridSquareLength * this.panZoom.scale -
+          (this.height / 2) * this.panZoom.scale
+        : (-this.height / 2) * this.panZoom.scale;
 
       const maxXPosition = isGridColumnsBiggerThanCanvas
-        ? (-(this.width - columnCount * this.gridSquareLength) / 2) *
-          this.panZoom.scale
+        ? this.width - (this.width / 2) * this.panZoom.scale
         : this.width -
           columnCount * this.gridSquareLength * this.panZoom.scale -
-          ((this.width - columnCount * this.gridSquareLength) *
-            this.panZoom.scale) /
-            2;
-
+          (this.width / 2) * this.panZoom.scale;
       const maxYPosition = isGridRowsBiggerThanCanvas
-        ? (rowCount * this.gridSquareLength * this.panZoom.scale) / 2 -
-          (this.height / 2) * this.panZoom.scale
+        ? this.height - (this.height / 2) * this.panZoom.scale
         : this.height -
           rowCount * this.gridSquareLength * this.panZoom.scale -
-          ((this.height - rowCount * this.gridSquareLength) *
-            this.panZoom.scale) /
-            2;
+          (this.height / 2) * this.panZoom.scale;
       if (correctedOffset.x < minXPosition) {
         correctedOffset.x = minXPosition;
       }
@@ -638,6 +622,7 @@ export default class Editor extends EventDispatcher {
       }
       this.panZoom.offset = correctedOffset;
     }
+
     // relay updated information to layers
     this.relayPanZoomToOtherLayers();
     // we must render all when panzoom changes!
@@ -876,8 +861,8 @@ export default class Editor extends EventDispatcher {
     const baseColumnCount = getColumnCountFromData(interactionCapturedData);
 
     const panZoomDiff = {
-      x: (this.gridSquareLength / 2) * extendAmount.x * this.panZoom.scale,
-      y: (this.gridSquareLength / 2) * extendAmount.y * this.panZoom.scale,
+      x: this.gridSquareLength * extendAmount.x * this.panZoom.scale,
+      y: this.gridSquareLength * extendAmount.y * this.panZoom.scale,
     };
     if (direction === ButtonDirection.TOP) {
       this.setPanZoom({
@@ -892,7 +877,7 @@ export default class Editor extends EventDispatcher {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
-          y: this.panZoom.offset.y + panZoomDiff.y,
+          y: this.panZoom.offset.y,
         },
         baseRowCount,
         baseColumnCount,
@@ -909,7 +894,7 @@ export default class Editor extends EventDispatcher {
     } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
-          x: this.panZoom.offset.x + panZoomDiff.x,
+          x: this.panZoom.offset.x,
           y: this.panZoom.offset.y,
         },
         baseRowCount,
@@ -927,7 +912,7 @@ export default class Editor extends EventDispatcher {
     } else if (direction === ButtonDirection.TOPRIGHT) {
       this.setPanZoom({
         offset: {
-          x: this.panZoom.offset.x + panZoomDiff.x,
+          x: this.panZoom.offset.x,
           y: this.panZoom.offset.y - panZoomDiff.y,
         },
         baseRowCount,
@@ -937,7 +922,7 @@ export default class Editor extends EventDispatcher {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x - panZoomDiff.x,
-          y: this.panZoom.offset.y + panZoomDiff.y,
+          y: this.panZoom.offset.y,
         },
         baseRowCount,
         baseColumnCount,
@@ -945,8 +930,8 @@ export default class Editor extends EventDispatcher {
     } else if (direction === ButtonDirection.BOTTOMRIGHT) {
       this.setPanZoom({
         offset: {
-          x: this.panZoom.offset.x + panZoomDiff.x,
-          y: this.panZoom.offset.y + panZoomDiff.y,
+          x: this.panZoom.offset.x,
+          y: this.panZoom.offset.y,
         },
         baseRowCount,
         baseColumnCount,
@@ -1016,7 +1001,7 @@ export default class Editor extends EventDispatcher {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
-          y: this.panZoom.offset.y + panZoomDiff.y,
+          y: this.panZoom.offset.y + panZoomDiff.y * 2,
         },
         baseColumnCount,
         baseRowCount,
@@ -1025,7 +1010,7 @@ export default class Editor extends EventDispatcher {
       this.setPanZoom({
         offset: {
           x: this.panZoom.offset.x,
-          y: this.panZoom.offset.y - panZoomDiff.y,
+          y: this.panZoom.offset.y,
         },
         baseColumnCount,
         baseRowCount,
@@ -1033,7 +1018,7 @@ export default class Editor extends EventDispatcher {
     } else if (direction === ButtonDirection.LEFT) {
       this.setPanZoom({
         offset: {
-          x: this.panZoom.offset.x + panZoomDiff.x,
+          x: this.panZoom.offset.x + panZoomDiff.x * 2,
           y: this.panZoom.offset.y,
         },
         baseColumnCount,
@@ -1042,7 +1027,7 @@ export default class Editor extends EventDispatcher {
     } else if (direction === ButtonDirection.RIGHT) {
       this.setPanZoom({
         offset: {
-          x: this.panZoom.offset.x - panZoomDiff.x,
+          x: this.panZoom.offset.x,
           y: this.panZoom.offset.y,
         },
         baseColumnCount,
@@ -1051,8 +1036,8 @@ export default class Editor extends EventDispatcher {
     } else if (direction === ButtonDirection.TOPLEFT) {
       this.setPanZoom({
         offset: {
-          x: this.panZoom.offset.x + panZoomDiff.x,
-          y: this.panZoom.offset.y + panZoomDiff.y,
+          x: this.panZoom.offset.x + panZoomDiff.x * 2,
+          y: this.panZoom.offset.y + panZoomDiff.y * 2,
         },
         baseRowCount,
         baseColumnCount,
@@ -1060,8 +1045,8 @@ export default class Editor extends EventDispatcher {
     } else if (direction === ButtonDirection.TOPRIGHT) {
       this.setPanZoom({
         offset: {
-          x: this.panZoom.offset.x - panZoomDiff.x,
-          y: this.panZoom.offset.y + panZoomDiff.y,
+          x: this.panZoom.offset.x,
+          y: this.panZoom.offset.y + panZoomDiff.y * 2,
         },
         baseRowCount,
         baseColumnCount,
@@ -1069,8 +1054,8 @@ export default class Editor extends EventDispatcher {
     } else if (direction === ButtonDirection.BOTTOMLEFT) {
       this.setPanZoom({
         offset: {
-          x: this.panZoom.offset.x + panZoomDiff.x,
-          y: this.panZoom.offset.y - panZoomDiff.y,
+          x: this.panZoom.offset.x + panZoomDiff.x * 2,
+          y: this.panZoom.offset.y,
         },
         baseRowCount,
         baseColumnCount,
@@ -1078,8 +1063,8 @@ export default class Editor extends EventDispatcher {
     } else if (direction === ButtonDirection.BOTTOMRIGHT) {
       this.setPanZoom({
         offset: {
-          x: this.panZoom.offset.x - panZoomDiff.x,
-          y: this.panZoom.offset.y - panZoomDiff.y,
+          x: this.panZoom.offset.x,
+          y: this.panZoom.offset.y,
         },
         baseRowCount,
         baseColumnCount,
@@ -2463,8 +2448,8 @@ export default class Editor extends EventDispatcher {
       const squareLength = this.gridSquareLength * this.panZoom.scale;
       // leftTopPoint is a cartesian coordinate
       const leftTopPoint: Coord = {
-        x: -((this.dataLayer.getColumnCount() / 2) * this.gridSquareLength),
-        y: -((this.dataLayer.getRowCount() / 2) * this.gridSquareLength),
+        x: 0,
+        y: 0,
       };
       const convertedLetTopScreenPoint = convertCartesianToScreen(
         this.element,

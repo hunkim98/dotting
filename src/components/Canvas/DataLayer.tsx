@@ -292,8 +292,8 @@ export default class DataLayer extends BaseLayer {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const leftTopPoint: Coord = {
-      x: -((this.getColumnCount() / 2) * this.gridSquareLength),
-      y: -((this.getRowCount() / 2) * this.gridSquareLength),
+      x: 0,
+      y: 0,
     };
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
