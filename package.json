@@ -14,6 +14,7 @@
     "dev": "start-storybook -p 6005",
     "storybook:build": "build-storybook",
     "test": "jest -u",
+    "coverage": "jest -u --coverage",
     "test:watch": "jest --watch",
     "prepublishOnly": "yarn clean && yarn build",
     "link-local": "yarn link && cd node_modules/react && yarn link && cd ../react-dom && yarn link",
