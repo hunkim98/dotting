@@ -1991,10 +1991,11 @@ export default class Editor extends EventDispatcher {
     } else if (e.code === "AltLeft") {
       const pixelsThatAreCurrentlyExtending =
         this.interactionLayer.getExtendingSelectedPixels();
-      const currentSelectedArea = this.interactionLayer.getSelectedArea();
-      if (pixelsThatAreCurrentlyExtending && currentSelectedArea) {
+      const currentExtendingArea =
+        this.interactionLayer.getExtendingSelectedArea();
+      if (pixelsThatAreCurrentlyExtending && currentExtendingArea) {
         this.interactionLayer.setCapturedBaseExtendingSelectedArea(
-          currentSelectedArea,
+          currentExtendingArea,
         );
         this.interactionLayer.setCapturedBaseExtendingSelectedAreaPixels(
           pixelsThatAreCurrentlyExtending,
@@ -2008,10 +2009,11 @@ export default class Editor extends EventDispatcher {
     if (e.code === "AltLeft") {
       const pixelsThatAreCurrentlyExtending =
         this.interactionLayer.getExtendingSelectedPixels();
-      const currentSelectedArea = this.interactionLayer.getSelectedArea();
-      if (pixelsThatAreCurrentlyExtending && currentSelectedArea) {
+      const currentExtendingArea =
+        this.interactionLayer.getExtendingSelectedArea();
+      if (pixelsThatAreCurrentlyExtending && currentExtendingArea) {
         this.interactionLayer.setCapturedBaseExtendingSelectedArea(
-          currentSelectedArea,
+          currentExtendingArea,
         );
         this.interactionLayer.setCapturedBaseExtendingSelectedAreaPixels(
           pixelsThatAreCurrentlyExtending,
