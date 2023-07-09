@@ -1,6 +1,6 @@
 import React from "react";
 
-import { MouseMode, ButtonDirection } from "./config";
+import { ButtonDirection, MouseMode } from "./config";
 import {
   BrushTool,
   CanvasEvents,
@@ -30,7 +30,7 @@ import {
 } from "../../utils/math";
 import Queue from "../../utils/queue";
 import Stack from "../../utils/stack";
-import { addEvent, removeEvent, touchy, TouchyEvent } from "../../utils/touch";
+import { TouchyEvent, addEvent, removeEvent, touchy } from "../../utils/touch";
 import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
 

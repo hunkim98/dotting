@@ -1,25 +1,25 @@
 import React, {
   ForwardedRef,
+  forwardRef,
   useCallback,
   useEffect,
   useImperativeHandle,
-  useState,
-  forwardRef,
   useRef,
+  useState,
 } from "react";
 
 import Editor from "./Canvas/Editor";
 import {
-  PixelData,
-  CanvasEvents,
-  CanvasDataChangeHandler,
-  CanvasGridChangeHandler,
-  CanvasStrokeEndHandler,
   BrushTool,
   CanvasBrushChangeHandler,
-  PixelModifyItem,
-  ImageDownloadOptions,
+  CanvasDataChangeHandler,
+  CanvasEvents,
+  CanvasGridChangeHandler,
   CanvasHoverPixelChangeHandler,
+  CanvasStrokeEndHandler,
+  ImageDownloadOptions,
+  PixelData,
+  PixelModifyItem,
 } from "./Canvas/types";
 
 export interface DottingProps {

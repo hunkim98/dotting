@@ -1,11 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import {
-  BrushTool,
   CanvasStrokeEndHandler,
   ColorChangeItem,
-  DottingData,
-  PixelModifyItem,
 } from "../../src/components/Canvas/types";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useHandlers from "../../src/hooks/useHandlers";

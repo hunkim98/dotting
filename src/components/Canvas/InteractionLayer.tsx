@@ -1,13 +1,13 @@
 import { BaseLayer } from "./BaseLayer";
 import {
-  DefaultGridSquareLength,
-  UserId,
   ButtonDirection,
-  TemporaryUserId,
+  DefaultGridSquareLength,
   DefaultMaxScale,
   DefaultMinScale,
   InteractionExtensionAllowanceRatio,
   InteractionEdgeTouchingRange,
+  TemporaryUserId,
+  UserId,
 } from "./config";
 import {
   ColorChangeItem,
@@ -34,12 +34,7 @@ import {
   getScreenPoint,
   lerpRanges,
 } from "../../utils/math";
-import {
-  getAreaTopLeftAndBottomRight,
-  getCornerPixelIndices,
-  getOverlappingPixelIndicesForModifiedPixels,
-  getRelativeCornerWordPosOfPixelToOrigin,
-} from "../../utils/position";
+import { getOverlappingPixelIndicesForModifiedPixels } from "../../utils/position";
 
 export default class InteractionLayer extends BaseLayer {
   // We make this a map to allow for multiple users to interact with the canvas
@@ -1433,13 +1428,6 @@ export default class InteractionLayer extends BaseLayer {
   render() {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
-    const doesCapturedDataExist = this.capturedData !== null;
-    const rowCount = doesCapturedDataExist
-      ? getRowCountFromData(this.capturedData)
-      : this.dataLayerRowCount;
-    const columnCount = doesCapturedDataExist
-      ? getColumnCountFromData(this.capturedData)
-      : this.dataLayerColumnCount;
     const leftTopPoint: Coord = {
       x: 0,
       y: 0,

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect , useRef } from "react";
+import React, {  useRef } from "react";
 
 import { useBrush, useDotting } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
