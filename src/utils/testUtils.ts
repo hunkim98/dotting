@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-undef
 export interface MouseEventWithOffsets extends MouseEventInit {
   pageX?: number;
   pageY?: number;

@@ -4,7 +4,6 @@ import {
   ColorChangeItem,
   SelectAreaRange,
 } from "../components/Canvas/types";
-import { Coord } from "../utils/types";
 
 export class SelectAreaMoveAction extends Action {
   type = ActionType.SelectAreaMove;

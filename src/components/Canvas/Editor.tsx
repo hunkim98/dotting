@@ -1,4 +1,4 @@
-import { KeyboardEvent } from "react";
+import React, { KeyboardEvent } from "react";
 
 import BackgroundLayer from "./BackgroundLayer";
 import {
@@ -1666,7 +1666,7 @@ export default class Editor extends EventDispatcher {
           this.interactionLayer.setCapturedBaseExtendingSelectedAreaPixels(
             coloredPixels,
           );
-          const { dataForAction } = this.dataLayer.erasePixels(coloredPixels);
+          this.dataLayer.erasePixels(coloredPixels);
           this.dataLayer.render();
           this.interactionLayer.render();
 
