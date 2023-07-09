@@ -155,6 +155,12 @@ export default class Editor extends EventDispatcher {
     );
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
+    this.setPanZoom({
+      offset: {
+        x: this.panZoom.scale * (-initColumnCount / 2) * this.gridSquareLength,
+        y: this.panZoom.scale * (-initRowCount / 2) * this.gridSquareLength,
+      },
+    });
     this.initialize();
   }
 
@@ -1968,8 +1974,29 @@ export default class Editor extends EventDispatcher {
     } else if (e.code === "Backspace" || e.code === "Delete") {
       if (this.interactionLayer.getSelectedArea()) {
         if (this.interactionLayer.getSelectedAreaPixels().length === 0) return;
+        const previousSelectedAreaPixels =
+          this.interactionLayer.getSelectedAreaPixels();
+        if (
+          !previousSelectedAreaPixels ||
+          previousSelectedAreaPixels.length === 0
+        )
+          return;
+
         const { dataForAction } = this.dataLayer.erasePixels(
           this.interactionLayer.getSelectedAreaPixels(),
+        );
+        this.recordAction(
+          new SelectAreaMoveAction(
+            [
+              ...dataForAction.map(pixel => ({
+                ...pixel,
+                color: "",
+              })),
+              ...dataForAction,
+            ],
+            this.interactionLayer.getSelectedArea(),
+            this.interactionLayer.getSelectedArea(),
+          ),
         );
         this.dataLayer.render();
       }

@@ -256,8 +256,8 @@ export const convertWorldPosAreaToPixelGridArea = (
     getAreaTopLeftAndBottomRight(selectingArea);
 
   const pixelGridLeftTopPoint: Coord = {
-    x: -((columnCount / 2) * gridSquareLength),
-    y: -((rowCount / 2) * gridSquareLength),
+    x: 0,
+    y: 0,
   };
   const selectedRegionTopLeft: Coord = {
     x: 0,
