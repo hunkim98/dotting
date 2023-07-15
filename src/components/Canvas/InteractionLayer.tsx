@@ -6,6 +6,8 @@ import {
   TemporaryUserId,
   DefaultMaxScale,
   DefaultMinScale,
+  InteractionExtensionAllowanceRatio,
+  InteractionEdgeTouchingRange,
 } from "./config";
 import {
   ColorChangeItem,
@@ -272,8 +274,8 @@ export default class InteractionLayer extends BaseLayer {
     if (!this.selectedArea) {
       return null;
     }
-    const extensionAllowanceRatio = 2;
-    const strokeTouchingRange = 6;
+    const extensionAllowanceRatio = InteractionExtensionAllowanceRatio;
+    const strokeTouchingRange = InteractionEdgeTouchingRange;
     const scaledYHeight = lerpRanges(
       this.panZoom.scale,
       // this range is inverted because height has to be smaller when zoomed in
@@ -408,27 +410,27 @@ export default class InteractionLayer extends BaseLayer {
     let modifyPixelWidthRatio = 1;
     let modifyPixelHeightRatio = 1;
 
+    const heightExtensionOffset =
+      direction === ButtonDirection.TOP
+        ? this.capturedBaseExtendingSelectedArea.startWorldPos.y -
+          extendToCoord.y
+        : direction === ButtonDirection.BOTTOM
+        ? extendToCoord.y - this.capturedBaseExtendingSelectedArea.endWorldPos.y
+        : 0;
+    const widthExtensionOffset =
+      direction === ButtonDirection.LEFT
+        ? this.capturedBaseExtendingSelectedArea.startWorldPos.x -
+          extendToCoord.x
+        : direction === ButtonDirection.RIGHT
+        ? extendToCoord.x - this.capturedBaseExtendingSelectedArea.endWorldPos.x
+        : 0;
+
     if (isAltPressed) {
       const wasOriginalAreaHeightEven =
         (originalSelectAreaHeightPixelOffset + 1) % 2 === 0;
       const wasOriginalAreaWidthEven =
         (originalSelectAreaWidthPixelOffset + 1) % 2 === 0;
-      const heightExtensionOffset =
-        direction === ButtonDirection.TOP
-          ? this.capturedBaseExtendingSelectedArea.startWorldPos.y -
-            extendToCoord.y
-          : direction === ButtonDirection.BOTTOM
-          ? extendToCoord.y -
-            this.capturedBaseExtendingSelectedArea.endWorldPos.y
-          : 0;
-      const widthExtensionOffset =
-        direction === ButtonDirection.LEFT
-          ? this.capturedBaseExtendingSelectedArea.startWorldPos.x -
-            extendToCoord.x
-          : direction === ButtonDirection.RIGHT
-          ? extendToCoord.x -
-            this.capturedBaseExtendingSelectedArea.endWorldPos.x
-          : 0;
+
       let singleSideOffsetRowBy = Math.round(
         heightExtensionOffset / this.gridSquareLength,
       );

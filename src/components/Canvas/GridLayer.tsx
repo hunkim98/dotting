@@ -19,12 +19,12 @@ export default class GridLayer extends BaseLayer {
   private buttonHeight: number = DefaultButtonHeight;
   private buttonMargin: number = DefaultButtonHeight / 2 + 5;
   private hoveredButton: ButtonDirection | null = null;
-  private topButtonDimensions: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } = { x: 0, y: 0, width: 0, height: 0 };
+  private topButtonDimensions: ButtonDimensions = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+  };
 
   private bottomButtonDimensions: ButtonDimensions = {
     x: 0,
