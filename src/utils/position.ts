@@ -488,6 +488,14 @@ export const getOverlappingPixelIndicesForModifiedPixels = (
   modifyPixelHeightRatio: number,
   gridSquareLength: number,
 ) => {
+  if (modifyPixelHeightRatio < 0 || modifyPixelWidthRatio < 0) {
+    throw new Error(
+      "modifyPixelHeightRatio and modifyPixelWidthRatio should be positive",
+    );
+  }
+  if (gridSquareLength < 0) {
+    throw new Error("gridSquareLength should be positive");
+  }
   const pixelsToColor: Array<ColorChangeItem> = [];
   for (const item of originalPixels) {
     const pixelDistanceFromOrigin = {
