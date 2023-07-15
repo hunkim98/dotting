@@ -1989,7 +1989,6 @@ export default class Editor extends EventDispatcher {
         this.dataLayer.render();
       }
     } else if (e.code === "Escape") {
-      console.log("escape");
       this.interactionLayer.setExtendingSelectedArea(null);
       this.interactionLayer.setExtendingSelectedPixels([]);
       this.interactionLayer.setMovingSelectedArea(null);
