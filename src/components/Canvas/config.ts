@@ -49,3 +49,8 @@ export type DimensionChangeRecord = {
   direction: ButtonDirection;
   amount: number;
 } | null;
+
+export const InteractionExtensionAllowanceRatio = 2;
+export const InteractionEdgeTouchingRange = 6;
+
+export const DefaultPixelExtendRatio = 1;

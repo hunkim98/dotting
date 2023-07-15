@@ -385,6 +385,10 @@ export const returnScrollOffsetFromMouseOffset = (
   return offset;
 };
 
+/**
+ * @summary it will return world pos relative to originpixel word pos, the origin will be set to 0,0
+ * @param pixelIndex - the pixelIndex passed as a parameter should be an integer
+ */
 export const getRelativeCornerWordPosOfPixelToOrigin = (
   // the pixelIndex passed as a parameter should be an integer
   pixelIndex: {
@@ -429,6 +433,12 @@ export const getRelativeCornerWordPosOfPixelToOrigin = (
   };
 };
 
+/**
+ * @summary it will return the pixel indices of the corner pixels of the specific pixel
+ * @param pixelIndex - the specific pixel index
+ * @param halvedHeight - the halvedHeight of the pixel
+ * @param halvedWidth - the halvedWidth of the pixel
+ */
 export const getCornerPixelIndices = (
   // the pixelIndex passed as a parameter should be an integer
   centerPixelIndex: {
@@ -462,6 +472,15 @@ export const getCornerPixelIndices = (
   };
 };
 
+/**
+ * @summary it will return the overlapping pixel indices of the pixels for an extended selected area
+ * @param originalPixels - the original pixels
+ * @param originPixelIndex - the origin pixel index
+ * @param modifyPixelWidthRatio - the ratio of the width of the modified pixel to the original pixel
+ * @param modifyPixelHeightRatio - the ratio of the height of the modified pixel to the original pixel
+ * @param gridSquareLength - the length of the grid square
+ * @returns the pixel indices of the overlapping pixels
+ */
 export const getOverlappingPixelIndicesForModifiedPixels = (
   originalPixels: Array<ColorChangeItem>,
   originPixelIndex: { rowIndex: number; columnIndex: number },

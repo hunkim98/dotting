@@ -1663,7 +1663,7 @@ export default class Editor extends EventDispatcher {
         );
         // if there is a direction to extend selected area, we don't need to do anything else
         if (directionToExtendSelectedArea !== null) {
-          const coloredPixels = this.colorSelectedArea(
+          const coloredPixels = this.getColoredPixelsInSelectedArea(
             previousSelectedArea,
             "",
           );
@@ -1693,7 +1693,10 @@ export default class Editor extends EventDispatcher {
         // we will move the selected area if the mouse is in the previous selected area
         // remove the selecting area if it exists
         this.interactionLayer.setSelectingArea(null);
-        const coloredPixels = this.colorSelectedArea(previousSelectedArea!, "");
+        const coloredPixels = this.getColoredPixelsInSelectedArea(
+          previousSelectedArea!,
+          "",
+        );
 
         this.dataLayer.erasePixels(coloredPixels);
         this.interactionLayer.setSelectedAreaPixels(coloredPixels);
@@ -1733,7 +1736,7 @@ export default class Editor extends EventDispatcher {
     }
   }
 
-  private colorSelectedArea(
+  private getColoredPixelsInSelectedArea(
     selectedArea: SelectAreaRange,
     newColor: string,
   ): Array<ColorChangeItem> {
@@ -1986,7 +1989,14 @@ export default class Editor extends EventDispatcher {
         this.dataLayer.render();
       }
     } else if (e.code === "Escape") {
-      this.setBrushTool(BrushTool.DOT);
+      console.log("escape");
+      this.interactionLayer.setExtendingSelectedArea(null);
+      this.interactionLayer.setExtendingSelectedPixels([]);
+      this.interactionLayer.setMovingSelectedArea(null);
+      this.interactionLayer.setMovingSelectedPixels([]);
+      this.interactionLayer.setSelectingArea(null);
+      this.interactionLayer.setSelectedArea(null);
+      this.interactionLayer.setSelectedAreaPixels([]);
       this.gridLayer.render();
     } else if (e.code === "AltLeft") {
       const pixelsThatAreCurrentlyExtending =
