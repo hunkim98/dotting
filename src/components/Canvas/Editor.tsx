@@ -572,7 +572,7 @@ export default class Editor extends EventDispatcher {
 
   /**
    * @summary Sets the data of the pixel array (use with caution, since data will be overwritten!)
-   * @param data Array of PixelData (It must be a rectangular array, i.e. all rows must have the same length)
+   * @param data Array of PixelModifyItem (It must be a rectangular array, i.e. all rows must have the same length)
    */
   setData(data: Array<Array<PixelModifyItem>>) {
     const isDataValid = validatePixelArrayData(data);
@@ -605,10 +605,6 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setRowCount(rowCount);
     this.gridLayer.setColumnCount(columnCount);
 
-    this.interactionLayer.setCriterionDataForRendering(
-      this.dataLayer.getData(),
-    );
-    this.interactionLayer.resetCapturedData();
     this.interactionLayer.setDataLayerRowCount(rowCount);
     this.interactionLayer.setDataLayerColumnCount(columnCount);
     this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
@@ -616,7 +612,18 @@ export default class Editor extends EventDispatcher {
       dimensions: this.dataLayer.getDimensions(),
       indices: this.dataLayer.getGridIndices(),
     });
+    this.interactionLayer.setCriterionDataForRendering(
+      this.dataLayer.getData(),
+    );
+    this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    this.interactionLayer.resetCapturedData();
 
+    this.setPanZoom({
+      offset: {
+        x: -this.panZoom.scale * (columnCount / 2) * this.gridSquareLength,
+        y: -this.panZoom.scale * (rowCount / 2) * this.gridSquareLength,
+      },
+    });
     this.renderAll();
   }
 
