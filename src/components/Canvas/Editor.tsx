@@ -1467,6 +1467,15 @@ export default class Editor extends EventDispatcher {
         );
         break;
     }
+    const updatedData = this.dataLayer.getCopiedData();
+    this.emitGridChangeEvent({
+      dimensions: {
+        rowCount: getRowCountFromData(updatedData),
+        columnCount: getColumnCountFromData(updatedData),
+      },
+      indices: getGridIndicesFromData(updatedData),
+    });
+    this.emitDataChangeEvent({ data: updatedData });
   }
 
   recordAction(action: Action) {
