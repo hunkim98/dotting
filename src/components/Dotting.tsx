@@ -52,6 +52,7 @@ export interface DottingRef {
   setIndicatorPixels: (data: Array<PixelModifyItem>) => void;
   undo: () => void;
   redo: () => void;
+  setData: (data: Array<Array<PixelModifyItem>>) => void;
   // for useBrush
   changeBrushColor: (color: string) => void;
   changeBrushTool: (tool: BrushTool) => void;
@@ -533,6 +534,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     editor?.redo();
   }, [editor]);
 
+  const setData = useCallback(
+    (data: Array<Array<PixelModifyItem>>) => {
+      editor?.setData(data);
+    },
+    [editor],
+  );
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -546,6 +554,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       setIndicatorPixels,
       undo,
       redo,
+      setData,
       // for useBrush
       changeBrushColor,
       changeBrushTool,
@@ -573,6 +582,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       setIndicatorPixels,
       undo,
       redo,
+      setData,
       // for useBrush
       changeBrushColor,
       changeBrushTool,

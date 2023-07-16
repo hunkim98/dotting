@@ -47,6 +47,13 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     ref.current?.redo();
   }, [ref]);
 
+  const setData = useCallback(
+    (data: Array<Array<PixelModifyItem>>) => {
+      ref.current?.setData(data);
+    },
+    [ref],
+  );
+
   return {
     clear,
     colorPixels,
@@ -55,6 +62,7 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     setIndicatorPixels,
     undo,
     redo,
+    setData,
   };
 };
 

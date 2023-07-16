@@ -44,6 +44,7 @@ import {
   getInBetweenPixelIndicesfromCoords,
   getRowCountFromData,
   getRowKeysFromData,
+  validatePixelArrayData,
 } from "../../utils/data";
 import EventDispatcher from "../../utils/eventDispatcher";
 import { generatePixelId } from "../../utils/identifier";
@@ -567,6 +568,56 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setDpr(dpr);
     this.gridLayer.setDpr(dpr);
     this.interactionLayer.setDpr(dpr);
+  }
+
+  /**
+   * @summary Sets the data of the pixel array (use with caution, since data will be overwritten!)
+   * @param data Array of PixelData (It must be a rectangular array, i.e. all rows must have the same length)
+   */
+  setData(data: Array<Array<PixelModifyItem>>) {
+    const isDataValid = validatePixelArrayData(data);
+    if (!isDataValid) {
+      throw new Error(`Data is not valid`);
+    }
+    const leftColumnIndex = data[0][0].columnIndex;
+    const topRowIndex = data[0][0].rowIndex;
+
+    // reset data
+    this.dataLayer.setData(new Map());
+    let rowIndex = 0;
+    let columnIndex = 0;
+    for (let i = 0; i < data.length; i++) {
+      rowIndex = topRowIndex + i;
+      this.dataLayer.getData().set(rowIndex, new Map());
+      for (let j = 0; j < data[i].length; j++) {
+        columnIndex = leftColumnIndex + j;
+        this.dataLayer
+          .getData()
+          .get(rowIndex)!
+          .set(columnIndex, { color: data[i][j].color });
+      }
+      columnIndex = 0;
+    }
+    const rowCount = this.dataLayer.getRowCount();
+    const columnCount = this.dataLayer.getColumnCount();
+
+    this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    this.gridLayer.setRowCount(rowCount);
+    this.gridLayer.setColumnCount(columnCount);
+
+    this.interactionLayer.setCriterionDataForRendering(
+      this.dataLayer.getData(),
+    );
+    this.interactionLayer.resetCapturedData();
+    this.interactionLayer.setDataLayerRowCount(rowCount);
+    this.interactionLayer.setDataLayerColumnCount(columnCount);
+    this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
+    this.emitGridChangeEvent({
+      dimensions: this.dataLayer.getDimensions(),
+      indices: this.dataLayer.getGridIndices(),
+    });
+
+    this.renderAll();
   }
 
   setPanZoom({
