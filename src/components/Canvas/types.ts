@@ -81,6 +81,7 @@ export type CanvasStrokeEndHandler = (params: CanvasStrokeEndParams) => void;
 export type CanvasBrushChangeParams = {
   brushColor: string;
   brushTool: BrushTool;
+  brushPattern: Array<Array<1 | 0>>;
 };
 
 export type CanvasBrushChangeHandler = (

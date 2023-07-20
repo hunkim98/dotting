@@ -59,11 +59,7 @@ export default class InteractionLayer extends BaseLayer {
     "startPixelIndex" | "endPixelIndex"
   > | null = null;
 
-  private brushPattern: Array<Array<1 | 0>> = [
-    [0, 1, 0],
-    [1, 1, 1],
-    [0, 1, 0],
-  ];
+  private brushPattern: Array<Array<1 | 0>> = [[1]];
 
   private selectedArea: SelectAreaRange | null = null;
 

@@ -207,6 +207,7 @@ export default class Editor extends EventDispatcher {
     this.emitBrushChangeEvent({
       brushColor: this.brushColor,
       brushTool: this.brushTool,
+      brushPattern: this.interactionLayer.getBrushPattern(),
     });
   }
 
@@ -232,6 +233,11 @@ export default class Editor extends EventDispatcher {
 
   setBrushPattern(pattern: Array<Array<1 | 0>>) {
     this.interactionLayer.setBrushPattern(pattern);
+    this.emitBrushChangeEvent({
+      brushColor: this.brushColor,
+      brushTool: this.brushTool,
+      brushPattern: this.interactionLayer.getBrushPattern(),
+    });
   }
 
   // background related functions ⬇
@@ -307,6 +313,7 @@ export default class Editor extends EventDispatcher {
     this.emitBrushChangeEvent({
       brushColor: this.brushColor,
       brushTool: this.brushTool,
+      brushPattern: this.interactionLayer.getBrushPattern(),
     });
   }
 
@@ -319,6 +326,7 @@ export default class Editor extends EventDispatcher {
     this.emitBrushChangeEvent({
       brushColor: this.brushColor,
       brushTool: this.brushTool,
+      brushPattern: this.interactionLayer.getBrushPattern(),
     });
   }
 
@@ -334,6 +342,10 @@ export default class Editor extends EventDispatcher {
         this.renderDataLayer();
       }
     }
+  }
+
+  getBrushPattern() {
+    return this.interactionLayer.getBrushPattern();
   }
 
   getColumnCount() {

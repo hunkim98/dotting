@@ -56,6 +56,7 @@ export interface DottingRef {
   // for useBrush
   changeBrushColor: (color: string) => void;
   changeBrushTool: (tool: BrushTool) => void;
+  changeBrushPattern: (pattern: Array<Array<1 | 0>>) => void;
   // for useHandler
   addDataChangeListener: (listener: CanvasDataChangeHandler) => void;
   removeDataChangeListener: (listener: CanvasDataChangeHandler) => void;
@@ -519,6 +520,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
+  const changeBrushPattern = useCallback(
+    (pattern: Array<Array<1 | 0>>) => {
+      editor?.setBrushPattern(pattern);
+    },
+    [editor],
+  );
+
   const changeBrushTool = useCallback(
     (brushTool: BrushTool) => {
       editor?.setBrushTool(brushTool);
@@ -558,6 +566,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       // for useBrush
       changeBrushColor,
       changeBrushTool,
+      changeBrushPattern,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,
@@ -586,6 +595,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       // for useBrush
       changeBrushColor,
       changeBrushTool,
+      changeBrushPattern,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,
