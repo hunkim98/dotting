@@ -230,6 +230,10 @@ export default class Editor extends EventDispatcher {
     this.emit(CanvasEvents.BRUSH_CHANGE, params);
   }
 
+  setBrushPattern(pattern: Array<Array<1 | 0>>) {
+    this.interactionLayer.setBrushPattern(pattern);
+  }
+
   // background related functions ⬇
   setBackgroundMode(backgroundMode?: "checkerboard" | "color") {
     this.backgroundLayer.setBackgroundMode(backgroundMode);
@@ -1216,25 +1220,53 @@ export default class Editor extends EventDispatcher {
   };
 
   // this will be only used by the current device user
-  private drawPixelInInteractionLayer(rowIndex: number, columnIndex: number) {
+  private drawPixelInInteractionLayer(
+    rowIndex: number,
+    columnIndex: number,
+    brushPattern: Array<Array<1 | 0>>,
+  ) {
     const interactionLayer = this.interactionLayer;
     const data = this.dataLayer.getData();
+    const brushPatternWidth = brushPattern.length;
+    const brushPatternHeight = brushPattern[0].length;
+    const brushPatternCenterRowIndex = Math.floor(brushPatternHeight / 2);
+    const brushPatternCenterColumnIndex = Math.floor(brushPatternWidth / 2);
     if (this.brushTool === BrushTool.ERASER) {
-      const previousColor = data.get(rowIndex)?.get(columnIndex).color;
-      interactionLayer.addToErasedPixelRecords(CurrentDeviceUserId, {
-        rowIndex,
-        columnIndex,
-        color: "",
-        previousColor,
-      });
+      for (let i = 0; i < brushPattern.length; i++) {
+        for (let j = 0; j < brushPattern[i].length; j++) {
+          const brushPatternItem = brushPattern[i][j];
+          if (brushPatternItem === 0) {
+            continue;
+          }
+          const previousColor = data
+            .get(rowIndex + i - brushPatternCenterRowIndex)
+            ?.get(columnIndex + j - brushPatternCenterColumnIndex)?.color;
+          interactionLayer.addToErasedPixelRecords(CurrentDeviceUserId, {
+            rowIndex: rowIndex + i - brushPatternCenterRowIndex,
+            columnIndex: columnIndex + j - brushPatternCenterColumnIndex,
+            color: "",
+            previousColor,
+          });
+        }
+      }
     } else if (this.brushTool === BrushTool.DOT) {
-      const previousColor = data.get(rowIndex)?.get(columnIndex).color;
-      interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
-        rowIndex,
-        columnIndex,
-        color: this.brushColor,
-        previousColor,
-      });
+      for (let i = 0; i < brushPattern.length; i++) {
+        for (let j = 0; j < brushPattern[i].length; j++) {
+          const brushPatternItem = brushPattern[i][j];
+          if (brushPatternItem === 0) {
+            continue;
+          }
+          const previousColor = data
+            .get(rowIndex + i - brushPatternCenterRowIndex)
+            ?.get(columnIndex + j - brushPatternCenterColumnIndex)?.color;
+          interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
+            rowIndex: rowIndex + i - brushPatternCenterRowIndex,
+            columnIndex: columnIndex + j - brushPatternCenterColumnIndex,
+            color: this.brushColor,
+            previousColor,
+          });
+        }
+      }
     } else if (this.brushTool === BrushTool.PAINT_BUCKET) {
       const gridIndices = getGridIndicesFromData(data);
       const initialSelectedColor = data.get(rowIndex)?.get(columnIndex)?.color;
@@ -1773,6 +1805,7 @@ export default class Editor extends EventDispatcher {
         this.drawPixelInInteractionLayer(
           pixelIndex.rowIndex,
           pixelIndex.columnIndex,
+          this.interactionLayer.getBrushPattern(),
         );
         this.renderInteractionLayer();
         this.renderErasedPixelsFromInteractionLayerInDataLayer();
@@ -1965,6 +1998,7 @@ export default class Editor extends EventDispatcher {
           this.drawPixelInInteractionLayer(
             pixelIndex.rowIndex,
             pixelIndex.columnIndex,
+            this.interactionLayer.getBrushPattern(),
           );
 
           const missingIndices = getInBetweenPixelIndicesfromCoords(
@@ -1978,6 +2012,7 @@ export default class Editor extends EventDispatcher {
               this.drawPixelInInteractionLayer(
                 point.rowIndex,
                 point.columnIndex,
+                this.interactionLayer.getBrushPattern(),
               );
             });
           }

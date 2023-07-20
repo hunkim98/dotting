@@ -59,6 +59,12 @@ export default class InteractionLayer extends BaseLayer {
     "startPixelIndex" | "endPixelIndex"
   > | null = null;
 
+  private brushPattern: Array<Array<1 | 0>> = [
+    [0, 1, 0],
+    [1, 1, 1],
+    [0, 1, 0],
+  ];
+
   private selectedArea: SelectAreaRange | null = null;
 
   private directionToExtendSelectedArea: ButtonDirection | null = null;
@@ -119,6 +125,14 @@ export default class InteractionLayer extends BaseLayer {
 
   getCapturedDataOriginalIndices() {
     return this.capturedDataOriginalIndices;
+  }
+
+  getBrushPattern() {
+    return this.brushPattern;
+  }
+
+  setBrushPattern(pattern: Array<Array<1 | 0>>) {
+    this.brushPattern = pattern;
   }
 
   setDataLayerColumnCount(columnCount: number) {
@@ -1399,21 +1413,53 @@ export default class InteractionLayer extends BaseLayer {
     if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
       return;
     }
+    const brushPatternWidth = this.brushPattern.length;
+    const brushPatternHeight = this.brushPattern[0].length;
+    const brushPatternCenterRowIndex = Math.floor(brushPatternHeight / 2);
+    const brushPatternCenterColumnIndex = Math.floor(brushPatternWidth / 2);
     ctx.save();
     ctx.globalAlpha = 0.5;
-    ctx.clearRect(
-      relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-      relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-      squareLength,
-      squareLength,
-    );
-    ctx.fillStyle = this.hoveredPixel.color;
-    ctx.fillRect(
-      relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-      relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-      squareLength,
-      squareLength,
-    );
+    for (let i = 0; i < brushPatternHeight; i++) {
+      for (let j = 0; j < brushPatternWidth; j++) {
+        const brushPatternItem = this.brushPattern[i][j];
+        if (brushPatternItem === 0) {
+          continue;
+        }
+        const relativeRowIndex = this.rowKeyOrderMap.get(
+          rowIndex + i - brushPatternCenterRowIndex,
+        );
+        const relativeColumnIndex = this.columnKeyOrderMap.get(
+          columnIndex + j - brushPatternCenterColumnIndex,
+        );
+        if (
+          relativeRowIndex === undefined ||
+          relativeColumnIndex === undefined
+        ) {
+          continue;
+        }
+        ctx.fillStyle = this.hoveredPixel.color;
+        ctx.fillRect(
+          relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+          relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+          squareLength,
+          squareLength,
+        );
+      }
+    }
+
+    // ctx.clearRect(
+    //   relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+    //   relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+    //   squareLength,
+    //   squareLength,
+    // );
+    // ctx.fillStyle = this.hoveredPixel.color;
+    // ctx.fillRect(
+    //   relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+    //   relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+    //   squareLength,
+    //   squareLength,
+    // );
     ctx.restore();
   }
 
