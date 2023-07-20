@@ -7,13 +7,19 @@ import { DottingRef } from "../components/Dotting";
 const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
   const [brushTool, setBrushTool] = useState<BrushTool>(BrushTool.DOT);
   const [brushColor, setBrushColor] = useState<string>("");
+  const [brushPattern, setBrushPattern] = useState<Array<Array<1 | 0>>>([[1]]);
   const { addBrushChangeListener, removeBrushChangeListener } =
     useHandlers(ref);
 
   useEffect(() => {
-    const listener = ({ brushColor, brushTool }: CanvasBrushChangeParams) => {
+    const listener = ({
+      brushColor,
+      brushTool,
+      brushPattern,
+    }: CanvasBrushChangeParams) => {
       setBrushTool(brushTool);
       setBrushColor(brushColor);
+      setBrushPattern(brushPattern);
     };
     addBrushChangeListener(listener);
     return () => {
@@ -23,6 +29,13 @@ const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
   const changeBrushColor = useCallback(
     (brushColor: string) => {
       ref.current?.changeBrushColor(brushColor);
+    },
+    [ref],
+  );
+
+  const changeBrushPattern = useCallback(
+    (brushPattern: Array<Array<1 | 0>>) => {
+      ref.current?.changeBrushPattern(brushPattern);
     },
     [ref],
   );
@@ -37,8 +50,10 @@ const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
   return {
     changeBrushColor,
     changeBrushTool,
+    changeBrushPattern,
     brushTool,
     brushColor,
+    brushPattern,
   };
 };
 
