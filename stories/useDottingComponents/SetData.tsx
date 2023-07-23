@@ -5,11 +5,8 @@ import useDotting from "../../src/hooks/useDotting";
 
 const SetData = () => {
   const ref = useRef<DottingRef>(null);
-  const { colorPixels, erasePixels, setData } = useDotting(ref);
-  const [rowIndex, setRowIndex] = React.useState(0);
-  const [columnIndex, setColumnIndex] = React.useState(0);
-  const [rowIndex2, setRowIndex2] = React.useState(0);
-  const [columnIndex2, setColumnIndex2] = React.useState(0);
+  const { setData } = useDotting(ref);
+
   return (
     <div
       style={{
