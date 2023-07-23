@@ -26,6 +26,7 @@ const ChangeBrushTool = () => {
         flexDirection: "column",
         alignItems: "center",
         fontFamily: `'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif`,
+        marginBottom: 50,
       }}
     >
       <Dotting ref={ref} width={"100%"} height={300} />
