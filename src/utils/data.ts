@@ -3,7 +3,6 @@ import { getPixelIndexFromMouseCartCoord } from "./position";
 import {
   DottingData,
   GridIndices,
-  PixelData,
   PixelModifyItem,
   Coord,
 } from "../components/Canvas/types";
@@ -111,7 +110,7 @@ export const addColumnToData = (data: DottingData, columnIndex: number) => {
   });
 };
 
-export const validatePixelArrayData = (data: Array<Array<PixelData>>) => {
+export const validateSquareArray = (data: Array<Array<unknown>>) => {
   const dataRowCount = data.length;
   let columnCount = 0;
   const rowCount = dataRowCount;

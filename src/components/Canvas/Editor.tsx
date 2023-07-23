@@ -44,7 +44,7 @@ import {
   getInBetweenPixelIndicesfromCoords,
   getRowCountFromData,
   getRowKeysFromData,
-  validatePixelArrayData,
+  validateSquareArray,
 } from "../../utils/data";
 import EventDispatcher from "../../utils/eventDispatcher";
 import { generatePixelId } from "../../utils/identifier";
@@ -591,7 +591,7 @@ export default class Editor extends EventDispatcher {
    * @param data Array of PixelModifyItem (It must be a rectangular array, i.e. all rows must have the same length)
    */
   setData(data: Array<Array<PixelModifyItem>>) {
-    const isDataValid = validatePixelArrayData(data);
+    const { isDataValid, rowCount, columnCount } = validateSquareArray(data);
     if (!isDataValid) {
       throw new Error(`Data is not valid`);
     }
@@ -600,22 +600,15 @@ export default class Editor extends EventDispatcher {
 
     // reset data
     this.dataLayer.setData(new Map());
-    let rowIndex = 0;
-    let columnIndex = 0;
     for (let i = 0; i < data.length; i++) {
-      rowIndex = topRowIndex + i;
-      this.dataLayer.getData().set(rowIndex, new Map());
+      this.dataLayer.getData().set(topRowIndex + i, new Map());
       for (let j = 0; j < data[i].length; j++) {
-        columnIndex = leftColumnIndex + j;
         this.dataLayer
           .getData()
-          .get(rowIndex)!
-          .set(columnIndex, { color: data[i][j].color });
+          .get(topRowIndex + i)!
+          .set(leftColumnIndex + j, { color: data[i][j].color });
       }
-      columnIndex = 0;
     }
-    const rowCount = this.dataLayer.getRowCount();
-    const columnCount = this.dataLayer.getColumnCount();
 
     this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.gridLayer.setRowCount(rowCount);
