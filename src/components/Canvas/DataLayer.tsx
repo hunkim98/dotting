@@ -24,7 +24,7 @@ import {
   getGridIndicesFromData,
   getRowCountFromData,
   getRowKeysFromData,
-  validatePixelArrayData,
+  validateSquareArray,
 } from "../../utils/data";
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 
@@ -49,7 +49,7 @@ export default class DataLayer extends BaseLayer {
     initData?: Array<Array<PixelData>>;
   }) {
     super({ canvas });
-    if (initData && validatePixelArrayData(initData).isDataValid) {
+    if (initData && validateSquareArray(initData).isDataValid) {
       for (let i = 0; i < initData.length; i++) {
         this.data.set(i, new Map());
         for (let j = 0; j < initData[i].length; j++) {
