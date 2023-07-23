@@ -14,6 +14,7 @@ import {
   DownloadImage,
   SetIndicatorPixels,
   UndoRedo,
+  SetData,
 } from "./useDottingComponents";
 
 <Meta title="Hooks/useDotting" />
@@ -277,6 +278,23 @@ With `useDotting`, you can manipulate the grids.
       <td>`Array<PixelModifyItem>`</td>
     </tr>
     <tr>
+      <td>`setData(data: Array<Array<PixelModifyItem>>)`</td>
+      <td>
+        Allows you to set the data of the pixel canvas. (The 2d array should be a square array)
+      </td>
+      <td>
+        `Array<PixelModifyItem>`
+        `PixelModifyItem` is defined as follows:
+        ```ts
+        export interface PixelModifyItem {
+          rowIndex: number;
+          columnIndex: number;
+          color: string;
+        }
+        ```
+      </td>
+    </tr>
+    <tr>
       <td>`undo()`</td>
       <td>
         Allows you to undo the last action
@@ -350,6 +368,12 @@ The data type of the `initIndicatorData` is the `Array<PixelModifyItem>`.
 With `undo` and `redo` methods, you can undo and redo the last action.
 
 <UndoRedo />
+
+#### 6. SetData Example `setData(data: Array<Array<PixelModifyItem>>)`
+
+With `setData`, you can set the data of the pixel canvas. (The 2d array should be a square array)
+
+<SetData />
 
 <div className="subheading">Example Source Codes</div>
 
