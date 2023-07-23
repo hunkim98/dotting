@@ -74,7 +74,7 @@ const ChangeBrushPattern = () => {
         }}
       >
         <span>Brush Mode</span>
-        <div style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", marginTop: 10 }}>
           {patterns.map((pattern, index) => {
             return (
               <div
