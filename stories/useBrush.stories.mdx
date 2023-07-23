@@ -8,7 +8,11 @@ import Plugin from "./assets/plugin.svg";
 import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
-import { ChangeBrushColor, ChangeBrushTool } from "./useBrushComponents";
+import {
+  ChangeBrushColor,
+  ChangeBrushTool,
+  ChangeBrushPattern,
+} from "./useBrushComponents";
 
 <Meta title="Hooks/useBrush" />
 
@@ -241,6 +245,13 @@ With `useBrush`, you can change the brush color and mode.
       </td>
     </tr>
     <tr>
+      <td>`changeBrushPattern(brushPattern: Array<Array<1 | 0>>)`</td>
+      <td>Allows you to change the brush pattern (the parameter should be a square array)</td>
+      <td>
+        `Array<Array<1 | 0>>`
+      </td>
+    </tr>
+    <tr>
       <td>`brushTool`</td>
       <td>Allows you to know the current brush mode. Variable type is `BrushTool`</td>
       <td>
@@ -249,6 +260,12 @@ With `useBrush`, you can change the brush color and mode.
     <tr>
       <td>`brushColor`</td>
       <td>Allows you to know the current brush color. Variable type is `string`</td>
+      <td>
+      </td>
+    </tr>
+     <tr>
+      <td>`brushPattern`</td>
+      <td>Allows you to know the current brush pattern. Variable type is `Array<Array<1 | 0>>`</td>
       <td>
       </td>
     </tr>
@@ -268,6 +285,12 @@ With `changeBrushColor` method, you can change the color of the brush.
 With `changeBrushTool` method, you can change the brush tool.
 
 <ChangeBrushTool />
+
+#### 3. Change Brush Pattern Example `changeBrushPattern(brushPattern: Array<Array<1 | 0>>)`
+
+With `changeBrushPattern` method, you can change the brush tool.
+
+<ChangeBrushPattern />
 
 <div className="subheading">Example Source Codes</div>
 
