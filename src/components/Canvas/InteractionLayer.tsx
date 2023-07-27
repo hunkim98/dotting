@@ -10,6 +10,7 @@ import {
   UserId,
 } from "./config";
 import {
+  BRUSH_PATTERN_ELEMENT,
   ColorChangeItem,
   Coord,
   DottingData,
@@ -59,7 +60,9 @@ export default class InteractionLayer extends BaseLayer {
     "startPixelIndex" | "endPixelIndex"
   > | null = null;
 
-  private brushPattern: Array<Array<1 | 0>> = [[1]];
+  private brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>> = [
+    [BRUSH_PATTERN_ELEMENT.FILL],
+  ];
 
   private selectedArea: SelectAreaRange | null = null;
 
@@ -127,7 +130,7 @@ export default class InteractionLayer extends BaseLayer {
     return this.brushPattern;
   }
 
-  setBrushPattern(pattern: Array<Array<1 | 0>>) {
+  setBrushPattern(pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) {
     this.brushPattern = pattern;
   }
 

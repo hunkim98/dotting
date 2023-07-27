@@ -245,10 +245,16 @@ With `useBrush`, you can change the brush color and mode.
       </td>
     </tr>
     <tr>
-      <td>`changeBrushPattern(brushPattern: Array<Array<1 | 0>>)`</td>
+      <td>`changeBrushPattern(brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>>)`</td>
       <td>Allows you to change the brush pattern (the parameter should be a square array)</td>
       <td>
-        `Array<Array<1 | 0>>`
+        `Array<Array<BRUSH_PATTERN_ELEMENT>>`
+        ```ts
+        export enum BRUSH_PATTERN_ELEMENT {
+          EMPTY = 0,
+          FILLED = 1,
+        }
+        ```
       </td>
     </tr>
     <tr>
@@ -265,7 +271,7 @@ With `useBrush`, you can change the brush color and mode.
     </tr>
      <tr>
       <td>`brushPattern`</td>
-      <td>Allows you to know the current brush pattern. Variable type is `Array<Array<1 | 0>>`</td>
+      <td>Allows you to know the current brush pattern. Variable type is `Array<Array<BRUSH_PATTERN_ELEMENT>>`</td>
       <td>
       </td>
     </tr>
@@ -286,7 +292,7 @@ With `changeBrushTool` method, you can change the brush tool.
 
 <ChangeBrushTool />
 
-#### 3. Change Brush Pattern Example `changeBrushPattern(brushPattern: Array<Array<1 | 0>>)`
+#### 3. Change Brush Pattern Example `changeBrushPattern(brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>>)`
 
 With `changeBrushPattern` method, you can change the brush tool.
 
