@@ -606,7 +606,7 @@ export default class Editor extends EventDispatcher {
       for (let j = 0; j < data[i].length; j++) {
         this.dataLayer
           .getData()
-          .get(topRowIndex + i)!
+          .get(topRowIndex + i)
           .set(leftColumnIndex + j, { color: data[i][j].color });
       }
     }
