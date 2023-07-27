@@ -36,10 +36,10 @@ export interface DottingProps {
   initData?: Array<Array<PixelData>>;
   isPanZoomable?: boolean;
   isGridFixed?: boolean;
-  ref?: ForwardedRef<DottingRef>;
   brushTool?: BrushTool;
   brushColor?: string;
   indicatorData?: Array<PixelModifyItem>;
+  children?: React.ReactNode;
   // initIndicatorData?: Array<PixelModifyItem>;
   // initBrushColor?: string;
 }
@@ -89,6 +89,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   props: DottingProps,
   ref: ForwardedRef<DottingRef>,
 ) {
+  console.log(props.children, "children");
   const containerRef = useRef<HTMLDivElement>(null);
   const [gridCanvas, setGridCanvas] = useState<HTMLCanvasElement | null>(null);
   const [dataCanvas, setDataCanvas] = useState<HTMLCanvasElement | null>(null);
