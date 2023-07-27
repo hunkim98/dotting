@@ -10,6 +10,7 @@ import React, {
 
 import Editor from "./Canvas/Editor";
 import {
+  BRUSH_PATTERN_ELEMENT,
   BrushTool,
   CanvasBrushChangeHandler,
   CanvasDataChangeHandler,
@@ -56,7 +57,7 @@ export interface DottingRef {
   // for useBrush
   changeBrushColor: (color: string) => void;
   changeBrushTool: (tool: BrushTool) => void;
-  changeBrushPattern: (pattern: Array<Array<1 | 0>>) => void;
+  changeBrushPattern: (pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) => void;
   // for useHandler
   addDataChangeListener: (listener: CanvasDataChangeHandler) => void;
   removeDataChangeListener: (listener: CanvasDataChangeHandler) => void;
@@ -521,7 +522,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   );
 
   const changeBrushPattern = useCallback(
-    (pattern: Array<Array<1 | 0>>) => {
+    (pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) => {
       editor?.setBrushPattern(pattern);
     },
     [editor],

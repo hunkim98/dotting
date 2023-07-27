@@ -81,7 +81,7 @@ export type CanvasStrokeEndHandler = (params: CanvasStrokeEndParams) => void;
 export type CanvasBrushChangeParams = {
   brushColor: string;
   brushTool: BrushTool;
-  brushPattern: Array<Array<1 | 0>>;
+  brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>>;
 };
 
 export type CanvasBrushChangeHandler = (
@@ -112,3 +112,8 @@ export type SelectAreaRange = {
   startPixelIndex: Omit<PixelModifyItem, "color">;
   endPixelIndex: Omit<PixelModifyItem, "color">;
 };
+
+export enum BRUSH_PATTERN_ELEMENT {
+  FILL = 1,
+  EMPTY = 0,
+}

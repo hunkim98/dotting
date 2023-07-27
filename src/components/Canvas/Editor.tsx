@@ -14,6 +14,7 @@ import DataLayer from "./DataLayer";
 import GridLayer from "./GridLayer";
 import InteractionLayer from "./InteractionLayer";
 import {
+  BRUSH_PATTERN_ELEMENT,
   BrushTool,
   CanvasBrushChangeParams,
   CanvasDataChangeParams,
@@ -231,7 +232,7 @@ export default class Editor extends EventDispatcher {
     this.emit(CanvasEvents.BRUSH_CHANGE, params);
   }
 
-  setBrushPattern(pattern: Array<Array<1 | 0>>) {
+  setBrushPattern(pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) {
     this.interactionLayer.setBrushPattern(pattern);
     this.emitBrushChangeEvent({
       brushColor: this.brushColor,
@@ -1228,7 +1229,7 @@ export default class Editor extends EventDispatcher {
   private drawPixelInInteractionLayer(
     rowIndex: number,
     columnIndex: number,
-    brushPattern: Array<Array<1 | 0>>,
+    brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>>,
   ) {
     const interactionLayer = this.interactionLayer;
     const data = this.dataLayer.getData();
