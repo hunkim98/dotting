@@ -1,7 +1,8 @@
-import React, {  useRef } from "react";
+import React, { useRef } from "react";
 
 import { useBrush, useDotting } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
+import Layer from "../../src/components/Layer";
 
 const CustomExample = () => {
   const ref = useRef<DottingRef>(null);
@@ -17,7 +18,9 @@ const CustomExample = () => {
         alignItems: "center",
       }}
     >
-      <Dotting ref={ref} width={"100%"} height={300} />
+      <Dotting ref={ref} width={"100%"} height={300}>
+        <Layer data={new Map()} order={0} />
+      </Dotting>
       <div>
         {[
           "#FF0000",
