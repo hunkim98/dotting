@@ -142,7 +142,7 @@ export default class Editor extends EventDispatcher {
     this.dataLayer = new DataLayer({
       canvas: dataCanvas,
       initData: initData,
-      layer: layers[0],
+      layer: layers ? layers[0] : undefined,
     });
     const initRowCount = this.dataLayer.getRowCount();
     const initColumnCount = this.dataLayer.getColumnCount();
