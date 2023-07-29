@@ -7,6 +7,11 @@ interface LayerProps {
   data: DottingData;
 }
 
+/**
+ * @description Layer is a component for configuration. It does not render anything.
+ * @param param0
+ * @returns
+ */
 const Layer = ({ order, data }: LayerProps) => {
   return null;
 };

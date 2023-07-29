@@ -24,6 +24,7 @@ import {
   CanvasStrokeEndParams,
   ColorChangeItem,
   Coord,
+  DottingData,
   GridIndices,
   ImageDownloadOptions,
   PanZoom,
@@ -128,15 +129,21 @@ export default class Editor extends EventDispatcher {
     dataCanvas,
     backgroundCanvas,
     initData,
+    layers,
   }: {
     gridCanvas: HTMLCanvasElement;
     interactionCanvas: HTMLCanvasElement;
     dataCanvas: HTMLCanvasElement;
     backgroundCanvas: HTMLCanvasElement;
     initData?: Array<Array<PixelData>>;
+    layers?: Array<DottingData>;
   }) {
     super();
-    this.dataLayer = new DataLayer({ canvas: dataCanvas, initData: initData });
+    this.dataLayer = new DataLayer({
+      canvas: dataCanvas,
+      initData: initData,
+      layer: layers[0],
+    });
     const initRowCount = this.dataLayer.getRowCount();
     const initColumnCount = this.dataLayer.getColumnCount();
     this.gridLayer = new GridLayer({

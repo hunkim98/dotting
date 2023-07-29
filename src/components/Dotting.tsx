@@ -18,6 +18,7 @@ import {
   CanvasGridChangeHandler,
   CanvasHoverPixelChangeHandler,
   CanvasStrokeEndHandler,
+  DottingData,
   ImageDownloadOptions,
   PixelData,
   PixelModifyItem,
@@ -121,6 +122,18 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         listener: EventListenerOrEventListenerObject;
       }>
     >([]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    React.Children.map(props.children, (child: any) => {
+      console.log(child, "child");
+      const { order, data } = child.props;
+      console.log(order, "order", data, "data");
+      // editor.addCanvasElement(child);
+    });
+  }, [editor, props.children]);
 
   useEffect(() => {
     if (!editor) {
@@ -314,12 +327,23 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!gridCanvas || !interactionCanvas || !dataCanvas || !backgroundCanvas) {
       return;
     }
+    // this only works initially
+    const layerArray: Array<DottingData> = [];
+    React.Children.map(props.children, (child: any) => {
+      console.log(child, "child");
+      const { order, data } = child.props;
+      layerArray.push(data);
+      console.log(order, "order", data, "data");
+      // editor.addCanvasElement(child);
+    });
+
     const editor = new Editor({
       gridCanvas,
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
       initData: props.initData,
+      layers: layerArray,
     });
     editor.setIsGridFixed(props.isGridFixed);
     editor.setBackgroundAlpha(props.backgroundAlpha);
