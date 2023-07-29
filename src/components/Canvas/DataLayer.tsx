@@ -30,25 +30,24 @@ import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 
 export default class DataLayer extends BaseLayer {
   private swipedPixels: Array<PixelModifyItem> = [];
-  private data: DottingData = new Map<
-    // this number is rowIndex
-    number,
-    Map<
-      // this number is columnIndex
-      number,
-      PixelData
-    >
-  >();
+  private data: DottingData;
   private gridSquareLength: number = DefaultGridSquareLength;
 
   constructor({
     canvas,
     initData,
+    layer,
   }: {
     canvas: HTMLCanvasElement;
     initData?: Array<Array<PixelData>>;
+    layer?: DottingData;
   }) {
     super({ canvas });
+    if (layer) {
+      this.data = layer;
+    } else {
+      this.data = new Map();
+    }
     if (initData && validateSquareArray(initData).isDataValid) {
       for (let i = 0; i < initData.length; i++) {
         this.data.set(i, new Map());

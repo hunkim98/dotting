@@ -1,6 +1,6 @@
-import React, { useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
-import { useBrush, useDotting } from "../../src";
+import { DottingData, useBrush, useDotting } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import Layer from "../../src/components/Layer";
 
@@ -8,6 +8,14 @@ const CustomExample = () => {
   const ref = useRef<DottingRef>(null);
   const { undo, redo } = useDotting(ref);
   const { changeBrushColor } = useBrush(ref);
+  const layer1 = useRef<DottingData>(new Map());
+  useEffect(() => {
+    console.log("layer 1 changed");
+  }, [layer1]);
+
+  const onLayerMutation = useCallback(layers => {
+    console.log(layers);
+  }, []);
 
   return (
     <div
@@ -19,7 +27,7 @@ const CustomExample = () => {
       }}
     >
       <Dotting ref={ref} width={"100%"} height={300}>
-        <Layer data={new Map()} order={0} />
+        <Layer data={layer1.current} order={0} />
       </Dotting>
       <div>
         {[
