@@ -1,11 +1,43 @@
-import { DottingData } from "../components/Canvas/types";
+import { DottingData, PixelData } from "../components/Canvas/types";
+import {
+  getColumnCountFromData,
+  getGridIndicesFromData,
+  getRowCountFromData,
+  validateSquareArray,
+} from "../utils/data";
 import { Observable } from "../utils/observer";
 
-class DottingDataLayer extends Observable<DottingData> {
+export class DottingDataLayer extends Observable<DottingData> {
   private data: DottingData;
-  constructor({ data }: { data: DottingData }) {
+  private id: string;
+  constructor({ data, id }: { data: Array<Array<PixelData>>; id: string }) {
     super();
-    this.data = data;
+    const { isDataValid } = validateSquareArray(data);
+    if (!isDataValid) {
+      throw new Error("Data is not valid");
+    }
+    this.data = new Map();
+    this.id = id;
+    for (let i = 0; i < data.length; i++) {
+      this.data.set(i, new Map());
+      for (let j = 0; j < data[i].length; j++) {
+        this.data.get(i)!.set(j, { color: data[i][j].color });
+      }
+    }
+  }
+  getDataInfo() {
+    const gridIndices = getGridIndicesFromData(this.data);
+    const columnCount = getColumnCountFromData(this.data);
+    const rowCount = getRowCountFromData(this.data);
+    return {
+      gridIndices,
+      columnCount,
+      rowCount,
+    };
+  }
+
+  getId() {
+    return this.id;
   }
 
   getColumnKeysFromData = (): Array<number> => {
@@ -59,4 +91,8 @@ class DottingDataLayer extends Observable<DottingData> {
     });
     return copiedData;
   };
+
+  getData() {
+    return this.data;
+  }
 }

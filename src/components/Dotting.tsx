@@ -18,11 +18,12 @@ import {
   CanvasGridChangeHandler,
   CanvasHoverPixelChangeHandler,
   CanvasStrokeEndHandler,
-  DottingData,
   ImageDownloadOptions,
+  LayerProps,
   PixelData,
   PixelModifyItem,
 } from "./Canvas/types";
+import { createPixelDataSquareArray, validateSquareArray } from "../utils/data";
 
 export interface DottingProps {
   width: number | string;
@@ -35,6 +36,7 @@ export interface DottingProps {
   backgroundColor?: string;
   backgroundAlpha?: number;
   initData?: Array<Array<PixelData>>;
+  initLayers?: Array<LayerProps>;
   isPanZoomable?: boolean;
   isGridFixed?: boolean;
   brushTool?: BrushTool;
@@ -90,7 +92,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   props: DottingProps,
   ref: ForwardedRef<DottingRef>,
 ) {
-  console.log(props.children, "children");
   const containerRef = useRef<HTMLDivElement>(null);
   const [gridCanvas, setGridCanvas] = useState<HTMLCanvasElement | null>(null);
   const [dataCanvas, setDataCanvas] = useState<HTMLCanvasElement | null>(null);
@@ -123,14 +124,20 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       }>
     >([]);
 
+  // this is called when children are added to the canvas
+  // this will be used when layers are reorderd or added/removed
   useEffect(() => {
     if (!editor) {
       return;
     }
+    const layerIds = new Set<string>();
     React.Children.map(props.children, (child: any) => {
-      console.log(child, "child");
-      const { order, data } = child.props;
-      console.log(order, "order", data, "data");
+      const { id } = child.props;
+      if (layerIds.has(id)) {
+        throw new Error(`Duplicate layer id: ${id}`);
+      }
+      layerIds.add(id);
+
       // editor.addCanvasElement(child);
     });
   }, [editor, props.children]);
@@ -327,15 +334,85 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!gridCanvas || !interactionCanvas || !dataCanvas || !backgroundCanvas) {
       return;
     }
-    // this only works initially
-    const layerArray: Array<DottingData> = [];
-    React.Children.map(props.children, (child: any) => {
-      console.log(child, "child");
-      const { order, data } = child.props;
-      layerArray.push(data);
-      console.log(order, "order", data, "data");
-      // editor.addCanvasElement(child);
-    });
+    // this only happens once
+    const layers: Array<LayerProps> = [];
+    if (props.initLayers) {
+      const initDataToInspect: Array<LayerProps> = [];
+      const layerIdSet: Set<string> = new Set();
+      // validation
+      props.initLayers.forEach(layer => {
+        const { id, initData } = layer;
+        if (layerIdSet.has(id)) {
+          throw new Error(
+            `Duplicate layer id ${id}. Please make sure all layer ids are unique.`,
+          );
+        }
+        layers.push(layer);
+        if (initData) {
+          initDataToInspect.push(layer);
+        }
+      });
+
+      let measuredColumnCount = null;
+      let measuredRowCount = null;
+      let measuredTopRowIndex = null;
+      let measuredLeftColumnIndex = null;
+      // all init data passed initially, should be
+      // 1) a square array
+      // 2) all data should have same row and column count
+      // 3) all data should have same topRowIndex and leftColumnIndex
+      for (let i = 0; i < initDataToInspect.length; i++) {
+        const dataToValidate = initDataToInspect[i].initData;
+        const { isDataValid, columnCount, rowCount } =
+          validateSquareArray(dataToValidate);
+        if (measuredColumnCount !== null && measuredRowCount !== null) {
+          if (
+            measuredColumnCount !== columnCount ||
+            measuredRowCount !== rowCount
+          ) {
+            throw new Error(
+              `Invalid data for layer ${initDataToInspect[i].id}. Please check the data.`,
+            );
+          }
+        } else {
+          measuredColumnCount = columnCount;
+          measuredRowCount = rowCount;
+        }
+
+        if (!isDataValid) {
+          throw new Error(
+            `Invalid data for layer ${initDataToInspect[i].id}. Please check the data.`,
+          );
+        }
+        if (measuredLeftColumnIndex == null || measuredTopRowIndex == null) {
+          measuredLeftColumnIndex = dataToValidate[0][0].columnIndex;
+          measuredTopRowIndex = dataToValidate[0][0].rowIndex;
+        }
+        const topRowIndex = dataToValidate[0][0].rowIndex;
+        const leftColumnIndex = dataToValidate[0][0].columnIndex;
+        if (topRowIndex !== measuredTopRowIndex) {
+          throw new Error(
+            `Invalid data for layer ${initDataToInspect[i].id}. Please check the data.`,
+          );
+        }
+        if (leftColumnIndex !== measuredLeftColumnIndex) {
+          throw new Error(
+            `Invalid data for layer ${initDataToInspect[i].id}. Please check the data.`,
+          );
+        }
+      }
+      layers.forEach(layer => {
+        // initialize data for layers that did not have initData passed in
+        if (!layer.initData) {
+          layer.initData = createPixelDataSquareArray(
+            measuredRowCount,
+            measuredColumnCount,
+            measuredTopRowIndex,
+            measuredLeftColumnIndex,
+          );
+        }
+      });
+    }
 
     const editor = new Editor({
       gridCanvas,
@@ -343,7 +420,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       dataCanvas,
       backgroundCanvas,
       initData: props.initData,
-      layers: layerArray,
+      layers: layers.length > 0 ? layers : undefined,
     });
     editor.setIsGridFixed(props.isGridFixed);
     editor.setBackgroundAlpha(props.backgroundAlpha);

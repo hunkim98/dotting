@@ -24,9 +24,9 @@ import {
   CanvasStrokeEndParams,
   ColorChangeItem,
   Coord,
-  DottingData,
   GridIndices,
   ImageDownloadOptions,
+  LayerProps,
   PanZoom,
   PixelData,
   PixelModifyItem,
@@ -37,6 +37,7 @@ import { ColorChangeAction } from "../../actions/ColorChangeAction";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
+import { DottingDataLayer } from "../../helpers/DottingDataLayer";
 import {
   createColumnKeyOrderMapfromData,
   createRowKeyOrderMapfromData,
@@ -83,6 +84,10 @@ export default class Editor extends EventDispatcher {
   private pinchZoomDiff: number | null = null;
   private width: number;
   private height: number;
+  private layers: Array<{
+    data: DottingDataLayer;
+    id: string;
+  }> = [];
 
   private panZoom: PanZoom = {
     scale: 1,
@@ -136,13 +141,23 @@ export default class Editor extends EventDispatcher {
     dataCanvas: HTMLCanvasElement;
     backgroundCanvas: HTMLCanvasElement;
     initData?: Array<Array<PixelData>>;
-    layers?: Array<DottingData>;
+    layers?: Array<LayerProps>;
   }) {
     super();
+    // if (layers) {
+    //   this.layers = layers.map(layer => {
+    //     return {
+    //       data: new DottingDataLayer({
+    //         data: layer,
+    //       }),
+    //       id: crypto.randomUUID(),
+    //     };
+    //   });
+    // }
     this.dataLayer = new DataLayer({
       canvas: dataCanvas,
       initData: initData,
-      layer: layers ? layers[0] : undefined,
+      layers: this.layers,
     });
     const initRowCount = this.dataLayer.getRowCount();
     const initColumnCount = this.dataLayer.getColumnCount();
@@ -592,6 +607,14 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setDpr(dpr);
     this.gridLayer.setDpr(dpr);
     this.interactionLayer.setDpr(dpr);
+  }
+
+  setCurrentLayer(id: string) {
+    const currentLayer = this.layers.find(el => el.id === id);
+    if (!currentLayer) {
+      throw new Error("Layer not found");
+    }
+    this.dataLayer.setCurrentLayer(currentLayer.data);
   }
 
   /**

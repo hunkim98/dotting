@@ -1,11 +1,11 @@
 export class Observable<T> {
-  private observers: Observer[] = [];
+  private observers: Observer<T>[] = [];
 
-  public subscribe(observer: Observer) {
+  public subscribe(observer: Observer<T>) {
     this.observers.push(observer);
   }
 
-  public unsubscribe(observer: Observer) {
+  public unsubscribe(observer: Observer<T>) {
     this.observers = this.observers.filter(obs => obs !== observer);
   }
 
@@ -14,8 +14,12 @@ export class Observable<T> {
   }
 }
 
-class Observer {
-  public update(data: any) {
-    console.log(data);
+class Observer<T> {
+  private callback: (data: T) => void;
+  constructor(callback: (data: T) => void) {
+    this.callback = callback;
+  }
+  public update(data: T) {
+    this.callback(data);
   }
 }
