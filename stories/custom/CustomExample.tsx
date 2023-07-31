@@ -1,21 +1,31 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-import { DottingData, useBrush, useDotting } from "../../src";
+import { useBrush, useDotting } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
-import Layer from "../../src/components/Layer";
+import { DottingDataLayer } from "../../src/helpers/DottingDataLayer";
+import { EmptyFiveByFive } from "../config/data";
 
 const CustomExample = () => {
   const ref = useRef<DottingRef>(null);
   const { undo, redo } = useDotting(ref);
   const { changeBrushColor } = useBrush(ref);
-  const layer1 = useRef<DottingData>(new Map());
+  const [layerIds, setLayerIds] = useState<string[]>([]);
+  const layer1 = useRef<DottingDataLayer>(
+    new DottingDataLayer({
+      data: EmptyFiveByFive,
+      id: "layer1",
+    }),
+  );
+  const layer2 = useRef<DottingDataLayer>(
+    new DottingDataLayer({
+      data: EmptyFiveByFive,
+      id: "layer2",
+    }),
+  );
+  const [isClicked, setIsClicked] = React.useState(false);
   useEffect(() => {
     console.log("layer 1 changed");
   }, [layer1]);
-
-  const onLayerMutation = useCallback(layers => {
-    console.log(layers);
-  }, []);
 
   return (
     <div
@@ -26,9 +36,14 @@ const CustomExample = () => {
         alignItems: "center",
       }}
     >
-      <Dotting ref={ref} width={"100%"} height={300}>
-        <Layer data={layer1.current} order={0} />
-      </Dotting>
+      <Dotting ref={ref} width={"100%"} height={300} />
+      <button
+        onClick={() => {
+          setLayerIds([...layerIds, "layer" + layerIds.length]);
+        }}
+      >
+        hi
+      </button>
       <div>
         {[
           "#FF0000",

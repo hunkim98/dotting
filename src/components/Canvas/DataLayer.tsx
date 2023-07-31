@@ -8,10 +8,12 @@ import {
   ColorChangeItem,
   Coord,
   DottingData,
+  LayerProps,
   PixelData,
   PixelModifyItem,
 } from "./types";
 import { ChangeAmountData } from "../../actions/SizeChangeAction";
+import { DottingDataLayer } from "../../helpers/DottingDataLayer";
 import {
   addColumnToData,
   addRowToData,
@@ -31,18 +33,31 @@ import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 export default class DataLayer extends BaseLayer {
   private swipedPixels: Array<PixelModifyItem> = [];
   private data: DottingData;
+  private layer: DottingDataLayer;
   private gridSquareLength: number = DefaultGridSquareLength;
+  private layers: Array<DottingDataLayer>;
 
   constructor({
     canvas,
     initData,
     layer,
+    layers,
   }: {
     canvas: HTMLCanvasElement;
     initData?: Array<Array<PixelData>>;
     layer?: DottingData;
+    layers?: Array<LayerProps>;
   }) {
     super({ canvas });
+    if (layers) {
+      this.layers = layers.map(
+        layer =>
+          new DottingDataLayer({
+            data: layer.initData,
+            id: layer.id,
+          }),
+      );
+    }
     if (layer) {
       this.data = layer;
     } else {
@@ -111,6 +126,10 @@ export default class DataLayer extends BaseLayer {
 
   setData(data: DottingData) {
     this.data = data;
+  }
+
+  setCurrentLayer(layer: DottingDataLayer) {
+    this.layer = layer;
   }
 
   shortenGridBy(

@@ -117,3 +117,8 @@ export enum BRUSH_PATTERN_ELEMENT {
   FILL = 1,
   EMPTY = 0,
 }
+
+export interface LayerProps {
+  id: string;
+  initData?: Array<Array<PixelModifyItem>>;
+}
