@@ -134,14 +134,14 @@ export default class Editor extends EventDispatcher {
     dataCanvas,
     backgroundCanvas,
     initData,
-    layers,
+    initLayers,
   }: {
     gridCanvas: HTMLCanvasElement;
     interactionCanvas: HTMLCanvasElement;
     dataCanvas: HTMLCanvasElement;
     backgroundCanvas: HTMLCanvasElement;
     initData?: Array<Array<PixelData>>;
-    layers?: Array<LayerProps>;
+    initLayers?: Array<LayerProps>;
   }) {
     super();
     // if (layers) {
@@ -157,7 +157,7 @@ export default class Editor extends EventDispatcher {
     this.dataLayer = new DataLayer({
       canvas: dataCanvas,
       initData: initData,
-      layers: this.layers,
+      layers: initLayers,
     });
     const initRowCount = this.dataLayer.getRowCount();
     const initColumnCount = this.dataLayer.getColumnCount();
@@ -614,7 +614,7 @@ export default class Editor extends EventDispatcher {
     if (!currentLayer) {
       throw new Error("Layer not found");
     }
-    this.dataLayer.setCurrentLayer(currentLayer.data);
+    // this.dataLayer.setCurrentLayer(currentLayer.data);
   }
 
   /**

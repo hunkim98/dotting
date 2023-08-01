@@ -23,7 +23,7 @@ import {
   PixelData,
   PixelModifyItem,
 } from "./Canvas/types";
-import { createPixelDataSquareArray, validateSquareArray } from "../utils/data";
+import { validateSquareArray } from "../utils/data";
 
 export interface DottingProps {
   width: number | string;
@@ -335,24 +335,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       return;
     }
     // this only happens once
-    const layers: Array<LayerProps> = [];
     if (props.initLayers) {
-      const initDataToInspect: Array<LayerProps> = [];
-      const layerIdSet: Set<string> = new Set();
       // validation
-      props.initLayers.forEach(layer => {
-        const { id, initData } = layer;
-        if (layerIdSet.has(id)) {
-          throw new Error(
-            `Duplicate layer id ${id}. Please make sure all layer ids are unique.`,
-          );
-        }
-        layers.push(layer);
-        if (initData) {
-          initDataToInspect.push(layer);
-        }
-      });
-
+      if (props.initLayers.length === 0) {
+        throw new Error(
+          "initLayers should not be empty. Please provide at least one layer.",
+        );
+      }
+      const layerIdSet: Set<string> = new Set();
       let measuredColumnCount = null;
       let measuredRowCount = null;
       let measuredTopRowIndex = null;
@@ -361,17 +351,23 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       // 1) a square array
       // 2) all data should have same row and column count
       // 3) all data should have same topRowIndex and leftColumnIndex
-      for (let i = 0; i < initDataToInspect.length; i++) {
-        const dataToValidate = initDataToInspect[i].initData;
-        const { isDataValid, columnCount, rowCount } =
-          validateSquareArray(dataToValidate);
+      props.initLayers.forEach(layer => {
+        if (layerIdSet.has(layer.id)) {
+          throw new Error(
+            `Duplicate layer id ${layer.id}. Please make sure all layer ids are unique.`,
+          );
+        }
+        layerIdSet.add(layer.id);
+        const { isDataValid, columnCount, rowCount } = validateSquareArray(
+          layer.initData,
+        );
         if (measuredColumnCount !== null && measuredRowCount !== null) {
           if (
             measuredColumnCount !== columnCount ||
             measuredRowCount !== rowCount
           ) {
             throw new Error(
-              `Invalid data for layer ${initDataToInspect[i].id}. Please check the data.`,
+              `Invalid data for layer ${layer.id}. Please check the data.`,
             );
           }
         } else {
@@ -381,34 +377,23 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
         if (!isDataValid) {
           throw new Error(
-            `Invalid data for layer ${initDataToInspect[i].id}. Please check the data.`,
+            `Invalid data for layer ${layer.id}. Please check the data.`,
           );
         }
         if (measuredLeftColumnIndex == null || measuredTopRowIndex == null) {
-          measuredLeftColumnIndex = dataToValidate[0][0].columnIndex;
-          measuredTopRowIndex = dataToValidate[0][0].rowIndex;
+          measuredLeftColumnIndex = layer.initData[0][0].columnIndex;
+          measuredTopRowIndex = layer.initData[0][0].rowIndex;
         }
-        const topRowIndex = dataToValidate[0][0].rowIndex;
-        const leftColumnIndex = dataToValidate[0][0].columnIndex;
+        const topRowIndex = layer.initData[0][0].rowIndex;
+        const leftColumnIndex = layer.initData[0][0].columnIndex;
         if (topRowIndex !== measuredTopRowIndex) {
           throw new Error(
-            `Invalid data for layer ${initDataToInspect[i].id}. Please check the data.`,
+            `Invalid data for layer ${layer.id}. Please check the data.`,
           );
         }
         if (leftColumnIndex !== measuredLeftColumnIndex) {
           throw new Error(
-            `Invalid data for layer ${initDataToInspect[i].id}. Please check the data.`,
-          );
-        }
-      }
-      layers.forEach(layer => {
-        // initialize data for layers that did not have initData passed in
-        if (!layer.initData) {
-          layer.initData = createPixelDataSquareArray(
-            measuredRowCount,
-            measuredColumnCount,
-            measuredTopRowIndex,
-            measuredLeftColumnIndex,
+            `Invalid data for layer ${layer.id}. Please check the data.`,
           );
         }
       });
@@ -420,7 +405,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       dataCanvas,
       backgroundCanvas,
       initData: props.initData,
-      layers: layers.length > 0 ? layers : undefined,
+      initLayers: props.initLayers,
     });
     editor.setIsGridFixed(props.isGridFixed);
     editor.setBackgroundAlpha(props.backgroundAlpha);
