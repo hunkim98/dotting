@@ -120,5 +120,5 @@ export enum BRUSH_PATTERN_ELEMENT {
 
 export interface LayerProps {
   id: string;
-  initData?: Array<Array<PixelModifyItem>>;
+  initData: Array<Array<PixelModifyItem>>;
 }
