@@ -48,12 +48,41 @@ const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
+  const showLayer = useCallback(
+    (layerId: string) => {
+      ref.current?.showLayer(layerId);
+    },
+    [ref],
+  );
+
+  const hideLayer = useCallback(
+    (layerId: string) => {
+      ref.current?.hideLayer(layerId);
+    },
+    [ref],
+  );
+
+  const isolateLayer = useCallback(
+    (layerId: string) => {
+      ref.current?.isolateLayer(layerId);
+    },
+    [ref],
+  );
+
+  const showAllLayers = useCallback(() => {
+    ref.current?.showAllLayers();
+  }, [ref]);
+
   return {
     currentLayer,
     layers,
     addLayer,
     removeLayer,
     changeLayerPosition,
+    showLayer,
+    hideLayer,
+    isolateLayer,
+    showAllLayers,
   };
 };
 

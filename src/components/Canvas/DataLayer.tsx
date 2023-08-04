@@ -184,6 +184,35 @@ export default class DataLayer extends BaseLayer {
     return this.currentLayer;
   }
 
+  hideLayer(layerId: string) {
+    const layer = this.getLayer(layerId);
+    if (!layer) {
+      throw new Error("Layer not found");
+    }
+    layer.setIsVisible(false);
+  }
+
+  showLayer(layerId: string) {
+    const layer = this.getLayer(layerId);
+    if (!layer) {
+      throw new Error("Layer not found");
+    }
+    layer.setIsVisible(true);
+  }
+
+  isolateLayer(layerId: string) {
+    const layer = this.getLayer(layerId);
+    if (!layer) {
+      throw new Error("Layer not found");
+    }
+    this.layers.forEach(layer => layer.setIsVisible(false));
+    layer.setIsVisible(true);
+  }
+
+  showAllLayers() {
+    this.layers.forEach(layer => layer.setIsVisible(true));
+  }
+
   /**
    * @description Sets the current layer to the layer with the given id
    * @param layerId The layer id of the layer

@@ -668,6 +668,29 @@ export default class Editor extends EventDispatcher {
     this.emitCurrentLayerStatus();
   }
 
+  showLayer(layerId: string) {
+    this.dataLayer.showLayer(layerId);
+  }
+
+  hideLayer(layerId: string) {
+    this.dataLayer.hideLayer(layerId);
+  }
+
+  /**
+   * @description Isolates the layer, i.e. hides all other layers
+   * @param layerId Layer Id to be isolated
+   */
+  isolateLayer(layerId: string) {
+    this.dataLayer.isolateLayer(layerId);
+  }
+
+  /**
+   * @description Shows all layers
+   */
+  showAllLayers() {
+    this.dataLayer.showAllLayers();
+  }
+
   changeLayerPosition(layerId: string, toIndex: number) {
     const layer = this.dataLayer.getLayer(layerId);
     if (!layer) {
