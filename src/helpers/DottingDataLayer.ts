@@ -14,6 +14,7 @@ import { Observable } from "../utils/observer";
 export class DottingDataLayer extends Observable<DottingData> {
   private data: DottingData;
   private id: string;
+  private isVisible = true;
   constructor({ data, id }: { data: Array<Array<PixelData>>; id: string }) {
     super();
     const { isDataValid } = validateSquareArray(data);
@@ -99,6 +100,10 @@ export class DottingDataLayer extends Observable<DottingData> {
   setData(data: DottingData) {
     this.data = data;
     this.notify(this.getCopiedData());
+  }
+
+  setIsVisible(isVisible: boolean) {
+    this.isVisible = isVisible;
   }
 
   getData() {
