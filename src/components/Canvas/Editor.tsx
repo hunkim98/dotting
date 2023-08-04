@@ -26,6 +26,7 @@ import {
   Coord,
   GridIndices,
   ImageDownloadOptions,
+  LayerChangeParams,
   LayerProps,
   PanZoom,
   PixelData,
@@ -236,6 +237,16 @@ export default class Editor extends EventDispatcher {
     });
   }
 
+  emitCurrentLayerStatus() {
+    this.emitLayerChangeEvent({
+      layers: this.dataLayer.getLayers().map(layer => ({
+        id: layer.getId(),
+        data: layer.getDataArray(),
+      })),
+      currentLayerId: this.dataLayer.getCurrentLayer().getId(),
+    });
+  }
+
   emitDataChangeEvent(params: CanvasDataChangeParams) {
     this.emit(CanvasEvents.DATA_CHANGE, params);
   }
@@ -254,6 +265,10 @@ export default class Editor extends EventDispatcher {
 
   emitBrushChangeEvent(params: CanvasBrushChangeParams) {
     this.emit(CanvasEvents.BRUSH_CHANGE, params);
+  }
+
+  emitLayerChangeEvent(params: LayerChangeParams) {
+    this.emit(CanvasEvents.LAYER_CHANGE, params);
   }
 
   setBrushPattern(pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) {
@@ -626,6 +641,7 @@ export default class Editor extends EventDispatcher {
       throw new Error("Layer not found");
     }
     this.dataLayer.setCurrentLayer(layerId);
+    this.emitCurrentLayerStatus();
   }
 
   addLayer(
@@ -638,6 +654,7 @@ export default class Editor extends EventDispatcher {
     this.recordAction(
       new LayerCreateAction(layerId, createdLayer, insertPosition),
     );
+    this.emitCurrentLayerStatus();
   }
 
   removeLayer(layerId: string) {
@@ -651,6 +668,7 @@ export default class Editor extends EventDispatcher {
     const removeIndex = this.dataLayer.getLayerIndex(layerId);
     this.dataLayer.getLayers().splice(removeIndex, 1);
     this.recordAction(new LayerDeleteAction(layer.getId(), layer, removeIndex));
+    this.emitCurrentLayerStatus();
   }
 
   changeLayerPosition(layerId, toIndex) {
@@ -1694,6 +1712,11 @@ export default class Editor extends EventDispatcher {
       case ActionType.LayerCreate:
         const layerCreateAction = action as LayerCreateAction;
         this.removeLayer(layerCreateAction.layerId);
+        if (
+          this.dataLayer.getCurrentLayer().getId() === layerCreateAction.layerId
+        ) {
+          this.dataLayer.setCurrentLayer(this.dataLayer.getLayers()[0].getId());
+        }
         break;
       case ActionType.LayerDelete:
         const layerDeleteAction = action as LayerDeleteAction;
@@ -1723,6 +1746,7 @@ export default class Editor extends EventDispatcher {
       data: updatedData,
       layerId: layerId,
     });
+    this.emitCurrentLayerStatus();
   }
 
   recordAction(action: Action) {

@@ -6,6 +6,7 @@ import {
   CanvasGridChangeHandler,
   CanvasHoverPixelChangeHandler,
   CanvasStrokeEndHandler,
+  LayerChangeHandler,
 } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
 
@@ -76,6 +77,20 @@ const useHandlers = (ref: MutableRefObject<DottingRef | null>) => {
   const removeHoverPixelChangeListener = useCallback(
     (listener: CanvasHoverPixelChangeHandler) => {
       ref.current?.removeHoverPixelChangeListener(listener);
+    },
+    [ref],
+  );
+
+  const addLayerChangeEventListener = useCallback(
+    (listener: LayerChangeHandler) => {
+      return;
+    },
+    [ref],
+  );
+
+  const removeLayerChangeEventListener = useCallback(
+    (listener: LayerChangeHandler) => {
+      return;
     },
     [ref],
   );

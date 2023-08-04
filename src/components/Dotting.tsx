@@ -19,6 +19,7 @@ import {
   CanvasHoverPixelChangeHandler,
   CanvasStrokeEndHandler,
   ImageDownloadOptions,
+  LayerChangeHandler,
   LayerProps,
   PixelData,
   PixelModifyItem,
@@ -78,6 +79,8 @@ export interface DottingRef {
   removeHoverPixelChangeListener: (
     listener: CanvasHoverPixelChangeHandler,
   ) => void;
+  addLayerChangeEventListener: (listener: LayerChangeHandler) => void;
+  removeLayerChangeEventListener: (listener: LayerChangeHandler) => void;
   // for canvas element event listeners
   addCanvasElementEventListener: (
     type: string,
@@ -116,6 +119,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   >([]);
   const [hoverPixelChangeListeners, setHoverPixelChangeListeners] = useState<
     CanvasHoverPixelChangeHandler[]
+  >([]);
+  const [layerChangeListeners, setLayerChangeListeners] = useState<
+    LayerChangeHandler[]
   >([]);
 
   const [canvasElementEventListeners, setCanvasElementEventListeners] =
@@ -262,6 +268,21 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     };
   }, [editor, hoverPixelChangeListeners]);
 
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    layerChangeListeners.forEach(listener => {
+      editor.addEventListener(CanvasEvents.LAYER_CHANGE, listener);
+    });
+    editor.emitCurrentLayerStatus();
+    return () => {
+      layerChangeListeners.forEach(listener => {
+        editor?.removeEventListener(CanvasEvents.LAYER_CHANGE, listener);
+      });
+    };
+  }, [editor, layerChangeListeners]);
+
   // The below is to add event listeners directly to the canvas element
   // E.g. for mousemove, mousedown, mouseup, etc.
   useEffect(() => {
@@ -368,7 +389,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         }
         layerIdSet.add(layer.id);
         const { isDataValid, columnCount, rowCount } = validateSquareArray(
-          layer.initData,
+          layer.data,
         );
         if (measuredColumnCount !== null && measuredRowCount !== null) {
           if (
@@ -390,11 +411,11 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
           );
         }
         if (measuredLeftColumnIndex == null || measuredTopRowIndex == null) {
-          measuredLeftColumnIndex = layer.initData[0][0].columnIndex;
-          measuredTopRowIndex = layer.initData[0][0].rowIndex;
+          measuredLeftColumnIndex = layer.data[0][0].columnIndex;
+          measuredTopRowIndex = layer.data[0][0].rowIndex;
         }
-        const topRowIndex = layer.initData[0][0].rowIndex;
-        const leftColumnIndex = layer.initData[0][0].columnIndex;
+        const topRowIndex = layer.data[0][0].rowIndex;
+        const leftColumnIndex = layer.data[0][0].columnIndex;
         if (topRowIndex !== measuredTopRowIndex) {
           throw new Error(
             `Invalid data for layer ${layer.id}. Please check the data.`,
@@ -576,6 +597,24 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
+  const addLayerChangeEventListener = useCallback(
+    (listener: LayerChangeHandler) => {
+      if (!editor) {
+        return;
+      }
+    },
+    [editor],
+  );
+
+  const removeLayerChangeEventListener = useCallback(
+    (listener: LayerChangeHandler) => {
+      if (!editor) {
+        return;
+      }
+    },
+    [editor],
+  );
+
   const clear = useCallback(() => editor?.clear(), [editor]);
 
   const colorPixels = useCallback(
@@ -677,6 +716,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       removeStrokeEndListener,
       addHoverPixelChangeListener,
       removeHoverPixelChangeListener,
+      addLayerChangeEventListener,
+      removeLayerChangeEventListener,
       // for canvas element listener
       addCanvasElementEventListener,
       removeCanvasElementEventListener,

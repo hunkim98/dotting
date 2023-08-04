@@ -41,6 +41,7 @@ export enum CanvasEvents {
   STROKE_END = "strokeEnd",
   BRUSH_CHANGE = "brushChange",
   HOVER_PIXEL_CHANGE = "hoverPixelChange",
+  LAYER_CHANGE = "layerChange",
 }
 
 export enum BrushTool {
@@ -99,6 +100,16 @@ export type CanvasHoverPixelChangeHandler = (
   params: CanvasHoverPixelChangeParams,
 ) => void;
 
+export type LayerChangeParams = {
+  layers: Array<{
+    id: string;
+    data: Array<Array<PixelModifyItem>>;
+  }>;
+  currentLayerId: string;
+};
+
+export type LayerChangeHandler = (params: LayerChangeParams) => void;
+
 export type GridIndices = {
   topRowIndex: number;
   bottomRowIndex: number;
@@ -120,5 +131,5 @@ export enum BRUSH_PATTERN_ELEMENT {
 
 export interface LayerProps {
   id: string;
-  initData: Array<Array<PixelModifyItem>>;
+  data: Array<Array<PixelModifyItem>>;
 }
