@@ -64,6 +64,14 @@ export interface DottingRef {
   changeBrushColor: (color: string) => void;
   changeBrushTool: (tool: BrushTool) => void;
   changeBrushPattern: (pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) => void;
+  // for useLayers
+  addLayer: (
+    layerId: string,
+    insertPosition: number,
+    data?: Array<Array<PixelModifyItem>>,
+  ) => void;
+  removeLayer: (layerId: string) => void;
+  changeLayerPosition: (layerId: string, insertPosition: number) => void;
   // for useHandler
   addDataChangeListener: (listener: CanvasDataChangeHandler) => void;
   removeDataChangeListener: (listener: CanvasDataChangeHandler) => void;
@@ -687,6 +695,31 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
+  const addLayer = useCallback(
+    (
+      layerId: string,
+      insertPosition: number,
+      data?: Array<Array<PixelModifyItem>>,
+    ) => {
+      editor?.addLayer(layerId, insertPosition, data);
+    },
+    [editor],
+  );
+
+  const removeLayer = useCallback(
+    (layerId: string) => {
+      editor?.removeLayer(layerId);
+    },
+    [editor],
+  );
+
+  const changeLayerPosition = useCallback(
+    (layerId: string, insertPosition: number) => {
+      editor?.changeLayerPosition(layerId, insertPosition);
+    },
+    [editor],
+  );
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -705,6 +738,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       changeBrushColor,
       changeBrushTool,
       changeBrushPattern,
+      // for useLayer,
+      addLayer,
+      removeLayer,
+      changeLayerPosition,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,
@@ -736,6 +773,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       changeBrushColor,
       changeBrushTool,
       changeBrushPattern,
+      // for useLayer,
+      addLayer,
+      removeLayer,
+      changeLayerPosition,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,

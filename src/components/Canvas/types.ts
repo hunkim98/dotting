@@ -1,3 +1,5 @@
+import { DottingDataLayer } from "../../helpers/DottingDataLayer";
+
 export interface Coord {
   x: number;
   y: number;
@@ -101,11 +103,8 @@ export type CanvasHoverPixelChangeHandler = (
 ) => void;
 
 export type LayerChangeParams = {
-  layers: Array<{
-    id: string;
-    data: Array<Array<PixelModifyItem>>;
-  }>;
-  currentLayerId: string;
+  layers: Array<DottingDataLayer>;
+  currentLayer: DottingDataLayer;
 };
 
 export type LayerChangeHandler = (params: LayerChangeParams) => void;
