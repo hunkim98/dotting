@@ -3,6 +3,9 @@ export enum ActionType {
   SizeChange = "SizeChange",
   ColorSizeChange = "ColorSizeChange",
   SelectAreaMove = "SelectAreaMove",
+  LayerCreate = "LayerCreate",
+  LayerDelete = "LayerDelete",
+  LayerOrderChange = "LayerOrderChange",
 }
 
 export abstract class Action {
