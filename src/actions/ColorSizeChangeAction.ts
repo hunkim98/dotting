@@ -11,10 +11,12 @@ export class ColorSizeChangeAction extends Action {
   constructor(
     data: Array<ColorChangeItem>,
     changeAmounts: Array<ChangeAmountData>,
+    layerId: string,
   ) {
     super();
     this.data = data;
     this.changeAmounts = changeAmounts;
+    this.layerId = layerId;
   }
 
   createInverseAction(): Action {
@@ -50,10 +52,7 @@ export class ColorSizeChangeAction extends Action {
           startIndex: newStartIndex,
         };
       }),
+      this.layerId,
     );
-  }
-
-  getType(): string {
-    return this.type;
   }
 }

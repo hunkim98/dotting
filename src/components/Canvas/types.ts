@@ -51,7 +51,7 @@ export enum BrushTool {
   NONE = "NONE",
 }
 
-export type CanvasDataChangeParams = { data: DottingData };
+export type CanvasDataChangeParams = { data: DottingData; layerId: string };
 
 export type CanvasDataChangeHandler = (params: CanvasDataChangeParams) => void;
 

@@ -63,6 +63,10 @@ const DottingComponentArgTypes: KeysEnum<
     description: "The initial data that you want to draw on the canvas",
     disable: true,
   }),
+  initLayers: generateComponentControl<DottingProps["initLayers"]>({
+    description: "The initial layers that you want to draw on the canvas",
+    disable: true,
+  }),
   isPanZoomable: generateComponentControl<DottingProps["isPanZoomable"]>({
     description: "If set to `true` the canvas will be pan and zoomable",
     defaultValue: true,
@@ -73,12 +77,28 @@ const DottingComponentArgTypes: KeysEnum<
     description: "If set to `true` the grid will not be extendable",
     disable: false,
   }),
-  ref: generateComponentControl<DottingProps["ref"]>({
+  isInteractionApplicable: generateComponentControl<
+    DottingProps["isInteractionApplicable"]
+  >({
+    defaultValue: true,
     description:
-      "The ref object that you would like to connect to the Dotting Canvas.\
-      You must pass the `DottingRef` object as props if you would like to use hooks",
-    disable: true,
+      "If set to `true` the interaction will be applicable.\
+      If set to `false` the interaction will be disabled",
+    disable: false,
   }),
+  isDrawingEnabled: generateComponentControl<DottingProps["isDrawingEnabled"]>({
+    defaultValue: true,
+    description:
+      "If set to `true` the drawing will be enabled.\
+      If set to `false` the drawing will be disabled",
+    disable: false,
+  }),
+  // ref: generateComponentControl<DottingProps["ref"]>({
+  //   description:
+  //     "The ref object that you would like to connect to the Dotting Canvas.\
+  //     You must pass the `DottingRef` object as props if you would like to use hooks",
+  //   disable: true,
+  // }),
   brushTool: generateComponentControlForEnum<DottingProps["brushTool"]>({
     defaultValue: BrushTool.DOT,
     description: "The brush tool is for changing the brush tool",
@@ -133,6 +153,8 @@ export const Dotting = (args: DottingProps) => {
       initData={undefined}
       isPanZoomable={args.isPanZoomable}
       isGridFixed={args.isGridFixed}
+      isInteractionApplicable={args.isInteractionApplicable}
+      isDrawingEnabled={args.isDrawingEnabled}
       brushColor={args.brushColor}
       brushTool={args.brushTool}
       indicatorData={[]}

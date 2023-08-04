@@ -5,9 +5,10 @@ export class ColorChangeAction extends Action {
   type = ActionType.ColorChange;
   data: Array<ColorChangeItem>;
 
-  constructor(data: Array<ColorChangeItem>) {
+  constructor(data: Array<ColorChangeItem>, layerId: string) {
     super();
     this.data = data;
+    this.layerId = layerId;
     // below are functions to manipulate the canvas
   }
 
@@ -18,10 +19,7 @@ export class ColorChangeAction extends Action {
         previousColor: item.color,
         color: item.previousColor,
       })),
+      this.layerId,
     );
-  }
-
-  getType(): string {
-    return this.type;
   }
 }

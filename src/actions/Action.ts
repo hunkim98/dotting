@@ -8,7 +8,15 @@ export enum ActionType {
 export abstract class Action {
   abstract type: ActionType;
 
+  layerId: string;
+
   abstract createInverseAction(): Action;
 
-  abstract getType(): string;
+  getType(): string {
+    return this.type;
+  }
+
+  getLayerId(): string {
+    return this.layerId;
+  }
 }

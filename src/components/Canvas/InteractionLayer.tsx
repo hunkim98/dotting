@@ -6,8 +6,8 @@ import {
   DefaultMinScale,
   InteractionExtensionAllowanceRatio,
   InteractionEdgeTouchingRange,
-  TemporaryUserId,
   UserId,
+  CurrentDeviceUserId,
 } from "./config";
 import {
   BRUSH_PATTERN_ELEMENT,
@@ -203,7 +203,7 @@ export default class InteractionLayer extends BaseLayer {
   resetCapturedData() {
     this.capturedData = null;
     this.capturedDataOriginalIndices = null;
-    this.deleteStrokePixelRecord(TemporaryUserId);
+    this.deleteStrokePixelRecord(CurrentDeviceUserId);
   }
 
   getHoveredPixel() {

@@ -16,11 +16,13 @@ export class SelectAreaMoveAction extends Action {
     data: Array<ColorChangeItem>,
     previousSelectedArea: SelectAreaRange | null,
     newSelectedArea: SelectAreaRange | null,
+    layerId: string,
   ) {
     super();
     this.data = data;
     this.previousSelectedArea = previousSelectedArea;
     this.newSelectedArea = newSelectedArea;
+    this.layerId = layerId;
     // below are functions to manipulate the canvas
   }
 
@@ -33,10 +35,7 @@ export class SelectAreaMoveAction extends Action {
       })),
       this.newSelectedArea,
       this.previousSelectedArea,
+      this.layerId,
     );
-  }
-
-  getType(): string {
-    return this.type;
   }
 }

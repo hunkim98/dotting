@@ -42,7 +42,9 @@ export interface DottingProps {
   brushTool?: BrushTool;
   brushColor?: string;
   indicatorData?: Array<PixelModifyItem>;
-  children?: React.ReactNode;
+  isInteractionApplicable?: boolean;
+  isDrawingEnabled?: boolean;
+  // children?: React.ReactNode;
   // initIndicatorData?: Array<PixelModifyItem>;
   // initBrushColor?: string;
 }
@@ -126,21 +128,21 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   // this is called when children are added to the canvas
   // this will be used when layers are reorderd or added/removed
-  useEffect(() => {
-    if (!editor) {
-      return;
-    }
-    const layerIds = new Set<string>();
-    React.Children.map(props.children, (child: any) => {
-      const { id } = child.props;
-      if (layerIds.has(id)) {
-        throw new Error(`Duplicate layer id: ${id}`);
-      }
-      layerIds.add(id);
+  // useEffect(() => {
+  //   if (!editor) {
+  //     return;
+  //   }
+  //   const layerIds = new Set<string>();
+  //   React.Children.map(props.children, (child: any) => {
+  //     const { id } = child.props;
+  //     if (layerIds.has(id)) {
+  //       throw new Error(`Duplicate layer id: ${id}`);
+  //     }
+  //     layerIds.add(id);
 
-      // editor.addCanvasElement(child);
-    });
-  }, [editor, props.children]);
+  //     // editor.addCanvasElement(child);
+  //   });
+  // }, [editor, props.children]);
 
   useEffect(() => {
     if (!editor) {
@@ -176,6 +178,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     }
     editor.setIsPanZoomable(props.isPanZoomable);
   }, [editor, props.isPanZoomable]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    editor.setIsInteractionApplicable(props.isInteractionApplicable);
+  }, [editor, props.isInteractionApplicable]);
 
   useEffect(() => {
     if (!editor) {
@@ -408,6 +417,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       initLayers: props.initLayers,
     });
     editor.setIsGridFixed(props.isGridFixed);
+    editor.setIsInteractionApplicable(props.isInteractionApplicable);
+    editor.setIsDrawingEnabled(props.isDrawingEnabled);
     editor.setBackgroundAlpha(props.backgroundAlpha);
     editor.setBackgroundMode(props.backgroundMode);
     editor.setIsPanZoomable(props.isPanZoomable);

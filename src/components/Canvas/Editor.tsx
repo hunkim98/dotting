@@ -116,7 +116,7 @@ export default class Editor extends EventDispatcher {
   private mouseMoveWorldPos: Coord = { x: 0, y: 0 };
   private previousMouseMoveWorldPos: Coord | null = null;
   // TODO: why do we need this? For games?
-  private isInteractionEnabled = true;
+  private isDrawingEnabled = true;
   // We need isInteractionApplicable to allow multiplayer
   // We must let yorkie-js-sdk to apply change to data layer not the client
   private isInteractionApplicable = true;
@@ -217,7 +217,10 @@ export default class Editor extends EventDispatcher {
   }
 
   emitCurrentData() {
-    this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
+    this.emitDataChangeEvent({
+      data: this.dataLayer.getCopiedData(),
+      layerId: this.dataLayer.getCurrentLayer().getId(),
+    });
   }
 
   emitCurrentBrushTool() {
@@ -309,9 +312,9 @@ export default class Editor extends EventDispatcher {
     }
   }
 
-  setIsInteractionEnabled(isInteractionEnabled: boolean) {
-    if (isInteractionEnabled !== undefined) {
-      this.isInteractionEnabled = isInteractionEnabled;
+  setIsDrawingEnabled(isDrawingEnabled: boolean) {
+    if (isDrawingEnabled !== undefined) {
+      this.isDrawingEnabled = isDrawingEnabled;
     }
   }
 
@@ -590,6 +593,15 @@ export default class Editor extends EventDispatcher {
     return this.element;
   }
 
+  getLayers() {
+    return this.dataLayer.getLayers().map(layer => {
+      return {
+        id: layer.getId(),
+        name: layer.getCopiedData(),
+      };
+    });
+  }
+
   setSize(width: number, height: number, devicePixelRatio?: number) {
     this.setWidth(width, devicePixelRatio);
     this.setHeight(height, devicePixelRatio);
@@ -618,6 +630,10 @@ export default class Editor extends EventDispatcher {
   ) {
     const createdLayer = this.dataLayer.createLayer(layerId, data);
     this.dataLayer.getLayers().splice(insertPosition, 0, createdLayer);
+  }
+
+  removeLayer(layerId: string) {
+    this.dataLayer.getLayers().splice(this.dataLayer.getLayerIndex(layerId), 1);
   }
 
   /**
@@ -675,7 +691,10 @@ export default class Editor extends EventDispatcher {
 
     this.interactionLayer.setDataLayerRowCount(rowCount);
     this.interactionLayer.setDataLayerColumnCount(columnCount);
-    this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
+    this.emitDataChangeEvent({
+      data: this.dataLayer.getCopiedData(),
+      layerId: this.dataLayer.getCurrentLayer().getId(),
+    });
     this.emitGridChangeEvent({
       dimensions: this.dataLayer.getDimensions(),
       indices: this.dataLayer.getGridIndices(),
@@ -1371,7 +1390,10 @@ export default class Editor extends EventDispatcher {
         ...erasedPixelModifyItems,
       ];
       if (pixelModifyItems.length !== 0) {
-        this.dataLayer.colorPixels(pixelModifyItems);
+        this.dataLayer.colorPixels(
+          pixelModifyItems,
+          this.dataLayer.getCurrentLayer().getId(),
+        );
         // record single player mode color change action
         this.recordInteractionColorChangeAction(pixelModifyItems);
       }
@@ -1504,7 +1526,10 @@ export default class Editor extends EventDispatcher {
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places
       const updatedData = this.dataLayer.getCopiedData();
-      this.emitDataChangeEvent({ data: updatedData });
+      this.emitDataChangeEvent({
+        data: updatedData,
+        layerId: this.dataLayer.getCurrentLayer().getId(),
+      });
       const updatedColumnCount = getColumnCountFromData(updatedData);
       const updatedRowCount = getRowCountFromData(updatedData);
       const updatedDimensions = {
@@ -1517,20 +1542,26 @@ export default class Editor extends EventDispatcher {
         indices: updatedGridIndices,
       });
 
-      this.relayDataDimensionsToLayers();
       // deletes the records of the current user
       interactionLayer.deleteErasedPixelRecord(CurrentDeviceUserId);
       interactionLayer.deleteStrokePixelRecord(CurrentDeviceUserId);
       this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
-      this.interactionLayer.setCriterionDataForRendering(
-        this.dataLayer.getData(),
-      );
     }
+    this.relayDataDimensionsToLayers();
+    this.interactionLayer.setCriterionDataForRendering(
+      this.dataLayer.getData(),
+    );
     interactionLayer.resetCapturedData();
     this.renderAll();
   }
 
-  // this will only record one action
+  /**
+   * @description records the action of the user interaction
+   * @param direction direction of the size change
+   * @param deletedPixels deleted pixels
+   * @param amount amount of the size change
+   * @param startIndex start index of the size change
+   */
   recordInteractionSizeChangeAction(
     direction: ButtonDirection,
     deletedPixels: Array<PixelModifyItem>,
@@ -1538,22 +1569,32 @@ export default class Editor extends EventDispatcher {
     startIndex: number,
   ) {
     this.recordAction(
-      new SizeChangeAction(deletedPixels, [
-        {
-          direction,
-          amount,
-          startIndex,
-        },
-      ]),
+      new SizeChangeAction(
+        deletedPixels,
+        [
+          {
+            direction,
+            amount,
+            startIndex,
+          },
+        ],
+        this.dataLayer.getCurrentLayer().getId(),
+      ),
     );
   }
 
   recordInteractionColorChangeAction(pixelModifyItems: Array<ColorChangeItem>) {
-    this.recordAction(new ColorChangeAction(pixelModifyItems));
+    this.recordAction(
+      new ColorChangeAction(
+        pixelModifyItems,
+        this.dataLayer.getCurrentLayer().getId(),
+      ),
+    );
   }
 
   commitAction(action: Action) {
     const type = action.getType();
+    const layerId = action.getLayerId();
     if (type !== ActionType.SelectAreaMove) {
       // we will disable the select area move tool after the action is committed
       this.interactionLayer.setSelectedArea(null);
@@ -1562,7 +1603,7 @@ export default class Editor extends EventDispatcher {
     switch (type) {
       case ActionType.ColorChange:
         const colorChangeAction = action as ColorChangeAction;
-        this.dataLayer.updatePixelColors(colorChangeAction.data);
+        this.dataLayer.updatePixelColors(colorChangeAction.data, layerId);
         break;
 
       case ActionType.SizeChange:
@@ -1584,7 +1625,7 @@ export default class Editor extends EventDispatcher {
             );
           }
           const sizeChangePixels = sizeChangeAction.data;
-          this.dataLayer.updatePixelColors(sizeChangePixels);
+          this.dataLayer.updatePixelColors(sizeChangePixels, layerId);
         }
         break;
 
@@ -1609,19 +1650,19 @@ export default class Editor extends EventDispatcher {
         }
         // we do not need to care for colorchangemode.Erase since the grids are already deleted
         const colorSizeChangePixels = colorSizeChangeAction.data;
-        this.dataLayer.updatePixelColors(colorSizeChangePixels);
+        this.dataLayer.updatePixelColors(colorSizeChangePixels, layerId);
         break;
 
       case ActionType.SelectAreaMove:
         const selectAreamoveAction = action as SelectAreaMoveAction;
-        this.dataLayer.updatePixelColors(selectAreamoveAction.data);
+        this.dataLayer.updatePixelColors(selectAreamoveAction.data, layerId);
         this.brushTool = BrushTool.SELECT;
         this.interactionLayer.setSelectedArea(
           selectAreamoveAction.newSelectedArea,
         );
         break;
     }
-    const updatedData = this.dataLayer.getCopiedData();
+    const updatedData = this.dataLayer.getLayer(layerId).getCopiedData();
     this.emitGridChangeEvent({
       dimensions: {
         rowCount: getRowCountFromData(updatedData),
@@ -1629,7 +1670,10 @@ export default class Editor extends EventDispatcher {
       },
       indices: getGridIndicesFromData(updatedData),
     });
-    this.emitDataChangeEvent({ data: updatedData });
+    this.emitDataChangeEvent({
+      data: updatedData,
+      layerId: layerId,
+    });
   }
 
   recordAction(action: Action) {
@@ -1682,21 +1726,36 @@ export default class Editor extends EventDispatcher {
     this.renderAll();
   }
 
-  erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
-    const { dataForAction } = this.dataLayer.erasePixels(data);
+  erasePixels(
+    data: Array<{ rowIndex: number; columnIndex: number }>,
+    layerId?: string,
+  ) {
+    const { dataForAction } = this.dataLayer.erasePixels(data, layerId);
+    const modifiedLayerId = layerId
+      ? layerId
+      : this.dataLayer.getCurrentLayer().getId();
     if (this.interactionLayer.getCapturedData() !== null) {
       this.interactionLayer.erasePixels(data);
     }
     // we don't need to relay data dimensions to layers because there will be no
     // row column change in erasePixels
-    this.recordAction(new ColorChangeAction(dataForAction));
-    this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
+    this.recordAction(new ColorChangeAction(dataForAction, modifiedLayerId));
+    this.emitDataChangeEvent({
+      data: this.dataLayer.getLayer(modifiedLayerId).getCopiedData(),
+      layerId: modifiedLayerId,
+    });
     this.renderAll();
   }
 
   // this only applies for multiplayer mode or user direct function call
-  colorPixels(data: Array<PixelModifyItem>) {
-    const { changeAmounts, dataForAction } = this.dataLayer.colorPixels(data);
+  colorPixels(data: Array<PixelModifyItem>, layerId?: string) {
+    const { changeAmounts, dataForAction } = this.dataLayer.colorPixels(
+      data,
+      layerId,
+    );
+    const modifiedLayerId = layerId
+      ? layerId
+      : this.dataLayer.getCurrentLayer().getId();
     if (this.interactionLayer.getCapturedData() !== null) {
       //only color pixels in interaction layer if there is a captured data
       this.interactionLayer.colorPixels(data);
@@ -1705,13 +1764,20 @@ export default class Editor extends EventDispatcher {
       );
     } else {
       this.interactionLayer.setCriterionDataForRendering(
-        this.dataLayer.getData(),
+        this.dataLayer.getLayer(modifiedLayerId).getData(),
       );
     }
     this.relayDataDimensionsToLayers();
-    this.recordAction(new ColorSizeChangeAction(dataForAction, changeAmounts));
-    this.emitDataChangeEvent({ data: this.dataLayer.getCopiedData() });
-    this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    this.recordAction(
+      new ColorSizeChangeAction(dataForAction, changeAmounts, modifiedLayerId),
+    );
+    this.emitDataChangeEvent({
+      data: this.dataLayer.getLayer(modifiedLayerId).getCopiedData(),
+      layerId: modifiedLayerId,
+    });
+    this.dataLayer.setCriterionDataForRendering(
+      this.dataLayer.getLayer(modifiedLayerId).getData(),
+    );
     this.renderAll();
   }
 
@@ -2162,6 +2228,7 @@ export default class Editor extends EventDispatcher {
             ],
             this.interactionLayer.getSelectedArea(),
             this.interactionLayer.getSelectedArea(),
+            this.dataLayer.getCurrentLayer().getId(),
           ),
         );
         this.dataLayer.render();
@@ -2304,6 +2371,7 @@ export default class Editor extends EventDispatcher {
       });
     const { dataForAction } = this.dataLayer.colorPixels(
       filteredFinalSelectedAreaPixels,
+      this.dataLayer.getCurrentLayer().getId(),
     );
     const newSelectedAreaColorChangeItems = dataForAction;
     const previousSelectedAreaColorChangeItems = previousSelectedAreaPixels;
@@ -2315,6 +2383,7 @@ export default class Editor extends EventDispatcher {
         ],
         previousSelectedArea,
         finalSelectedArea,
+        this.dataLayer.getCurrentLayer().getId(),
       ),
     );
     // we will use a map to remove the duplicated items
@@ -2346,7 +2415,10 @@ export default class Editor extends EventDispatcher {
         strokeTool: BrushTool.SELECT,
       });
       // only emit data change event when there is a change
-      this.emitDataChangeEvent({ data: newData });
+      this.emitDataChangeEvent({
+        data: newData,
+        layerId: this.dataLayer.getCurrentLayer().getId(),
+      });
     }
     this.interactionLayer.setSelectedArea(finalSelectedArea);
     this.interactionLayer.setSelectedAreaPixels(
@@ -2401,6 +2473,7 @@ export default class Editor extends EventDispatcher {
     // ⬇️ this part is for recording the action
     const { dataForAction } = this.dataLayer.colorPixels(
       filteredFinalSelectedAreaPixels,
+      this.dataLayer.getCurrentLayer().getId(),
     );
     const newSelectedAreaColorChangeItems = dataForAction;
     const previousSelectedAreaColorChangeItems: Array<ColorChangeItem> =
@@ -2413,6 +2486,7 @@ export default class Editor extends EventDispatcher {
         ],
         previousSelectedArea,
         finalSelectedArea,
+        this.dataLayer.getCurrentLayer().getId(),
       ),
     );
     // we will use a map to remove the duplicated items
@@ -2444,7 +2518,10 @@ export default class Editor extends EventDispatcher {
         strokeTool: BrushTool.SELECT,
       });
       // only emit data change event when there is a change
-      this.emitDataChangeEvent({ data: newData });
+      this.emitDataChangeEvent({
+        data: newData,
+        layerId: this.dataLayer.getCurrentLayer().getId(),
+      });
     }
 
     // ⬆️ this part is for recording the action

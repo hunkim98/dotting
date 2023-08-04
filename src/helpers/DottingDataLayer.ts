@@ -55,7 +55,7 @@ export class DottingDataLayer extends Observable<DottingData> {
     for (const i of columnKeys) {
       this.data.get(rowIndex)!.set(i, { color: "" });
     }
-    this.notify(this.copyData());
+    this.notify(this.getCopiedData());
   };
 
   addColumnToData = (columnIndex: number) => {
@@ -64,13 +64,13 @@ export class DottingDataLayer extends Observable<DottingData> {
         row.set(columnIndex, { color: "" });
       }
     });
-    this.notify(this.copyData());
+    this.notify(this.getCopiedData());
   };
 
   deleteRowOfData(rowIndex: number) {
     if (!this.data.has(rowIndex)) return;
     this.data.delete(rowIndex);
-    this.notify(this.copyData());
+    this.notify(this.getCopiedData());
   }
 
   deleteColumnOfData(columnIndex: number) {
@@ -78,10 +78,10 @@ export class DottingDataLayer extends Observable<DottingData> {
       if (!row.has(columnIndex)) return;
       row.delete(columnIndex);
     });
-    this.notify(this.copyData());
+    this.notify(this.getCopiedData());
   }
 
-  copyData = (): DottingData => {
+  getCopiedData = (): DottingData => {
     const copiedData = new Map();
     this.data.forEach((row, rowIndex) => {
       copiedData.set(rowIndex, new Map());
@@ -94,7 +94,7 @@ export class DottingDataLayer extends Observable<DottingData> {
 
   setData(data: DottingData) {
     this.data = data;
-    this.notify(this.copyData());
+    this.notify(this.getCopiedData());
   }
 
   getData() {
