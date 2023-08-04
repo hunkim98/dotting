@@ -99,6 +99,10 @@ export default class DataLayer extends BaseLayer {
     }
   }
 
+  getLayerIndex(layerId: string) {
+    return this.layers.findIndex(layer => layer.getId() === layerId);
+  }
+
   getLayers() {
     return this.layers;
   }
@@ -273,19 +277,37 @@ export default class DataLayer extends BaseLayer {
     }
   }
 
-  updatePixelColors(data: Array<PixelModifyItem>) {
+  updatePixelColors(data: Array<PixelModifyItem>, layerId?: string) {
+    if (!layerId) {
+      if (this.layers.length > 1) {
+        throw new Error("Must specify layerId when there are multiple layers");
+      }
+    }
+    const layer = layerId ? this.getLayer(layerId) : this.currentLayer;
+    if (!layer) {
+      throw new Error("Layer not found");
+    }
     for (const item of data) {
       const { rowIndex, columnIndex, color } = item;
       if (
-        this.getData().get(rowIndex) &&
-        this.getData().get(rowIndex)!.get(columnIndex)
+        layer.getData().get(rowIndex) &&
+        layer.getData().get(rowIndex)!.get(columnIndex)
       ) {
-        this.getData().get(rowIndex)!.set(columnIndex, { color });
+        layer.getData().get(rowIndex)!.set(columnIndex, { color });
       }
     }
   }
 
-  colorPixels(data: Array<PixelModifyItem>) {
+  colorPixels(data: Array<PixelModifyItem>, layerId?: string) {
+    if (!layerId) {
+      if (this.layers.length > 1) {
+        throw new Error("Must specify layerId when there are multiple layers");
+      }
+    }
+    const layer = layerId ? this.getLayer(layerId) : this.currentLayer;
+    if (!layer) {
+      throw new Error("Layer not found");
+    }
     const rowIndices = data.map(change => change.rowIndex);
     const columnIndices = data.map(change => change.columnIndex);
     const minRowIndex = Math.min(...rowIndices);
@@ -349,11 +371,13 @@ export default class DataLayer extends BaseLayer {
     }
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
-      const previousColor = this.getData()
+      const previousColor = layer
+        .getData()
         .get(change.rowIndex)!
         .get(change.columnIndex)!.color;
       const color = change.color;
-      this.getData()
+      layer
+        .getData()
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
       dataForAction.push({ ...change, color, previousColor });
@@ -364,14 +388,28 @@ export default class DataLayer extends BaseLayer {
     };
   }
 
-  erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
+  erasePixels(
+    data: Array<{ rowIndex: number; columnIndex: number }>,
+    layerId?: string,
+  ) {
+    if (!layerId) {
+      if (this.layers.length > 1) {
+        throw new Error("Must specify layerId when there are multiple layers");
+      }
+    }
+    const layer = layerId ? this.getLayer(layerId) : this.getCurrentLayer();
+    if (!layer) {
+      throw new Error("Cannot find layer");
+    }
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
-      const previousColor = this.getData()
+      const previousColor = layer
+        .getData()
         .get(change.rowIndex)!
         .get(change.columnIndex)!.color;
       const color = "";
-      this.getData()
+      layer
+        .getData()
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: "" });
       dataForAction.push({ ...change, color, previousColor });
