@@ -2,30 +2,26 @@ import { Action, ActionType } from "./Action";
 
 export class LayerOrderChangeAction extends Action {
   type = ActionType.LayerOrderChange;
-  fromLayerId: string;
-  toLayerId: string;
-  fromIndex: number;
-  toIndex: number;
+  layerId: string;
+  originalPositionIndex: number;
+  newPositionIndex: number;
 
   constructor(
-    fromLayerId: string,
-    toLayerId: string,
-    fromIndex: number,
-    toIndex: number,
+    layerId: string,
+    originalPositionIndex: number,
+    newPositionIndex: number,
   ) {
     super();
-    this.fromLayerId = fromLayerId;
-    this.toLayerId = toLayerId;
-    this.fromIndex = fromIndex;
-    this.toIndex = toIndex;
+    this.layerId = layerId;
+    this.originalPositionIndex = originalPositionIndex;
+    this.newPositionIndex = newPositionIndex;
   }
 
   createInverseAction(): Action {
     return new LayerOrderChangeAction(
-      this.toLayerId,
-      this.fromLayerId,
-      this.toIndex,
-      this.fromIndex,
+      this.layerId,
+      this.newPositionIndex,
+      this.originalPositionIndex,
     );
   }
 }
