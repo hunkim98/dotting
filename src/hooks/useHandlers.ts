@@ -83,6 +83,7 @@ const useHandlers = (ref: MutableRefObject<DottingRef | null>) => {
 
   const addLayerChangeEventListener = useCallback(
     (listener: LayerChangeHandler) => {
+      console.log("adding layer change event listener in useHandler");
       ref.current?.addLayerChangeEventListener(listener);
     },
     [ref],

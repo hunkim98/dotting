@@ -607,11 +607,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const addLayerChangeEventListener = useCallback(
     (listener: LayerChangeHandler) => {
-      if (!editor) {
-        return;
-      }
+      setLayerChangeListeners(listeners => [...listeners, listener]);
     },
-    [editor],
+    [],
   );
 
   const removeLayerChangeEventListener = useCallback(
@@ -619,6 +617,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       if (!editor) {
         return;
       }
+      editor.removeEventListener(CanvasEvents.LAYER_CHANGE, listener);
+      setLayerChangeListeners(listeners =>
+        listeners.filter(l => l !== listener),
+      );
     },
     [editor],
   );
@@ -788,6 +790,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       removeStrokeEndListener,
       addHoverPixelChangeListener,
       removeHoverPixelChangeListener,
+      addLayerChangeEventListener,
+      removeLayerChangeEventListener,
       // for canvas element listener
       addCanvasElementEventListener,
       removeCanvasElementEventListener,
