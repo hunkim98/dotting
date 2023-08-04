@@ -37,13 +37,13 @@ const CustomExample = () => {
       }}
     >
       <Dotting ref={ref} width={"100%"} height={300} />
-      <button
+      {/* <button
         onClick={() => {
           setLayerIds([...layerIds, "layer" + layerIds.length]);
         }}
       >
         hi
-      </button>
+      </button> */}
       <div>
         {[
           "#FF0000",

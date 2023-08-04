@@ -92,6 +92,11 @@ export class DottingDataLayer extends Observable<DottingData> {
     return copiedData;
   };
 
+  setData(data: DottingData) {
+    this.data = data;
+    this.notify(this.copyData());
+  }
+
   getData() {
     return this.data;
   }

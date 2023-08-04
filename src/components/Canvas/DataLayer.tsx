@@ -22,22 +22,21 @@ import {
   getGridIndicesFromData,
   getRowCountFromData,
   getRowKeysFromData,
+  validateSquareArray,
 } from "../../utils/data";
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 
 export default class DataLayer extends BaseLayer {
   private swipedPixels: Array<PixelModifyItem> = [];
-  private data: DottingData;
   private gridSquareLength: number = DefaultGridSquareLength;
   private layers: Array<DottingDataLayer>;
+  private currentLayer: DottingDataLayer;
 
   constructor({
     canvas,
-    initData,
     layers,
   }: {
     canvas: HTMLCanvasElement;
-    initData?: Array<Array<PixelData>>;
     layers?: Array<LayerProps>;
   }) {
     super({ canvas });
@@ -51,14 +50,11 @@ export default class DataLayer extends BaseLayer {
       );
     } else {
       const defaultNestedArray: Array<Array<PixelData>> = [];
-      // this.data = new Map();
       const { rowCount, columnCount } = DefaultPixelDataDimensions;
       for (let i = 0; i < rowCount; i++) {
-        // this.data.set(i, new Map());
         defaultNestedArray.push([]);
         for (let j = 0; j < columnCount; j++) {
           defaultNestedArray[i].push({ color: "" });
-          // this.data.get(i)!.set(j, { color: "" });
         }
       }
       this.layers = [
@@ -68,36 +64,19 @@ export default class DataLayer extends BaseLayer {
         }),
       ];
     }
-    this.data = this.layers[0].getData();
-
-    // if (initData && validateSquareArray(initData).isDataValid) {
-    //   for (let i = 0; i < initData.length; i++) {
-    //     this.data.set(i, new Map());
-    //     for (let j = 0; j < initData[i].length; j++) {
-    //       this.data.get(i)!.set(j, { color: initData[i][j].color });
-    //     }
-    //   }
-    // } else {
-    //   const { rowCount, columnCount } = DefaultPixelDataDimensions;
-    //   for (let i = 0; i < rowCount; i++) {
-    //     this.data.set(i, new Map());
-    //     for (let j = 0; j < columnCount; j++) {
-    //       this.data.get(i)!.set(j, { color: "" });
-    //     }
-    //   }
-    // }
+    this.currentLayer = this.layers[0];
   }
 
   getColumnCount() {
-    return getColumnCountFromData(this.data);
+    return getColumnCountFromData(this.getData());
   }
 
   getRowCount() {
-    return getRowCountFromData(this.data);
+    return getRowCountFromData(this.getData());
   }
 
   getGridIndices() {
-    return getGridIndicesFromData(this.data);
+    return getGridIndicesFromData(this.getData());
   }
 
   getDimensions() {
@@ -108,12 +87,78 @@ export default class DataLayer extends BaseLayer {
   }
 
   getData() {
-    return this.data;
+    return this.currentLayer.getData();
+  }
+
+  getLayer(layerId: string) {
+    const layer = this.layers.find(layer => layer.getId() === layerId);
+    if (layer) {
+      return layer;
+    } else {
+      return null;
+    }
+  }
+
+  getLayers() {
+    return this.layers;
+  }
+
+  createLayer(
+    layerId: string,
+    data?: Array<Array<PixelModifyItem>>,
+  ): DottingDataLayer {
+    const layer = this.getLayer(layerId);
+    if (layer) {
+      throw new Error("Layer already exists");
+    } else {
+      const currentLayerInfo = this.currentLayer.getDataInfo();
+      if (data) {
+        const { isDataValid, rowCount, columnCount } =
+          validateSquareArray(data);
+        const leftColumnIndex = data[0][0].columnIndex;
+        const topRowIndex = data[0][0].rowIndex;
+        if (!isDataValid) {
+          throw new Error("Data is not square");
+        }
+        if (
+          leftColumnIndex !== currentLayerInfo.gridIndices.leftColumnIndex ||
+          topRowIndex !== currentLayerInfo.gridIndices.topRowIndex
+        ) {
+          throw new Error("Data grid indice differs from current layer");
+        }
+        if (
+          rowCount !== currentLayerInfo.rowCount ||
+          columnCount !== currentLayerInfo.columnCount
+        ) {
+          throw new Error("Data dimensions differs from current layer");
+        }
+        return new DottingDataLayer({
+          data,
+          id: layerId,
+        });
+      } else {
+        const emptyArray: Array<Array<PixelModifyItem>> = [];
+        for (let i = 0; i < currentLayerInfo.rowCount; i++) {
+          emptyArray.push([]);
+          for (let j = 0; j < currentLayerInfo.columnCount; j++) {
+            emptyArray[i].push({
+              rowIndex: currentLayerInfo.gridIndices.topRowIndex + i,
+              columnIndex: currentLayerInfo.gridIndices.leftColumnIndex + j,
+              color: "",
+            });
+          }
+        }
+        return new DottingDataLayer({
+          data: emptyArray,
+          id: layerId,
+        });
+      }
+    }
   }
 
   getCopiedData() {
     const copiedMap = new Map();
-    Array.from(this.data.entries()).forEach(([rowIndex, row]) => {
+    Array.from(this.getData().entries()).forEach(([rowIndex, row]) => {
       const copiedRow = new Map();
       Array.from(row.entries()).forEach(([columnIndex, pixelData]) => {
         copiedRow.set(columnIndex, { ...pixelData });
@@ -131,8 +176,39 @@ export default class DataLayer extends BaseLayer {
     this.swipedPixels = [];
   }
 
-  setData(data: DottingData) {
-    this.data = data;
+  getCurrentLayer() {
+    return this.currentLayer;
+  }
+
+  /**
+   * @description Sets the current layer to the layer with the given id
+   * @param layerId The layer id of the layer
+   */
+  setCurrentLayer(layerId: string) {
+    const layer = this.layers.find(layer => layer.getId() === layerId);
+    if (layer) {
+      this.currentLayer = layer;
+      // this.data = layer.getData();
+    } else {
+      throw new Error("Layer not found");
+    }
+  }
+
+  setData(data: DottingData, layerId?: string) {
+    if (layerId === undefined) {
+      if (this.layers.length > 1) {
+        throw new Error("Must specify layerId when there are multiple layers");
+      }
+      // there is single layer
+      this.currentLayer.setData(data);
+    } else {
+      const layer = this.layers.find(layer => layer.getId() === layerId);
+      if (layer) {
+        layer.setData(data);
+      } else {
+        throw new Error("Layer not found");
+      }
+    }
   }
 
   shortenGridBy(
@@ -150,13 +226,13 @@ export default class DataLayer extends BaseLayer {
 
   shortenGrid(direction: ButtonDirection, index: number) {
     const { columnCount, rowCount } = this.getDimensions();
-    const rowKeys = getRowKeysFromData(this.data);
-    const columnKeys = getColumnKeysFromData(this.data);
+    const rowKeys = getRowKeysFromData(this.getData());
+    const columnKeys = getColumnKeysFromData(this.getData());
     if (direction === ButtonDirection.TOP) {
       if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromRow(this.data, index);
+      const swipedPixels = extractColoredPixelsFromRow(this.getData(), index);
       this.swipedPixels.push(...swipedPixels);
       this.layers.forEach(layer => {
         layer.deleteRowOfData(index);
@@ -165,7 +241,7 @@ export default class DataLayer extends BaseLayer {
       if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromRow(this.data, index);
+      const swipedPixels = extractColoredPixelsFromRow(this.getData(), index);
       this.swipedPixels.push(...swipedPixels);
       this.layers.forEach(layer => {
         layer.deleteRowOfData(index);
@@ -174,7 +250,10 @@ export default class DataLayer extends BaseLayer {
       if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromColumn(this.data, index);
+      const swipedPixels = extractColoredPixelsFromColumn(
+        this.getData(),
+        index,
+      );
       this.swipedPixels.push(...swipedPixels);
       this.layers.forEach(layer => {
         layer.deleteColumnOfData(index);
@@ -183,7 +262,10 @@ export default class DataLayer extends BaseLayer {
       if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromColumn(this.data, index);
+      const swipedPixels = extractColoredPixelsFromColumn(
+        this.getData(),
+        index,
+      );
       this.swipedPixels.push(...swipedPixels);
       this.layers.forEach(layer => {
         layer.deleteColumnOfData(index);
@@ -195,10 +277,10 @@ export default class DataLayer extends BaseLayer {
     for (const item of data) {
       const { rowIndex, columnIndex, color } = item;
       if (
-        this.data.get(rowIndex) &&
-        this.data.get(rowIndex)!.get(columnIndex)
+        this.getData().get(rowIndex) &&
+        this.getData().get(rowIndex)!.get(columnIndex)
       ) {
-        this.data.get(rowIndex)!.set(columnIndex, { color });
+        this.getData().get(rowIndex)!.set(columnIndex, { color });
       }
     }
   }
@@ -267,11 +349,11 @@ export default class DataLayer extends BaseLayer {
     }
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
-      const previousColor = this.data
+      const previousColor = this.getData()
         .get(change.rowIndex)!
         .get(change.columnIndex)!.color;
       const color = change.color;
-      this.data
+      this.getData()
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: change.color });
       dataForAction.push({ ...change, color, previousColor });
@@ -285,11 +367,13 @@ export default class DataLayer extends BaseLayer {
   erasePixels(data: Array<{ rowIndex: number; columnIndex: number }>) {
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
-      const previousColor = this.data
+      const previousColor = this.getData()
         .get(change.rowIndex)!
         .get(change.columnIndex)!.color;
       const color = "";
-      this.data.get(change.rowIndex)!.set(change.columnIndex, { color: "" });
+      this.getData()
+        .get(change.rowIndex)!
+        .set(change.columnIndex, { color: "" });
       dataForAction.push({ ...change, color, previousColor });
     }
     return { dataForAction };
@@ -344,8 +428,8 @@ export default class DataLayer extends BaseLayer {
       this.panZoom,
     );
 
-    const allRowKeys = getRowKeysFromData(this.data);
-    const allColumnKeys = getColumnKeysFromData(this.data);
+    const allRowKeys = getRowKeysFromData(this.getData());
+    const allColumnKeys = getColumnKeysFromData(this.getData());
 
     ctx.save();
     for (const i of allRowKeys) {
