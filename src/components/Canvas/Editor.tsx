@@ -239,11 +239,8 @@ export default class Editor extends EventDispatcher {
 
   emitCurrentLayerStatus() {
     this.emitLayerChangeEvent({
-      layers: this.dataLayer.getLayers().map(layer => ({
-        id: layer.getId(),
-        data: layer.getDataArray(),
-      })),
-      currentLayerId: this.dataLayer.getCurrentLayer().getId(),
+      layers: this.dataLayer.getLayers(),
+      currentLayer: this.dataLayer.getCurrentLayer(),
     });
   }
 
@@ -671,7 +668,7 @@ export default class Editor extends EventDispatcher {
     this.emitCurrentLayerStatus();
   }
 
-  changeLayerPosition(layerId, toIndex) {
+  changeLayerPosition(layerId: string, toIndex: number) {
     const layer = this.dataLayer.getLayer(layerId);
     if (!layer) {
       throw new Error("Layer not found");

@@ -83,14 +83,14 @@ const useHandlers = (ref: MutableRefObject<DottingRef | null>) => {
 
   const addLayerChangeEventListener = useCallback(
     (listener: LayerChangeHandler) => {
-      return;
+      ref.current?.addLayerChangeEventListener(listener);
     },
     [ref],
   );
 
   const removeLayerChangeEventListener = useCallback(
     (listener: LayerChangeHandler) => {
-      return;
+      ref.current?.removeLayerChangeEventListener(listener);
     },
     [ref],
   );
@@ -120,6 +120,8 @@ const useHandlers = (ref: MutableRefObject<DottingRef | null>) => {
     removeStrokeEndListener,
     addHoverPixelChangeListener,
     removeHoverPixelChangeListener,
+    addLayerChangeEventListener,
+    removeLayerChangeEventListener,
     // Below are for canvas element listener
     addCanvasElementEventListener,
     removeCanvasElementEventListener,
