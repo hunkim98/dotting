@@ -1,31 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 
-import { useBrush, useDotting } from "../../src";
+import { useBrush } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
-import { DottingDataLayer } from "../../src/helpers/DottingDataLayer";
+import useLayers from "../../src/hooks/useLayers";
 import { EmptyFiveByFive } from "../config/data";
 
 const Layers = () => {
   const ref = useRef<DottingRef>(null);
-  const { undo, redo } = useDotting(ref);
   const { changeBrushColor } = useBrush(ref);
-  const [layerIds, setLayerIds] = useState<string[]>([]);
-  const layer1 = useRef<DottingDataLayer>(
-    new DottingDataLayer({
-      data: EmptyFiveByFive,
-      id: "layer1",
-    }),
-  );
-  const layer2 = useRef<DottingDataLayer>(
-    new DottingDataLayer({
-      data: EmptyFiveByFive,
-      id: "layer2",
-    }),
-  );
+  const { layers, addLayer, removeLayer, changeLayerPosition } = useLayers(ref);
   const [isClicked, setIsClicked] = React.useState(false);
-  useEffect(() => {
-    console.log("layer 1 changed");
-  }, [layer1]);
 
   return (
     <div
@@ -37,10 +21,15 @@ const Layers = () => {
       <div
         style={{
           width: 100,
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        hi
+        {layers.map((layer, index) => (
+          <div key={layer.getId()}>{layer.getId()}</div>
+        ))}
       </div>
+
       <div
         style={{
           width: "100%",

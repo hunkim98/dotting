@@ -1,32 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef } from "react";
 
 import { useBrush, useDotting } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
-import { DottingDataLayer } from "../../src/helpers/DottingDataLayer";
-import { EmptyFiveByFive } from "../config/data";
 
 const CustomExample = () => {
   const ref = useRef<DottingRef>(null);
   const { undo, redo } = useDotting(ref);
   const { changeBrushColor } = useBrush(ref);
-  const [layerIds, setLayerIds] = useState<string[]>([]);
-  const layer1 = useRef<DottingDataLayer>(
-    new DottingDataLayer({
-      data: EmptyFiveByFive,
-      id: "layer1",
-    }),
-  );
-  const layer2 = useRef<DottingDataLayer>(
-    new DottingDataLayer({
-      data: EmptyFiveByFive,
-      id: "layer2",
-    }),
-  );
-  const [isClicked, setIsClicked] = React.useState(false);
-  useEffect(() => {
-    console.log("layer 1 changed");
-  }, [layer1]);
-
   return (
     <div
       style={{
