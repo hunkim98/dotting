@@ -37,7 +37,6 @@ import { ColorChangeAction } from "../../actions/ColorChangeAction";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
 import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
-import { DottingDataLayer } from "../../helpers/DottingDataLayer";
 import {
   createColumnKeyOrderMapfromData,
   createRowKeyOrderMapfromData,
@@ -84,10 +83,6 @@ export default class Editor extends EventDispatcher {
   private pinchZoomDiff: number | null = null;
   private width: number;
   private height: number;
-  private layers: Array<{
-    data: DottingDataLayer;
-    id: string;
-  }> = [];
 
   private panZoom: PanZoom = {
     scale: 1,
@@ -97,7 +92,7 @@ export default class Editor extends EventDispatcher {
     lastMousePos: { x: 0, y: 0 },
   };
   private dpr = 1;
-  private brushColor = "#FF0000";
+  private brushColor = "#915dff";
   private gridSquareLength: number = DefaultGridSquareLength;
   private maxHistoryCount = 100;
   private undoHistory: Array<Action> = [];
@@ -156,7 +151,6 @@ export default class Editor extends EventDispatcher {
     // }
     this.dataLayer = new DataLayer({
       canvas: dataCanvas,
-      initData: initData,
       layers: initLayers,
     });
     const initRowCount = this.dataLayer.getRowCount();
@@ -609,19 +603,28 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setDpr(dpr);
   }
 
-  setCurrentLayer(id: string) {
-    const currentLayer = this.layers.find(el => el.id === id);
+  setCurrentLayer(layerId: string) {
+    const currentLayer = this.dataLayer.getLayer(layerId);
     if (!currentLayer) {
       throw new Error("Layer not found");
     }
-    // this.dataLayer.setCurrentLayer(currentLayer.data);
+    this.dataLayer.setCurrentLayer(layerId);
+  }
+
+  addLayer(
+    layerId: string,
+    insertPosition: number,
+    data?: Array<Array<PixelModifyItem>>,
+  ) {
+    const createdLayer = this.dataLayer.createLayer(layerId, data);
+    this.dataLayer.getLayers().splice(insertPosition, 0, createdLayer);
   }
 
   /**
    * @summary Sets the data of the pixel array (use with caution, since data will be overwritten!)
    * @param data Array of PixelModifyItem (It must be a rectangular array, i.e. all rows must have the same length)
    */
-  setData(data: Array<Array<PixelModifyItem>>) {
+  setData(data: Array<Array<PixelModifyItem>>, layerId?: string) {
     const { isDataValid, rowCount, columnCount } = validateSquareArray(data);
     if (!isDataValid) {
       throw new Error(`Data is not valid`);
@@ -630,17 +633,42 @@ export default class Editor extends EventDispatcher {
     const topRowIndex = data[0][0].rowIndex;
 
     // reset data
-    this.dataLayer.setData(new Map());
+    const newData = new Map();
     for (let i = 0; i < data.length; i++) {
-      this.dataLayer.getData().set(topRowIndex + i, new Map());
+      newData.set(topRowIndex + i, new Map());
       for (let j = 0; j < data[i].length; j++) {
-        this.dataLayer
-          .getData()
+        newData
           .get(topRowIndex + i)
           .set(leftColumnIndex + j, { color: data[i][j].color });
       }
     }
-
+    if (layerId === undefined) {
+      if (this.dataLayer.getLayers().length > 1) {
+        throw new Error(
+          "Layer id must be specified if there are multiple layers",
+        );
+      }
+      this.dataLayer.setData(newData);
+    } else {
+      const layer = this.dataLayer.getLayer(layerId);
+      if (!layer) {
+        throw new Error("Layer not found");
+      }
+      const layerInfo = layer.getDataInfo();
+      if (
+        layerInfo.rowCount !== rowCount ||
+        layerInfo.columnCount !== columnCount
+      ) {
+        throw new Error("Data dimensions do not match layer dimensions");
+      }
+      if (
+        layerInfo.gridIndices.leftColumnIndex !== leftColumnIndex ||
+        layerInfo.gridIndices.topRowIndex !== topRowIndex
+      ) {
+        throw new Error("Data indices do not match layer indices");
+      }
+      this.dataLayer.setData(newData, layerId);
+    }
     this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.gridLayer.setRowCount(rowCount);
     this.gridLayer.setColumnCount(columnCount);
