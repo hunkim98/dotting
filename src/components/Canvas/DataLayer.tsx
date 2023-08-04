@@ -44,7 +44,7 @@ export default class DataLayer extends BaseLayer {
       this.layers = layers.map(
         layer =>
           new DottingDataLayer({
-            data: layer.initData,
+            data: layer.data,
             id: layer.id,
           }),
       );
