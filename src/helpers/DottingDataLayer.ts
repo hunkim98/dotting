@@ -1,4 +1,8 @@
-import { DottingData, PixelData } from "../components/Canvas/types";
+import {
+  DottingData,
+  PixelData,
+  PixelModifyItem,
+} from "../components/Canvas/types";
 import {
   getColumnCountFromData,
   getGridIndicesFromData,
@@ -99,5 +103,17 @@ export class DottingDataLayer extends Observable<DottingData> {
 
   getData() {
     return this.data;
+  }
+
+  getDataArray(): Array<Array<PixelModifyItem>> {
+    const data = [];
+    this.data.forEach(row => {
+      const rowData = [];
+      row.forEach(column => {
+        rowData.push(column);
+      });
+      data.push(rowData);
+    });
+    return data;
   }
 }

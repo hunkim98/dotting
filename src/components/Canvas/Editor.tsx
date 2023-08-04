@@ -35,6 +35,11 @@ import {
 import { Action, ActionType } from "../../actions/Action";
 import { ColorChangeAction } from "../../actions/ColorChangeAction";
 import { ColorSizeChangeAction } from "../../actions/ColorSizeChangeAction";
+import {
+  LayerCreateAction,
+  LayerDeleteAction,
+} from "../../actions/LayerCreateDeleteAction";
+import { LayerOrderChangeAction } from "../../actions/LayerOrderChangeAction";
 import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import {
@@ -630,10 +635,35 @@ export default class Editor extends EventDispatcher {
   ) {
     const createdLayer = this.dataLayer.createLayer(layerId, data);
     this.dataLayer.getLayers().splice(insertPosition, 0, createdLayer);
+    this.recordAction(
+      new LayerCreateAction(layerId, createdLayer, insertPosition),
+    );
   }
 
   removeLayer(layerId: string) {
-    this.dataLayer.getLayers().splice(this.dataLayer.getLayerIndex(layerId), 1);
+    const layer = this.dataLayer.getLayer(layerId);
+    if (!layer) {
+      throw new Error("Layer not found");
+    }
+    if (this.dataLayer.getLayers().length === 1) {
+      throw new Error("Cannot delete last layer");
+    }
+    const removeIndex = this.dataLayer.getLayerIndex(layerId);
+    this.dataLayer.getLayers().splice(removeIndex, 1);
+    this.recordAction(new LayerDeleteAction(layer.getId(), layer, removeIndex));
+  }
+
+  changeLayerPosition(layerId, toIndex) {
+    const layer = this.dataLayer.getLayer(layerId);
+    if (!layer) {
+      throw new Error("Layer not found");
+    }
+    const fromIndex = this.dataLayer.getLayerIndex(layerId);
+    this.dataLayer.getLayers().splice(fromIndex, 1);
+    this.dataLayer.getLayers().splice(toIndex, 0, layer);
+    this.recordAction(
+      new LayerOrderChangeAction(layer.getId(), fromIndex, toIndex),
+    );
   }
 
   /**
@@ -1659,6 +1689,25 @@ export default class Editor extends EventDispatcher {
         this.brushTool = BrushTool.SELECT;
         this.interactionLayer.setSelectedArea(
           selectAreamoveAction.newSelectedArea,
+        );
+        break;
+      case ActionType.LayerCreate:
+        const layerCreateAction = action as LayerCreateAction;
+        this.removeLayer(layerCreateAction.layerId);
+        break;
+      case ActionType.LayerDelete:
+        const layerDeleteAction = action as LayerDeleteAction;
+        this.addLayer(
+          layerDeleteAction.layerId,
+          layerDeleteAction.removeIndex,
+          layerDeleteAction.layer.getDataArray(),
+        );
+        break;
+      case ActionType.LayerOrderChange:
+        const layerOrderChangeAction = action as LayerOrderChangeAction;
+        this.changeLayerPosition(
+          layerOrderChangeAction.layerId,
+          layerOrderChangeAction.newPositionIndex,
         );
         break;
     }
