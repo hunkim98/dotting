@@ -59,12 +59,10 @@ const DottingComponentArgTypes: KeysEnum<
     description: "The background alpha of the canvas.",
     disable: false,
   }),
-  initData: generateComponentControl<DottingProps["initData"]>({
-    description: "The initial data that you want to draw on the canvas",
-    disable: true,
-  }),
   initLayers: generateComponentControl<DottingProps["initLayers"]>({
-    description: "The initial layers that you want to draw on the canvas",
+    description:
+      "The initial layers that you want to draw on the canvas.\
+     If nothing is passed, there will be 1 default layer, and its id will be 'layer1'",
     disable: true,
   }),
   isPanZoomable: generateComponentControl<DottingProps["isPanZoomable"]>({
@@ -150,7 +148,6 @@ export const Dotting = (args: DottingProps) => {
       backgroundMode={args.backgroundMode}
       backgroundColor={args.backgroundColor}
       backgroundAlpha={args.backgroundAlpha}
-      initData={undefined}
       isPanZoomable={args.isPanZoomable}
       isGridFixed={args.isGridFixed}
       isInteractionApplicable={args.isInteractionApplicable}

@@ -21,7 +21,6 @@ import {
   ImageDownloadOptions,
   LayerChangeHandler,
   LayerProps,
-  PixelData,
   PixelModifyItem,
 } from "./Canvas/types";
 import { validateSquareArray } from "../utils/data";
@@ -36,7 +35,6 @@ export interface DottingProps {
   backgroundMode?: "checkerboard" | "color";
   backgroundColor?: string;
   backgroundAlpha?: number;
-  initData?: Array<Array<PixelData>>;
   initLayers?: Array<LayerProps>;
   isPanZoomable?: boolean;
   isGridFixed?: boolean;
