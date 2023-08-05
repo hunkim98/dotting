@@ -76,6 +76,7 @@ export interface DottingRef {
   hideLayer: (layerId: string) => void;
   isolateLayer: (layerId: string) => void;
   showAllLayers: () => void;
+  setCurrentLayer: (layerId: string) => void;
   // for useHandler
   addDataChangeListener: (listener: CanvasDataChangeHandler) => void;
   removeDataChangeListener: (listener: CanvasDataChangeHandler) => void;
@@ -751,6 +752,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     editor?.showAllLayers();
   }, [editor]);
 
+  const setCurrentLayer = useCallback(
+    (layerId: string) => {
+      editor?.setCurrentLayer(layerId);
+    },
+    [editor],
+  );
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -777,6 +785,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       hideLayer,
       isolateLayer,
       showAllLayers,
+      setCurrentLayer,
       // for useHandler
       addDataChangeListener,
       removeDataChangeListener,

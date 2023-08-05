@@ -1,21 +1,34 @@
 import { MutableRefObject, useCallback, useEffect, useState } from "react";
 
 import useHandlers from "./useHandlers";
-import { LayerChangeParams, PixelModifyItem } from "../components/Canvas/types";
+import {
+  LayerChangeParams,
+  LayerDataForHook,
+  PixelModifyItem,
+} from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
-import { DottingDataLayer } from "../helpers/DottingDataLayer";
 
 const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
-  const [currentLayer, setCurrentLayer] = useState<DottingDataLayer>();
-  const [layers, setLayers] = useState<Array<DottingDataLayer>>([]);
+  const [currentLayer, setCurrentLayerHook] = useState<LayerDataForHook>();
+  const [layers, setLayers] = useState<Array<LayerDataForHook>>([]);
 
   const { addLayerChangeEventListener, removeLayerChangeEventListener } =
     useHandlers(ref);
 
   useEffect(() => {
     const listener = ({ currentLayer, layers }: LayerChangeParams) => {
-      setCurrentLayer(currentLayer);
-      setLayers(layers);
+      setCurrentLayerHook({
+        id: currentLayer.getId(),
+        data: currentLayer.getDataArray(),
+        isVisible: currentLayer.getIsVisible(),
+      });
+      setLayers(
+        layers.map(layer => ({
+          id: layer.getId(),
+          data: layer.getDataArray(),
+          isVisible: layer.getIsVisible(),
+        })),
+      );
     };
     addLayerChangeEventListener(listener);
     return () => {
@@ -73,6 +86,13 @@ const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
     ref.current?.showAllLayers();
   }, [ref]);
 
+  const setCurrentLayer = useCallback(
+    (layerId: string) => {
+      ref.current?.setCurrentLayer(layerId);
+    },
+    [ref],
+  );
+
   return {
     currentLayer,
     layers,
@@ -83,6 +103,7 @@ const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
     hideLayer,
     isolateLayer,
     showAllLayers,
+    setCurrentLayer,
   };
 };
 
