@@ -99,7 +99,7 @@ export default class Editor extends EventDispatcher {
     lastMousePos: { x: 0, y: 0 },
   };
   private dpr = 1;
-  private brushColor = "#915dff";
+  private brushColor = "#FF0000";
   private gridSquareLength: number = DefaultGridSquareLength;
   private maxHistoryCount = 100;
   private undoHistory: Array<Action> = [];
