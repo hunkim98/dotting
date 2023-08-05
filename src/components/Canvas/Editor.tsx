@@ -651,6 +651,7 @@ export default class Editor extends EventDispatcher {
     this.recordAction(
       new LayerCreateAction(layerId, createdLayer, insertPosition),
     );
+    this.renderDataLayer();
     this.emitCurrentLayerStatus();
   }
 
@@ -665,15 +666,20 @@ export default class Editor extends EventDispatcher {
     const removeIndex = this.dataLayer.getLayerIndex(layerId);
     this.dataLayer.getLayers().splice(removeIndex, 1);
     this.recordAction(new LayerDeleteAction(layer.getId(), layer, removeIndex));
+    this.renderDataLayer();
     this.emitCurrentLayerStatus();
   }
 
   showLayer(layerId: string) {
     this.dataLayer.showLayer(layerId);
+    this.emitCurrentLayerStatus();
+    this.renderDataLayer();
   }
 
   hideLayer(layerId: string) {
     this.dataLayer.hideLayer(layerId);
+    this.emitCurrentLayerStatus();
+    this.renderDataLayer();
   }
 
   /**
@@ -682,6 +688,8 @@ export default class Editor extends EventDispatcher {
    */
   isolateLayer(layerId: string) {
     this.dataLayer.isolateLayer(layerId);
+    this.emitCurrentLayerStatus();
+    this.renderDataLayer();
   }
 
   /**
@@ -689,6 +697,8 @@ export default class Editor extends EventDispatcher {
    */
   showAllLayers() {
     this.dataLayer.showAllLayers();
+    this.emitCurrentLayerStatus();
+    this.renderDataLayer();
   }
 
   changeLayerPosition(layerId: string, toIndex: number) {
@@ -702,6 +712,8 @@ export default class Editor extends EventDispatcher {
     this.recordAction(
       new LayerOrderChangeAction(layer.getId(), fromIndex, toIndex),
     );
+    this.emitCurrentLayerStatus();
+    this.renderDataLayer();
   }
 
   /**

@@ -515,6 +515,9 @@ export default class DataLayer extends BaseLayer {
           .slice()
           .reverse()
           .reduce((acc, layer) => {
+            if (layer.getIsVisible() === false) {
+              return acc;
+            }
             const layerColor = layer
               .getData()
               .get(rowIndex)

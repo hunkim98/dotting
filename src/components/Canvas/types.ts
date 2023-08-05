@@ -132,3 +132,9 @@ export interface LayerProps {
   id: string;
   data: Array<Array<PixelModifyItem>>;
 }
+
+export type LayerDataForHook = {
+  id: string;
+  isVisible: boolean;
+  data: Array<Array<PixelModifyItem>>;
+};

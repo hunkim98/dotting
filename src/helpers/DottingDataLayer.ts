@@ -110,6 +110,10 @@ export class DottingDataLayer extends Observable<DottingData> {
     return this.data;
   }
 
+  getIsVisible() {
+    return this.isVisible;
+  }
+
   getDataArray(): Array<Array<PixelModifyItem>> {
     const data = [];
     this.data.forEach(row => {
