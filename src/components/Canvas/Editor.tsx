@@ -649,17 +649,20 @@ export default class Editor extends EventDispatcher {
     layerId: string,
     insertPosition: number,
     data?: Array<Array<PixelModifyItem>>,
+    shouldRecordAction = false,
   ) {
     const createdLayer = this.dataLayer.createLayer(layerId, data);
     this.dataLayer.getLayers().splice(insertPosition, 0, createdLayer);
-    this.recordAction(
-      new LayerCreateAction(layerId, createdLayer, insertPosition),
-    );
+    if (shouldRecordAction) {
+      this.recordAction(
+        new LayerCreateAction(layerId, createdLayer, insertPosition),
+      );
+    }
     this.renderDataLayer();
     this.emitCurrentLayerStatus();
   }
 
-  removeLayer(layerId: string) {
+  removeLayer(layerId: string, shouldRecordAction = false) {
     const layer = this.dataLayer.getLayer(layerId);
     if (!layer) {
       throw new Error("Layer not found");
@@ -669,7 +672,11 @@ export default class Editor extends EventDispatcher {
     }
     const removeIndex = this.dataLayer.getLayerIndex(layerId);
     this.dataLayer.getLayers().splice(removeIndex, 1);
-    this.recordAction(new LayerDeleteAction(layer.getId(), layer, removeIndex));
+    if (shouldRecordAction) {
+      this.recordAction(
+        new LayerDeleteAction(layer.getId(), layer, removeIndex),
+      );
+    }
     this.renderDataLayer();
     this.emitCurrentLayerStatus();
   }
@@ -1764,21 +1771,21 @@ export default class Editor extends EventDispatcher {
         );
         break;
       case ActionType.LayerCreate:
-        const layerCreateAction = action as LayerCreateAction;
-        this.removeLayer(layerCreateAction.layerId);
+        const layerCreateAction = action as LayerDeleteAction;
+        this.addLayer(
+          layerCreateAction.layerId,
+          layerCreateAction.removeIndex,
+          layerCreateAction.layer.getDataArray(),
+        );
+        break;
+      case ActionType.LayerDelete:
+        const layerDeleteAction = action as LayerCreateAction;
+        this.removeLayer(layerDeleteAction.layerId);
         if (
-          this.dataLayer.getCurrentLayer().getId() === layerCreateAction.layerId
+          this.dataLayer.getCurrentLayer().getId() === layerDeleteAction.layerId
         ) {
           this.dataLayer.setCurrentLayer(this.dataLayer.getLayers()[0].getId());
         }
-        break;
-      case ActionType.LayerDelete:
-        const layerDeleteAction = action as LayerDeleteAction;
-        this.addLayer(
-          layerDeleteAction.layerId,
-          layerDeleteAction.removeIndex,
-          layerDeleteAction.layer.getDataArray(),
-        );
         break;
       case ActionType.LayerOrderChange:
         const layerOrderChangeAction = action as LayerReorderAction;

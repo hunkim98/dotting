@@ -14,7 +14,6 @@ const useData = (ref: MutableRefObject<DottingRef | null>) => {
   const [data, setData] = useState<DottingData>(
     new Map<number, Map<number, PixelData>>(),
   );
-  const [layers, setLayers] = useState<Array<Array<PixelModifyItem>>>([]);
 
   const [dataArray, setDataArray] = useState<Array<Array<PixelModifyItem>>>([]);
 
