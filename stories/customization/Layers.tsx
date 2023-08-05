@@ -19,6 +19,7 @@ const Layers = () => {
     showLayer,
     hideLayer,
     showAllLayers,
+    reorderLayersByIds,
   } = useLayers(ref);
   const [draggingSectionId, setDraggingSectionId] = useState(null); // 1
   const draggingItemIndex = useRef<number | null>(null);
@@ -45,8 +46,9 @@ const Layers = () => {
     changeLayerPosition(draggingItemContent.id, index);
   };
 
-  const onDragEnd = (e: BaseSyntheticEvent) => {
+  const onDragEnd = (e: BaseSyntheticEvent, index: number) => {
     // e.target.style = e.target.style + "; opacity: 1";
+    reorderLayersByIds(layers.map(layer => layer.id));
     setDraggingSectionId(null);
   };
 
@@ -113,7 +115,7 @@ const Layers = () => {
               onClick={e => onClickHandler(e, layer.id)}
               onDragStart={e => onDragStart(e, index, layer.id)}
               onDragEnter={e => onAvailableItemDragEnter(e, index)}
-              onDragEnd={onDragEnd}
+              onDragEnd={e => onDragEnd(e, index)}
               onDragOver={onDragOver}
               draggable
             >
@@ -167,26 +169,6 @@ const Layers = () => {
             },
             {
               id: "layer3",
-              data: CreateEmptySquareData(15),
-            },
-            {
-              id: "layer4",
-              data: CreateEmptySquareData(15),
-            },
-            {
-              id: "layer5",
-              data: CreateEmptySquareData(15),
-            },
-            {
-              id: "layer6",
-              data: CreateEmptySquareData(15),
-            },
-            {
-              id: "layer7",
-              data: CreateEmptySquareData(15),
-            },
-            {
-              id: "layer8",
               data: CreateEmptySquareData(15),
             },
           ]}

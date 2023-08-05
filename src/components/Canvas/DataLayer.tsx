@@ -213,6 +213,18 @@ export default class DataLayer extends BaseLayer {
     this.layers.forEach(layer => layer.setIsVisible(true));
   }
 
+  reorderLayersByIds(layerIds: Array<string>) {
+    const newLayers: Array<DottingDataLayer> = [];
+    layerIds.forEach(layerId => {
+      const layer = this.getLayer(layerId);
+      if (!layer) {
+        throw new Error("Layer not found");
+      }
+      newLayers.push(layer);
+    });
+    this.layers = newLayers;
+  }
+
   /**
    * @description Sets the current layer to the layer with the given id
    * @param layerId The layer id of the layer
