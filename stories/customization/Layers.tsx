@@ -19,16 +19,14 @@ const Layers = () => {
     isolateLayer,
     showLayer,
     hideLayer,
-    showAllLayers,
     reorderLayersByIds,
   } = useLayers(ref);
-  const [draggingSectionId, setDraggingSectionId] = useState(null); // 1
+  const [draggingSectionId, setDraggingSectionId] = useState(null);
   const draggingItemIndex = useRef<number | null>(null);
   const draggingOverItemIndex = useRef<number | null>(null);
 
   const onDragStart = (e: BaseSyntheticEvent, index: number, id: string) => {
     draggingItemIndex.current = index;
-    // e.target.style = e.target.style + "; opacity: 0.5";
     setDraggingSectionId(id);
   };
 
@@ -48,7 +46,6 @@ const Layers = () => {
   };
 
   const onDragEnd = (e: BaseSyntheticEvent) => {
-    // e.target.style = e.target.style + "; opacity: 1";
     reorderLayersByIds(layers.map(layer => layer.id));
     setDraggingSectionId(null);
   };
@@ -67,6 +64,7 @@ const Layers = () => {
         width: "100%",
         display: "flex",
         fontFamily: `'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif`,
+        marginBottom: 50,
       }}
     >
       <div
