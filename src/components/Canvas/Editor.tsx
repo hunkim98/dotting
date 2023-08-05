@@ -29,7 +29,6 @@ import {
   LayerChangeParams,
   LayerProps,
   PanZoom,
-  PixelData,
   PixelModifyItem,
   SelectAreaRange,
 } from "./types";
@@ -135,14 +134,12 @@ export default class Editor extends EventDispatcher {
     interactionCanvas,
     dataCanvas,
     backgroundCanvas,
-    initData,
     initLayers,
   }: {
     gridCanvas: HTMLCanvasElement;
     interactionCanvas: HTMLCanvasElement;
     dataCanvas: HTMLCanvasElement;
     backgroundCanvas: HTMLCanvasElement;
-    initData?: Array<Array<PixelData>>;
     initLayers?: Array<LayerProps>;
   }) {
     super();
