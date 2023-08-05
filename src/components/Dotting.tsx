@@ -709,14 +709,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       insertPosition: number,
       data?: Array<Array<PixelModifyItem>>,
     ) => {
-      editor?.addLayer(layerId, insertPosition, data);
+      editor?.addLayer(layerId, insertPosition, data, true);
     },
     [editor],
   );
 
   const removeLayer = useCallback(
     (layerId: string) => {
-      editor?.removeLayer(layerId);
+      editor?.removeLayer(layerId, true);
     },
     [editor],
   );

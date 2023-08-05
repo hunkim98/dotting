@@ -116,10 +116,14 @@ export class DottingDataLayer extends Observable<DottingData> {
 
   getDataArray(): Array<Array<PixelModifyItem>> {
     const data = [];
-    this.data.forEach(row => {
+    [...this.data.entries()].forEach(([rowIndex, row]) => {
       const rowData = [];
-      row.forEach(column => {
-        rowData.push(column);
+      [...row.entries()].forEach(([columnIndex, column]) => {
+        rowData.push({
+          rowIndex,
+          columnIndex,
+          color: column.color,
+        });
       });
       data.push(rowData);
     });

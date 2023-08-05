@@ -4,6 +4,7 @@ import { useBrush } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useLayers from "../../src/hooks/useLayers";
 import { CreateEmptySquareData } from "../utils/dataCreator";
+import { getNewGUIDString } from "../utils/guid";
 
 const Layers = () => {
   const ref = useRef<DottingRef>(null);
@@ -46,7 +47,7 @@ const Layers = () => {
     changeLayerPosition(draggingItemContent.id, index);
   };
 
-  const onDragEnd = (e: BaseSyntheticEvent, index: number) => {
+  const onDragEnd = (e: BaseSyntheticEvent) => {
     // e.target.style = e.target.style + "; opacity: 1";
     reorderLayersByIds(layers.map(layer => layer.id));
     setDraggingSectionId(null);
@@ -115,7 +116,7 @@ const Layers = () => {
               onClick={e => onClickHandler(e, layer.id)}
               onDragStart={e => onDragStart(e, index, layer.id)}
               onDragEnter={e => onAvailableItemDragEnter(e, index)}
-              onDragEnd={e => onDragEnd(e, index)}
+              onDragEnd={onDragEnd}
               onDragOver={onDragOver}
               draggable
             >
@@ -134,6 +135,14 @@ const Layers = () => {
                   {layer.isVisible ? "hide" : "show"}
                 </button>
                 <button
+                  onClick={e => {
+                    e.stopPropagation();
+                    removeLayer(layer.id);
+                  }}
+                >
+                  remove
+                </button>
+                <button
                   onClick={() => {
                     isolateLayer(layer.id);
                   }}
@@ -143,6 +152,13 @@ const Layers = () => {
               </div>
             </li>
           ))}
+          <button
+            onClick={() => {
+              addLayer("layer" + getNewGUIDString(), layers.length);
+            }}
+          >
+            Add Layer
+          </button>
         </ul>
       </div>
 
