@@ -40,7 +40,7 @@ import {
   LayerCreateAction,
   LayerDeleteAction,
 } from "../../actions/LayerCreateDeleteAction";
-import { LayerOrderChangeAction } from "../../actions/LayerOrderChangeAction";
+import { LayerReorderAction } from "../../actions/LayerReorderAction";
 import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
 import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import {
@@ -89,6 +89,7 @@ export default class Editor extends EventDispatcher {
   private pinchZoomDiff: number | null = null;
   private width: number;
   private height: number;
+  private originalLayerIdsInOrderForHistory = [];
 
   private panZoom: PanZoom = {
     scale: 1,
@@ -159,6 +160,9 @@ export default class Editor extends EventDispatcher {
       canvas: dataCanvas,
       layers: initLayers,
     });
+    this.originalLayerIdsInOrderForHistory = this.dataLayer
+      .getLayers()
+      .map(layer => layer.getId());
     const initRowCount = this.dataLayer.getRowCount();
     const initColumnCount = this.dataLayer.getColumnCount();
     this.gridLayer = new GridLayer({
@@ -701,6 +705,14 @@ export default class Editor extends EventDispatcher {
     this.renderDataLayer();
   }
 
+  /**
+   * @description This moves the layer to the specified index,
+   *              However, the moved information will not be saved in to history
+   *              This is because moving a layer from one index to another can happen frequently
+   *              If a user wants to record this action, use reorderlayerByIds instead
+   * @param layerId layer id to be moved
+   * @param toIndex index to be moved to
+   */
   changeLayerPosition(layerId: string, toIndex: number) {
     const layer = this.dataLayer.getLayer(layerId);
     if (!layer) {
@@ -709,10 +721,20 @@ export default class Editor extends EventDispatcher {
     const fromIndex = this.dataLayer.getLayerIndex(layerId);
     this.dataLayer.getLayers().splice(fromIndex, 1);
     this.dataLayer.getLayers().splice(toIndex, 0, layer);
-    this.recordAction(
-      new LayerOrderChangeAction(layer.getId(), fromIndex, toIndex),
-    );
     this.emitCurrentLayerStatus();
+    this.renderDataLayer();
+  }
+
+  reorderLayersByIds(layerIds: Array<string>) {
+    this.dataLayer.reorderLayersByIds(layerIds);
+    this.emitCurrentLayerStatus();
+    this.recordAction(
+      new LayerReorderAction(this.originalLayerIdsInOrderForHistory, layerIds),
+    );
+    // update the original layer ids for future recording
+    this.originalLayerIdsInOrderForHistory = this.dataLayer
+      .getLayers()
+      .map(layer => layer.getId());
     this.renderDataLayer();
   }
 
@@ -1759,12 +1781,15 @@ export default class Editor extends EventDispatcher {
         );
         break;
       case ActionType.LayerOrderChange:
-        const layerOrderChangeAction = action as LayerOrderChangeAction;
-        this.changeLayerPosition(
-          layerOrderChangeAction.layerId,
-          layerOrderChangeAction.newPositionIndex,
+        const layerOrderChangeAction = action as LayerReorderAction;
+        this.dataLayer.reorderLayersByIds(
+          layerOrderChangeAction.reorderdLayerIds,
         );
         break;
+    }
+    this.emitCurrentLayerStatus();
+    if (!this.dataLayer.getLayer(layerId)) {
+      return;
     }
     const updatedData = this.dataLayer.getLayer(layerId).getCopiedData();
     this.emitGridChangeEvent({
@@ -1778,7 +1803,6 @@ export default class Editor extends EventDispatcher {
       data: updatedData,
       layerId: layerId,
     });
-    this.emitCurrentLayerStatus();
   }
 
   recordAction(action: Action) {

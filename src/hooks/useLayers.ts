@@ -93,6 +93,13 @@ const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
+  const reorderLayersByIds = useCallback(
+    (layerIds: Array<string>) => {
+      ref.current?.reorderLayersByIds(layerIds);
+    },
+    [ref],
+  );
+
   return {
     currentLayer,
     layers,
@@ -104,6 +111,7 @@ const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
     isolateLayer,
     showAllLayers,
     setCurrentLayer,
+    reorderLayersByIds,
   };
 };
 
