@@ -23,12 +23,14 @@ export const getGridIndicesFromData = (data: DottingData): GridIndices => {
 };
 
 export const getRowKeysFromData = (data: DottingData): Array<number> => {
-  return Array.from(data.keys());
+  return Array.from(data.keys()).sort((a, b) => a - b);
 };
 
 export const getColumnKeysFromData = (data: DottingData): Array<number> => {
-  const allRowKeys = Array.from(data.keys());
-  const allColumnKeys = Array.from(data.get(allRowKeys[0])!.keys());
+  const allRowKeys = getRowKeysFromData(data);
+  const allColumnKeys = Array.from(data.get(allRowKeys[0])!.keys()).sort(
+    (a, b) => a - b,
+  );
   return allColumnKeys;
 };
 

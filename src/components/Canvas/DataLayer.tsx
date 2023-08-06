@@ -9,7 +9,6 @@ import {
   Coord,
   DottingData,
   LayerProps,
-  PixelData,
   PixelModifyItem,
 } from "./types";
 import { ChangeAmountData } from "../../actions/SizeChangeAction";
@@ -49,12 +48,16 @@ export default class DataLayer extends BaseLayer {
           }),
       );
     } else {
-      const defaultNestedArray: Array<Array<PixelData>> = [];
+      const defaultNestedArray: Array<Array<PixelModifyItem>> = [];
       const { rowCount, columnCount } = DefaultPixelDataDimensions;
       for (let i = 0; i < rowCount; i++) {
         defaultNestedArray.push([]);
         for (let j = 0; j < columnCount; j++) {
-          defaultNestedArray[i].push({ color: "" });
+          defaultNestedArray[i].push({
+            color: "",
+            rowIndex: i,
+            columnIndex: j,
+          });
         }
       }
       this.layers = [
