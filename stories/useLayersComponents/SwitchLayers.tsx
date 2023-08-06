@@ -10,14 +10,9 @@ const SwitchLayers = () => {
   const { changeBrushColor } = useBrush(ref);
   const {
     layers,
-    addLayer,
-    removeLayer,
     changeLayerPosition,
     currentLayer,
     setCurrentLayer,
-    isolateLayer,
-    showLayer,
-    hideLayer,
     reorderLayersByIds,
   } = useLayers(ref);
   const [draggingSectionId, setDraggingSectionId] = useState(null);

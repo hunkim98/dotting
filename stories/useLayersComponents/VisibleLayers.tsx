@@ -10,8 +10,6 @@ const VisbleLayers = () => {
   const { changeBrushColor } = useBrush(ref);
   const {
     layers,
-    addLayer,
-    removeLayer,
     changeLayerPosition,
     currentLayer,
     setCurrentLayer,

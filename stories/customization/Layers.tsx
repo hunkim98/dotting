@@ -4,7 +4,6 @@ import { useBrush } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useLayers from "../../src/hooks/useLayers";
 import { CreateEmptySquareData } from "../utils/dataCreator";
-import { getNewGUIDString } from "../utils/guid";
 
 const Layers = () => {
   const ref = useRef<DottingRef>(null);
@@ -24,6 +23,7 @@ const Layers = () => {
   const [draggingSectionId, setDraggingSectionId] = useState(null);
   const draggingItemIndex = useRef<number | null>(null);
   const draggingOverItemIndex = useRef<number | null>(null);
+  const [createdLayerCount, setCreatedLayerCount] = useState(3);
 
   const onDragStart = (e: BaseSyntheticEvent, index: number, id: string) => {
     draggingItemIndex.current = index;
@@ -152,7 +152,8 @@ const Layers = () => {
           ))}
           <button
             onClick={() => {
-              addLayer("layer" + getNewGUIDString(), layers.length);
+              addLayer("layer" + (createdLayerCount + 1), layers.length);
+              setCreatedLayerCount(createdLayerCount + 1);
             }}
           >
             Add Layer
