@@ -1,8 +1,4 @@
-import {
-  DottingData,
-  PixelData,
-  PixelModifyItem,
-} from "../components/Canvas/types";
+import { DottingData, PixelModifyItem } from "../components/Canvas/types";
 import {
   getColumnCountFromData,
   getGridIndicesFromData,
@@ -15,21 +11,33 @@ export class DottingDataLayer extends Observable<DottingData> {
   private data: DottingData;
   private id: string;
   private isVisible = true;
-  constructor({ data, id }: { data: Array<Array<PixelData>>; id: string }) {
+  constructor({
+    data,
+    id,
+  }: {
+    data: Array<Array<PixelModifyItem>>;
+    id: string;
+  }) {
     super();
     const { isDataValid } = validateSquareArray(data);
+    const leftColumnIndex = data[0][0].columnIndex;
+    const topRowIndex = data[0][0].rowIndex;
     if (!isDataValid) {
       throw new Error("Data is not valid");
     }
+
     this.data = new Map();
     this.id = id;
     for (let i = 0; i < data.length; i++) {
-      this.data.set(i, new Map());
+      this.data.set(topRowIndex + i, new Map());
       for (let j = 0; j < data[i].length; j++) {
-        this.data.get(i)!.set(j, { color: data[i][j].color });
+        this.data
+          .get(topRowIndex + i)!
+          .set(leftColumnIndex + j, { color: data[i][j].color });
       }
     }
   }
+
   getDataInfo() {
     const gridIndices = getGridIndicesFromData(this.data);
     const columnCount = getColumnCountFromData(this.data);
@@ -73,14 +81,18 @@ export class DottingDataLayer extends Observable<DottingData> {
   };
 
   deleteRowOfData(rowIndex: number) {
-    if (!this.data.has(rowIndex)) return;
+    if (!this.data.has(rowIndex)) {
+      throw new Error("Row does not exist");
+    }
     this.data.delete(rowIndex);
     this.notify(this.getCopiedData());
   }
 
   deleteColumnOfData(columnIndex: number) {
     this.data.forEach(row => {
-      if (!row.has(columnIndex)) return;
+      if (!row.has(columnIndex)) {
+        throw new Error("Column does not exist");
+      }
       row.delete(columnIndex);
     });
     this.notify(this.getCopiedData());
