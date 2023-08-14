@@ -37,7 +37,6 @@ export interface DottingProps {
   //       backgroundMode "checkerboard"
   // backgroundMode?: "checkerboard" | "color";
   backgroundColor?: string;
-  backgroundAlpha?: number;
   initLayers?: Array<LayerProps>;
   isPanZoomable?: boolean;
   isGridFixed?: boolean;
@@ -373,9 +372,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!editor) {
       return;
     }
-    if (props.backgroundAlpha) {
-      editor.setBackgroundAlpha(props.backgroundAlpha);
-    }
     if (props.backgroundColor) {
       editor.setBackgroundColor(props.backgroundColor);
     }
@@ -385,7 +381,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   }, [
     editor,
     // props.backgroundMode,
-    props.backgroundAlpha,
     props.backgroundColor,
   ]);
 
@@ -468,7 +463,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     editor.setIsGridFixed(props.isGridFixed);
     editor.setIsInteractionApplicable(props.isInteractionApplicable);
     editor.setIsDrawingEnabled(props.isDrawingEnabled);
-    editor.setBackgroundAlpha(props.backgroundAlpha);
     // editor.setBackgroundMode(props.backgroundMode);
     editor.setIsPanZoomable(props.isPanZoomable);
     editor.setIsGridVisible(props.isGridVisible);
