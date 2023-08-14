@@ -23,7 +23,7 @@ const GridStyling = () => {
         gridStrokeColor={gridStrokeColor}
         gridStrokeWidth={gridStrokeWidth}
         style={{ borderColor: "red" }}
-        backgroundColor="rgba(255, 0, 0, 0.2)"
+        backgroundColor="#FFD4D2"
       />
       <div
         style={{
