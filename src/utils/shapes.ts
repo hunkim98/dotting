@@ -74,3 +74,24 @@ export const drawCircle = (
   ctx.stroke();
   ctx.restore();
 };
+
+export const drawRect = (
+  ctx: CanvasRenderingContext2D,
+  leftTopPosX: number,
+  leftTopPosY: number,
+  width: number,
+  height: number,
+  fillStyle: string,
+  strokeStyle: string,
+  lineWidth: number,
+) => {
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(leftTopPosX, leftTopPosY, width, height);
+  ctx.fillStyle = fillStyle;
+  ctx.lineWidth = lineWidth;
+  ctx.fill();
+  ctx.strokeStyle = strokeStyle;
+  ctx.stroke();
+  ctx.restore();
+};
