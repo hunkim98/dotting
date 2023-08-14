@@ -1,12 +1,19 @@
 import { BaseLayer } from "./BaseLayer";
 import {
   ButtonDirection,
+  DashedLineOffsetFromPixelCanvas,
   DefaultButtonHeight,
+  DefaultExtendArrowPadding,
   DefaultGridSquareLength,
+  ExtensionGuideCircleRadius,
 } from "./config";
 import { ButtonDimensions, Coord } from "./types";
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
-import { drawArrowHead, drawExtendButton } from "../../utils/shapes";
+import {
+  drawArrowHead,
+  drawCircle,
+  drawExtendButton,
+} from "../../utils/shapes";
 
 export default class GridLayer extends BaseLayer {
   private columnCount: number;
@@ -17,7 +24,8 @@ export default class GridLayer extends BaseLayer {
   private gridStrokeWidth: number;
   private gridSquareLength: number = DefaultGridSquareLength;
   private buttonHeight: number = DefaultButtonHeight;
-  private buttonMargin: number = DefaultButtonHeight / 2 + 5;
+  private buttonMargin: number = DefaultButtonHeight / 2;
+  private extendArrowPadding: number = DefaultExtendArrowPadding;
   private hoveredButton: ButtonDirection | null = null;
   private topButtonDimensions: ButtonDimensions = {
     x: 0,
@@ -238,17 +246,19 @@ export default class GridLayer extends BaseLayer {
     );
     drawArrowHead(
       this.ctx,
-      screenPos.x,
+      screenPos.x + this.extendArrowPadding * this.panZoom.scale,
       screenPos.y + (height * this.panZoom.scale) / 2,
       -Math.PI / 2,
       this.panZoom.scale,
+      5,
     );
     drawArrowHead(
       this.ctx,
-      screenPos.x + width * this.panZoom.scale,
+      screenPos.x + (width - this.extendArrowPadding) * this.panZoom.scale,
       screenPos.y + (height * this.panZoom.scale) / 2,
       Math.PI / 2,
       this.panZoom.scale,
+      5,
     );
   }
 
@@ -276,17 +286,19 @@ export default class GridLayer extends BaseLayer {
     );
     drawArrowHead(
       this.ctx,
-      screenPos.x,
+      screenPos.x + this.extendArrowPadding * this.panZoom.scale,
       screenPos.y + (height * this.panZoom.scale) / 2,
       -Math.PI / 2,
       this.panZoom.scale,
+      5,
     );
     drawArrowHead(
       this.ctx,
-      screenPos.x + width * this.panZoom.scale,
+      screenPos.x + (width - this.extendArrowPadding) * this.panZoom.scale,
       screenPos.y + (height * this.panZoom.scale) / 2,
       Math.PI / 2,
       this.panZoom.scale,
+      5,
     );
   }
 
@@ -315,16 +327,18 @@ export default class GridLayer extends BaseLayer {
     drawArrowHead(
       this.ctx,
       screenPos.x + (width * this.panZoom.scale) / 2,
-      screenPos.y,
+      screenPos.y + this.extendArrowPadding * this.panZoom.scale,
       Math.PI * 2,
       this.panZoom.scale,
+      5,
     );
     drawArrowHead(
       this.ctx,
       screenPos.x + (width * this.panZoom.scale) / 2,
-      screenPos.y + height * this.panZoom.scale,
+      screenPos.y + (height - this.extendArrowPadding) * this.panZoom.scale,
       Math.PI,
       this.panZoom.scale,
+      5,
     );
   }
 
@@ -353,16 +367,18 @@ export default class GridLayer extends BaseLayer {
     drawArrowHead(
       this.ctx,
       screenPos.x + (width * this.panZoom.scale) / 2,
-      screenPos.y,
+      screenPos.y + this.extendArrowPadding * this.panZoom.scale,
       Math.PI * 2,
       this.panZoom.scale,
+      5,
     );
     drawArrowHead(
       this.ctx,
       screenPos.x + (width * this.panZoom.scale) / 2,
-      screenPos.y + height * this.panZoom.scale,
+      screenPos.y + (height - this.extendArrowPadding) * this.panZoom.scale,
       Math.PI,
       this.panZoom.scale,
+      5,
     );
   }
 
@@ -381,6 +397,41 @@ export default class GridLayer extends BaseLayer {
       width,
       height,
       this.panZoom.scale,
+    );
+    drawArrowHead(
+      this.ctx,
+      direction === ButtonDirection.TOPLEFT ||
+        direction === ButtonDirection.BOTTOMRIGHT
+        ? screenPos.x +
+            this.extendArrowPadding * Math.sqrt(2) * this.panZoom.scale
+        : screenPos.x +
+            (width - this.extendArrowPadding * Math.sqrt(2)) *
+              this.panZoom.scale,
+      screenPos.y + this.extendArrowPadding * Math.sqrt(2) * this.panZoom.scale,
+      direction === ButtonDirection.TOPLEFT ||
+        direction === ButtonDirection.BOTTOMRIGHT
+        ? -(Math.PI * 1) / 4
+        : (Math.PI * 1) / 4,
+      this.panZoom.scale,
+      5,
+    );
+    drawArrowHead(
+      this.ctx,
+      direction === ButtonDirection.TOPLEFT ||
+        direction === ButtonDirection.BOTTOMRIGHT
+        ? screenPos.x +
+            (width - this.extendArrowPadding * Math.sqrt(2)) *
+              this.panZoom.scale
+        : screenPos.x +
+            this.extendArrowPadding * Math.sqrt(2) * this.panZoom.scale,
+      screenPos.y +
+        (height - this.extendArrowPadding * Math.sqrt(2)) * this.panZoom.scale,
+      direction === ButtonDirection.TOPLEFT ||
+        direction === ButtonDirection.BOTTOMRIGHT
+        ? (Math.PI * 3) / 4
+        : -(Math.PI * 3) / 4,
+      this.panZoom.scale,
+      5,
     );
     switch (direction) {
       case ButtonDirection.TOPLEFT: {
@@ -422,8 +473,153 @@ export default class GridLayer extends BaseLayer {
     }
   }
 
+  drawSurroundingDashedLines(correctedLefTopScreenPoint: Coord) {
+    const offsetFromPixelCanvas =
+      DashedLineOffsetFromPixelCanvas * this.panZoom.scale;
+    const ctx = this.ctx;
+    ctx.save();
+    const dash = 5 * this.panZoom.scale;
+    const gap = 5 * this.panZoom.scale;
+    ctx.setLineDash([dash, gap]);
+    ctx.strokeStyle = "#333333";
+    ctx.lineWidth = 1;
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    ctx.beginPath();
+    ctx.moveTo(
+      correctedLefTopScreenPoint.x - offsetFromPixelCanvas,
+      correctedLefTopScreenPoint.y - offsetFromPixelCanvas,
+    );
+    ctx.lineTo(
+      correctedLefTopScreenPoint.x +
+        this.columnCount * squareLength +
+        offsetFromPixelCanvas,
+      correctedLefTopScreenPoint.y - offsetFromPixelCanvas,
+    );
+    ctx.lineTo(
+      correctedLefTopScreenPoint.x +
+        this.columnCount * squareLength +
+        offsetFromPixelCanvas,
+      correctedLefTopScreenPoint.y +
+        this.rowCount * squareLength +
+        offsetFromPixelCanvas,
+    );
+    ctx.lineTo(
+      correctedLefTopScreenPoint.x - offsetFromPixelCanvas,
+      correctedLefTopScreenPoint.y +
+        this.rowCount * squareLength +
+        offsetFromPixelCanvas,
+    );
+    ctx.lineTo(
+      correctedLefTopScreenPoint.x - offsetFromPixelCanvas,
+      correctedLefTopScreenPoint.y - offsetFromPixelCanvas,
+    );
+    ctx.stroke();
+    ctx.restore();
+
+    // ctx.save();
+    // ctx.strokeStyle = "#333333";
+    // ctx.lineWidth = 1;
+    // ctx.beginPath();
+    // ctx.moveTo(
+    //   correctedLefTopScreenPoint.x - offsetFromPixelCanvas * 2,
+    //   correctedLefTopScreenPoint.y - offsetFromPixelCanvas * 2,
+    // );
+    // ctx.lineTo(
+    //   correctedLefTopScreenPoint.x +
+    //     this.columnCount * squareLength +
+    //     offsetFromPixelCanvas * 2,
+    //   correctedLefTopScreenPoint.y - offsetFromPixelCanvas * 2,
+    // );
+    // ctx.lineTo(
+    //   correctedLefTopScreenPoint.x +
+    //     this.columnCount * squareLength +
+    //     offsetFromPixelCanvas * 2,
+    //   correctedLefTopScreenPoint.y +
+    //     this.rowCount * squareLength +
+    //     offsetFromPixelCanvas * 2,
+    // );
+    // ctx.lineTo(
+    //   correctedLefTopScreenPoint.x - offsetFromPixelCanvas * 2,
+    //   correctedLefTopScreenPoint.y +
+    //     this.rowCount * squareLength +
+    //     offsetFromPixelCanvas * 2,
+    // );
+    // ctx.lineTo(
+    //   correctedLefTopScreenPoint.x - offsetFromPixelCanvas * 2,
+    //   correctedLefTopScreenPoint.y - offsetFromPixelCanvas * 2,
+    // );
+    // ctx.stroke();
+    // ctx.restore();
+  }
+
+  drawCircleButtonAlongDashedLine(correctedLefTopScreenPoint: Coord) {
+    const offsetFromPixelCanvas =
+      DashedLineOffsetFromPixelCanvas * this.panZoom.scale;
+    const ctx = this.ctx;
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    const leftTopCorner = {
+      x: correctedLefTopScreenPoint.x - offsetFromPixelCanvas,
+      y: correctedLefTopScreenPoint.y - offsetFromPixelCanvas,
+    };
+    const radius = ExtensionGuideCircleRadius * this.panZoom.scale;
+    const topMiddle = {
+      x: correctedLefTopScreenPoint.x + (this.columnCount * squareLength) / 2,
+      y: correctedLefTopScreenPoint.y - offsetFromPixelCanvas,
+    };
+    const rightTopCorner = {
+      x:
+        correctedLefTopScreenPoint.x +
+        this.columnCount * squareLength +
+        offsetFromPixelCanvas,
+      y: correctedLefTopScreenPoint.y - offsetFromPixelCanvas,
+    };
+    const rightMiddle = {
+      x:
+        correctedLefTopScreenPoint.x +
+        this.columnCount * squareLength +
+        offsetFromPixelCanvas,
+      y: correctedLefTopScreenPoint.y + (this.rowCount * squareLength) / 2,
+    };
+    const rightBottomCorner = {
+      x:
+        correctedLefTopScreenPoint.x +
+        this.columnCount * squareLength +
+        offsetFromPixelCanvas,
+      y:
+        correctedLefTopScreenPoint.y +
+        this.rowCount * squareLength +
+        offsetFromPixelCanvas,
+    };
+    const bottomMiddle = {
+      x: correctedLefTopScreenPoint.x + (this.columnCount * squareLength) / 2,
+      y:
+        correctedLefTopScreenPoint.y +
+        this.rowCount * squareLength +
+        offsetFromPixelCanvas,
+    };
+    const leftBottomCorner = {
+      x: correctedLefTopScreenPoint.x - offsetFromPixelCanvas,
+      y:
+        correctedLefTopScreenPoint.y +
+        this.rowCount * squareLength +
+        offsetFromPixelCanvas,
+    };
+    const leftMiddle = {
+      x: correctedLefTopScreenPoint.x - offsetFromPixelCanvas,
+      y: correctedLefTopScreenPoint.y + (this.rowCount * squareLength) / 2,
+    };
+    drawCircle(ctx, leftTopCorner, radius, "#ffffff", "#5A7FF7", 1);
+    drawCircle(ctx, topMiddle, radius, "#ffffff", "#5A7FF7", 1);
+    drawCircle(ctx, rightTopCorner, radius, "#ffffff", "#5A7FF7", 1);
+    drawCircle(ctx, rightMiddle, radius, "#ffffff", "#5A7FF7", 1);
+    drawCircle(ctx, rightBottomCorner, radius, "#ffffff", "#5A7FF7", 1);
+    drawCircle(ctx, bottomMiddle, radius, "#ffffff", "#5A7FF7", 1);
+    drawCircle(ctx, leftBottomCorner, radius, "#ffffff", "#5A7FF7", 1);
+    drawCircle(ctx, leftMiddle, radius, "#ffffff", "#5A7FF7", 1);
+  }
+
   drawButtons() {
-    const buttonBackgroundColor = "#c8c8c8";
+    const buttonBackgroundColor = "transparent";
     const onHoverbuttonBackgroundColor = "#b2b2b2";
     this.drawTopButton(
       this.hoveredButton === ButtonDirection.TOP
@@ -501,12 +697,6 @@ export default class GridLayer extends BaseLayer {
   render() {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
-    if (!this.isGridFixed) {
-      this.drawButtons();
-    }
-    if (!this.isGridVisible) {
-      return;
-    }
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const leftTopPoint: Coord = {
@@ -522,6 +712,14 @@ export default class GridLayer extends BaseLayer {
       convertedScreenPoint,
       this.panZoom,
     );
+    if (!this.isGridFixed) {
+      this.drawButtons();
+      this.drawSurroundingDashedLines(correctedScreenPoint);
+      this.drawCircleButtonAlongDashedLine(correctedScreenPoint);
+    }
+    if (!this.isGridVisible) {
+      return;
+    }
     ctx.save();
 
     ctx.lineWidth = this.gridStrokeWidth;
