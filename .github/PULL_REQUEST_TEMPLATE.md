@@ -12,19 +12,19 @@
 
 ## Write a title of your change
 
-- **[🪝Hooks] Write a summary of what you have done on hooks**
+- _[🪝Hooks] Write a summary of what you have done on hooks_
 
   - Write a description of the changes you made on hooks
 
-- **[🎨Component] Write a summary of what you have done on hooks**
+- _[🎨Component] Write a summary of what you have done on hooks_
 
   - Write a description of the changes you made on components
 
-- **[📒Docs] Write a summary of what you have done on docs**
+- _[📒Docs] Write a summary of what you have done on docs_
 
   - Write a description of the changes you made on docs
 
-- **[🔗Other] Write a summary of what other things you have done**
+- _[🔗Other] Write a summary of what other things you have done_
 
   - Write a description of the changes you made on other things
 
