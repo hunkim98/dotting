@@ -624,7 +624,7 @@ export default class GridLayer extends BaseLayer {
 
   drawButtons() {
     const buttonBackgroundColor = "transparent";
-    const onHoverbuttonBackgroundColor = "#b2b2b2";
+    const onHoverbuttonBackgroundColor = "rgba(50,50,50,0.4)";
     this.drawTopButton(
       this.hoveredButton === ButtonDirection.TOP
         ? onHoverbuttonBackgroundColor

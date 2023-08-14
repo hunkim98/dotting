@@ -60,3 +60,5 @@ export const DashedLineOffsetFromPixelCanvas = 15;
 export const ExtensionGuideCircleRadius = 3;
 
 export const DefaultExtendArrowPadding = 2;
+
+export const DefaultBackgroundColor = "#999999";

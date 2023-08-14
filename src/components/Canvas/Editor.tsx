@@ -291,6 +291,7 @@ export default class Editor extends EventDispatcher {
 
   setBackgroundColor(color: React.CSSProperties["color"]) {
     this.backgroundLayer.setBackgroundColor(color);
+    this.interactionLayer.setBackgroundColor(color);
     this.renderBackgroundLayer();
   }
   // background related functions ⬆
@@ -316,6 +317,15 @@ export default class Editor extends EventDispatcher {
   setGridStrokeWidth(width: number) {
     this.gridLayer.setGridStrokeWidth(width);
     this.renderGridLayer();
+  }
+
+  setDefaultPixelColor(color: string) {
+    if (color === undefined) {
+      return;
+    }
+    this.dataLayer.setDefaultPixelColor(color);
+    this.interactionLayer.setDefaultPixelColor(color);
+    this.renderDataLayer();
   }
 
   setGridSquareLength(length: number) {

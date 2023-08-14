@@ -93,7 +93,11 @@ export const deleteColumnOfData = (data: DottingData, columnIndex: number) => {
   });
 };
 
-export const addRowToData = (data: DottingData, rowIndex: number) => {
+export const addRowToData = (
+  data: DottingData,
+  rowIndex: number,
+  defaultColor: string,
+) => {
   const columnKeys = getColumnKeysFromData(data);
   if (data.has(rowIndex)) {
     return;
@@ -104,7 +108,11 @@ export const addRowToData = (data: DottingData, rowIndex: number) => {
   }
 };
 
-export const addColumnToData = (data: DottingData, columnIndex: number) => {
+export const addColumnToData = (
+  data: DottingData,
+  columnIndex: number,
+  defaultColor: string,
+) => {
   data.forEach(row => {
     if (!row.has(columnIndex)) {
       row.set(columnIndex, { color: "" });
