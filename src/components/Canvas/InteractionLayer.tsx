@@ -1430,6 +1430,7 @@ export default class InteractionLayer extends BaseLayer {
     ctx.save();
     if (leftColumnOffset > 0) {
       ctx.fillStyle = this.backgroundColor;
+      ctx.strokeStyle = this.backgroundColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x - leftColumnOffset * squareLength,
         correctedLeftTopScreenPoint.y,
@@ -1438,6 +1439,7 @@ export default class InteractionLayer extends BaseLayer {
       );
     } else {
       ctx.fillStyle = this.defaultPixelColor;
+      ctx.strokeStyle = this.defaultPixelColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x,
         correctedLeftTopScreenPoint.y,
@@ -1447,6 +1449,7 @@ export default class InteractionLayer extends BaseLayer {
     }
     if (rightColumnOffset > 0) {
       ctx.fillStyle = this.defaultPixelColor;
+      ctx.strokeStyle = this.defaultPixelColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x +
           columnCount * squareLength -
@@ -1457,6 +1460,7 @@ export default class InteractionLayer extends BaseLayer {
       );
     } else {
       ctx.fillStyle = this.backgroundColor;
+      ctx.strokeStyle = this.backgroundColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x + columnCount * squareLength,
         correctedLeftTopScreenPoint.y,
@@ -1474,6 +1478,7 @@ export default class InteractionLayer extends BaseLayer {
       );
     } else {
       ctx.fillStyle = this.defaultPixelColor;
+      ctx.strokeStyle = this.defaultPixelColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x,
         correctedLeftTopScreenPoint.y,
@@ -1483,6 +1488,7 @@ export default class InteractionLayer extends BaseLayer {
     }
     if (bottomRowOffset > 0) {
       ctx.fillStyle = this.defaultPixelColor;
+      ctx.strokeStyle = this.defaultPixelColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x,
         correctedLeftTopScreenPoint.y +
@@ -1493,6 +1499,7 @@ export default class InteractionLayer extends BaseLayer {
       );
     } else {
       ctx.fillStyle = this.backgroundColor;
+      ctx.strokeStyle = this.backgroundColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x,
         correctedLeftTopScreenPoint.y + rowCount * squareLength,
@@ -1502,6 +1509,7 @@ export default class InteractionLayer extends BaseLayer {
     }
     if (leftColumnOffset > 0 && topRowOffset > 0) {
       ctx.fillStyle = this.backgroundColor;
+      ctx.strokeStyle = this.backgroundColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x - leftColumnOffset * squareLength,
         correctedLeftTopScreenPoint.y - topRowOffset * squareLength,
@@ -1511,6 +1519,7 @@ export default class InteractionLayer extends BaseLayer {
     }
     if (leftColumnOffset > 0 && bottomRowOffset < 0) {
       ctx.fillStyle = this.backgroundColor;
+      ctx.strokeStyle = this.backgroundColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x - leftColumnOffset * squareLength,
         correctedLeftTopScreenPoint.y + rowCount * squareLength,
@@ -1520,6 +1529,7 @@ export default class InteractionLayer extends BaseLayer {
     }
     if (rightColumnOffset < 0 && topRowOffset > 0) {
       ctx.fillStyle = this.backgroundColor;
+      ctx.strokeStyle = this.backgroundColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x + columnCount * squareLength,
         correctedLeftTopScreenPoint.y - topRowOffset * squareLength,
@@ -1529,6 +1539,7 @@ export default class InteractionLayer extends BaseLayer {
     }
     if (rightColumnOffset < 0 && bottomRowOffset < 0) {
       ctx.fillStyle = this.backgroundColor;
+      ctx.strokeStyle = this.backgroundColor;
       ctx.fillRect(
         correctedLeftTopScreenPoint.x + columnCount * squareLength,
         correctedLeftTopScreenPoint.y + rowCount * squareLength,
@@ -1536,6 +1547,7 @@ export default class InteractionLayer extends BaseLayer {
         -bottomRowOffset * squareLength,
       );
     }
+    ctx.stroke();
     ctx.restore();
   }
 
