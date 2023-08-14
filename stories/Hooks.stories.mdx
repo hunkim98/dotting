@@ -144,26 +144,3 @@ export const Component = () => {
 ```
 
 <Clear />
-
-#### Styling
-
-You can add styles to Dotting component via `React.CSSProperties` <br/>
-`gridStroke` props to control grid's appearances <br/>
-`background` props to control base layer's appearances <br/>
-
-```ts
-export const Component = () => {
-  return (
-    <div>
-      <Dotting
-        gridStrokeColor={gridStrokeColor}
-        gridStrokeWidth={gridStrokeWidth}
-        style={{ borderColor: "red" }}
-        backgroundColor="#FFD4D2"
-      />
-    </div>
-  );
-};
-```
-
-<GridStyling />
