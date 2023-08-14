@@ -32,7 +32,10 @@ export interface DottingProps {
   gridStrokeColor?: string;
   gridStrokeWidth?: number;
   isGridVisible?: boolean;
-  backgroundMode?: "checkerboard" | "color";
+  // TODO: The background mode has been removed for now
+  //       This is because the `renderCanvasMask` function in interactionLayer does not work for
+  //       backgroundMode "checkerboard"
+  // backgroundMode?: "checkerboard" | "color";
   backgroundColor?: string;
   backgroundAlpha?: number;
   initLayers?: Array<LayerProps>;
@@ -147,24 +150,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         listener: EventListenerOrEventListenerObject;
       }>
     >([]);
-
-  // this is called when children are added to the canvas
-  // this will be used when layers are reorderd or added/removed
-  // useEffect(() => {
-  //   if (!editor) {
-  //     return;
-  //   }
-  //   const layerIds = new Set<string>();
-  //   React.Children.map(props.children, (child: any) => {
-  //     const { id } = child.props;
-  //     if (layerIds.has(id)) {
-  //       throw new Error(`Duplicate layer id: ${id}`);
-  //     }
-  //     layerIds.add(id);
-
-  //     // editor.addCanvasElement(child);
-  //   });
-  // }, [editor, props.children]);
 
   useEffect(() => {
     if (!editor) {
@@ -394,12 +379,12 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (props.backgroundColor) {
       editor.setBackgroundColor(props.backgroundColor);
     }
-    if (props.backgroundMode) {
-      editor.setBackgroundMode(props.backgroundMode);
-    }
+    // if (props.backgroundMode) {
+    //   editor.setBackgroundMode(props.backgroundMode);
+    // }
   }, [
     editor,
-    props.backgroundMode,
+    // props.backgroundMode,
     props.backgroundAlpha,
     props.backgroundColor,
   ]);
@@ -484,7 +469,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     editor.setIsInteractionApplicable(props.isInteractionApplicable);
     editor.setIsDrawingEnabled(props.isDrawingEnabled);
     editor.setBackgroundAlpha(props.backgroundAlpha);
-    editor.setBackgroundMode(props.backgroundMode);
+    // editor.setBackgroundMode(props.backgroundMode);
     editor.setIsPanZoomable(props.isPanZoomable);
     editor.setIsGridVisible(props.isGridVisible);
     editor.setGridStrokeColor(props.gridStrokeColor);

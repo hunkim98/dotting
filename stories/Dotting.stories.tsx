@@ -7,6 +7,12 @@ import {
 import { KeysEnum, StoriesComponentItem } from "./utils/types";
 import { BrushTool } from "../src/components/Canvas/types";
 import DottingComponent, { DottingProps } from "../src/components/Dotting";
+import {
+  DefaultGridSquareLength,
+  DefaultMaxScale,
+  DefaultMinScale,
+  DefaultPixelColor,
+} from "../src/components/Canvas/config";
 
 //blog.harveydelaney.com/creating-your-own-react-component-library/
 
@@ -44,11 +50,13 @@ const DottingComponentArgTypes: KeysEnum<
     description: "If set to `true` the grid lines will be visible",
     disable: false,
   }),
-  backgroundMode: generateComponentControl<DottingProps["backgroundMode"]>({
-    defaultValue: "checkerboard",
-    description: "The background mode of the canvas.",
-    disable: false,
-  }),
+  // TODO: backgroundMode "checkerboard" does not work for now due to the changes in interactionlayer
+  //       We must first tackle with `renderCanvasMask` to make backgroundMode to be set by users
+  // backgroundMode: generateComponentControl<DottingProps["backgroundMode"]>({
+  //   defaultValue: "checkerboard",
+  //   description: "The background mode of the canvas.",
+  //   disable: false,
+  // }),
   backgroundColor: generateComponentControl<DottingProps["backgroundColor"]>({
     defaultValue: "#c9c9c9",
     description: "The background color of the canvas.",
@@ -75,22 +83,7 @@ const DottingComponentArgTypes: KeysEnum<
     description: "If set to `true` the grid will not be extendable",
     disable: false,
   }),
-  isInteractionApplicable: generateComponentControl<
-    DottingProps["isInteractionApplicable"]
-  >({
-    defaultValue: true,
-    description:
-      "If set to `true` the interaction will be applicable.\
-      If set to `false` the interaction will be disabled",
-    disable: false,
-  }),
-  isDrawingEnabled: generateComponentControl<DottingProps["isDrawingEnabled"]>({
-    defaultValue: true,
-    description:
-      "If set to `true` the drawing will be enabled.\
-      If set to `false` the drawing will be disabled",
-    disable: false,
-  }),
+
   // ref: generateComponentControl<DottingProps["ref"]>({
   //   description:
   //     "The ref object that you would like to connect to the Dotting Canvas.\
@@ -114,6 +107,44 @@ const DottingComponentArgTypes: KeysEnum<
   indicatorData: generateComponentControl<DottingProps["indicatorData"]>({
     description: "The indicator data that you want to draw on the canvas.",
     disable: true,
+  }),
+  isInteractionApplicable: generateComponentControl<
+    DottingProps["isInteractionApplicable"]
+  >({
+    defaultValue: true,
+    description:
+      "If set to `true` the interaction will be applicable.\
+    If set to `false` the interaction will be disabled",
+    disable: false,
+  }),
+  isDrawingEnabled: generateComponentControl<DottingProps["isDrawingEnabled"]>({
+    defaultValue: true,
+    description:
+      "If set to `true` the drawing will be enabled.\
+      If set to `false` the drawing will be disabled",
+    disable: false,
+  }),
+  gridSquareLength: generateComponentControl<DottingProps["gridSquareLength"]>({
+    defaultValue: DefaultGridSquareLength,
+    description: "The length of the grid square.",
+    disable: false,
+  }),
+  defaultPixelColor: generateComponentControl<
+    DottingProps["defaultPixelColor"]
+  >({
+    defaultValue: DefaultPixelColor,
+    description: "The default pixel color.",
+    disable: false,
+  }),
+  minScale: generateComponentControl<DottingProps["minScale"]>({
+    defaultValue: DefaultMinScale,
+    description: "The minimum scale of the canvas.",
+    disable: false,
+  }),
+  maxScale: generateComponentControl<DottingProps["maxScale"]>({
+    defaultValue: DefaultMaxScale,
+    description: "The maximum scale of the canvas.",
+    disable: false,
   }),
 };
 
@@ -145,16 +176,20 @@ export const Dotting = (args: DottingProps) => {
       gridStrokeColor={args.gridStrokeColor}
       gridStrokeWidth={args.gridStrokeWidth}
       isGridVisible={args.isGridVisible}
-      backgroundMode={args.backgroundMode}
+      // backgroundMode={args.backgroundMode}
       backgroundColor={args.backgroundColor}
       backgroundAlpha={args.backgroundAlpha}
       isPanZoomable={args.isPanZoomable}
       isGridFixed={args.isGridFixed}
-      isInteractionApplicable={args.isInteractionApplicable}
-      isDrawingEnabled={args.isDrawingEnabled}
       brushColor={args.brushColor}
       brushTool={args.brushTool}
       indicatorData={[]}
+      isInteractionApplicable={args.isInteractionApplicable}
+      isDrawingEnabled={args.isDrawingEnabled}
+      gridSquareLength={args.gridSquareLength}
+      defaultPixelColor={args.defaultPixelColor}
+      minScale={args.minScale}
+      maxScale={args.maxScale}
     />
   );
 };

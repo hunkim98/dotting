@@ -4,7 +4,7 @@ import { BaseLayer } from "./BaseLayer";
 import { DefaultBackgroundColor } from "./config";
 
 export default class BackgroundLayer extends BaseLayer {
-  private backgroundMode: "checkerboard" | "color";
+  private backgroundMode: "checkerboard" | "color" = "color";
   private backgroundColor: React.CSSProperties["color"] =
     DefaultBackgroundColor;
   private backgroundAlpha: number;

@@ -2,6 +2,7 @@ import { BaseLayer } from "./BaseLayer";
 import {
   ButtonDirection,
   DefaultGridSquareLength,
+  DefaultPixelColor,
   DefaultPixelDataDimensions,
 } from "./config";
 import {
@@ -30,7 +31,7 @@ export default class DataLayer extends BaseLayer {
   private gridSquareLength: number = DefaultGridSquareLength;
   private layers: Array<DottingDataLayer>;
   private currentLayer: DottingDataLayer;
-  private defaultPixelColor = "#ffffff";
+  private defaultPixelColor = DefaultPixelColor;
 
   constructor({
     canvas,

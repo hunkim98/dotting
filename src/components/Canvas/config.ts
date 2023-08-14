@@ -62,3 +62,5 @@ export const ExtensionGuideCircleRadius = 3;
 export const DefaultExtendArrowPadding = 2;
 
 export const DefaultBackgroundColor = "#999999";
+
+export const DefaultPixelColor = "#ffffff";

@@ -343,12 +343,18 @@ export default class Editor extends EventDispatcher {
     if (minScale === undefined) {
       return;
     }
+    if (minScale > this.maxScale) {
+      throw new Error("minScale cannot be greater than maxScale");
+    }
     this.minScale = minScale;
   }
 
   setMaxScale(maxScale: number) {
     if (maxScale === undefined) {
       return;
+    }
+    if (maxScale < this.minScale) {
+      throw new Error("maxScale cannot be less than minScale");
     }
     this.maxScale = maxScale;
   }

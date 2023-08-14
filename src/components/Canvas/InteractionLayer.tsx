@@ -9,6 +9,7 @@ import {
   UserId,
   CurrentDeviceUserId,
   DefaultBackgroundColor,
+  DefaultPixelColor,
 } from "./config";
 import {
   BRUSH_PATTERN_ELEMENT,
@@ -59,7 +60,9 @@ export default class InteractionLayer extends BaseLayer {
   private backgroundColor: React.CSSProperties["color"] =
     DefaultBackgroundColor;
 
-  private defaultPixelColor = "#ffffff";
+  private defaultPixelColor = DefaultPixelColor;
+
+  private backgroundMode: "checkerboard" | "color" = "color";
 
   private selectingArea: Omit<
     SelectAreaRange,
@@ -1389,7 +1392,17 @@ export default class InteractionLayer extends BaseLayer {
     ctx.restore();
   }
 
+  /**
+   * @description While user is extending the pixel canvas,
+   *              this function hides the datalayer with background color when canvas is shrinked
+   *              or notifies the extended area with DefaultPixelColor when canvas is extended
+   * @param correctedLeftTopScreenPoint The left top point of the canvas
+   * @param squareLength The length of the square
+   * @returns void
+   */
   renderCanvasMask(correctedLeftTopScreenPoint: Coord, squareLength: number) {
+    // TODO: this function only works for background mode "color"
+    //       We need to implement this function for "checkboard" mode
     if (
       this.capturedData === null ||
       this.capturedDataOriginalIndices === null
