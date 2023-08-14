@@ -38,6 +38,7 @@ import {
   lerpRanges,
 } from "../../utils/math";
 import { getOverlappingPixelIndicesForModifiedPixels } from "../../utils/position";
+import { drawRect } from "../../utils/shapes";
 
 export default class InteractionLayer extends BaseLayer {
   // We make this a map to allow for multiple users to interact with the canvas
@@ -1427,128 +1428,150 @@ export default class InteractionLayer extends BaseLayer {
     const bottomRowOffset =
       modifiedGridIndices.bottomRowIndex - originalGridIndices.bottomRowIndex;
     const ctx = this.ctx;
-    ctx.save();
     if (leftColumnOffset > 0) {
-      ctx.fillStyle = this.backgroundColor;
-      ctx.strokeStyle = this.backgroundColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x - leftColumnOffset * squareLength,
         correctedLeftTopScreenPoint.y,
         leftColumnOffset * squareLength,
         rowCount * squareLength,
+        this.backgroundColor,
+        this.backgroundColor,
+        1,
       );
     } else {
-      ctx.fillStyle = this.defaultPixelColor;
-      ctx.strokeStyle = this.defaultPixelColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x,
         correctedLeftTopScreenPoint.y,
         -leftColumnOffset * squareLength,
         rowCount * squareLength,
+        this.defaultPixelColor,
+        this.defaultPixelColor,
+        1,
       );
     }
     if (rightColumnOffset > 0) {
-      ctx.fillStyle = this.defaultPixelColor;
-      ctx.strokeStyle = this.defaultPixelColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x +
           columnCount * squareLength -
           rightColumnOffset * squareLength,
         correctedLeftTopScreenPoint.y,
         rightColumnOffset * squareLength,
         rowCount * squareLength,
+        this.defaultPixelColor,
+        this.defaultPixelColor,
+        1,
       );
     } else {
-      ctx.fillStyle = this.backgroundColor;
-      ctx.strokeStyle = this.backgroundColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x + columnCount * squareLength,
         correctedLeftTopScreenPoint.y,
         -rightColumnOffset * squareLength,
         rowCount * squareLength,
+        this.backgroundColor,
+        this.backgroundColor,
+        1,
       );
     }
     if (topRowOffset > 0) {
-      ctx.fillStyle = this.backgroundColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x,
         correctedLeftTopScreenPoint.y - topRowOffset * squareLength,
         columnCount * squareLength,
         topRowOffset * squareLength,
+        this.backgroundColor,
+        this.backgroundColor,
+        1,
       );
     } else {
-      ctx.fillStyle = this.defaultPixelColor;
-      ctx.strokeStyle = this.defaultPixelColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x,
         correctedLeftTopScreenPoint.y,
         columnCount * squareLength,
         -topRowOffset * squareLength,
+        this.defaultPixelColor,
+        this.defaultPixelColor,
+        1,
       );
     }
     if (bottomRowOffset > 0) {
-      ctx.fillStyle = this.defaultPixelColor;
-      ctx.strokeStyle = this.defaultPixelColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x,
         correctedLeftTopScreenPoint.y +
           rowCount * squareLength -
           bottomRowOffset * squareLength,
         columnCount * squareLength,
         bottomRowOffset * squareLength,
+        this.defaultPixelColor,
+        this.defaultPixelColor,
+        1,
       );
     } else {
-      ctx.fillStyle = this.backgroundColor;
-      ctx.strokeStyle = this.backgroundColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x,
         correctedLeftTopScreenPoint.y + rowCount * squareLength,
         columnCount * squareLength,
         -bottomRowOffset * squareLength,
+        this.backgroundColor,
+        this.backgroundColor,
+        1,
       );
     }
     if (leftColumnOffset > 0 && topRowOffset > 0) {
-      ctx.fillStyle = this.backgroundColor;
-      ctx.strokeStyle = this.backgroundColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x - leftColumnOffset * squareLength,
         correctedLeftTopScreenPoint.y - topRowOffset * squareLength,
         leftColumnOffset * squareLength,
         topRowOffset * squareLength,
+        this.backgroundColor,
+        this.backgroundColor,
+        1,
       );
     }
     if (leftColumnOffset > 0 && bottomRowOffset < 0) {
-      ctx.fillStyle = this.backgroundColor;
-      ctx.strokeStyle = this.backgroundColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x - leftColumnOffset * squareLength,
         correctedLeftTopScreenPoint.y + rowCount * squareLength,
         leftColumnOffset * squareLength,
         -bottomRowOffset * squareLength,
+        this.backgroundColor,
+        this.backgroundColor,
+        1,
       );
     }
     if (rightColumnOffset < 0 && topRowOffset > 0) {
-      ctx.fillStyle = this.backgroundColor;
-      ctx.strokeStyle = this.backgroundColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x + columnCount * squareLength,
         correctedLeftTopScreenPoint.y - topRowOffset * squareLength,
         -rightColumnOffset * squareLength,
         topRowOffset * squareLength,
+        this.backgroundColor,
+        this.backgroundColor,
+        1,
       );
     }
     if (rightColumnOffset < 0 && bottomRowOffset < 0) {
-      ctx.fillStyle = this.backgroundColor;
-      ctx.strokeStyle = this.backgroundColor;
-      ctx.fillRect(
+      drawRect(
+        ctx,
         correctedLeftTopScreenPoint.x + columnCount * squareLength,
         correctedLeftTopScreenPoint.y + rowCount * squareLength,
         -rightColumnOffset * squareLength,
         -bottomRowOffset * squareLength,
+        this.backgroundColor,
+        this.backgroundColor,
+        1,
       );
     }
-    ctx.stroke();
-    ctx.restore();
   }
 
   renderIndicatorPixels(
