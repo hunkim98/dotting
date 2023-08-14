@@ -45,6 +45,8 @@ export interface DottingProps {
   isDrawingEnabled?: boolean;
   gridSquareLength?: number;
   defaultPixelColor?: string;
+  minScale?: number;
+  maxScale?: number;
   // children?: React.ReactNode;
   // initIndicatorData?: Array<PixelModifyItem>;
   // initBrushColor?: string;
@@ -219,6 +221,20 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     }
     editor.setDefaultPixelColor(props.defaultPixelColor);
   }, [editor, props.defaultPixelColor]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    editor.setMinScale(props.minScale);
+  }, [editor, props.minScale]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    editor.setMaxScale(props.maxScale);
+  }, [editor, props.maxScale]);
 
   useEffect(() => {
     if (!editor) {
@@ -475,6 +491,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     editor.setGridStrokeWidth(props.gridStrokeWidth);
     editor.setGridSquareLength(props.gridSquareLength);
     editor.setDefaultPixelColor(props.defaultPixelColor);
+    editor.setMinScale(props.minScale);
+    editor.setMaxScale(props.maxScale);
 
     setEditor(editor);
 

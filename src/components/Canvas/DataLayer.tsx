@@ -30,7 +30,7 @@ export default class DataLayer extends BaseLayer {
   private gridSquareLength: number = DefaultGridSquareLength;
   private layers: Array<DottingDataLayer>;
   private currentLayer: DottingDataLayer;
-  private defaultPixelColor: string = "#ffffff";
+  private defaultPixelColor = "#ffffff";
 
   constructor({
     canvas,
