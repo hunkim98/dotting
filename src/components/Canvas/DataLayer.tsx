@@ -30,6 +30,7 @@ export default class DataLayer extends BaseLayer {
   private gridSquareLength: number = DefaultGridSquareLength;
   private layers: Array<DottingDataLayer>;
   private currentLayer: DottingDataLayer;
+  private defaultPixelColor: string = "#ffffff";
 
   constructor({
     canvas,
@@ -261,6 +262,10 @@ export default class DataLayer extends BaseLayer {
 
   setGridSquareLength(length: number) {
     this.gridSquareLength = length;
+  }
+
+  setDefaultPixelColor(color: string) {
+    this.defaultPixelColor = color;
   }
 
   shortenGridBy(
@@ -516,6 +521,19 @@ export default class DataLayer extends BaseLayer {
 
     const allRowKeys = getRowKeysFromData(this.getData());
     const allColumnKeys = getColumnKeysFromData(this.getData());
+
+    // color back with default color
+    if (this.defaultPixelColor) {
+      ctx.save();
+      ctx.fillStyle = this.defaultPixelColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x,
+        correctedLeftTopScreenPoint.y,
+        squareLength * allColumnKeys.length,
+        squareLength * allRowKeys.length,
+      );
+      ctx.restore();
+    }
 
     ctx.save();
     for (const i of allRowKeys) {

@@ -44,6 +44,7 @@ export interface DottingProps {
   isInteractionApplicable?: boolean;
   isDrawingEnabled?: boolean;
   gridSquareLength?: number;
+  defaultPixelColor?: string;
   // children?: React.ReactNode;
   // initIndicatorData?: Array<PixelModifyItem>;
   // initBrushColor?: string;
@@ -202,6 +203,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!editor) {
       return;
     }
+    editor.setIsInteractionApplicable(props.isInteractionApplicable);
+  }, [editor, props.isInteractionApplicable]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
     editor.setGridSquareLength(props.gridSquareLength);
   }, [editor, props.gridSquareLength]);
 
@@ -209,8 +217,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (!editor) {
       return;
     }
-    editor.setIsInteractionApplicable(props.isInteractionApplicable);
-  }, [editor, props.isInteractionApplicable]);
+    editor.setDefaultPixelColor(props.defaultPixelColor);
+  }, [editor, props.defaultPixelColor]);
 
   useEffect(() => {
     if (!editor) {
@@ -462,10 +470,11 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     editor.setBackgroundAlpha(props.backgroundAlpha);
     editor.setBackgroundMode(props.backgroundMode);
     editor.setIsPanZoomable(props.isPanZoomable);
-    editor.setGridSquareLength(props.gridSquareLength);
     editor.setIsGridVisible(props.isGridVisible);
     editor.setGridStrokeColor(props.gridStrokeColor);
     editor.setGridStrokeWidth(props.gridStrokeWidth);
+    editor.setGridSquareLength(props.gridSquareLength);
+    editor.setDefaultPixelColor(props.defaultPixelColor);
 
     setEditor(editor);
 

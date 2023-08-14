@@ -8,6 +8,7 @@ import {
   InteractionEdgeTouchingRange,
   UserId,
   CurrentDeviceUserId,
+  DefaultBackgroundColor,
 } from "./config";
 import {
   BRUSH_PATTERN_ELEMENT,
@@ -54,6 +55,11 @@ export default class InteractionLayer extends BaseLayer {
   private dataLayerRowCount: number;
 
   private dataLayerColumnCount: number;
+
+  private backgroundColor: React.CSSProperties["color"] =
+    DefaultBackgroundColor;
+
+  private defaultPixelColor: string = "#ffffff";
 
   private selectingArea: Omit<
     SelectAreaRange,
@@ -138,6 +144,10 @@ export default class InteractionLayer extends BaseLayer {
     this.gridSquareLength = length;
   }
 
+  setDefaultPixelColor(color: string) {
+    this.defaultPixelColor = color;
+  }
+
   setDataLayerColumnCount(columnCount: number) {
     this.dataLayerColumnCount = columnCount;
   }
@@ -178,6 +188,10 @@ export default class InteractionLayer extends BaseLayer {
 
   setSelectedAreaPixels(pixelArray: Array<ColorChangeItem>) {
     this.selectedAreaPixels = pixelArray;
+  }
+
+  setBackgroundColor(color: string) {
+    this.backgroundColor = color ? color : DefaultBackgroundColor;
   }
 
   setCapturedData(gridChangeStartCapturedData: DottingData) {
@@ -1086,7 +1100,7 @@ export default class InteractionLayer extends BaseLayer {
       // this.swipedPixels = this.swipedPixels.filter(
       //   swipedPixel => swipedPixel.rowIndex !== newRowIndex,
       // );
-      addRowToData(this.capturedData, newRowIndex);
+      addRowToData(this.capturedData, newRowIndex, this.defaultPixelColor);
     } else if (
       direction === ButtonDirection.LEFT ||
       direction === ButtonDirection.RIGHT
@@ -1098,7 +1112,11 @@ export default class InteractionLayer extends BaseLayer {
       // this.swipedPixels = this.swipedPixels.filter(
       //   swipedPixel => swipedPixel.columnIndex !== newColumnIndex,
       // );
-      addColumnToData(this.capturedData, newColumnIndex);
+      addColumnToData(
+        this.capturedData,
+        newColumnIndex,
+        this.defaultPixelColor,
+      );
     }
   }
 
@@ -1371,6 +1389,143 @@ export default class InteractionLayer extends BaseLayer {
     ctx.restore();
   }
 
+  renderCanvasMask(correctedLeftTopScreenPoint: Coord, squareLength: number) {
+    if (
+      this.capturedData === null ||
+      this.capturedDataOriginalIndices === null
+    ) {
+      return;
+    }
+    const modifiedGridIndices = getGridIndicesFromData(this.capturedData);
+    const originalGridIndices = this.capturedDataOriginalIndices;
+    const columnCount =
+      modifiedGridIndices.rightColumnIndex -
+      modifiedGridIndices.leftColumnIndex +
+      1;
+    const rowCount =
+      modifiedGridIndices.bottomRowIndex - modifiedGridIndices.topRowIndex + 1;
+    const leftColumnOffset =
+      modifiedGridIndices.leftColumnIndex - originalGridIndices.leftColumnIndex;
+    const rightColumnOffset =
+      modifiedGridIndices.rightColumnIndex -
+      originalGridIndices.rightColumnIndex;
+    const topRowOffset =
+      modifiedGridIndices.topRowIndex - originalGridIndices.topRowIndex;
+    const bottomRowOffset =
+      modifiedGridIndices.bottomRowIndex - originalGridIndices.bottomRowIndex;
+    const ctx = this.ctx;
+    ctx.save();
+    if (leftColumnOffset > 0) {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x - leftColumnOffset * squareLength,
+        correctedLeftTopScreenPoint.y,
+        leftColumnOffset * squareLength,
+        rowCount * squareLength,
+      );
+    } else {
+      ctx.fillStyle = this.defaultPixelColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x,
+        correctedLeftTopScreenPoint.y,
+        -leftColumnOffset * squareLength,
+        rowCount * squareLength,
+      );
+    }
+    if (rightColumnOffset > 0) {
+      ctx.fillStyle = this.defaultPixelColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x +
+          columnCount * squareLength -
+          rightColumnOffset * squareLength,
+        correctedLeftTopScreenPoint.y,
+        rightColumnOffset * squareLength,
+        rowCount * squareLength,
+      );
+    } else {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x + columnCount * squareLength,
+        correctedLeftTopScreenPoint.y,
+        -rightColumnOffset * squareLength,
+        rowCount * squareLength,
+      );
+    }
+    if (topRowOffset > 0) {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x,
+        correctedLeftTopScreenPoint.y - topRowOffset * squareLength,
+        columnCount * squareLength,
+        topRowOffset * squareLength,
+      );
+    } else {
+      ctx.fillStyle = this.defaultPixelColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x,
+        correctedLeftTopScreenPoint.y,
+        columnCount * squareLength,
+        -topRowOffset * squareLength,
+      );
+    }
+    if (bottomRowOffset > 0) {
+      ctx.fillStyle = this.defaultPixelColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x,
+        correctedLeftTopScreenPoint.y +
+          rowCount * squareLength -
+          bottomRowOffset * squareLength,
+        columnCount * squareLength,
+        bottomRowOffset * squareLength,
+      );
+    } else {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x,
+        correctedLeftTopScreenPoint.y + rowCount * squareLength,
+        columnCount * squareLength,
+        -bottomRowOffset * squareLength,
+      );
+    }
+    if (leftColumnOffset > 0 && topRowOffset > 0) {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x - leftColumnOffset * squareLength,
+        correctedLeftTopScreenPoint.y - topRowOffset * squareLength,
+        leftColumnOffset * squareLength,
+        topRowOffset * squareLength,
+      );
+    }
+    if (leftColumnOffset > 0 && bottomRowOffset < 0) {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x - leftColumnOffset * squareLength,
+        correctedLeftTopScreenPoint.y + rowCount * squareLength,
+        leftColumnOffset * squareLength,
+        -bottomRowOffset * squareLength,
+      );
+    }
+    if (rightColumnOffset < 0 && topRowOffset > 0) {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x + columnCount * squareLength,
+        correctedLeftTopScreenPoint.y - topRowOffset * squareLength,
+        -rightColumnOffset * squareLength,
+        topRowOffset * squareLength,
+      );
+    }
+    if (rightColumnOffset < 0 && bottomRowOffset < 0) {
+      ctx.fillStyle = this.backgroundColor;
+      ctx.fillRect(
+        correctedLeftTopScreenPoint.x + columnCount * squareLength,
+        correctedLeftTopScreenPoint.y + rowCount * squareLength,
+        -rightColumnOffset * squareLength,
+        -bottomRowOffset * squareLength,
+      );
+    }
+    ctx.restore();
+  }
+
   renderIndicatorPixels(
     correctedLeftTopScreenPoint: Coord,
     squareLength: number,
@@ -1492,6 +1647,7 @@ export default class InteractionLayer extends BaseLayer {
     );
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
+    this.renderCanvasMask(correctedLeftTopScreenPoint, squareLength);
     this.renderStrokedPixels(correctedLeftTopScreenPoint, squareLength);
     this.renderErasedPixels(correctedLeftTopScreenPoint, squareLength);
     this.renderIndicatorPixels(correctedLeftTopScreenPoint, squareLength);

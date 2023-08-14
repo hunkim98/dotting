@@ -1,10 +1,12 @@
 import React from "react";
 
 import { BaseLayer } from "./BaseLayer";
+import { DefaultBackgroundColor } from "./config";
 
 export default class BackgroundLayer extends BaseLayer {
   private backgroundMode: "checkerboard" | "color";
-  private backgroundColor: React.CSSProperties["color"] = "#999999";
+  private backgroundColor: React.CSSProperties["color"] =
+    DefaultBackgroundColor;
   private backgroundAlpha: number;
 
   constructor({ canvas }: { canvas: HTMLCanvasElement }) {
@@ -17,19 +19,13 @@ export default class BackgroundLayer extends BaseLayer {
 
   setBackgroundAlpha(alpha?: number) {
     if (alpha === undefined) {
-      this.backgroundAlpha = 0.5;
+      this.backgroundAlpha = 1;
     }
-    this.backgroundAlpha = alpha
-      ? alpha >= 1
-        ? 1
-        : alpha < 0
-        ? 0
-        : alpha
-      : 0.5;
+    this.backgroundAlpha = alpha ? (alpha >= 1 ? 1 : alpha < 0 ? 0 : alpha) : 1;
   }
 
   setBackgroundColor(color?: React.CSSProperties["color"]) {
-    this.backgroundColor = color ? color : "#999999";
+    this.backgroundColor = color ? color : DefaultBackgroundColor;
   }
 
   render() {
