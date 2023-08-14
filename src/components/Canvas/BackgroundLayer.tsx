@@ -4,7 +4,7 @@ import { BaseLayer } from "./BaseLayer";
 
 export default class BackgroundLayer extends BaseLayer {
   private backgroundMode: "checkerboard" | "color";
-  private backgroundColor: React.CSSProperties["color"] = "#c9c9c9";
+  private backgroundColor: React.CSSProperties["color"] = "#999999";
   private backgroundAlpha: number;
 
   constructor({ canvas }: { canvas: HTMLCanvasElement }) {
@@ -12,7 +12,7 @@ export default class BackgroundLayer extends BaseLayer {
   }
 
   setBackgroundMode(backgroundMode?: "checkerboard" | "color") {
-    this.backgroundMode = backgroundMode ? backgroundMode : "checkerboard";
+    this.backgroundMode = backgroundMode ? backgroundMode : "color";
   }
 
   setBackgroundAlpha(alpha?: number) {
@@ -29,7 +29,7 @@ export default class BackgroundLayer extends BaseLayer {
   }
 
   setBackgroundColor(color?: React.CSSProperties["color"]) {
-    this.backgroundColor = color ? color : "#c9c9c9";
+    this.backgroundColor = color ? color : "#999999";
   }
 
   render() {
