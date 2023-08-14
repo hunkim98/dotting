@@ -6,16 +6,30 @@ export const drawArrowHead = (
   y: number,
   radians: number,
   scale: number,
+  arrowWidth: number,
 ) => {
+  // draw traingle
   ctx.save();
   ctx.beginPath();
   ctx.translate(x, y);
   ctx.rotate(radians);
   ctx.moveTo(0, 0);
-  ctx.lineTo(7 * scale, 5 * scale);
-  ctx.lineTo(-7 * scale, 5 * scale);
+  ctx.lineTo((arrowWidth / 2) * scale, 5 * scale);
+  ctx.lineTo((-arrowWidth / 2) * scale, 5 * scale);
   ctx.closePath();
-  ctx.fillStyle = "#949494";
+  ctx.fillStyle = "#000000";
+  ctx.fill();
+  ctx.restore();
+  // draw line
+  ctx.save();
+  ctx.beginPath();
+  ctx.translate(x, y);
+  ctx.rotate(radians);
+  ctx.moveTo(0, 0);
+  ctx.lineTo(0, 8 * scale);
+  ctx.stroke();
+  ctx.closePath();
+  ctx.fillStyle = "#000000";
   ctx.fill();
   ctx.restore();
 };
@@ -39,5 +53,24 @@ export const drawExtendButton = (
     buttonHeight * scale,
   );
 
+  ctx.restore();
+};
+
+export const drawCircle = (
+  ctx: CanvasRenderingContext2D,
+  center: Coord,
+  radius: number,
+  fillStyle: string,
+  strokeStyle: string,
+  strokeWidth: number,
+) => {
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI);
+  ctx.fillStyle = fillStyle;
+  ctx.fill();
+  ctx.lineWidth = strokeWidth;
+  ctx.strokeStyle = strokeStyle;
+  ctx.stroke();
   ctx.restore();
 };

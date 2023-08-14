@@ -7,7 +7,7 @@ export const DefaultPanZoom: PanZoom = {
 
 export const DefaultGridSquareLength = 20;
 
-export const DefaultButtonHeight = 20;
+export const DefaultButtonHeight = 30;
 
 export enum ButtonDirection {
   TOP = "TOP",
@@ -54,3 +54,9 @@ export const InteractionExtensionAllowanceRatio = 2;
 export const InteractionEdgeTouchingRange = 6;
 
 export const DefaultPixelExtendRatio = 1;
+
+export const DashedLineOffsetFromPixelCanvas = 15;
+
+export const ExtensionGuideCircleRadius = 3;
+
+export const DefaultExtendArrowPadding = 2;
