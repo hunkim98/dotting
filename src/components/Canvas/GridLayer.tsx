@@ -137,6 +137,10 @@ export default class GridLayer extends BaseLayer {
     }
   }
 
+  setGridSquareLength(gridSquareLength: number) {
+    this.gridSquareLength = gridSquareLength;
+  }
+
   getGridStrokeColor() {
     return this.gridStrokeColor;
   }

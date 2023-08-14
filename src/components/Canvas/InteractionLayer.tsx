@@ -134,6 +134,10 @@ export default class InteractionLayer extends BaseLayer {
     this.brushPattern = pattern;
   }
 
+  setGridSquareLength(length: number) {
+    this.gridSquareLength = length;
+  }
+
   setDataLayerColumnCount(columnCount: number) {
     this.dataLayerColumnCount = columnCount;
   }

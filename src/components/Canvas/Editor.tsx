@@ -318,6 +318,17 @@ export default class Editor extends EventDispatcher {
     this.renderGridLayer();
   }
 
+  setGridSquareLength(length: number) {
+    if (length === 0 || length === undefined) {
+      return;
+    }
+    this.gridSquareLength = length;
+    this.gridLayer.setGridSquareLength(length);
+    this.interactionLayer.setGridSquareLength(length);
+    this.dataLayer.setGridSquareLength(length);
+    this.renderAll();
+  }
+
   setIsGridVisible(isGridVisible: boolean) {
     this.gridLayer.setIsGridVisible(isGridVisible);
     this.renderGridLayer();
