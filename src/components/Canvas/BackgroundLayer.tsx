@@ -7,7 +7,6 @@ export default class BackgroundLayer extends BaseLayer {
   private backgroundMode: "checkerboard" | "color" = "color";
   private backgroundColor: React.CSSProperties["color"] =
     DefaultBackgroundColor;
-  private backgroundAlpha: number;
 
   constructor({ canvas }: { canvas: HTMLCanvasElement }) {
     super({ canvas });
@@ -15,13 +14,6 @@ export default class BackgroundLayer extends BaseLayer {
 
   setBackgroundMode(backgroundMode?: "checkerboard" | "color") {
     this.backgroundMode = backgroundMode ? backgroundMode : "color";
-  }
-
-  setBackgroundAlpha(alpha?: number) {
-    if (alpha === undefined) {
-      this.backgroundAlpha = 1;
-    }
-    this.backgroundAlpha = alpha ? (alpha >= 1 ? 1 : alpha < 0 ? 0 : alpha) : 1;
   }
 
   setBackgroundColor(color?: React.CSSProperties["color"]) {
@@ -33,7 +25,6 @@ export default class BackgroundLayer extends BaseLayer {
     ctx.clearRect(0, 0, this.width, this.height);
     ctx.save();
 
-    ctx.globalAlpha = this.backgroundAlpha;
     if (this.backgroundMode === "color") {
       ctx.fillStyle = this.backgroundColor;
       ctx.fillRect(0, 0, this.width, this.height);

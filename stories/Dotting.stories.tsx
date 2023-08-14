@@ -5,14 +5,14 @@ import {
   generateComponentControlForEnum,
 } from "./utils/componentControl";
 import { KeysEnum, StoriesComponentItem } from "./utils/types";
-import { BrushTool } from "../src/components/Canvas/types";
-import DottingComponent, { DottingProps } from "../src/components/Dotting";
 import {
   DefaultGridSquareLength,
   DefaultMaxScale,
   DefaultMinScale,
   DefaultPixelColor,
 } from "../src/components/Canvas/config";
+import { BrushTool } from "../src/components/Canvas/types";
+import DottingComponent, { DottingProps } from "../src/components/Dotting";
 
 //blog.harveydelaney.com/creating-your-own-react-component-library/
 
@@ -60,11 +60,6 @@ const DottingComponentArgTypes: KeysEnum<
   backgroundColor: generateComponentControl<DottingProps["backgroundColor"]>({
     defaultValue: "#c9c9c9",
     description: "The background color of the canvas.",
-    disable: false,
-  }),
-  backgroundAlpha: generateComponentControl<DottingProps["backgroundAlpha"]>({
-    defaultValue: 0.5,
-    description: "The background alpha of the canvas.",
     disable: false,
   }),
   initLayers: generateComponentControl<DottingProps["initLayers"]>({
@@ -178,7 +173,6 @@ export const Dotting = (args: DottingProps) => {
       isGridVisible={args.isGridVisible}
       // backgroundMode={args.backgroundMode}
       backgroundColor={args.backgroundColor}
-      backgroundAlpha={args.backgroundAlpha}
       isPanZoomable={args.isPanZoomable}
       isGridFixed={args.isGridFixed}
       brushColor={args.brushColor}

@@ -284,11 +284,6 @@ export default class Editor extends EventDispatcher {
     this.renderBackgroundLayer();
   }
 
-  setBackgroundAlpha(alpha: number) {
-    this.backgroundLayer.setBackgroundAlpha(alpha);
-    this.renderBackgroundLayer();
-  }
-
   setBackgroundColor(color: React.CSSProperties["color"]) {
     this.backgroundLayer.setBackgroundColor(color);
     this.interactionLayer.setBackgroundColor(color);
