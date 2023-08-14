@@ -339,6 +339,20 @@ export default class Editor extends EventDispatcher {
     this.renderAll();
   }
 
+  setMinScale(minScale: number) {
+    if (minScale === undefined) {
+      return;
+    }
+    this.minScale = minScale;
+  }
+
+  setMaxScale(maxScale: number) {
+    if (maxScale === undefined) {
+      return;
+    }
+    this.maxScale = maxScale;
+  }
+
   setIsGridVisible(isGridVisible: boolean) {
     this.gridLayer.setIsGridVisible(isGridVisible);
     this.renderGridLayer();
@@ -421,6 +435,14 @@ export default class Editor extends EventDispatcher {
 
   getGridSquareLength() {
     return this.gridSquareLength;
+  }
+
+  getMinScale() {
+    return this.minScale;
+  }
+
+  getMaxScale() {
+    return this.maxScale;
   }
 
   styleMouseCursor = (mouseCoord: Coord) => {

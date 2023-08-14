@@ -59,7 +59,7 @@ export default class InteractionLayer extends BaseLayer {
   private backgroundColor: React.CSSProperties["color"] =
     DefaultBackgroundColor;
 
-  private defaultPixelColor: string = "#ffffff";
+  private defaultPixelColor = "#ffffff";
 
   private selectingArea: Omit<
     SelectAreaRange,
