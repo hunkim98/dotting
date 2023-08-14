@@ -43,6 +43,7 @@ export interface DottingProps {
   indicatorData?: Array<PixelModifyItem>;
   isInteractionApplicable?: boolean;
   isDrawingEnabled?: boolean;
+  gridSquareLength?: number;
   // children?: React.ReactNode;
   // initIndicatorData?: Array<PixelModifyItem>;
   // initBrushColor?: string;
@@ -196,6 +197,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     }
     editor.setIsPanZoomable(props.isPanZoomable);
   }, [editor, props.isPanZoomable]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    editor.setGridSquareLength(props.gridSquareLength);
+  }, [editor, props.gridSquareLength]);
 
   useEffect(() => {
     if (!editor) {
@@ -454,11 +462,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     editor.setBackgroundAlpha(props.backgroundAlpha);
     editor.setBackgroundMode(props.backgroundMode);
     editor.setIsPanZoomable(props.isPanZoomable);
-
+    editor.setGridSquareLength(props.gridSquareLength);
     editor.setIsGridVisible(props.isGridVisible);
-
     editor.setGridStrokeColor(props.gridStrokeColor);
-
     editor.setGridStrokeWidth(props.gridStrokeWidth);
 
     setEditor(editor);

@@ -259,6 +259,10 @@ export default class DataLayer extends BaseLayer {
     }
   }
 
+  setGridSquareLength(length: number) {
+    this.gridSquareLength = length;
+  }
+
   shortenGridBy(
     direction: ButtonDirection,
     amount: number,
