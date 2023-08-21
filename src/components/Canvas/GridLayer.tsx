@@ -612,14 +612,7 @@ export default class GridLayer extends BaseLayer {
       x: correctedLefTopScreenPoint.x - offsetFromPixelCanvas,
       y: correctedLefTopScreenPoint.y + (this.rowCount * squareLength) / 2,
     };
-    drawCircle(ctx, leftTopCorner, radius, "#ffffff", "#5A7FF7", 1);
-    drawCircle(ctx, topMiddle, radius, "#ffffff", "#5A7FF7", 1);
-    drawCircle(ctx, rightTopCorner, radius, "#ffffff", "#5A7FF7", 1);
-    drawCircle(ctx, rightMiddle, radius, "#ffffff", "#5A7FF7", 1);
-    drawCircle(ctx, rightBottomCorner, radius, "#ffffff", "#5A7FF7", 1);
-    drawCircle(ctx, bottomMiddle, radius, "#ffffff", "#5A7FF7", 1);
-    drawCircle(ctx, leftBottomCorner, radius, "#ffffff", "#5A7FF7", 1);
-    drawCircle(ctx, leftMiddle, radius, "#ffffff", "#5A7FF7", 1);
+  [leftTopCorner, topMiddle, rightTopCorner, rightMiddle, rightBottomCorner, bottomMiddle, leftBottomCorner, leftMiddle].forEach((position) => drawCircle(ctx, position, radius,"#ffffff", "#5A7FF7", 1 ))
   }
 
   drawButtons() {
