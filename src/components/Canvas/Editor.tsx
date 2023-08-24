@@ -2001,7 +2001,6 @@ export default class Editor extends EventDispatcher {
         indicesQueue.enqueue({ rowIndex, columnIndex });
       });
     }
-    interactionLayer.resetCapturedData();
   }
 
   onMouseDown(evt: TouchyEvent) {
