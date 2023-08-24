@@ -1506,7 +1506,7 @@ export default class Editor extends EventDispatcher {
       if (initialSelectedColor === this.brushColor) {
         return;
       }
-      this.paintSameColorRegion(initialSelectedColor, gridIndices, {
+      this.colorPixelsArea(initialSelectedColor, gridIndices, {
         rowIndex,
         columnIndex,
       });
@@ -1959,7 +1959,7 @@ export default class Editor extends EventDispatcher {
   }
 
   // this will be only used by the current device user
-  private paintSameColorRegion(
+  private colorPixelsArea(
     initialColor: string,
     gridIndices: Indices,
     currentIndices: { rowIndex: number; columnIndex: number },
