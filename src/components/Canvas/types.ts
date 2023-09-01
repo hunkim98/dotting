@@ -1,4 +1,5 @@
 import { DottingDataLayer } from "../../helpers/DottingDataLayer";
+import { UserId } from "./config";
 
 export interface Coord {
   x: number;
@@ -54,36 +55,20 @@ export enum BrushTool {
   NONE = "NONE",
 }
 
-export enum CanvasDataDelta {
-  COLOR_DELTA = "COLOR_DELTA",
-  GRID_DELTA = "GRID_DELTA",
-  NONE = "NONE",
-}
-
 export interface CanvasDelta {
-  type: CanvasDataDelta;
-}
-
-export class CanvasPixelColorDelta implements CanvasDelta {
-  type: CanvasDataDelta.COLOR_DELTA;
   modifiedPixels: Array<PixelModifyItem>;
-}
-
-export class CanvasGridChangeDelta implements CanvasDelta {
-  type: CanvasDataDelta.GRID_DELTA;
-  modifiedRows?: Array<{
+  addedOrSubtractedRows?: Array<{
     isDelete: boolean;
     index: number;
-    data: Array<PixelModifyItem>;
   }>;
-  modifiedColumns?: Array<{
+  addedOrSubtractedColumns?: Array<{
     isDelete: boolean;
     index: number;
-    data: Array<PixelModifyItem>;
   }>;
 }
 
 export type CanvasDataChangeParams = {
+  isLocalChange: boolean;
   data: DottingData;
   layerId: string;
   delta?: CanvasDelta;
