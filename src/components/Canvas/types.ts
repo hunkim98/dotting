@@ -54,7 +54,40 @@ export enum BrushTool {
   NONE = "NONE",
 }
 
-export type CanvasDataChangeParams = { data: DottingData; layerId: string };
+export enum CanvasDataDelta {
+  COLOR_DELTA = "COLOR_DELTA",
+  GRID_DELTA = "GRID_DELTA",
+  NONE = "NONE",
+}
+
+export interface CanvasDelta {
+  type: CanvasDataDelta;
+}
+
+export class CanvasPixelColorDelta implements CanvasDelta {
+  type: CanvasDataDelta.COLOR_DELTA;
+  modifiedPixels: Array<PixelModifyItem>;
+}
+
+export class CanvasGridChangeDelta implements CanvasDelta {
+  type: CanvasDataDelta.GRID_DELTA;
+  modifiedRows?: Array<{
+    isDelete: boolean;
+    index: number;
+    data: Array<PixelModifyItem>;
+  }>;
+  modifiedColumns?: Array<{
+    isDelete: boolean;
+    index: number;
+    data: Array<PixelModifyItem>;
+  }>;
+}
+
+export type CanvasDataChangeParams = {
+  data: DottingData;
+  layerId: string;
+  delta?: CanvasDelta;
+};
 
 export type CanvasDataChangeHandler = (params: CanvasDataChangeParams) => void;
 
