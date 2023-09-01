@@ -1656,6 +1656,14 @@ export default class Editor extends EventDispatcher {
       }
 
       const capturedData = interactionLayer.getCapturedData();
+      const addedOrSubtractedRows: Array<{
+        index: number;
+        isDelete: boolean;
+      }> = [];
+      const addedOrSubtractedColumns: Array<{
+        index: number;
+        isDelete: boolean;
+      }> = [];
       // if there is capturedData, it means that the user has changed the dimension
       if (capturedData) {
         const interactionGridIndices = getGridIndicesFromData(capturedData);
@@ -1687,6 +1695,12 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
+          for (let i = 0; i < amount; i++) {
+            addedOrSubtractedRows.push({
+              index: startIndex - 1 - i,
+              isDelete: false,
+            });
+          }
           isExtendingAction = true;
         } else if (topRowDiff > 0) {
           amount = topRowDiff;
@@ -1697,6 +1711,12 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
+          for (let i = 0; i < amount; i++) {
+            addedOrSubtractedRows.push({
+              index: startIndex + 1 + i,
+              isDelete: true,
+            });
+          }
           isExtendingAction = false;
         }
         if (leftColumnDiff < 0) {
@@ -1708,6 +1728,12 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
+          for (let i = 0; i < amount; i++) {
+            addedOrSubtractedColumns.push({
+              index: startIndex - 1 - i,
+              isDelete: false,
+            });
+          }
           isExtendingAction = true;
         } else if (leftColumnDiff > 0) {
           amount = leftColumnDiff;
@@ -1718,6 +1744,12 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
+          for (let i = 0; i < amount; i++) {
+            addedOrSubtractedColumns.push({
+              index: startIndex + 1 + i,
+              isDelete: true,
+            });
+          }
           isExtendingAction = false;
         }
         if (bottomRowDiff > 0) {
@@ -1729,6 +1761,12 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
+          for (let i = 0; i < amount; i++) {
+            addedOrSubtractedRows.push({
+              index: startIndex + 1 + i,
+              isDelete: false,
+            });
+          }
           isExtendingAction = true;
         } else if (bottomRowDiff < 0) {
           amount = -bottomRowDiff;
@@ -1739,6 +1777,12 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
+          for (let i = 0; i < amount; i++) {
+            addedOrSubtractedRows.push({
+              index: startIndex - 1 - i,
+              isDelete: true,
+            });
+          }
           isExtendingAction = false;
         }
         if (rightColumnDiff > 0) {
@@ -1750,6 +1794,12 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
+          for (let i = 0; i < amount; i++) {
+            addedOrSubtractedColumns.push({
+              index: startIndex + 1 + i,
+              isDelete: false,
+            });
+          }
           isExtendingAction = true;
         } else if (rightColumnDiff < 0) {
           amount = -rightColumnDiff;
@@ -1760,6 +1810,12 @@ export default class Editor extends EventDispatcher {
           );
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
+          for (let i = 0; i < amount; i++) {
+            addedOrSubtractedColumns.push({
+              index: startIndex - 1 - i,
+              isDelete: true,
+            });
+          }
           isExtendingAction = false;
         }
 
@@ -1780,6 +1836,11 @@ export default class Editor extends EventDispatcher {
         isLocalChange: true,
         data: updatedData,
         layerId: this.dataLayer.getCurrentLayer().getId(),
+        delta: {
+          modifiedPixels: pixelModifyItems,
+          addedOrSubtractedRows,
+          addedOrSubtractedColumns,
+        },
       });
       const updatedColumnCount = getColumnCountFromData(updatedData);
       const updatedRowCount = getRowCountFromData(updatedData);
@@ -2024,6 +2085,11 @@ export default class Editor extends EventDispatcher {
       isLocalChange,
       data: this.dataLayer.getLayer(modifiedLayerId).getCopiedData(),
       layerId: modifiedLayerId,
+      delta: {
+        modifiedPixels: dataForAction,
+        addedOrSubtractedColumns: [],
+        addedOrSubtractedRows: [],
+      },
     });
     this.renderAll();
   }

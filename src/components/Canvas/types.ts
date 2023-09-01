@@ -1,5 +1,4 @@
 import { DottingDataLayer } from "../../helpers/DottingDataLayer";
-import { UserId } from "./config";
 
 export interface Coord {
   x: number;
