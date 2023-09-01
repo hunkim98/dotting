@@ -18,7 +18,6 @@ import {
   BrushTool,
   CanvasBrushChangeParams,
   CanvasDataChangeParams,
-  CanvasDataDelta,
   CanvasEvents,
   CanvasGridChangeParams,
   CanvasHoverPixelChangeParams,
@@ -226,6 +225,7 @@ export default class Editor extends EventDispatcher {
 
   emitCurrentData() {
     this.emitDataChangeEvent({
+      isLocalChange: false,
       data: this.dataLayer.getCopiedData(),
       layerId: this.dataLayer.getCurrentLayer().getId(),
     });
@@ -792,7 +792,11 @@ export default class Editor extends EventDispatcher {
    *          This function will reset the undo and redo history since it is unnecessary to keep them when data is set externally
    * @param data Array of PixelModifyItem (It must be a rectangular array, i.e. all rows must have the same length)
    */
-  setData(data: Array<Array<PixelModifyItem>>, layerId?: string) {
+  setData(
+    data: Array<Array<PixelModifyItem>>,
+    layerId?: string,
+    isLocalChange = false,
+  ) {
     const { isDataValid, rowCount, columnCount } = validateSquareArray(data);
     if (!isDataValid) {
       throw new Error(`Data is not valid`);
@@ -937,6 +941,7 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setDataLayerRowCount(rowCount);
     this.interactionLayer.setDataLayerColumnCount(columnCount);
     this.emitDataChangeEvent({
+      isLocalChange,
       data: this.dataLayer.getCopiedData(),
       layerId: this.dataLayer.getCurrentLayer().getId(),
     });
@@ -1772,6 +1777,7 @@ export default class Editor extends EventDispatcher {
       // no need to record the action of the current device user in any other places
       const updatedData = this.dataLayer.getCopiedData();
       this.emitDataChangeEvent({
+        isLocalChange: true,
         data: updatedData,
         layerId: this.dataLayer.getCurrentLayer().getId(),
       });
@@ -1943,6 +1949,7 @@ export default class Editor extends EventDispatcher {
       indices: getGridIndicesFromData(updatedData),
     });
     this.emitDataChangeEvent({
+      isLocalChange: true,
       data: updatedData,
       layerId: layerId,
     });
@@ -2001,6 +2008,7 @@ export default class Editor extends EventDispatcher {
   erasePixels(
     data: Array<{ rowIndex: number; columnIndex: number }>,
     layerId?: string,
+    isLocalChange = false,
   ) {
     const { dataForAction } = this.dataLayer.erasePixels(data, layerId);
     const modifiedLayerId = layerId
@@ -2013,6 +2021,7 @@ export default class Editor extends EventDispatcher {
     // row column change in erasePixels
     this.recordAction(new ColorChangeAction(dataForAction, modifiedLayerId));
     this.emitDataChangeEvent({
+      isLocalChange,
       data: this.dataLayer.getLayer(modifiedLayerId).getCopiedData(),
       layerId: modifiedLayerId,
     });
@@ -2020,7 +2029,11 @@ export default class Editor extends EventDispatcher {
   }
 
   // this only applies for multiplayer mode or user direct function call
-  colorPixels(data: Array<PixelModifyItem>, layerId?: string) {
+  colorPixels(
+    data: Array<PixelModifyItem>,
+    layerId?: string,
+    isLocalChange = false,
+  ) {
     const { changeAmounts, dataForAction } = this.dataLayer.colorPixels(
       data,
       layerId,
@@ -2043,9 +2056,60 @@ export default class Editor extends EventDispatcher {
     this.recordAction(
       new ColorSizeChangeAction(dataForAction, changeAmounts, modifiedLayerId),
     );
+
+    const addedTopRows = changeAmounts.filter(
+      change => change.direction === ButtonDirection.TOP,
+    );
+    const addedRowIndices = new Set<number>();
+    const addedBottomRows = changeAmounts.filter(
+      change => change.direction === ButtonDirection.BOTTOM,
+    );
+    for (const change of addedTopRows) {
+      for (let j = 0; j < change.amount; j++) {
+        addedRowIndices.add(change.startIndex - 1 - j);
+      }
+    }
+    for (const change of addedBottomRows) {
+      for (let j = 0; j < change.amount; j++) {
+        addedRowIndices.add(change.startIndex + 1 + j);
+      }
+    }
+
+    const addedColumnIndices = new Set<number>();
+    const addedLeftColumns = changeAmounts.filter(
+      change => change.direction === ButtonDirection.LEFT,
+    );
+    const addedRightColumns = changeAmounts.filter(
+      change => change.direction === ButtonDirection.RIGHT,
+    );
+    for (const change of addedLeftColumns) {
+      for (let j = 0; j < change.amount; j++) {
+        addedColumnIndices.add(change.startIndex - 1 - j);
+      }
+    }
+    for (const change of addedRightColumns) {
+      for (let j = 0; j < change.amount; j++) {
+        addedColumnIndices.add(change.startIndex + 1 + j);
+      }
+    }
+
     this.emitDataChangeEvent({
+      isLocalChange,
       data: this.dataLayer.getLayer(modifiedLayerId).getCopiedData(),
       layerId: modifiedLayerId,
+      delta: {
+        modifiedPixels: dataForAction,
+        addedOrSubtractedColumns: Array.from(addedColumnIndices).map(
+          columnIndex => ({
+            index: columnIndex,
+            isDelete: false,
+          }),
+        ),
+        addedOrSubtractedRows: Array.from(addedRowIndices).map(rowIndex => ({
+          index: rowIndex,
+          isDelete: false,
+        })),
+      },
     });
     this.dataLayer.setCriterionDataForRendering(
       this.dataLayer.getLayer(modifiedLayerId).getData(),
@@ -2687,6 +2751,7 @@ export default class Editor extends EventDispatcher {
       });
       // only emit data change event when there is a change
       this.emitDataChangeEvent({
+        isLocalChange: true,
         data: newData,
         layerId: this.dataLayer.getCurrentLayer().getId(),
       });
@@ -2790,6 +2855,7 @@ export default class Editor extends EventDispatcher {
       });
       // only emit data change event when there is a change
       this.emitDataChangeEvent({
+        isLocalChange: true,
         data: newData,
         layerId: this.dataLayer.getCurrentLayer().getId(),
       });
