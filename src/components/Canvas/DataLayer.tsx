@@ -303,25 +303,19 @@ export default class DataLayer extends BaseLayer {
     const columnKeys = getColumnKeysFromData(this.getData());
     let deletedRowIndex = null;
     let deletedColumnIndex = null;
-    if (direction === ButtonDirection.TOP) {
+    if (
+      direction === ButtonDirection.TOP ||
+      direction === ButtonDirection.BOTTOM
+    ) {
       if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
       }
       this.swipedPixels.push(...this.deleteRow(index));
       deletedRowIndex = index;
-    } else if (direction === ButtonDirection.BOTTOM) {
-      if (rowCount <= 2 || !rowKeys.includes(index)) {
-        return;
-      }
-      this.swipedPixels.push(...this.deleteRow(index));
-      deletedRowIndex = index;
-    } else if (direction === ButtonDirection.LEFT) {
-      if (columnCount <= 2 || !columnKeys.includes(index)) {
-        return;
-      }
-      this.swipedPixels.push(...this.deleteColumn(index));
-      deletedColumnIndex = index;
-    } else if (direction === ButtonDirection.RIGHT) {
+    } else if (
+      direction === ButtonDirection.LEFT ||
+      direction === ButtonDirection.RIGHT
+    ) {
       if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }
@@ -562,16 +556,16 @@ export default class DataLayer extends BaseLayer {
   } {
     let addedRowIndex = null;
     let addedColumnIndex = null;
-    if (direction === ButtonDirection.TOP) {
+    if (
+      direction === ButtonDirection.TOP ||
+      direction === ButtonDirection.BOTTOM
+    ) {
       this.addRow(index);
       addedRowIndex = index;
-    } else if (direction === ButtonDirection.BOTTOM) {
-      this.addRow(index);
-      addedRowIndex = index;
-    } else if (direction === ButtonDirection.LEFT) {
-      this.addColumn(index);
-      addedColumnIndex = index;
-    } else if (direction === ButtonDirection.RIGHT) {
+    } else if (
+      direction === ButtonDirection.LEFT ||
+      direction === ButtonDirection.RIGHT
+    ) {
       this.addColumn(index);
       addedColumnIndex = index;
     }
