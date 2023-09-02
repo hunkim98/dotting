@@ -46,6 +46,7 @@ import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
 import {
   createColumnKeyOrderMapfromData,
   createRowKeyOrderMapfromData,
+  getAllGridIndicesSorted,
   getColumnCountFromData,
   getColumnKeysFromData,
   getGridIndicesFromData,
@@ -2315,10 +2316,13 @@ export default class Editor extends EventDispatcher {
       scale: this.panZoom.scale,
     };
     const gridIndices = this.dataLayer.getGridIndices();
+    const { rowIndices, columnIndices } = getAllGridIndicesSorted(
+      this.dataLayer.getData(),
+    );
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       mouseCartCoord,
-      this.getRowCount(),
-      this.getColumnCount(),
+      rowIndices,
+      columnIndices,
       this.gridSquareLength,
       gridIndices.topRowIndex,
       gridIndices.leftColumnIndex,
@@ -2481,10 +2485,13 @@ export default class Editor extends EventDispatcher {
     };
     this.styleMouseCursor(mouseCartCoord);
     const gridIndices = this.dataLayer.getGridIndices();
+    const { rowIndices, columnIndices } = getAllGridIndicesSorted(
+      this.dataLayer.getData(),
+    );
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       mouseCartCoord,
-      this.getRowCount(),
-      this.getColumnCount(),
+      rowIndices,
+      columnIndices,
       this.gridSquareLength,
       gridIndices.topRowIndex,
       gridIndices.leftColumnIndex,
