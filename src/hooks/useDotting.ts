@@ -1,6 +1,8 @@
 import { MutableRefObject, useCallback } from "react";
 
 import {
+  AddGridIndicesParams,
+  DeleteGridIndicesParams,
   ImageDownloadOptions,
   PixelModifyItem,
 } from "../components/Canvas/types";
@@ -54,6 +56,20 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
+  const addGridIndices = useCallback(
+    (params: AddGridIndicesParams) => {
+      ref.current?.addGridIndices(params);
+    },
+    [ref],
+  );
+
+  const deleteGridIndices = useCallback(
+    (params: DeleteGridIndicesParams) => {
+      ref.current?.deleteGridIndices(params);
+    },
+    [ref],
+  );
+
   return {
     clear,
     colorPixels,
@@ -63,6 +79,8 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     undo,
     redo,
     setData,
+    addGridIndices,
+    deleteGridIndices,
   };
 };
 

@@ -278,6 +278,20 @@ With `useDotting`, you can manipulate the grids.
       <td>`Array<PixelModifyItem>`</td>
     </tr>
     <tr>
+      <td>`undo()`</td>
+      <td>
+        Allows you to undo the last action
+      </td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>`redo()`</td>
+      <td>
+        Allows you to redo the last action
+      </td>
+      <td></td>
+    </tr>
+    <tr>
       <td>`setData(data: Array<Array<PixelModifyItem>>)`</td>
       <td>
         Allows you to set the data of the pixel canvas. (The 2d array should be a square array)
@@ -295,18 +309,39 @@ With `useDotting`, you can manipulate the grids.
       </td>
     </tr>
     <tr>
-      <td>`undo()`</td>
+      <td>`addGridIndices(params: AddGridIndicesParams)`</td>
       <td>
-        Allows you to undo the last action
+        Allows you to add grid indices to the grid.
       </td>
-      <td></td>
+      <td>
+        `AddGridIndicesParams` is defined as follows:
+        ```ts
+        export type AddGridIndicesParams = {
+          rowIndices: Array<number>;
+          columnIndices: Array<number>;
+          data?: Array<PixelModifyItem>;
+          layerId?: string;
+          isLocalChange?: boolean;
+        };
+        ```
+      </td>
     </tr>
     <tr>
-      <td>`redo()`</td>
+      <td>`deleteGridIndices(params: DeleteGridIndicesParams)`</td>
       <td>
-        Allows you to redo the last action
+        Allows you to delete grid indices to the grid.
       </td>
-      <td></td>
+      <td>
+        `DeleteGridIndicesParams` is defined as follows:
+        ```ts
+        export type DeleteGridIndicesParams = {
+            rowIndices: Array<number>;
+            columnIndices: Array<number>;
+            layerId?: string;
+            isLocalChange?: boolean;
+        };
+        ```
+      </td>
     </tr>
 
   </tbody>

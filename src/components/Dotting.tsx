@@ -10,6 +10,7 @@ import React, {
 
 import Editor from "./Canvas/Editor";
 import {
+  AddGridIndicesParams,
   BRUSH_PATTERN_ELEMENT,
   BrushTool,
   CanvasBrushChangeHandler,
@@ -18,6 +19,7 @@ import {
   CanvasGridChangeHandler,
   CanvasHoverPixelChangeHandler,
   CanvasStrokeEndHandler,
+  DeleteGridIndicesParams,
   ImageDownloadOptions,
   LayerChangeHandler,
   LayerProps,
@@ -64,6 +66,20 @@ export interface DottingRef {
   undo: () => void;
   redo: () => void;
   setData: (data: Array<Array<PixelModifyItem>>) => void;
+  addGridIndices: ({
+    rowIndices,
+    columnIndices,
+    data,
+    layerId,
+    isLocalChange,
+  }: AddGridIndicesParams) => void;
+  deleteGridIndices: ({
+    rowIndices,
+    columnIndices,
+    layerId,
+    isLocalChange,
+  }: DeleteGridIndicesParams) => void;
+
   // for useBrush
   changeBrushColor: (color: string) => void;
   changeBrushTool: (tool: BrushTool) => void;
@@ -776,6 +792,54 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
+  const addGridIndices = useCallback(
+    ({
+      rowIndices,
+      columnIndices,
+      data,
+      layerId,
+      isLocalChange = false,
+    }: {
+      rowIndices: Array<number>;
+      columnIndices: Array<number>;
+      data?: Array<PixelModifyItem>;
+      layerId?: string;
+      isLocalChange?: boolean;
+    }) => {
+      editor?.addGridIndices({
+        rowIndices,
+        columnIndices,
+        data,
+        layerId,
+        isLocalChange,
+      });
+    },
+    [editor],
+  );
+
+  const deleteGridIndices = useCallback(
+    ({
+      rowIndices,
+      columnIndices,
+      layerId,
+      isLocalChange = false,
+    }: {
+      rowIndices: Array<number>;
+      columnIndices: Array<number>;
+      data?: Array<PixelModifyItem>;
+      layerId?: string;
+      isLocalChange?: boolean;
+    }) => {
+      editor?.deleteGridIndices({
+        rowIndices,
+        columnIndices,
+        layerId,
+        isLocalChange,
+      });
+    },
+    [editor],
+  );
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -790,6 +854,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       undo,
       redo,
       setData,
+      addGridIndices,
+      deleteGridIndices,
       // for useBrush
       changeBrushColor,
       changeBrushTool,
@@ -831,6 +897,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       undo,
       redo,
       setData,
+      addGridIndices,
+      deleteGridIndices,
       // for useBrush
       changeBrushColor,
       changeBrushTool,

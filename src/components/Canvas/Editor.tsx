@@ -14,6 +14,7 @@ import DataLayer from "./DataLayer";
 import GridLayer from "./GridLayer";
 import InteractionLayer from "./InteractionLayer";
 import {
+  AddGridIndicesParams,
   BRUSH_PATTERN_ELEMENT,
   BrushTool,
   CanvasBrushChangeParams,
@@ -24,6 +25,7 @@ import {
   CanvasStrokeEndParams,
   ColorChangeItem,
   Coord,
+  DeleteGridIndicesParams,
   GridIndices,
   ImageDownloadOptions,
   LayerChangeParams,
@@ -1222,13 +1224,7 @@ export default class Editor extends EventDispatcher {
     data,
     layerId,
     isLocalChange = false,
-  }: {
-    rowIndices: Array<number>;
-    columnIndices: Array<number>;
-    data?: Array<PixelModifyItem>;
-    layerId?: string;
-    isLocalChange?: boolean;
-  }) {
+  }: AddGridIndicesParams) {
     const { validColumnIndices, validRowIndices } =
       this.dataLayer.addGridIndices({
         rowIndicesToAdd: rowIndices,
@@ -1309,13 +1305,7 @@ export default class Editor extends EventDispatcher {
     columnIndices,
     layerId,
     isLocalChange = false,
-  }: {
-    rowIndices: Array<number>;
-    columnIndices: Array<number>;
-    data?: Array<PixelModifyItem>;
-    layerId?: string;
-    isLocalChange?: boolean;
-  }) {
+  }: DeleteGridIndicesParams) {
     const { validColumnIndices, validRowIndices, swipedPixels } =
       this.dataLayer.deleteGridIndices({
         rowIndicesToDelete: rowIndices,
