@@ -1198,32 +1198,190 @@ export default class Editor extends EventDispatcher {
     }
   };
 
-  addRowIndices(rowIndices: Array<number>) {
+  addRowIndices(
+    rowIndices: Array<number>,
+    data?: Array<PixelModifyItem>,
+    layerId?: string,
+  ) {
     this.dataLayer.addGridIndices({
       rowIndicesToAdd: rowIndices,
       columnIndicesToAdd: [],
     });
+    const modifiedLayerId = layerId
+      ? layerId
+      : this.dataLayer.getCurrentLayer().getId();
+    const modifiedPixels = this.dataLayer.updatePixelColors(
+      data,
+      modifiedLayerId,
+    );
   }
 
-  addColumnIndices(columnIndices: Array<number>) {
-    this.dataLayer.addGridIndices({
-      rowIndicesToAdd: [],
-      columnIndicesToAdd: columnIndices,
+  addGridIndices({
+    rowIndices,
+    columnIndices,
+    data,
+    layerId,
+    isLocalChange = false,
+  }: {
+    rowIndices: Array<number>;
+    columnIndices: Array<number>;
+    data?: Array<PixelModifyItem>;
+    layerId?: string;
+    isLocalChange?: boolean;
+  }) {
+    const { validColumnIndices, validRowIndices } =
+      this.dataLayer.addGridIndices({
+        rowIndicesToAdd: rowIndices,
+        columnIndicesToAdd: columnIndices,
+      });
+    const modifiedLayerId = layerId
+      ? layerId
+      : this.dataLayer.getCurrentLayer().getId();
+    const modifiedPixels = this.dataLayer.updatePixelColors(
+      data,
+      modifiedLayerId,
+    );
+    const addedOrDeletedRows = validRowIndices.map(rowIndex => {
+      return {
+        index: rowIndex,
+        isDelete: false,
+      };
     });
+    const addedOrDeletedColumns = validColumnIndices.map(columnIndex => {
+      return {
+        index: columnIndex,
+        isDelete: false,
+      };
+    });
+    if (
+      validColumnIndices.length === 0 &&
+      validRowIndices.length === 0 &&
+      modifiedPixels.length === 0
+    ) {
+      return;
+    }
+
+    this.recordSizeChangeAction(
+      rowIndices,
+      columnIndices,
+      [],
+      [],
+      modifiedPixels.map(pixel => ({
+        ...pixel,
+        color: pixel.previousColor,
+        previousColor: pixel.color,
+      })),
+    );
+    this.emitDataChangeEvent({
+      isLocalChange,
+      data: this.dataLayer.getCopiedData(),
+      layerId: modifiedLayerId,
+      delta: {
+        modifiedPixels,
+        addedOrDeletedRows,
+        addedOrDeletedColumns,
+      },
+    });
+    const updatedData = this.dataLayer.getCopiedData();
+    const updatedColumnCount = getColumnCountFromData(updatedData);
+    const updatedRowCount = getRowCountFromData(updatedData);
+    const updatedDimensions = {
+      rowCount: updatedRowCount,
+      columnCount: updatedColumnCount,
+    };
+    const updatedGridIndices = getGridIndicesFromData(updatedData);
+    if (addedOrDeletedColumns.length !== 0 || addedOrDeletedRows.length !== 0) {
+      this.emitGridChangeEvent({
+        dimensions: updatedDimensions,
+        indices: updatedGridIndices,
+      });
+    }
+    this.relayDataDimensionsToLayers();
+    this.interactionLayer.setCriterionDataForRendering(
+      this.dataLayer.getData(),
+    );
+    this.interactionLayer.resetCapturedData();
+    this.renderAll();
   }
 
-  deleteRowIndices(rowIndices: Array<number>) {
-    const swipedPixels = this.dataLayer.deleteGridIndices({
-      rowIndicesToDelete: rowIndices,
-      columnIndicesToDelete: [],
+  deleteGridIndices({
+    rowIndices,
+    columnIndices,
+    layerId,
+    isLocalChange = false,
+  }: {
+    rowIndices: Array<number>;
+    columnIndices: Array<number>;
+    data?: Array<PixelModifyItem>;
+    layerId?: string;
+    isLocalChange?: boolean;
+  }) {
+    const { validColumnIndices, validRowIndices, swipedPixels } =
+      this.dataLayer.deleteGridIndices({
+        rowIndicesToDelete: rowIndices,
+        columnIndicesToDelete: columnIndices,
+      });
+    const modifiedLayerId = layerId
+      ? layerId
+      : this.dataLayer.getCurrentLayer().getId();
+    const addedOrDeletedRows = validRowIndices.map(rowIndex => {
+      return {
+        index: rowIndex,
+        isDelete: true,
+      };
     });
-  }
+    const addedOrDeletedColumns = validColumnIndices.map(columnIndex => {
+      return {
+        index: columnIndex,
+        isDelete: true,
+      };
+    });
+    if (
+      validColumnIndices.length === 0 &&
+      validRowIndices.length === 0 &&
+      swipedPixels.length === 0
+    ) {
+      return;
+    }
 
-  deleteColumnIndices(columnIndices: Array<number>) {
-    const swipedPixels = this.dataLayer.deleteGridIndices({
-      rowIndicesToDelete: [],
-      columnIndicesToDelete: columnIndices,
+    this.recordSizeChangeAction(
+      rowIndices,
+      columnIndices,
+      [],
+      [],
+      swipedPixels,
+    );
+    this.emitDataChangeEvent({
+      isLocalChange,
+      data: this.dataLayer.getCopiedData(),
+      layerId: modifiedLayerId,
+      delta: {
+        // there will be no modified pixels since rows and columns are deleted
+        modifiedPixels: [],
+        addedOrDeletedRows,
+        addedOrDeletedColumns,
+      },
     });
+    const updatedData = this.dataLayer.getCopiedData();
+    const updatedColumnCount = getColumnCountFromData(updatedData);
+    const updatedRowCount = getRowCountFromData(updatedData);
+    const updatedDimensions = {
+      rowCount: updatedRowCount,
+      columnCount: updatedColumnCount,
+    };
+    const updatedGridIndices = getGridIndicesFromData(updatedData);
+    if (addedOrDeletedColumns.length !== 0 || addedOrDeletedRows.length !== 0) {
+      this.emitGridChangeEvent({
+        dimensions: updatedDimensions,
+        indices: updatedGridIndices,
+      });
+    }
+    this.relayDataDimensionsToLayers();
+    this.interactionLayer.setCriterionDataForRendering(
+      this.dataLayer.getData(),
+    );
+    this.interactionLayer.resetCapturedData();
+    this.renderAll();
   }
 
   private extendInteractionGridBy(
@@ -1843,7 +2001,7 @@ export default class Editor extends EventDispatcher {
           const swipedPixels = this.dataLayer.deleteGridIndices({
             rowIndicesToDelete: deletedRowIndices,
             columnIndicesToDelete: deletedColumnIndices,
-          });
+          }).swipedPixels;
           this.recordSizeChangeAction(
             addedRowIndices,
             addedColumIndices,
@@ -2167,7 +2325,14 @@ export default class Editor extends EventDispatcher {
     this.relayDataDimensionsToLayers();
     this.recordAction(
       new ColorSizeChangeAction(
-        dataForAction,
+        // in color size change action we record the previous color
+        dataForAction.map(item => {
+          return {
+            rowIndex: item.rowIndex,
+            columnIndex: item.columnIndex,
+            color: item.previousColor,
+          };
+        }),
         totalAddedRowIndices,
         totalAddedColumnIndices,
         [],
