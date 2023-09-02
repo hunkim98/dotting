@@ -2007,7 +2007,6 @@ export default class Editor extends EventDispatcher {
     evt.preventDefault();
     const point = getPointFromTouchyEvent(evt, this.element, this.panZoom);
     this.panPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
-    this.interactionLayer.setHoveredPixel(null);
     const mouseCartCoord = getMouseCartCoord(
       evt,
       this.element,
@@ -2105,9 +2104,6 @@ export default class Editor extends EventDispatcher {
       }
     } else {
       if (pixelIndex && this.brushTool !== BrushTool.NONE) {
-        this.emitHoverPixelChangeEvent({
-          indices: null,
-        });
         this.drawPixelInInteractionLayer(
           pixelIndex.rowIndex,
           pixelIndex.columnIndex,
