@@ -267,14 +267,14 @@ export default class DataLayer extends BaseLayer {
   updatePixelColors(
     data: Array<PixelModifyItem>,
     layerId?: string,
-  ): Array<PixelModifyItem> {
+  ): Array<ColorChangeItem> {
     if (!layerId) {
       if (this.layers.length > 1) {
         throw new Error("Must specify layerId when there are multiple layers");
       }
     }
     const layer = layerId ? this.getLayer(layerId) : this.currentLayer;
-    const modifiedPixels: Array<PixelModifyItem> = [];
+    const modifiedPixels: Array<ColorChangeItem> = [];
     if (!layer) {
       throw new Error("Layer not found");
     }
@@ -284,8 +284,13 @@ export default class DataLayer extends BaseLayer {
         layer.getData().get(rowIndex) &&
         layer.getData().get(rowIndex)!.get(columnIndex)
       ) {
+        modifiedPixels.push({
+          rowIndex,
+          columnIndex,
+          color,
+          previousColor: layer.getData().get(rowIndex)!.get(columnIndex)!.color,
+        });
         layer.getData().get(rowIndex)!.set(columnIndex, { color });
-        modifiedPixels.push(item);
       }
     }
     return modifiedPixels;
@@ -392,34 +397,40 @@ export default class DataLayer extends BaseLayer {
   }
 
   addRow(rowIndex: number) {
+    let validRowIndex = null;
     this.layers.forEach(layer => {
-      layer.addRowToData(rowIndex);
+      validRowIndex = layer.addRowToData(rowIndex);
     });
+    return { validRowIndex };
   }
 
   addColumn(columnIndex: number) {
+    let validColumnIndex = null;
     this.layers.forEach(layer => {
-      layer.addColumnToData(columnIndex);
+      validColumnIndex = layer.addColumnToData(columnIndex);
     });
+    return { validColumnIndex };
   }
 
   deleteRow(rowIndex: number) {
+    let validRowIndex = null;
     const swipedPixels = extractColoredPixelsFromRow(this.getData(), rowIndex);
     this.layers.forEach(layer => {
-      layer.deleteRowOfData(rowIndex);
+      validRowIndex = layer.deleteRowOfData(rowIndex);
     });
-    return swipedPixels;
+    return { swipedPixels, validRowIndex };
   }
 
   deleteColumn(columnIndex: number) {
+    let validColumnIndex = null;
     const swipedPixels = extractColoredPixelsFromColumn(
       this.getData(),
       columnIndex,
     );
     this.layers.forEach(layer => {
-      layer.deleteColumnOfData(columnIndex);
+      validColumnIndex = layer.deleteColumnOfData(columnIndex);
     });
-    return swipedPixels;
+    return { swipedPixels, validColumnIndex };
   }
 
   addGridIndices({
@@ -429,12 +440,21 @@ export default class DataLayer extends BaseLayer {
     rowIndicesToAdd: Array<number>;
     columnIndicesToAdd: Array<number>;
   }) {
+    const validRowIndices: Array<number> = [];
+    const validColumnIndices: Array<number> = [];
     for (const rowIndex of rowIndicesToAdd) {
-      this.addRow(rowIndex);
+      const { validRowIndex } = this.addRow(rowIndex);
+      if (validRowIndex !== null) {
+        validRowIndices.push(validRowIndex);
+      }
     }
     for (const columnIndex of columnIndicesToAdd) {
-      this.addColumn(columnIndex);
+      const { validColumnIndex } = this.addColumn(columnIndex);
+      if (validColumnIndex !== null) {
+        validColumnIndices.push(validColumnIndex);
+      }
     }
+    return { validRowIndices, validColumnIndices };
   }
 
   deleteGridIndices({
@@ -444,14 +464,26 @@ export default class DataLayer extends BaseLayer {
     rowIndicesToDelete: Array<number>;
     columnIndicesToDelete: Array<number>;
   }) {
+    const validRowIndices: Array<number> = [];
+    const validColumnIndices: Array<number> = [];
     const swipedPixels: Array<PixelModifyItem> = [];
     for (const rowIndex of rowIndicesToDelete) {
-      swipedPixels.push(...this.deleteRow(rowIndex));
+      const { swipedPixels: swipedPixelsFromRow, validRowIndex } =
+        this.deleteRow(rowIndex);
+      swipedPixels.push(...swipedPixelsFromRow);
+      if (validRowIndex !== null) {
+        validRowIndices.push(validRowIndex);
+      }
     }
     for (const columnIndex of columnIndicesToDelete) {
-      swipedPixels.push(...this.deleteColumn(columnIndex));
+      const { swipedPixels: swipedPixelsFromColumn, validColumnIndex } =
+        this.deleteColumn(columnIndex);
+      swipedPixels.push(...swipedPixelsFromColumn);
+      if (validColumnIndex !== null) {
+        validColumnIndices.push(validColumnIndex);
+      }
     }
-    return swipedPixels;
+    return { swipedPixels, validColumnIndices, validRowIndices };
   }
 
   render() {

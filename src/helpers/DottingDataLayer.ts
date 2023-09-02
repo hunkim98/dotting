@@ -62,40 +62,50 @@ export class DottingDataLayer extends Observable<DottingData> {
   addRowToData = (rowIndex: number) => {
     const columnKeys = this.getColumnKeysFromData();
     if (this.data.has(rowIndex)) {
-      return;
+      return null;
     }
     this.data.set(rowIndex, new Map());
     for (const i of columnKeys) {
       this.data.get(rowIndex)!.set(i, { color: "" });
     }
     this.notify(this.getCopiedData());
+    return rowIndex;
   };
 
   addColumnToData = (columnIndex: number) => {
+    let validColumnIndex = null;
     this.data.forEach(row => {
       if (!row.has(columnIndex)) {
+        validColumnIndex = columnIndex;
         row.set(columnIndex, { color: "" });
       }
     });
     this.notify(this.getCopiedData());
+    return validColumnIndex;
   };
 
   deleteRowOfData(rowIndex: number) {
+    let validRowIndex = null;
     if (!this.data.has(rowIndex)) {
       throw new Error("Row does not exist");
     }
+    validRowIndex = rowIndex;
     this.data.delete(rowIndex);
     this.notify(this.getCopiedData());
+    return validRowIndex;
   }
 
   deleteColumnOfData(columnIndex: number) {
+    let validColumnIndex = null;
     this.data.forEach(row => {
       if (!row.has(columnIndex)) {
         throw new Error("Column does not exist");
       }
+      validColumnIndex = columnIndex;
       row.delete(columnIndex);
     });
     this.notify(this.getCopiedData());
+    return validColumnIndex;
   }
 
   getCopiedData = (): DottingData => {
