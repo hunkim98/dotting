@@ -1930,8 +1930,8 @@ export default class Editor extends EventDispatcher {
       this.setBrushTool(BrushTool.DOT);
     }
     const modifiedPixels = [];
-    const addedOrSubtractedColumns = [];
-    const addedOrSubtractedRows = [];
+    const addedOrDeletedColumns = [];
+    const addedOrDeletedRows = [];
     switch (type) {
       case ActionType.ColorChange:
         const colorChangeAction = action as ColorChangeAction;
@@ -1945,20 +1945,47 @@ export default class Editor extends EventDispatcher {
           const change = sizeChangeAction.changeAmounts[i];
           const isExtendAction = change.amount > 0;
           if (isExtendAction) {
-            this.dataLayer.extendGridBy(
-              change.direction,
-              change.amount,
-              change.startIndex,
+            const { addedColumnIndices, addedRowIndices } =
+              this.dataLayer.extendGridBy(
+                change.direction,
+                change.amount,
+                change.startIndex,
+              );
+            addedOrDeletedColumns.push(
+              ...addedColumnIndices.map(index => ({
+                index,
+                isDelete: false,
+              })),
+            );
+            addedOrDeletedRows.push(
+              ...addedRowIndices.map(index => ({
+                index,
+                isDelete: false,
+              })),
             );
           } else {
-            this.dataLayer.shortenGridBy(
-              change.direction,
-              -change.amount,
-              change.startIndex,
+            const { deletedColumnIndices, deletedRowIndices } =
+              this.dataLayer.shortenGridBy(
+                change.direction,
+                -change.amount,
+                change.startIndex,
+              );
+            addedOrDeletedColumns.push(
+              ...deletedColumnIndices.map(index => ({
+                index,
+                isDelete: true,
+              })),
+            );
+            addedOrDeletedRows.push(
+              ...deletedRowIndices.map(index => ({
+                index,
+                isDelete: true,
+              })),
             );
           }
           const sizeChangePixels = sizeChangeAction.data;
           this.dataLayer.updatePixelColors(sizeChangePixels, layerId);
+          // add the modified pixels to the modifiedPixels array
           modifiedPixels.push(...sizeChangePixels);
         }
         break;
@@ -1969,27 +1996,59 @@ export default class Editor extends EventDispatcher {
           const change = colorSizeChangeAction.changeAmounts[i];
           const isExtendAction = change.amount > 0;
           if (isExtendAction) {
-            this.dataLayer.extendGridBy(
-              change.direction,
-              change.amount,
-              change.startIndex,
+            const { addedColumnIndices, addedRowIndices } =
+              this.dataLayer.extendGridBy(
+                change.direction,
+                change.amount,
+                change.startIndex,
+              );
+            addedOrDeletedColumns.push(
+              ...addedColumnIndices.map(index => ({
+                index,
+                isDelete: false,
+              })),
+            );
+            addedOrDeletedRows.push(
+              ...addedRowIndices.map(index => ({
+                index,
+                isDelete: false,
+              })),
             );
           } else {
-            this.dataLayer.shortenGridBy(
-              change.direction,
-              change.amount,
-              change.startIndex,
+            const { deletedColumnIndices, deletedRowIndices } =
+              this.dataLayer.shortenGridBy(
+                change.direction,
+                change.amount,
+                change.startIndex,
+              );
+            addedOrDeletedColumns.push(
+              ...deletedColumnIndices.map(index => ({
+                index,
+                isDelete: true,
+              })),
+            );
+            addedOrDeletedRows.push(
+              ...deletedRowIndices.map(index => ({
+                index,
+                isDelete: true,
+              })),
             );
           }
         }
-        // we do not need to care for colorchangemode.Erase since the grids are already deleted
+        // we do not need to care for colorchangemode. Erase since the grids are already deleted
         const colorSizeChangePixels = colorSizeChangeAction.data;
+        // add the modified pixels to the modifiedPixels array
+        modifiedPixels.push(...colorSizeChangePixels);
         this.dataLayer.updatePixelColors(colorSizeChangePixels, layerId);
         break;
 
       case ActionType.SelectAreaMove:
         const selectAreamoveAction = action as SelectAreaMoveAction;
-        this.dataLayer.updatePixelColors(selectAreamoveAction.data, layerId);
+        const updatedPixels = this.dataLayer.updatePixelColors(
+          selectAreamoveAction.data,
+          layerId,
+        );
+        modifiedPixels.push(...updatedPixels);
         this.brushTool = BrushTool.SELECT;
         this.interactionLayer.setSelectedArea(
           selectAreamoveAction.newSelectedArea,
@@ -2031,10 +2090,17 @@ export default class Editor extends EventDispatcher {
       },
       indices: getGridIndicesFromData(updatedData),
     });
+    // undo and redo can happen only by the current device user
+    // this is why we emit data change event with `isLocalChange = true`
     this.emitDataChangeEvent({
       isLocalChange: true,
       data: updatedData,
       layerId: layerId,
+      delta: {
+        modifiedPixels: modifiedPixels,
+        addedOrDeletedRows: addedOrDeletedRows,
+        addedOrDeletedColumns: addedOrDeletedColumns,
+      },
     });
   }
 
