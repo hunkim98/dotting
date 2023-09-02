@@ -1039,10 +1039,11 @@ export default class Editor extends EventDispatcher {
   handleExtension = (evt: TouchyEvent) => {
     evt.preventDefault();
     const interactionLayer = this.interactionLayer;
-    const interactionCapturedData = interactionLayer.getCapturedData();
+    let interactionCapturedData = interactionLayer.getCapturedData();
     if (!interactionCapturedData) {
       // we will copy the data to interaction layer
       interactionLayer.setCapturedData(this.dataLayer.getCopiedData());
+      interactionCapturedData = interactionLayer.getCapturedData();
     }
     const minAmountForExtension = this.gridSquareLength;
     if (window.TouchEvent && evt instanceof TouchEvent) {
@@ -1084,7 +1085,6 @@ export default class Editor extends EventDispatcher {
     if (Math.abs(changeYAmountDiff) == 0 && Math.abs(changeXAmountDiff) == 0) {
       return;
     }
-
     const baseRowCount = getRowCountFromData(interactionCapturedData);
     const baseColumnCount = getColumnCountFromData(interactionCapturedData);
     const minimumCount = interactionLayer.getMinimumCount();
