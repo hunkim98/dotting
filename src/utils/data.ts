@@ -226,16 +226,12 @@ export const getInBetweenPixelIndicesfromCoords = (
       rowIndices,
       columnIndices,
       gridSquareLength,
-      gridIndices.topRowIndex,
-      gridIndices.leftColumnIndex,
     );
     const previousIndex = getPixelIndexFromMouseCartCoord(
       previousCoord,
       rowIndices,
       columnIndices,
       gridSquareLength,
-      gridIndices.topRowIndex,
-      gridIndices.leftColumnIndex,
     );
     if (!previousIndex || !pixelIndex) return;
 
