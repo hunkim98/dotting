@@ -356,13 +356,23 @@ export default class DataLayer extends BaseLayer {
     };
   }
 
-  updatePixelColors(data: Array<PixelModifyItem>, layerId?: string) {
+  /**
+   * @description Updates the pixel colors of the given data
+   *              Different from colorPixels, this method does not add rows or columns
+   * @param data The data to update
+   * @param layerId The layer id of the layer to update
+   */
+  updatePixelColors(
+    data: Array<PixelModifyItem>,
+    layerId?: string,
+  ): Array<PixelModifyItem> {
     if (!layerId) {
       if (this.layers.length > 1) {
         throw new Error("Must specify layerId when there are multiple layers");
       }
     }
     const layer = layerId ? this.getLayer(layerId) : this.currentLayer;
+    const modifiedPixels: Array<PixelModifyItem> = [];
     if (!layer) {
       throw new Error("Layer not found");
     }
@@ -373,8 +383,10 @@ export default class DataLayer extends BaseLayer {
         layer.getData().get(rowIndex)!.get(columnIndex)
       ) {
         layer.getData().get(rowIndex)!.set(columnIndex, { color });
+        modifiedPixels.push(item);
       }
     }
+    return modifiedPixels;
   }
 
   colorPixels(data: Array<PixelModifyItem>, layerId?: string) {
