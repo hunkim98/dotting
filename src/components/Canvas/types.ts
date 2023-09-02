@@ -155,3 +155,18 @@ export type LayerDataForHook = {
   isVisible: boolean;
   data: Array<Array<PixelModifyItem>>;
 };
+
+export type AddGridIndicesParams = {
+  rowIndices: Array<number>;
+  columnIndices: Array<number>;
+  data?: Array<PixelModifyItem>;
+  layerId?: string;
+  isLocalChange?: boolean;
+};
+
+export type DeleteGridIndicesParams = {
+  rowIndices: Array<number>;
+  columnIndices: Array<number>;
+  layerId?: string;
+  isLocalChange?: boolean;
+};
