@@ -1222,14 +1222,16 @@ export default class Editor extends EventDispatcher {
   }
 
   deleteRowIndices(rowIndices: Array<number>) {
+    const swipedPixels: Array<PixelModifyItem> = [];
     for (const rowIndex of rowIndices) {
-      this.dataLayer.deleteRow(rowIndex);
+      swipedPixels.push(...this.dataLayer.deleteRow(rowIndex));
     }
   }
 
   deleteColumnIndices(columnIndices: Array<number>) {
+    const swipedPixels: Array<PixelModifyItem> = [];
     for (const columnIndex of columnIndices) {
-      this.dataLayer.deleteColumn(columnIndex);
+      swipedPixels.push(...this.dataLayer.deleteColumn(columnIndex));
     }
   }
 
@@ -1684,7 +1686,7 @@ export default class Editor extends EventDispatcher {
             this.dataLayer.getCurrentLayer().getId(),
           );
         // record single player mode color change action
-        this.recordInteractionColorChangeAction(pixelModifyItems);
+        this.recordColorChangeAction(pixelModifyItems);
         // we record modified pixels
         modifiedPixels.push(...pixelModifyItems);
         // we record the delta of the added rows and columns
@@ -1885,7 +1887,7 @@ export default class Editor extends EventDispatcher {
         }
 
         if (changeAmounts.length !== 0) {
-          this.recordInteractionSizeChangeAction(
+          this.recordSizeChangeAction(
             changeAmounts,
             this.dataLayer.getSwipedPixels(),
           );
@@ -1948,7 +1950,7 @@ export default class Editor extends EventDispatcher {
    * @param changeAmounts the amount of change in each direction
    * @param deletedPixels the pixels that are deleted
    */
-  recordInteractionSizeChangeAction(
+  recordSizeChangeAction(
     changeAmounts: Array<{
       direction:
         | ButtonDirection.TOP
@@ -1969,7 +1971,7 @@ export default class Editor extends EventDispatcher {
     );
   }
 
-  recordInteractionColorChangeAction(pixelModifyItems: Array<ColorChangeItem>) {
+  recordColorChangeAction(pixelModifyItems: Array<ColorChangeItem>) {
     this.recordAction(
       new ColorChangeAction(
         pixelModifyItems,
