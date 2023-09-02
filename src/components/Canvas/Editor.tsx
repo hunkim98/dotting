@@ -419,6 +419,10 @@ export default class Editor extends EventDispatcher {
     }
   }
 
+  getBrushColor() {
+    return this.brushColor;
+  }
+
   getBrushPattern() {
     return this.interactionLayer.getBrushPattern();
   }
@@ -660,7 +664,7 @@ export default class Editor extends EventDispatcher {
     return this.dataLayer.getLayers().map(layer => {
       return {
         id: layer.getId(),
-        name: layer.getCopiedData(),
+        data: layer.getCopiedData(),
       };
     });
   }
@@ -1998,7 +2002,6 @@ export default class Editor extends EventDispatcher {
           const change = sizeChangeAction.changeAmounts[i];
           const isExtendAction = change.amount > 0;
           if (isExtendAction) {
-            console.log(change.direction);
             const { addedColumnIndices, addedRowIndices } =
               this.dataLayer.extendGridBy(
                 change.direction,
