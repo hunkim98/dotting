@@ -3,6 +3,7 @@ import {
   ButtonDirection,
   DashedLineOffsetFromPixelCanvas,
   DefaultButtonHeight,
+  DefaultButtonMargin,
   DefaultExtendArrowPadding,
   DefaultGridSquareLength,
   ExtensionGuideCircleRadius,
@@ -24,7 +25,7 @@ export default class GridLayer extends BaseLayer {
   private gridStrokeWidth: number;
   private gridSquareLength: number = DefaultGridSquareLength;
   private buttonHeight: number = DefaultButtonHeight;
-  private buttonMargin: number = DefaultButtonHeight / 2;
+  private buttonMargin: number = DefaultButtonMargin;
   private extendArrowPadding: number = DefaultExtendArrowPadding;
   private hoveredButton: ButtonDirection | null = null;
   private topButtonDimensions: ButtonDimensions = {
@@ -612,7 +613,18 @@ export default class GridLayer extends BaseLayer {
       x: correctedLefTopScreenPoint.x - offsetFromPixelCanvas,
       y: correctedLefTopScreenPoint.y + (this.rowCount * squareLength) / 2,
     };
-  [leftTopCorner, topMiddle, rightTopCorner, rightMiddle, rightBottomCorner, bottomMiddle, leftBottomCorner, leftMiddle].forEach((position) => drawCircle(ctx, position, radius,"#ffffff", "#5A7FF7", 1 ))
+    [
+      leftTopCorner,
+      topMiddle,
+      rightTopCorner,
+      rightMiddle,
+      rightBottomCorner,
+      bottomMiddle,
+      leftBottomCorner,
+      leftMiddle,
+    ].forEach(position =>
+      drawCircle(ctx, position, radius, "#ffffff", "#5A7FF7", 1),
+    );
   }
 
   drawButtons() {

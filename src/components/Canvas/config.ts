@@ -9,6 +9,8 @@ export const DefaultGridSquareLength = 20;
 
 export const DefaultButtonHeight = 30;
 
+export const DefaultButtonMargin = DefaultButtonHeight / 2;
+
 export enum ButtonDirection {
   TOP = "TOP",
   BOTTOM = "BOTTOM",
