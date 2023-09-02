@@ -22,6 +22,20 @@ export const getGridIndicesFromData = (data: DottingData): GridIndices => {
   };
 };
 
+export const getAllGridIndicesSorted = (
+  data: DottingData,
+): {
+  rowIndices: Array<number>;
+  columnIndices: Array<number>;
+} => {
+  const allRowKeys = Array.from(data.keys());
+  const allColumnKeys = Array.from(data.get(allRowKeys[0])!.keys());
+  return {
+    rowIndices: allRowKeys.sort((a, b) => a - b),
+    columnIndices: allColumnKeys.sort((a, b) => a - b),
+  };
+};
+
 /**
  * @description get all the row keys (sorted) from the data
  * @param data
@@ -206,18 +220,19 @@ export const getInBetweenPixelIndicesfromCoords = (
     Math.abs(currentCoord.y - previousCoord.y) >= gridSquareLength
   ) {
     const gridIndices = getGridIndicesFromData(data);
+    const { rowIndices, columnIndices } = getAllGridIndicesSorted(data);
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       currentCoord,
-      getRowCountFromData(data),
-      getColumnCountFromData(data),
+      rowIndices,
+      columnIndices,
       gridSquareLength,
       gridIndices.topRowIndex,
       gridIndices.leftColumnIndex,
     );
     const previousIndex = getPixelIndexFromMouseCartCoord(
       previousCoord,
-      getRowCountFromData(data),
-      getColumnCountFromData(data),
+      rowIndices,
+      columnIndices,
       gridSquareLength,
       gridIndices.topRowIndex,
       gridIndices.leftColumnIndex,

@@ -153,8 +153,8 @@ export const getMouseCartCoord = (
 
 export const getPixelIndexFromMouseCartCoord = (
   mouseCartCoord: Coord,
-  rowCount: number,
-  columnCount: number,
+  sortedRowIndices: number[],
+  sortedColumnIndices: number[],
   gridSquareLength: number,
   currentTopIndex: number,
   currentLeftIndex: number,
@@ -165,9 +165,11 @@ export const getPixelIndexFromMouseCartCoord = (
   };
   if (
     mouseCartCoord.x > leftTopPoint.x &&
-    mouseCartCoord.x < leftTopPoint.x + columnCount * gridSquareLength &&
+    mouseCartCoord.x <
+      leftTopPoint.x + sortedColumnIndices.length * gridSquareLength &&
     mouseCartCoord.y > leftTopPoint.y &&
-    mouseCartCoord.y < leftTopPoint.y + rowCount * gridSquareLength
+    mouseCartCoord.y <
+      leftTopPoint.y + sortedRowIndices.length * gridSquareLength
   ) {
     // The above conditions are to check if the mouse is in the grid
     const rowOffset = Math.floor(
@@ -177,8 +179,8 @@ export const getPixelIndexFromMouseCartCoord = (
       (mouseCartCoord.x - leftTopPoint.x) / gridSquareLength,
     );
     return {
-      rowIndex: currentTopIndex + rowOffset,
-      columnIndex: currentLeftIndex + columnOffset,
+      rowIndex: sortedRowIndices[rowOffset],
+      columnIndex: sortedColumnIndices[columnOffset],
     };
   }
   return null;
