@@ -1205,13 +1205,29 @@ export default class Editor extends EventDispatcher {
     }
   };
 
-  addRowIndices(rowIndices: Array<number>) {}
+  addRowIndices(rowIndices: Array<number>) {
+    for (const rowIndex of rowIndices) {
+      this.dataLayer.addRow(rowIndex);
+    }
+  }
 
-  addColumnIndices(columnIndices: Array<number>) {}
+  addColumnIndices(columnIndices: Array<number>) {
+    for (const columnIndex of columnIndices) {
+      this.dataLayer.addColumn(columnIndex);
+    }
+  }
 
-  deleteRowIndices(rowIndices: Array<number>) {}
+  deleteRowIndices(rowIndices: Array<number>) {
+    for (const rowIndex of rowIndices) {
+      this.dataLayer.deleteRow(rowIndex);
+    }
+  }
 
-  deleteColumnIndices(columnIndices: Array<number>) {}
+  deleteColumnIndices(columnIndices: Array<number>) {
+    for (const columnIndex of columnIndices) {
+      this.dataLayer.deleteColumn(columnIndex);
+    }
+  }
 
   private extendInteractionGridBy(
     direction: ButtonDirection,
@@ -1705,151 +1721,169 @@ export default class Editor extends EventDispatcher {
         const rightColumnDiff =
           interactionGridIndices.rightColumnIndex -
           dataGridIndices.rightColumnIndex;
-        // const swipedPixels = interactionLayer.getSwipedPixels();
-        // let deletedPixels = [];
-        let amount = 0;
-        let direction: ButtonDirection | null = null;
-        let startIndex = 0;
-        let isExtendingAction = true;
+        const changeAmounts: Array<{
+          direction:
+            | ButtonDirection.TOP
+            | ButtonDirection.BOTTOM
+            | ButtonDirection.LEFT
+            | ButtonDirection.RIGHT;
+          amount: number;
+          startIndex: number;
+        }> = [];
         if (topRowDiff < 0) {
-          amount = -topRowDiff;
+          const amount = -topRowDiff;
           const { addedRowIndices } = this.dataLayer.extendGridBy(
             ButtonDirection.TOP,
             amount,
             dataGridIndices.topRowIndex,
           );
-          direction = ButtonDirection.TOP;
-          startIndex = dataGridIndices.topRowIndex;
+          changeAmounts.push({
+            direction: ButtonDirection.TOP,
+            amount: amount,
+            startIndex: dataGridIndices.topRowIndex,
+          });
           addedOrDeletedRows.push(
             ...addedRowIndices.map(index => ({
               index,
               isDelete: false,
             })),
           );
-          isExtendingAction = true;
         } else if (topRowDiff > 0) {
-          amount = topRowDiff;
+          const amount = topRowDiff;
           const { deletedRowIndices } = this.dataLayer.shortenGridBy(
             ButtonDirection.TOP,
             amount,
             dataGridIndices.topRowIndex,
           );
-          direction = ButtonDirection.TOP;
-          startIndex = dataGridIndices.topRowIndex;
+          changeAmounts.push({
+            direction: ButtonDirection.TOP,
+            amount: -amount,
+            startIndex: dataGridIndices.topRowIndex,
+          });
           addedOrDeletedRows.push(
             ...deletedRowIndices.map(index => ({
               index,
               isDelete: true,
             })),
           );
-          isExtendingAction = false;
         }
         if (leftColumnDiff < 0) {
-          amount = -leftColumnDiff;
+          const amount = -leftColumnDiff;
           const { addedColumnIndices } = this.dataLayer.extendGridBy(
             ButtonDirection.LEFT,
             amount,
             dataGridIndices.leftColumnIndex,
           );
-          direction = ButtonDirection.LEFT;
-          startIndex = dataGridIndices.leftColumnIndex;
+          changeAmounts.push({
+            direction: ButtonDirection.LEFT,
+            amount: amount,
+            startIndex: dataGridIndices.leftColumnIndex,
+          });
           addedOrDeletedColumns.push(
             ...addedColumnIndices.map(index => ({
               index,
               isDelete: false,
             })),
           );
-          isExtendingAction = true;
         } else if (leftColumnDiff > 0) {
-          amount = leftColumnDiff;
+          const amount = leftColumnDiff;
           const { deletedColumnIndices } = this.dataLayer.shortenGridBy(
             ButtonDirection.LEFT,
             amount,
             dataGridIndices.leftColumnIndex,
           );
-          direction = ButtonDirection.LEFT;
-          startIndex = dataGridIndices.leftColumnIndex;
+          changeAmounts.push({
+            direction: ButtonDirection.LEFT,
+            amount: -amount,
+            startIndex: dataGridIndices.leftColumnIndex,
+          });
           addedOrDeletedColumns.push(
             ...deletedColumnIndices.map(index => ({
               index,
               isDelete: true,
             })),
           );
-          isExtendingAction = false;
         }
         if (bottomRowDiff > 0) {
-          amount = bottomRowDiff;
+          const amount = bottomRowDiff;
           const { addedRowIndices } = this.dataLayer.extendGridBy(
             ButtonDirection.BOTTOM,
             amount,
             dataGridIndices.bottomRowIndex,
           );
-          direction = ButtonDirection.BOTTOM;
-          startIndex = dataGridIndices.bottomRowIndex;
+
+          changeAmounts.push({
+            direction: ButtonDirection.BOTTOM,
+            amount: amount,
+            startIndex: dataGridIndices.bottomRowIndex,
+          });
           addedOrDeletedRows.push(
             ...addedRowIndices.map(index => ({
               index,
               isDelete: false,
             })),
           );
-          isExtendingAction = true;
         } else if (bottomRowDiff < 0) {
-          amount = -bottomRowDiff;
+          const amount = -bottomRowDiff;
           const { deletedRowIndices } = this.dataLayer.shortenGridBy(
             ButtonDirection.BOTTOM,
             amount,
             dataGridIndices.bottomRowIndex,
           );
-          direction = ButtonDirection.BOTTOM;
-          startIndex = dataGridIndices.bottomRowIndex;
+          changeAmounts.push({
+            direction: ButtonDirection.BOTTOM,
+            amount: -amount,
+            startIndex: dataGridIndices.bottomRowIndex,
+          });
           addedOrDeletedRows.push(
             ...deletedRowIndices.map(index => ({
               index,
               isDelete: true,
             })),
           );
-          isExtendingAction = false;
         }
         if (rightColumnDiff > 0) {
-          amount = rightColumnDiff;
+          const amount = rightColumnDiff;
           const { addedColumnIndices } = this.dataLayer.extendGridBy(
             ButtonDirection.RIGHT,
             amount,
             dataGridIndices.rightColumnIndex,
           );
-          direction = ButtonDirection.RIGHT;
-          startIndex = dataGridIndices.rightColumnIndex;
+          changeAmounts.push({
+            direction: ButtonDirection.RIGHT,
+            amount: amount,
+            startIndex: dataGridIndices.rightColumnIndex,
+          });
           addedOrDeletedColumns.push(
             ...addedColumnIndices.map(index => ({
               index,
               isDelete: false,
             })),
           );
-          isExtendingAction = true;
         } else if (rightColumnDiff < 0) {
-          amount = -rightColumnDiff;
+          const amount = -rightColumnDiff;
           const { deletedColumnIndices } = this.dataLayer.shortenGridBy(
             ButtonDirection.RIGHT,
             amount,
             dataGridIndices.rightColumnIndex,
           );
-          direction = ButtonDirection.RIGHT;
-          startIndex = dataGridIndices.rightColumnIndex;
+          changeAmounts.push({
+            direction: ButtonDirection.RIGHT,
+            amount: -amount,
+            startIndex: dataGridIndices.rightColumnIndex,
+          });
           addedOrDeletedColumns.push(
             ...deletedColumnIndices.map(index => ({
               index,
               isDelete: true,
             })),
           );
-          isExtendingAction = false;
         }
 
-        if (direction) {
+        if (changeAmounts.length !== 0) {
           this.recordInteractionSizeChangeAction(
-            direction,
+            changeAmounts,
             this.dataLayer.getSwipedPixels(),
-            isExtendingAction ? amount : -amount,
-            startIndex,
           );
           this.dataLayer.resetSwipedPixels();
         }
@@ -1907,27 +1941,25 @@ export default class Editor extends EventDispatcher {
 
   /**
    * @description records the action of the user interaction
-   * @param direction direction of the size change
-   * @param deletedPixels deleted pixels
-   * @param amount amount of the size change
-   * @param startIndex start index of the size change
+   * @param changeAmounts the amount of change in each direction
+   * @param deletedPixels the pixels that are deleted
    */
   recordInteractionSizeChangeAction(
-    direction: ButtonDirection,
+    changeAmounts: Array<{
+      direction:
+        | ButtonDirection.TOP
+        | ButtonDirection.BOTTOM
+        | ButtonDirection.LEFT
+        | ButtonDirection.RIGHT;
+      amount: number;
+      startIndex: number;
+    }>,
     deletedPixels: Array<PixelModifyItem>,
-    amount: number,
-    startIndex: number,
   ) {
     this.recordAction(
       new SizeChangeAction(
         deletedPixels,
-        [
-          {
-            direction,
-            amount,
-            startIndex,
-          },
-        ],
+        changeAmounts,
         this.dataLayer.getCurrentLayer().getId(),
       ),
     );
@@ -1966,6 +1998,7 @@ export default class Editor extends EventDispatcher {
           const change = sizeChangeAction.changeAmounts[i];
           const isExtendAction = change.amount > 0;
           if (isExtendAction) {
+            console.log(change.direction);
             const { addedColumnIndices, addedRowIndices } =
               this.dataLayer.extendGridBy(
                 change.direction,

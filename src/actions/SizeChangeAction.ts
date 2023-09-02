@@ -3,7 +3,13 @@ import { ButtonDirection } from "../components/Canvas/config";
 import { PixelModifyItem } from "../components/Canvas/types";
 
 export interface ChangeAmountData {
-  direction: ButtonDirection;
+  // we only allow vertical or horizontal change
+  // diagnoal change is simply a combination of vertical and horizontal change
+  direction:
+    | ButtonDirection.TOP
+    | ButtonDirection.BOTTOM
+    | ButtonDirection.LEFT
+    | ButtonDirection.RIGHT;
   amount: number;
   startIndex: number;
 }
