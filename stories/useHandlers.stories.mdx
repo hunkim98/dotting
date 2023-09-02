@@ -12,6 +12,7 @@ import {
   StrokeListener,
   HoverPixelListener,
   CanvasElementEvents,
+  DataChangeListener,
 } from "./useHandlersComponents";
 
 <Meta title="Hooks/useHandlers" />
@@ -233,17 +234,34 @@ The events that you can listen to are:
     <tr>
       <td>`addDataChangeListener(listener: CanvasDataChangeHandler)`</td>
       <td>
-        Allows you to listen to data change events.
+        Allows you to listen to data change events. This event is triggered when the user draws on the canvas.
+        The `delta` parameter tells you the exact changes that happened on the canvas.
       </td>
       <td> 
         `CanvasDataChangeHandler`
         ```ts
-        export type CanvasDataChangeParams = { data: DottingData };
+        export type CanvasDataChangeParams = {
+          isLocalChange: boolean;
+          data: DottingData;
+          layerId: string;
+          delta?: CanvasDelta;
+        };
         export type CanvasDataChangeHandler = (params: CanvasDataChangeParams) => void;
         export type DottingData = Map<number, Map<number, PixelData>>;
         export type PixelData = {
             color: string;
         };
+        epxort type CanvasDelta = {
+          modifiedPixels: Array<PixelModifyItem>;
+            addedOrDeletedRows?: Array<{
+              isDelete: boolean;
+              index: number;
+            }>;
+            addedOrDeletedColumns?: Array<{
+              isDelete: boolean;
+              index: number;
+            }>;
+        }
         ```
       </td>
     </tr>
@@ -400,20 +418,27 @@ The events that you can listen to are:
 
 ### Examples
 
-#### 1. Stroke end listener `addStrokeEndListener`, `removeStrokeEndListener`
+#### 1. Data change listener `addStrokeEndListener`, `removeStrokeEndListener`
+
+With data change listeners, you can observe the changes when the user draws on the canvas.
+You can check the `delta` parameter to see the exact changes that happened on the canvas.
+
+<DataChangeListener />
+
+#### 2. Stroke end listener `addStrokeEndListener`, `removeStrokeEndListener`
 
 With stroke end related listeners, you can observer the changes when the user ends the stroke.
 
 <StrokeListener />
 
-#### 2. Hover Pixel Change Listener `addHoverPixelChangeListener`, `removeHoverPixelChangeListener`
+#### 3. Hover Pixel Change Listener `addHoverPixelChangeListener`, `removeHoverPixelChangeListener`
 
 With the hover pixel change listener, you can observe the changes when the user hovers over the canvas.
 When there is no hovered pixel, the return value will be `null`
 
 <HoverPixelListener />
 
-#### 3. Canvas Element Custom Event Listener `addCanvasElementEventListener`, `removeCanvasElementEventListener`
+#### 4. Canvas Element Custom Event Listener `addCanvasElementEventListener`, `removeCanvasElementEventListener`
 
 You can also directly add event listeners to the canvas element.
 This is useful when you want to listen to events that are not provided by the library.

@@ -1205,6 +1205,14 @@ export default class Editor extends EventDispatcher {
     }
   };
 
+  addRowIndices(rowIndices: Array<number>) {}
+
+  addColumnIndices(columnIndices: Array<number>) {}
+
+  deleteRowIndices(rowIndices: Array<number>) {}
+
+  deleteColumnIndices(columnIndices: Array<number>) {}
+
   private extendInteractionGridBy(
     direction: ButtonDirection,
     amount: { x: number; y: number },
@@ -1849,16 +1857,23 @@ export default class Editor extends EventDispatcher {
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places
       const updatedData = this.dataLayer.getCopiedData();
-      this.emitDataChangeEvent({
-        isLocalChange: true,
-        data: updatedData,
-        layerId: this.dataLayer.getCurrentLayer().getId(),
-        delta: {
-          modifiedPixels: modifiedPixels,
-          addedOrDeletedRows: addedOrDeletedRows,
-          addedOrDeletedColumns: addedOrDeletedColumns,
-        },
-      });
+      // we only emit data change event when there is a change
+      if (
+        modifiedPixels.length !== 0 ||
+        addedOrDeletedRows.length !== 0 ||
+        addedOrDeletedColumns.length !== 0
+      ) {
+        this.emitDataChangeEvent({
+          isLocalChange: true,
+          data: updatedData,
+          layerId: this.dataLayer.getCurrentLayer().getId(),
+          delta: {
+            modifiedPixels: modifiedPixels,
+            addedOrDeletedRows: addedOrDeletedRows,
+            addedOrDeletedColumns: addedOrDeletedColumns,
+          },
+        });
+      }
       const updatedColumnCount = getColumnCountFromData(updatedData);
       const updatedRowCount = getRowCountFromData(updatedData);
       const updatedDimensions = {
@@ -1866,10 +1881,16 @@ export default class Editor extends EventDispatcher {
         columnCount: updatedColumnCount,
       };
       const updatedGridIndices = getGridIndicesFromData(updatedData);
-      this.emitGridChangeEvent({
-        dimensions: updatedDimensions,
-        indices: updatedGridIndices,
-      });
+      // we only emit grid change event when there is a change in deleted or added rows or columns
+      if (
+        addedOrDeletedColumns.length !== 0 ||
+        addedOrDeletedRows.length !== 0
+      ) {
+        this.emitGridChangeEvent({
+          dimensions: updatedDimensions,
+          indices: updatedGridIndices,
+        });
+      }
 
       // deletes the records of the current user
       interactionLayer.deleteErasedPixelRecord(CurrentDeviceUserId);

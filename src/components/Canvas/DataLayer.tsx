@@ -519,6 +519,37 @@ export default class DataLayer extends BaseLayer {
     return { dataForAction };
   }
 
+  addRow(rowIndex: number) {
+    this.layers.forEach(layer => {
+      layer.addRowToData(rowIndex);
+    });
+  }
+
+  addColumn(columnIndex: number) {
+    this.layers.forEach(layer => {
+      layer.addColumnToData(columnIndex);
+    });
+  }
+
+  deleteRow(rowIndex: number) {
+    const swipedPixels = extractColoredPixelsFromRow(this.getData(), rowIndex);
+    this.layers.forEach(layer => {
+      layer.deleteRowOfData(rowIndex);
+    });
+    return swipedPixels;
+  }
+
+  deleteColumn(columnIndex: number) {
+    const swipedPixels = extractColoredPixelsFromColumn(
+      this.getData(),
+      columnIndex,
+    );
+    this.layers.forEach(layer => {
+      layer.deleteColumnOfData(columnIndex);
+    });
+    return swipedPixels;
+  }
+
   extendGridBy(direction: ButtonDirection, amount: number, startIndex: number) {
     const shouldIncreaseIndex =
       direction === ButtonDirection.BOTTOM ||
