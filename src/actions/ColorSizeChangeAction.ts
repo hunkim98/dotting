@@ -1,5 +1,4 @@
 import { Action, ActionType } from "./Action";
-import { ButtonDirection } from "../components/Canvas/config";
 import { PixelModifyItem } from "../components/Canvas/types";
 
 export class ColorSizeChangeAction extends Action {

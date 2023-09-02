@@ -142,16 +142,6 @@ export default class Editor extends EventDispatcher {
     initLayers?: Array<LayerProps>;
   }) {
     super();
-    // if (layers) {
-    //   this.layers = layers.map(layer => {
-    //     return {
-    //       data: new DottingDataLayer({
-    //         data: layer,
-    //       }),
-    //       id: crypto.randomUUID(),
-    //     };
-    //   });
-    // }
     this.dataLayer = new DataLayer({
       canvas: dataCanvas,
       layers: initLayers,
