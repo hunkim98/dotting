@@ -307,47 +307,25 @@ export default class DataLayer extends BaseLayer {
       if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromRow(this.getData(), index);
-      this.swipedPixels.push(...swipedPixels);
-      this.layers.forEach(layer => {
-        layer.deleteRowOfData(index);
-      });
+      this.swipedPixels.push(...this.deleteRow(index));
       deletedRowIndex = index;
     } else if (direction === ButtonDirection.BOTTOM) {
       if (rowCount <= 2 || !rowKeys.includes(index)) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromRow(this.getData(), index);
-      this.swipedPixels.push(...swipedPixels);
-      this.layers.forEach(layer => {
-        layer.deleteRowOfData(index);
-      });
+      this.swipedPixels.push(...this.deleteRow(index));
       deletedRowIndex = index;
     } else if (direction === ButtonDirection.LEFT) {
       if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromColumn(
-        this.getData(),
-        index,
-      );
-      this.swipedPixels.push(...swipedPixels);
-      this.layers.forEach(layer => {
-        layer.deleteColumnOfData(index);
-      });
+      this.swipedPixels.push(...this.deleteColumn(index));
       deletedColumnIndex = index;
     } else if (direction === ButtonDirection.RIGHT) {
       if (columnCount <= 2 || !columnKeys.includes(index)) {
         return;
       }
-      const swipedPixels = extractColoredPixelsFromColumn(
-        this.getData(),
-        index,
-      );
-      this.swipedPixels.push(...swipedPixels);
-      this.layers.forEach(layer => {
-        layer.deleteColumnOfData(index);
-      });
+      this.swipedPixels.push(...this.deleteColumn(index));
       deletedColumnIndex = index;
     }
     return {
@@ -585,25 +563,17 @@ export default class DataLayer extends BaseLayer {
     let addedRowIndex = null;
     let addedColumnIndex = null;
     if (direction === ButtonDirection.TOP) {
-      this.layers.forEach(layer => {
-        layer.addRowToData(index);
-        addedRowIndex = index;
-      });
+      this.addRow(index);
+      addedRowIndex = index;
     } else if (direction === ButtonDirection.BOTTOM) {
-      this.layers.forEach(layer => {
-        layer.addRowToData(index);
-        addedRowIndex = index;
-      });
+      this.addRow(index);
+      addedRowIndex = index;
     } else if (direction === ButtonDirection.LEFT) {
-      this.layers.forEach(layer => {
-        layer.addColumnToData(index);
-        addedColumnIndex = index;
-      });
+      this.addColumn(index);
+      addedColumnIndex = index;
     } else if (direction === ButtonDirection.RIGHT) {
-      this.layers.forEach(layer => {
-        layer.addColumnToData(index);
-        addedColumnIndex = index;
-      });
+      this.addColumn(index);
+      addedColumnIndex = index;
     }
     return {
       addedRowIndex,

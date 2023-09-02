@@ -2,7 +2,6 @@ import { fireEvent } from "@testing-library/react";
 
 import {
   DefaultButtonHeight,
-  DefaultPixelColor,
 } from "../../components/Canvas/config";
 import Editor from "../../components/Canvas/Editor";
 import { FakeMouseEvent } from "../../utils/testUtils";
