@@ -41,7 +41,6 @@ import {
 } from "../../actions/LayerCreateDeleteAction";
 import { LayerReorderAction } from "../../actions/LayerReorderAction";
 import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
-import { SizeChangeAction } from "../../actions/SizeChangeAction";
 import {
   createColumnKeyOrderMapfromData,
   createRowKeyOrderMapfromData,
@@ -1727,27 +1726,12 @@ export default class Editor extends EventDispatcher {
         const rightColumnDiff =
           interactionGridIndices.rightColumnIndex -
           dataGridIndices.rightColumnIndex;
-        const changeAmounts: Array<{
-          direction:
-            | ButtonDirection.TOP
-            | ButtonDirection.BOTTOM
-            | ButtonDirection.LEFT
-            | ButtonDirection.RIGHT;
-          amount: number;
-          startIndex: number;
-        }> = [];
         if (topRowDiff < 0) {
           const amount = -topRowDiff;
-          const { addedRowIndices } = this.dataLayer.extendGridBy(
-            ButtonDirection.TOP,
-            amount,
-            dataGridIndices.topRowIndex,
+          const addedRowIndices = Array.from(
+            new Array(amount),
+            (_, i) => dataGridIndices.topRowIndex - i - 1,
           );
-          changeAmounts.push({
-            direction: ButtonDirection.TOP,
-            amount: amount,
-            startIndex: dataGridIndices.topRowIndex,
-          });
           addedOrDeletedRows.push(
             ...addedRowIndices.map(index => ({
               index,
@@ -1756,16 +1740,10 @@ export default class Editor extends EventDispatcher {
           );
         } else if (topRowDiff > 0) {
           const amount = topRowDiff;
-          const { deletedRowIndices } = this.dataLayer.shortenGridBy(
-            ButtonDirection.TOP,
-            amount,
-            dataGridIndices.topRowIndex,
+          const deletedRowIndices = Array.from(
+            new Array(amount),
+            (_, i) => dataGridIndices.topRowIndex + i,
           );
-          changeAmounts.push({
-            direction: ButtonDirection.TOP,
-            amount: -amount,
-            startIndex: dataGridIndices.topRowIndex,
-          });
           addedOrDeletedRows.push(
             ...deletedRowIndices.map(index => ({
               index,
@@ -1775,16 +1753,10 @@ export default class Editor extends EventDispatcher {
         }
         if (leftColumnDiff < 0) {
           const amount = -leftColumnDiff;
-          const { addedColumnIndices } = this.dataLayer.extendGridBy(
-            ButtonDirection.LEFT,
-            amount,
-            dataGridIndices.leftColumnIndex,
+          const addedColumnIndices = Array.from(
+            new Array(amount),
+            (_, i) => dataGridIndices.leftColumnIndex - i - 1,
           );
-          changeAmounts.push({
-            direction: ButtonDirection.LEFT,
-            amount: amount,
-            startIndex: dataGridIndices.leftColumnIndex,
-          });
           addedOrDeletedColumns.push(
             ...addedColumnIndices.map(index => ({
               index,
@@ -1793,16 +1765,10 @@ export default class Editor extends EventDispatcher {
           );
         } else if (leftColumnDiff > 0) {
           const amount = leftColumnDiff;
-          const { deletedColumnIndices } = this.dataLayer.shortenGridBy(
-            ButtonDirection.LEFT,
-            amount,
-            dataGridIndices.leftColumnIndex,
+          const deletedColumnIndices = Array.from(
+            new Array(amount),
+            (_, i) => dataGridIndices.leftColumnIndex + i,
           );
-          changeAmounts.push({
-            direction: ButtonDirection.LEFT,
-            amount: -amount,
-            startIndex: dataGridIndices.leftColumnIndex,
-          });
           addedOrDeletedColumns.push(
             ...deletedColumnIndices.map(index => ({
               index,
@@ -1812,17 +1778,10 @@ export default class Editor extends EventDispatcher {
         }
         if (bottomRowDiff > 0) {
           const amount = bottomRowDiff;
-          const { addedRowIndices } = this.dataLayer.extendGridBy(
-            ButtonDirection.BOTTOM,
-            amount,
-            dataGridIndices.bottomRowIndex,
+          const addedRowIndices = Array.from(
+            new Array(amount),
+            (_, i) => dataGridIndices.bottomRowIndex + i + 1,
           );
-
-          changeAmounts.push({
-            direction: ButtonDirection.BOTTOM,
-            amount: amount,
-            startIndex: dataGridIndices.bottomRowIndex,
-          });
           addedOrDeletedRows.push(
             ...addedRowIndices.map(index => ({
               index,
@@ -1831,16 +1790,10 @@ export default class Editor extends EventDispatcher {
           );
         } else if (bottomRowDiff < 0) {
           const amount = -bottomRowDiff;
-          const { deletedRowIndices } = this.dataLayer.shortenGridBy(
-            ButtonDirection.BOTTOM,
-            amount,
-            dataGridIndices.bottomRowIndex,
+          const deletedRowIndices = Array.from(
+            new Array(amount),
+            (_, i) => dataGridIndices.bottomRowIndex - i,
           );
-          changeAmounts.push({
-            direction: ButtonDirection.BOTTOM,
-            amount: -amount,
-            startIndex: dataGridIndices.bottomRowIndex,
-          });
           addedOrDeletedRows.push(
             ...deletedRowIndices.map(index => ({
               index,
@@ -1850,16 +1803,10 @@ export default class Editor extends EventDispatcher {
         }
         if (rightColumnDiff > 0) {
           const amount = rightColumnDiff;
-          const { addedColumnIndices } = this.dataLayer.extendGridBy(
-            ButtonDirection.RIGHT,
-            amount,
-            dataGridIndices.rightColumnIndex,
+          const addedColumnIndices = Array.from(
+            new Array(amount),
+            (_, i) => dataGridIndices.rightColumnIndex + i + 1,
           );
-          changeAmounts.push({
-            direction: ButtonDirection.RIGHT,
-            amount: amount,
-            startIndex: dataGridIndices.rightColumnIndex,
-          });
           addedOrDeletedColumns.push(
             ...addedColumnIndices.map(index => ({
               index,
@@ -1868,16 +1815,10 @@ export default class Editor extends EventDispatcher {
           );
         } else if (rightColumnDiff < 0) {
           const amount = -rightColumnDiff;
-          const { deletedColumnIndices } = this.dataLayer.shortenGridBy(
-            ButtonDirection.RIGHT,
-            amount,
-            dataGridIndices.rightColumnIndex,
+          const deletedColumnIndices = Array.from(
+            new Array(amount),
+            (_, i) => dataGridIndices.rightColumnIndex - i,
           );
-          changeAmounts.push({
-            direction: ButtonDirection.RIGHT,
-            amount: -amount,
-            startIndex: dataGridIndices.rightColumnIndex,
-          });
           addedOrDeletedColumns.push(
             ...deletedColumnIndices.map(index => ({
               index,
@@ -1886,11 +1827,37 @@ export default class Editor extends EventDispatcher {
           );
         }
 
-        if (changeAmounts.length !== 0) {
+        if (
+          addedOrDeletedColumns.length !== 0 ||
+          addedOrDeletedRows.length !== 0
+        ) {
+          const addedColumIndices = addedOrDeletedColumns
+            .filter(item => item.isDelete === false)
+            .map(el => el.index);
+          const addedRowIndices = addedOrDeletedRows
+            .filter(item => item.isDelete === false)
+            .map(el => el.index);
+          const deletedColumnIndices = addedOrDeletedColumns
+            .filter(item => item.isDelete === true)
+            .map(el => el.index);
+          const deletedRowIndices = addedOrDeletedRows
+            .filter(item => item.isDelete === true)
+            .map(el => el.index);
           this.recordSizeChangeAction(
-            changeAmounts,
+            addedRowIndices,
+            addedColumIndices,
+            deletedRowIndices,
+            deletedColumnIndices,
             this.dataLayer.getSwipedPixels(),
           );
+          this.dataLayer.addGridIndices({
+            rowIndicesToAdd: addedRowIndices,
+            columnIndicesToAdd: addedColumIndices,
+          });
+          this.dataLayer.deleteGridIndices({
+            rowIndicesToDelete: deletedRowIndices,
+            columnIndicesToDelete: deletedColumnIndices,
+          });
           this.dataLayer.resetSwipedPixels();
         }
       }
@@ -1946,26 +1913,22 @@ export default class Editor extends EventDispatcher {
   }
 
   /**
-   * @description records the action of the user interaction
-   * @param changeAmounts the amount of change in each direction
-   * @param deletedPixels the pixels that are deleted
+   * @description records the size change action of the user interaction
    */
   recordSizeChangeAction(
-    changeAmounts: Array<{
-      direction:
-        | ButtonDirection.TOP
-        | ButtonDirection.BOTTOM
-        | ButtonDirection.LEFT
-        | ButtonDirection.RIGHT;
-      amount: number;
-      startIndex: number;
-    }>,
+    rowIndicesToDelete: Array<number>,
+    columnIndicesToDelete: Array<number>,
+    rowIndicesToAdd: Array<number>,
+    columnIndicesToAdd: Array<number>,
     deletedPixels: Array<PixelModifyItem>,
   ) {
     this.recordAction(
-      new SizeChangeAction(
+      new ColorSizeChangeAction(
         deletedPixels,
-        changeAmounts,
+        rowIndicesToDelete,
+        columnIndicesToDelete,
+        rowIndicesToAdd,
+        columnIndicesToAdd,
         this.dataLayer.getCurrentLayer().getId(),
       ),
     );
@@ -1998,102 +1961,48 @@ export default class Editor extends EventDispatcher {
         modifiedPixels.push(...colorChangeAction.data);
         break;
 
-      case ActionType.SizeChange:
-        const sizeChangeAction = action as SizeChangeAction;
-        for (let i = 0; i < sizeChangeAction.changeAmounts.length; i++) {
-          const change = sizeChangeAction.changeAmounts[i];
-          const isExtendAction = change.amount > 0;
-          if (isExtendAction) {
-            const { addedColumnIndices, addedRowIndices } =
-              this.dataLayer.extendGridBy(
-                change.direction,
-                change.amount,
-                change.startIndex,
-              );
-            addedOrDeletedColumns.push(
-              ...addedColumnIndices.map(index => ({
-                index,
-                isDelete: false,
-              })),
-            );
-            addedOrDeletedRows.push(
-              ...addedRowIndices.map(index => ({
-                index,
-                isDelete: false,
-              })),
-            );
-          } else {
-            const { deletedColumnIndices, deletedRowIndices } =
-              this.dataLayer.shortenGridBy(
-                change.direction,
-                -change.amount,
-                change.startIndex,
-              );
-            addedOrDeletedColumns.push(
-              ...deletedColumnIndices.map(index => ({
-                index,
-                isDelete: true,
-              })),
-            );
-            addedOrDeletedRows.push(
-              ...deletedRowIndices.map(index => ({
-                index,
-                isDelete: true,
-              })),
-            );
-          }
-          const sizeChangePixels = sizeChangeAction.data;
-          this.dataLayer.updatePixelColors(sizeChangePixels, layerId);
-          // add the modified pixels to the modifiedPixels array
-          modifiedPixels.push(...sizeChangePixels);
-        }
-        break;
-
       case ActionType.ColorSizeChange:
         const colorSizeChangeAction = action as ColorSizeChangeAction;
-        for (let i = 0; i < colorSizeChangeAction.changeAmounts.length; i++) {
-          const change = colorSizeChangeAction.changeAmounts[i];
-          const isExtendAction = change.amount > 0;
-          if (isExtendAction) {
-            const { addedColumnIndices, addedRowIndices } =
-              this.dataLayer.extendGridBy(
-                change.direction,
-                change.amount,
-                change.startIndex,
-              );
-            addedOrDeletedColumns.push(
-              ...addedColumnIndices.map(index => ({
-                index,
-                isDelete: false,
-              })),
-            );
-            addedOrDeletedRows.push(
-              ...addedRowIndices.map(index => ({
-                index,
-                isDelete: false,
-              })),
-            );
-          } else {
-            const { deletedColumnIndices, deletedRowIndices } =
-              this.dataLayer.shortenGridBy(
-                change.direction,
-                change.amount,
-                change.startIndex,
-              );
-            addedOrDeletedColumns.push(
-              ...deletedColumnIndices.map(index => ({
-                index,
-                isDelete: true,
-              })),
-            );
-            addedOrDeletedRows.push(
-              ...deletedRowIndices.map(index => ({
-                index,
-                isDelete: true,
-              })),
-            );
-          }
-        }
+        const colorSizeChangeRowsToAdd = Array.from(
+          colorSizeChangeAction.rowIndicesToAdd,
+        );
+        const colorSizeChangeRowsToDelete = Array.from(
+          colorSizeChangeAction.rowIndicesToDelete,
+        );
+        const colorSizeChangeColumnsToAdd = Array.from(
+          colorSizeChangeAction.columnIndicesToAdd,
+        );
+        const colorSizeChangeColumnsToDelete = Array.from(
+          colorSizeChangeAction.columnIndicesToDelete,
+        );
+        this.dataLayer.deleteGridIndices({
+          rowIndicesToDelete: colorSizeChangeRowsToDelete,
+          columnIndicesToDelete: colorSizeChangeColumnsToDelete,
+        });
+        this.dataLayer.addGridIndices({
+          rowIndicesToAdd: colorSizeChangeRowsToAdd,
+          columnIndicesToAdd: colorSizeChangeColumnsToAdd,
+        });
+        addedOrDeletedColumns.push(
+          ...colorSizeChangeColumnsToDelete.map(index => ({
+            index,
+            isDelete: true,
+          })),
+          ...colorSizeChangeColumnsToAdd.map(index => ({
+            index,
+            isDelete: false,
+          })),
+        );
+        addedOrDeletedRows.push(
+          ...colorSizeChangeRowsToDelete.map(index => ({
+            index,
+            isDelete: true,
+          })),
+          ...colorSizeChangeRowsToAdd.map(index => ({
+            index,
+            isDelete: false,
+          })),
+        );
         // we do not need to care for colorchangemode. Erase since the grids are already deleted
         const colorSizeChangePixels = colorSizeChangeAction.data;
         // add the modified pixels to the modifiedPixels array
@@ -2247,10 +2156,8 @@ export default class Editor extends EventDispatcher {
     layerId?: string,
     isLocalChange = false,
   ) {
-    const { changeAmounts, dataForAction } = this.dataLayer.colorPixels(
-      data,
-      layerId,
-    );
+    const { dataForAction, totalAddedColumnIndices, totalAddedRowIndices } =
+      this.dataLayer.colorPixels(data, layerId);
     const modifiedLayerId = layerId
       ? layerId
       : this.dataLayer.getCurrentLayer().getId();
@@ -2267,44 +2174,15 @@ export default class Editor extends EventDispatcher {
     }
     this.relayDataDimensionsToLayers();
     this.recordAction(
-      new ColorSizeChangeAction(dataForAction, changeAmounts, modifiedLayerId),
+      new ColorSizeChangeAction(
+        dataForAction,
+        totalAddedRowIndices,
+        totalAddedColumnIndices,
+        [],
+        [],
+        modifiedLayerId,
+      ),
     );
-
-    const addedTopRows = changeAmounts.filter(
-      change => change.direction === ButtonDirection.TOP,
-    );
-    const addedRowIndices = new Set<number>();
-    const addedBottomRows = changeAmounts.filter(
-      change => change.direction === ButtonDirection.BOTTOM,
-    );
-    for (const change of addedTopRows) {
-      for (let j = 0; j < change.amount; j++) {
-        addedRowIndices.add(change.startIndex - 1 - j);
-      }
-    }
-    for (const change of addedBottomRows) {
-      for (let j = 0; j < change.amount; j++) {
-        addedRowIndices.add(change.startIndex + 1 + j);
-      }
-    }
-
-    const addedColumnIndices = new Set<number>();
-    const addedLeftColumns = changeAmounts.filter(
-      change => change.direction === ButtonDirection.LEFT,
-    );
-    const addedRightColumns = changeAmounts.filter(
-      change => change.direction === ButtonDirection.RIGHT,
-    );
-    for (const change of addedLeftColumns) {
-      for (let j = 0; j < change.amount; j++) {
-        addedColumnIndices.add(change.startIndex - 1 - j);
-      }
-    }
-    for (const change of addedRightColumns) {
-      for (let j = 0; j < change.amount; j++) {
-        addedColumnIndices.add(change.startIndex + 1 + j);
-      }
-    }
 
     this.emitDataChangeEvent({
       isLocalChange,
@@ -2312,13 +2190,11 @@ export default class Editor extends EventDispatcher {
       layerId: modifiedLayerId,
       delta: {
         modifiedPixels: dataForAction,
-        addedOrDeletedColumns: Array.from(addedColumnIndices).map(
-          columnIndex => ({
-            index: columnIndex,
-            isDelete: false,
-          }),
-        ),
-        addedOrDeletedRows: Array.from(addedRowIndices).map(rowIndex => ({
+        addedOrDeletedColumns: totalAddedColumnIndices.map(columnIndex => ({
+          index: columnIndex,
+          isDelete: false,
+        })),
+        addedOrDeletedRows: totalAddedRowIndices.map(rowIndex => ({
           index: rowIndex,
           isDelete: false,
         })),

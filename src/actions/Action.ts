@@ -1,6 +1,5 @@
 export enum ActionType {
   ColorChange = "ColorChange",
-  SizeChange = "SizeChange",
   ColorSizeChange = "ColorSizeChange",
   SelectAreaMove = "SelectAreaMove",
   LayerCreate = "LayerCreate",
