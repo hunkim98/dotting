@@ -2324,8 +2324,6 @@ export default class Editor extends EventDispatcher {
       rowIndices,
       columnIndices,
       this.gridSquareLength,
-      gridIndices.topRowIndex,
-      gridIndices.leftColumnIndex,
     );
     this.mouseMode = pixelIndex ? MouseMode.DRAWING : MouseMode.PANNING;
 
@@ -2493,8 +2491,6 @@ export default class Editor extends EventDispatcher {
       rowIndices,
       columnIndices,
       this.gridSquareLength,
-      gridIndices.topRowIndex,
-      gridIndices.leftColumnIndex,
     );
     const hoveredPixel = this.interactionLayer.getHoveredPixel();
     if (this.brushTool === BrushTool.SELECT) {

@@ -156,8 +156,6 @@ export const getPixelIndexFromMouseCartCoord = (
   sortedRowIndices: number[],
   sortedColumnIndices: number[],
   gridSquareLength: number,
-  currentTopIndex: number,
-  currentLeftIndex: number,
 ) => {
   const leftTopPoint: Coord = {
     x: 0,
