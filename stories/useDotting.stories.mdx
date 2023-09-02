@@ -15,6 +15,7 @@ import {
   SetIndicatorPixels,
   UndoRedo,
   SetData,
+  GridChange,
 } from "./useDottingComponents";
 
 <Meta title="Hooks/useDotting" />
@@ -314,16 +315,7 @@ With `useDotting`, you can manipulate the grids.
         Allows you to add grid indices to the grid.
       </td>
       <td>
-        `AddGridIndicesParams` is defined as follows:
-        ```ts
-        export type AddGridIndicesParams = {
-          rowIndices: Array<number>;
-          columnIndices: Array<number>;
-          data?: Array<PixelModifyItem>;
-          layerId?: string;
-          isLocalChange?: boolean;
-        };
-        ```
+        `AddGridIndicesParams`. For more information about the type, please refer to section 3.
       </td>
     </tr>
     <tr>
@@ -332,15 +324,7 @@ With `useDotting`, you can manipulate the grids.
         Allows you to delete grid indices to the grid.
       </td>
       <td>
-        `DeleteGridIndicesParams` is defined as follows:
-        ```ts
-        export type DeleteGridIndicesParams = {
-            rowIndices: Array<number>;
-            columnIndices: Array<number>;
-            layerId?: string;
-            isLocalChange?: boolean;
-        };
-        ```
+        `DeleteGridIndicesParams`. For more information about the type, please refer to section 3.
       </td>
     </tr>
 
@@ -380,13 +364,44 @@ columnIndex of the pixel is not in the grid, that data is ignored.
 
 <ColorPixels />
 
-#### 3. Clear Example `clear()`
+#### 3. Grid Change Example `addGridIndices(params: AddGridIndicesParams)`, `deleteGridIndices(params: DeleteGridIndicesParams)`
+
+With `addGridIndices` method, you can add grid indices to the grid.
+The `AddGridIndicesParams` type is defined as follows:
+
+```ts
+export type AddGridIndicesParams = {
+  rowIndices: Array<number>;
+  columnIndices: Array<number>;
+  data?: Array<PixelModifyItem>;
+  layerId?: string;
+  isLocalChange?: boolean;
+};
+```
+
+By passing an array of `rowIndices` and `columnIndices` you are able to add grid indices to the grid.
+
+With `deleteGridIndices` method, you can delete grid indices to the grid.
+The `DeleteGridIndicesParams` type is defined as follows:
+
+```ts
+export type DeleteGridIndicesParams = {
+  rowIndices: Array<number>;
+  columnIndices: Array<number>;
+  layerId?: string;
+  isLocalChange?: boolean;
+};
+```
+
+<GridChange />
+
+#### 4. Clear Example `clear()`
 
 With `clear` method, you can clear all the pixels in the grid.
 
 <Clear />
 
-#### 4. Set Indicator Pixels `setIndicatorPixels(data: Array<PixelModifyItem>)`
+#### 5. Set Indicator Pixels `setIndicatorPixels(data: Array<PixelModifyItem>)`
 
 With `setIndicatorPixels` method, you can set the indicator pixels. The indicator pixels are
 the pixels that are shwon as indicators in the grid. Their opacity is lower than the real pixel data.
@@ -398,13 +413,13 @@ The data type of the `initIndicatorData` is the `Array<PixelModifyItem>`.
 
 <SetIndicatorPixels />
 
-#### 5. Undo and Redo Example `undo()`, `redo()`
+#### 6. Undo and Redo Example `undo()`, `redo()`
 
 With `undo` and `redo` methods, you can undo and redo the last action.
 
 <UndoRedo />
 
-#### 6. SetData Example `setData(data: Array<Array<PixelModifyItem>>)`
+#### 7. SetData Example `setData(data: Array<Array<PixelModifyItem>>)`
 
 With `setData`, you can set the data of the pixel canvas. (The 2d array should be a square array)
 
