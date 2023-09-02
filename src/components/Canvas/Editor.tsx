@@ -1199,29 +1199,31 @@ export default class Editor extends EventDispatcher {
   };
 
   addRowIndices(rowIndices: Array<number>) {
-    for (const rowIndex of rowIndices) {
-      this.dataLayer.addRow(rowIndex);
-    }
+    this.dataLayer.addGridIndices({
+      rowIndicesToAdd: rowIndices,
+      columnIndicesToAdd: [],
+    });
   }
 
   addColumnIndices(columnIndices: Array<number>) {
-    for (const columnIndex of columnIndices) {
-      this.dataLayer.addColumn(columnIndex);
-    }
+    this.dataLayer.addGridIndices({
+      rowIndicesToAdd: [],
+      columnIndicesToAdd: columnIndices,
+    });
   }
 
   deleteRowIndices(rowIndices: Array<number>) {
-    const swipedPixels: Array<PixelModifyItem> = [];
-    for (const rowIndex of rowIndices) {
-      swipedPixels.push(...this.dataLayer.deleteRow(rowIndex));
-    }
+    const swipedPixels = this.dataLayer.deleteGridIndices({
+      rowIndicesToDelete: rowIndices,
+      columnIndicesToDelete: [],
+    });
   }
 
   deleteColumnIndices(columnIndices: Array<number>) {
-    const swipedPixels: Array<PixelModifyItem> = [];
-    for (const columnIndex of columnIndices) {
-      swipedPixels.push(...this.dataLayer.deleteColumn(columnIndex));
-    }
+    const swipedPixels = this.dataLayer.deleteGridIndices({
+      rowIndicesToDelete: [],
+      columnIndicesToDelete: columnIndices,
+    });
   }
 
   private extendInteractionGridBy(
@@ -1833,22 +1835,22 @@ export default class Editor extends EventDispatcher {
           const deletedRowIndices = addedOrDeletedRows
             .filter(item => item.isDelete === true)
             .map(el => el.index);
+
+          this.dataLayer.addGridIndices({
+            rowIndicesToAdd: addedRowIndices,
+            columnIndicesToAdd: addedColumIndices,
+          });
+          const swipedPixels = this.dataLayer.deleteGridIndices({
+            rowIndicesToDelete: deletedRowIndices,
+            columnIndicesToDelete: deletedColumnIndices,
+          });
           this.recordSizeChangeAction(
             addedRowIndices,
             addedColumIndices,
             deletedRowIndices,
             deletedColumnIndices,
-            this.dataLayer.getSwipedPixels(),
+            swipedPixels,
           );
-          this.dataLayer.addGridIndices({
-            rowIndicesToAdd: addedRowIndices,
-            columnIndicesToAdd: addedColumIndices,
-          });
-          this.dataLayer.deleteGridIndices({
-            rowIndicesToDelete: deletedRowIndices,
-            columnIndicesToDelete: deletedColumnIndices,
-          });
-          this.dataLayer.resetSwipedPixels();
         }
       }
       // this will handle all data change actions done by the current device user
