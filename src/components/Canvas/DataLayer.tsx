@@ -1,6 +1,5 @@
 import { BaseLayer } from "./BaseLayer";
 import {
-  ButtonDirection,
   DefaultGridSquareLength,
   DefaultPixelColor,
   DefaultPixelDataDimensions,
@@ -268,65 +267,6 @@ export default class DataLayer extends BaseLayer {
     this.defaultPixelColor = color;
   }
 
-  // shortenGridBy(
-  //   direction: ButtonDirection,
-  //   amount: number,
-  //   startIndex: number,
-  // ) {
-  //   const deletedColumnIndices: Array<number> = [];
-  //   const deletedRowIndices: Array<number> = [];
-  //   const shouldIncreaseIndex =
-  //     direction === ButtonDirection.TOP || direction === ButtonDirection.LEFT;
-  //   for (let i = 0; i < amount; i++) {
-  //     const index = startIndex + (shouldIncreaseIndex ? i : -i);
-  //     const { deletedColumnIndex, deletedRowIndex } = this.shortenGrid(
-  //       direction,
-  //       index,
-  //     );
-  //     if (deletedColumnIndex !== null) {
-  //       deletedColumnIndices.push(deletedColumnIndex);
-  //     }
-  //     if (deletedRowIndex !== null) {
-  //       deletedRowIndices.push(deletedRowIndex);
-  //     }
-  //   }
-  //   return {
-  //     deletedColumnIndices,
-  //     deletedRowIndices,
-  //   };
-  // }
-
-  // shortenGrid(direction: ButtonDirection, index: number) {
-  //   const { columnCount, rowCount } = this.getDimensions();
-  //   const rowKeys = getRowKeysFromData(this.getData());
-  //   const columnKeys = getColumnKeysFromData(this.getData());
-  //   let deletedRowIndex = null;
-  //   let deletedColumnIndex = null;
-  //   if (
-  //     direction === ButtonDirection.TOP ||
-  //     direction === ButtonDirection.BOTTOM
-  //   ) {
-  //     if (rowCount <= 2 || !rowKeys.includes(index)) {
-  //       return;
-  //     }
-  //     this.swipedPixels.push(...this.deleteRow(index));
-  //     deletedRowIndex = index;
-  //   } else if (
-  //     direction === ButtonDirection.LEFT ||
-  //     direction === ButtonDirection.RIGHT
-  //   ) {
-  //     if (columnCount <= 2 || !columnKeys.includes(index)) {
-  //       return;
-  //     }
-  //     this.swipedPixels.push(...this.deleteColumn(index));
-  //     deletedColumnIndex = index;
-  //   }
-  //   return {
-  //     deletedRowIndex,
-  //     deletedColumnIndex,
-  //   };
-  // }
-
   /**
    * @description Updates the pixel colors of the given data
    *              Different from colorPixels, this method does not add rows or columns
@@ -520,59 +460,6 @@ export default class DataLayer extends BaseLayer {
       this.deleteColumn(columnIndex);
     }
   }
-
-  // extendGridBy(direction: ButtonDirection, amount: number, startIndex: number) {
-  //   const shouldIncreaseIndex =
-  //     direction === ButtonDirection.BOTTOM ||
-  //     direction === ButtonDirection.RIGHT;
-  //   const addedRowIndices: Array<number> = [];
-  //   const addedColumnIndices: Array<number> = [];
-  //   for (let i = 1; i <= amount; i++) {
-  //     const index = startIndex + (shouldIncreaseIndex ? i : -i);
-  //     const { addedColumnIndex, addedRowIndex } = this.extendGrid(
-  //       direction,
-  //       index,
-  //     );
-  //     if (addedColumnIndex !== null) {
-  //       addedColumnIndices.push(addedColumnIndex);
-  //     }
-  //     if (addedRowIndex !== null) {
-  //       addedRowIndices.push(addedRowIndex);
-  //     }
-  //   }
-  //   return {
-  //     addedRowIndices,
-  //     addedColumnIndices,
-  //   };
-  // }
-
-  // extendGrid(
-  //   direction: ButtonDirection,
-  //   index: number,
-  // ): {
-  //   addedRowIndex: number | null;
-  //   addedColumnIndex: number | null;
-  // } {
-  //   let addedRowIndex = null;
-  //   let addedColumnIndex = null;
-  //   if (
-  //     direction === ButtonDirection.TOP ||
-  //     direction === ButtonDirection.BOTTOM
-  //   ) {
-  //     this.addRow(index);
-  //     addedRowIndex = index;
-  //   } else if (
-  //     direction === ButtonDirection.LEFT ||
-  //     direction === ButtonDirection.RIGHT
-  //   ) {
-  //     this.addColumn(index);
-  //     addedColumnIndex = index;
-  //   }
-  //   return {
-  //     addedRowIndex,
-  //     addedColumnIndex,
-  //   };
-  // }
 
   render() {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
