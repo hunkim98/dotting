@@ -1,12 +1,8 @@
 import { fireEvent } from "@testing-library/react";
 
+import { DefaultButtonHeight } from "../../components/Canvas/config";
 import Editor from "../../components/Canvas/Editor";
-import { BrushTool } from "../../components/Canvas/types";
 import { FakeMouseEvent } from "../../utils/testUtils";
-import {
-  DefaultButtonHeight,
-  DefaultButtonMargin,
-} from "../../components/Canvas/config";
 
 describe("test for extension interaction", () => {
   let editor: Editor;
@@ -255,5 +251,217 @@ describe("test for extension interaction", () => {
     const { bottomRowIndex, leftColumnIndex } = editor.getGridIndices();
     expect(bottomRowIndex).toBe(rowCount);
     expect(leftColumnIndex).toBe(-1);
+  });
+
+  it("shortens grid diagonally from top left", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // select left top corner
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          DefaultButtonHeight / 4,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          DefaultButtonHeight / 4,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          DefaultButtonHeight / 4 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          DefaultButtonHeight / 4 +
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          DefaultButtonHeight / 4 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          DefaultButtonHeight / 4 +
+          gridSquareLength,
+      }),
+    );
+    const { topRowIndex, leftColumnIndex } = editor.getGridIndices();
+    expect(topRowIndex).toBe(1);
+    expect(leftColumnIndex).toBe(1);
+  });
+
+  it("shortens grid diagonally from bottom right", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // select bottom right corner
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          DefaultButtonHeight / 4,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          DefaultButtonHeight / 4,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          DefaultButtonHeight / 4 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          DefaultButtonHeight / 4 -
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          DefaultButtonHeight / 4 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          DefaultButtonHeight / 4 -
+          gridSquareLength,
+      }),
+    );
+    const { bottomRowIndex, rightColumnIndex } = editor.getGridIndices();
+    expect(bottomRowIndex).toBe(rowCount - 2);
+    expect(rightColumnIndex).toBe(columnCount - 2);
+  });
+
+  it("shortens grid diagonally from top right", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // select top right corner
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          DefaultButtonHeight / 4,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          DefaultButtonHeight / 4,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          DefaultButtonHeight / 4 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          DefaultButtonHeight / 4 +
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          DefaultButtonHeight / 4 -
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 -
+          DefaultButtonHeight / 4 +
+          gridSquareLength,
+      }),
+    );
+    const { topRowIndex, rightColumnIndex } = editor.getGridIndices();
+    expect(topRowIndex).toBe(1);
+    expect(rightColumnIndex).toBe(columnCount - 2);
+  });
+
+  it("shortens grid diagonally from bottom left", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // select bottom left corner
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          DefaultButtonHeight / 4,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          DefaultButtonHeight / 4,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          DefaultButtonHeight / 4 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          DefaultButtonHeight / 4 -
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 -
+          DefaultButtonHeight / 4 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          DefaultButtonHeight / 4 -
+          gridSquareLength,
+      }),
+    );
+    const { bottomRowIndex, leftColumnIndex } = editor.getGridIndices();
+    expect(bottomRowIndex).toBe(rowCount - 2);
+    expect(leftColumnIndex).toBe(1);
   });
 });
