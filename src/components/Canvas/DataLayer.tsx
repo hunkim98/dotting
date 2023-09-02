@@ -12,7 +12,6 @@ import {
   LayerProps,
   PixelModifyItem,
 } from "./types";
-import { ChangeAmountData } from "../../actions/SizeChangeAction";
 import { DottingDataLayer } from "../../helpers/DottingDataLayer";
 import {
   extractColoredPixelsFromColumn,
@@ -269,64 +268,64 @@ export default class DataLayer extends BaseLayer {
     this.defaultPixelColor = color;
   }
 
-  shortenGridBy(
-    direction: ButtonDirection,
-    amount: number,
-    startIndex: number,
-  ) {
-    const deletedColumnIndices: Array<number> = [];
-    const deletedRowIndices: Array<number> = [];
-    const shouldIncreaseIndex =
-      direction === ButtonDirection.TOP || direction === ButtonDirection.LEFT;
-    for (let i = 0; i < amount; i++) {
-      const index = startIndex + (shouldIncreaseIndex ? i : -i);
-      const { deletedColumnIndex, deletedRowIndex } = this.shortenGrid(
-        direction,
-        index,
-      );
-      if (deletedColumnIndex !== null) {
-        deletedColumnIndices.push(deletedColumnIndex);
-      }
-      if (deletedRowIndex !== null) {
-        deletedRowIndices.push(deletedRowIndex);
-      }
-    }
-    return {
-      deletedColumnIndices,
-      deletedRowIndices,
-    };
-  }
+  // shortenGridBy(
+  //   direction: ButtonDirection,
+  //   amount: number,
+  //   startIndex: number,
+  // ) {
+  //   const deletedColumnIndices: Array<number> = [];
+  //   const deletedRowIndices: Array<number> = [];
+  //   const shouldIncreaseIndex =
+  //     direction === ButtonDirection.TOP || direction === ButtonDirection.LEFT;
+  //   for (let i = 0; i < amount; i++) {
+  //     const index = startIndex + (shouldIncreaseIndex ? i : -i);
+  //     const { deletedColumnIndex, deletedRowIndex } = this.shortenGrid(
+  //       direction,
+  //       index,
+  //     );
+  //     if (deletedColumnIndex !== null) {
+  //       deletedColumnIndices.push(deletedColumnIndex);
+  //     }
+  //     if (deletedRowIndex !== null) {
+  //       deletedRowIndices.push(deletedRowIndex);
+  //     }
+  //   }
+  //   return {
+  //     deletedColumnIndices,
+  //     deletedRowIndices,
+  //   };
+  // }
 
-  shortenGrid(direction: ButtonDirection, index: number) {
-    const { columnCount, rowCount } = this.getDimensions();
-    const rowKeys = getRowKeysFromData(this.getData());
-    const columnKeys = getColumnKeysFromData(this.getData());
-    let deletedRowIndex = null;
-    let deletedColumnIndex = null;
-    if (
-      direction === ButtonDirection.TOP ||
-      direction === ButtonDirection.BOTTOM
-    ) {
-      if (rowCount <= 2 || !rowKeys.includes(index)) {
-        return;
-      }
-      this.swipedPixels.push(...this.deleteRow(index));
-      deletedRowIndex = index;
-    } else if (
-      direction === ButtonDirection.LEFT ||
-      direction === ButtonDirection.RIGHT
-    ) {
-      if (columnCount <= 2 || !columnKeys.includes(index)) {
-        return;
-      }
-      this.swipedPixels.push(...this.deleteColumn(index));
-      deletedColumnIndex = index;
-    }
-    return {
-      deletedRowIndex,
-      deletedColumnIndex,
-    };
-  }
+  // shortenGrid(direction: ButtonDirection, index: number) {
+  //   const { columnCount, rowCount } = this.getDimensions();
+  //   const rowKeys = getRowKeysFromData(this.getData());
+  //   const columnKeys = getColumnKeysFromData(this.getData());
+  //   let deletedRowIndex = null;
+  //   let deletedColumnIndex = null;
+  //   if (
+  //     direction === ButtonDirection.TOP ||
+  //     direction === ButtonDirection.BOTTOM
+  //   ) {
+  //     if (rowCount <= 2 || !rowKeys.includes(index)) {
+  //       return;
+  //     }
+  //     this.swipedPixels.push(...this.deleteRow(index));
+  //     deletedRowIndex = index;
+  //   } else if (
+  //     direction === ButtonDirection.LEFT ||
+  //     direction === ButtonDirection.RIGHT
+  //   ) {
+  //     if (columnCount <= 2 || !columnKeys.includes(index)) {
+  //       return;
+  //     }
+  //     this.swipedPixels.push(...this.deleteColumn(index));
+  //     deletedColumnIndex = index;
+  //   }
+  //   return {
+  //     deletedRowIndex,
+  //     deletedColumnIndex,
+  //   };
+  // }
 
   /**
    * @description Updates the pixel colors of the given data
@@ -380,66 +379,37 @@ export default class DataLayer extends BaseLayer {
     const currentCanvasIndices = this.getGridIndices();
     const totalAddedRowIndices: Array<number> = [];
     const totalAddedColumnIndices: Array<number> = [];
-    const changeAmounts: Array<ChangeAmountData> = [];
     if (minRowIndex < currentCanvasIndices.topRowIndex) {
       const amount = currentCanvasIndices.topRowIndex - minRowIndex;
-      const { addedColumnIndices, addedRowIndices } = this.extendGridBy(
-        ButtonDirection.TOP,
-        amount,
-        currentCanvasIndices.topRowIndex,
+      const addedRowIndices = Array.from(
+        new Array(amount),
+        (_, i) => currentCanvasIndices.topRowIndex - i - 1,
       );
       totalAddedRowIndices.push(...addedRowIndices);
-      totalAddedColumnIndices.push(...addedColumnIndices);
-      changeAmounts.push({
-        direction: ButtonDirection.TOP,
-        amount,
-        startIndex: currentCanvasIndices.topRowIndex,
-      });
     }
     if (maxRowIndex > currentCanvasIndices.bottomRowIndex) {
       const amount = maxRowIndex - currentCanvasIndices.bottomRowIndex;
-      const { addedColumnIndices, addedRowIndices } = this.extendGridBy(
-        ButtonDirection.BOTTOM,
-        amount,
-        currentCanvasIndices.bottomRowIndex,
+      const addedRowIndices = Array.from(
+        new Array(amount),
+        (_, i) => currentCanvasIndices.bottomRowIndex + i + 1,
       );
       totalAddedRowIndices.push(...addedRowIndices);
-      totalAddedColumnIndices.push(...addedColumnIndices);
-      changeAmounts.push({
-        direction: ButtonDirection.BOTTOM,
-        amount,
-        startIndex: currentCanvasIndices.bottomRowIndex,
-      });
     }
     if (minColumnIndex < currentCanvasIndices.leftColumnIndex) {
       const amount = currentCanvasIndices.leftColumnIndex - minColumnIndex;
-      const { addedColumnIndices, addedRowIndices } = this.extendGridBy(
-        ButtonDirection.LEFT,
-        amount,
-        currentCanvasIndices.leftColumnIndex,
+      const addedColumnIndices = Array.from(
+        new Array(amount),
+        (_, i) => currentCanvasIndices.leftColumnIndex - i - 1,
       );
       totalAddedColumnIndices.push(...addedColumnIndices);
-      totalAddedRowIndices.push(...addedRowIndices);
-      changeAmounts.push({
-        direction: ButtonDirection.LEFT,
-        amount,
-        startIndex: currentCanvasIndices.leftColumnIndex,
-      });
     }
     if (maxColumnIndex > currentCanvasIndices.rightColumnIndex) {
       const amount = maxColumnIndex - currentCanvasIndices.rightColumnIndex;
-      const { addedColumnIndices, addedRowIndices } = this.extendGridBy(
-        ButtonDirection.RIGHT,
-        amount,
-        currentCanvasIndices.rightColumnIndex,
+      const addedColumnIndices = Array.from(
+        new Array(amount),
+        (_, i) => currentCanvasIndices.rightColumnIndex + i + 1,
       );
       totalAddedColumnIndices.push(...addedColumnIndices);
-      totalAddedRowIndices.push(...addedRowIndices);
-      changeAmounts.push({
-        direction: ButtonDirection.RIGHT,
-        amount,
-        startIndex: currentCanvasIndices.rightColumnIndex,
-      });
     }
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
@@ -456,7 +426,6 @@ export default class DataLayer extends BaseLayer {
     }
     return {
       dataForAction,
-      changeAmounts,
       totalAddedColumnIndices,
       totalAddedRowIndices,
     };
@@ -522,58 +491,88 @@ export default class DataLayer extends BaseLayer {
     return swipedPixels;
   }
 
-  extendGridBy(direction: ButtonDirection, amount: number, startIndex: number) {
-    const shouldIncreaseIndex =
-      direction === ButtonDirection.BOTTOM ||
-      direction === ButtonDirection.RIGHT;
-    const addedRowIndices: Array<number> = [];
-    const addedColumnIndices: Array<number> = [];
-    for (let i = 1; i <= amount; i++) {
-      const index = startIndex + (shouldIncreaseIndex ? i : -i);
-      const { addedColumnIndex, addedRowIndex } = this.extendGrid(
-        direction,
-        index,
-      );
-      if (addedColumnIndex !== null) {
-        addedColumnIndices.push(addedColumnIndex);
-      }
-      if (addedRowIndex !== null) {
-        addedRowIndices.push(addedRowIndex);
-      }
+  addGridIndices({
+    rowIndicesToAdd,
+    columnIndicesToAdd,
+  }: {
+    rowIndicesToAdd: Array<number>;
+    columnIndicesToAdd: Array<number>;
+  }) {
+    for (const rowIndex of rowIndicesToAdd) {
+      this.addRow(rowIndex);
     }
-    return {
-      addedRowIndices,
-      addedColumnIndices,
-    };
+    for (const columnIndex of columnIndicesToAdd) {
+      this.addColumn(columnIndex);
+    }
   }
 
-  extendGrid(
-    direction: ButtonDirection,
-    index: number,
-  ): {
-    addedRowIndex: number | null;
-    addedColumnIndex: number | null;
-  } {
-    let addedRowIndex = null;
-    let addedColumnIndex = null;
-    if (
-      direction === ButtonDirection.TOP ||
-      direction === ButtonDirection.BOTTOM
-    ) {
-      this.addRow(index);
-      addedRowIndex = index;
-    } else if (
-      direction === ButtonDirection.LEFT ||
-      direction === ButtonDirection.RIGHT
-    ) {
-      this.addColumn(index);
-      addedColumnIndex = index;
+  deleteGridIndices({
+    rowIndicesToDelete,
+    columnIndicesToDelete,
+  }: {
+    rowIndicesToDelete: Array<number>;
+    columnIndicesToDelete: Array<number>;
+  }) {
+    for (const rowIndex of rowIndicesToDelete) {
+      this.deleteRow(rowIndex);
     }
-    return {
-      addedRowIndex,
-      addedColumnIndex,
-    };
+    for (const columnIndex of columnIndicesToDelete) {
+      this.deleteColumn(columnIndex);
+    }
   }
+
+  // extendGridBy(direction: ButtonDirection, amount: number, startIndex: number) {
+  //   const shouldIncreaseIndex =
+  //     direction === ButtonDirection.BOTTOM ||
+  //     direction === ButtonDirection.RIGHT;
+  //   const addedRowIndices: Array<number> = [];
+  //   const addedColumnIndices: Array<number> = [];
+  //   for (let i = 1; i <= amount; i++) {
+  //     const index = startIndex + (shouldIncreaseIndex ? i : -i);
+  //     const { addedColumnIndex, addedRowIndex } = this.extendGrid(
+  //       direction,
+  //       index,
+  //     );
+  //     if (addedColumnIndex !== null) {
+  //       addedColumnIndices.push(addedColumnIndex);
+  //     }
+  //     if (addedRowIndex !== null) {
+  //       addedRowIndices.push(addedRowIndex);
+  //     }
+  //   }
+  //   return {
+  //     addedRowIndices,
+  //     addedColumnIndices,
+  //   };
+  // }
+
+  // extendGrid(
+  //   direction: ButtonDirection,
+  //   index: number,
+  // ): {
+  //   addedRowIndex: number | null;
+  //   addedColumnIndex: number | null;
+  // } {
+  //   let addedRowIndex = null;
+  //   let addedColumnIndex = null;
+  //   if (
+  //     direction === ButtonDirection.TOP ||
+  //     direction === ButtonDirection.BOTTOM
+  //   ) {
+  //     this.addRow(index);
+  //     addedRowIndex = index;
+  //   } else if (
+  //     direction === ButtonDirection.LEFT ||
+  //     direction === ButtonDirection.RIGHT
+  //   ) {
+  //     this.addColumn(index);
+  //     addedColumnIndex = index;
+  //   }
+  //   return {
+  //     addedRowIndex,
+  //     addedColumnIndex,
+  //   };
+  // }
 
   render() {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
@@ -594,6 +593,8 @@ export default class DataLayer extends BaseLayer {
       this.panZoom,
     );
 
+    // getRowKeysFromData and getColumnKeysFromData are used to get the row and column indices
+    // the indices are sorted in ascending order
     const allRowKeys = getRowKeysFromData(this.getData());
     const allColumnKeys = getColumnKeysFromData(this.getData());
 
