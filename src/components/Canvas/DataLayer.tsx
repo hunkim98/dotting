@@ -25,7 +25,6 @@ import {
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
 
 export default class DataLayer extends BaseLayer {
-  private swipedPixels: Array<PixelModifyItem> = [];
   private gridSquareLength: number = DefaultGridSquareLength;
   private layers: Array<DottingDataLayer>;
   private currentLayer: DottingDataLayer;
@@ -173,14 +172,6 @@ export default class DataLayer extends BaseLayer {
       copiedMap.set(rowIndex, copiedRow);
     });
     return copiedMap;
-  }
-
-  getSwipedPixels() {
-    return this.swipedPixels;
-  }
-
-  resetSwipedPixels() {
-    this.swipedPixels = [];
   }
 
   getCurrentLayer() {
@@ -453,12 +444,14 @@ export default class DataLayer extends BaseLayer {
     rowIndicesToDelete: Array<number>;
     columnIndicesToDelete: Array<number>;
   }) {
+    const swipedPixels: Array<PixelModifyItem> = [];
     for (const rowIndex of rowIndicesToDelete) {
-      this.deleteRow(rowIndex);
+      swipedPixels.push(...this.deleteRow(rowIndex));
     }
     for (const columnIndex of columnIndicesToDelete) {
-      this.deleteColumn(columnIndex);
+      swipedPixels.push(...this.deleteColumn(columnIndex));
     }
+    return swipedPixels;
   }
 
   render() {
