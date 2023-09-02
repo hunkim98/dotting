@@ -1,7 +1,7 @@
 import CanvasElementEvents from "./CanvasElementEvents";
+import DataChangeListener from "./DataChangeListener";
 import HoverPixelListener from "./HoverPixelListener";
 import StrokeListener from "./StrokeListener";
-import DataChangeListener from "./DataChangeListener";
 
 export {
   StrokeListener,
