@@ -1639,15 +1639,39 @@ export default class Editor extends EventDispatcher {
         ...strokedPixelModifyItems,
         ...erasedPixelModifyItems,
       ];
+      const modifiedPixels = [];
+      const addedOrDeletedRows: Array<{
+        index: number;
+        isDelete: boolean;
+      }> = [];
+      const addedOrDeletedColumns: Array<{
+        index: number;
+        isDelete: boolean;
+      }> = [];
       if (pixelModifyItems.length !== 0) {
-        this.dataLayer.colorPixels(
-          pixelModifyItems,
-          this.dataLayer.getCurrentLayer().getId(),
-        );
+        // when pixels are stroked we only need to consider added rows and columns
+        const { totalAddedColumnIndices, totalAddedRowIndices } =
+          this.dataLayer.colorPixels(
+            pixelModifyItems,
+            this.dataLayer.getCurrentLayer().getId(),
+          );
         // record single player mode color change action
         this.recordInteractionColorChangeAction(pixelModifyItems);
-      }
-      if (pixelModifyItems.length !== 0) {
+        // we record modified pixels
+        modifiedPixels.push(...pixelModifyItems);
+        // we record the delta of the added rows and columns
+        addedOrDeletedColumns.push(
+          ...totalAddedColumnIndices.map(index => ({
+            index,
+            isDelete: false,
+          })),
+        );
+        addedOrDeletedRows.push(
+          ...totalAddedRowIndices.map(index => ({
+            index,
+            isDelete: false,
+          })),
+        );
         this.emitStrokeEndEvent({
           strokedPixels: pixelModifyItems,
           data: this.dataLayer.getCopiedData(),
@@ -1656,16 +1680,9 @@ export default class Editor extends EventDispatcher {
       }
 
       const capturedData = interactionLayer.getCapturedData();
-      const addedOrSubtractedRows: Array<{
-        index: number;
-        isDelete: boolean;
-      }> = [];
-      const addedOrSubtractedColumns: Array<{
-        index: number;
-        isDelete: boolean;
-      }> = [];
       // if there is capturedData, it means that the user has changed the dimension
       if (capturedData) {
+        // for action of grid change, we do not need to consider modifiedPixels
         const interactionGridIndices = getGridIndicesFromData(capturedData);
         const dataGridIndices =
           this.interactionLayer.getCapturedDataOriginalIndices()!;
@@ -1688,134 +1705,134 @@ export default class Editor extends EventDispatcher {
         let isExtendingAction = true;
         if (topRowDiff < 0) {
           amount = -topRowDiff;
-          this.dataLayer.extendGridBy(
+          const { addedRowIndices } = this.dataLayer.extendGridBy(
             ButtonDirection.TOP,
             amount,
             dataGridIndices.topRowIndex,
           );
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
-          for (let i = 0; i < amount; i++) {
-            addedOrSubtractedRows.push({
-              index: startIndex - 1 - i,
+          addedOrDeletedRows.push(
+            ...addedRowIndices.map(index => ({
+              index,
               isDelete: false,
-            });
-          }
+            })),
+          );
           isExtendingAction = true;
         } else if (topRowDiff > 0) {
           amount = topRowDiff;
-          this.dataLayer.shortenGridBy(
+          const { deletedRowIndices } = this.dataLayer.shortenGridBy(
             ButtonDirection.TOP,
             amount,
             dataGridIndices.topRowIndex,
           );
           direction = ButtonDirection.TOP;
           startIndex = dataGridIndices.topRowIndex;
-          for (let i = 0; i < amount; i++) {
-            addedOrSubtractedRows.push({
-              index: startIndex + 1 + i,
+          addedOrDeletedRows.push(
+            ...deletedRowIndices.map(index => ({
+              index,
               isDelete: true,
-            });
-          }
+            })),
+          );
           isExtendingAction = false;
         }
         if (leftColumnDiff < 0) {
           amount = -leftColumnDiff;
-          this.dataLayer.extendGridBy(
+          const { addedColumnIndices } = this.dataLayer.extendGridBy(
             ButtonDirection.LEFT,
             amount,
             dataGridIndices.leftColumnIndex,
           );
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
-          for (let i = 0; i < amount; i++) {
-            addedOrSubtractedColumns.push({
-              index: startIndex - 1 - i,
+          addedOrDeletedColumns.push(
+            ...addedColumnIndices.map(index => ({
+              index,
               isDelete: false,
-            });
-          }
+            })),
+          );
           isExtendingAction = true;
         } else if (leftColumnDiff > 0) {
           amount = leftColumnDiff;
-          this.dataLayer.shortenGridBy(
+          const { deletedColumnIndices } = this.dataLayer.shortenGridBy(
             ButtonDirection.LEFT,
             amount,
             dataGridIndices.leftColumnIndex,
           );
           direction = ButtonDirection.LEFT;
           startIndex = dataGridIndices.leftColumnIndex;
-          for (let i = 0; i < amount; i++) {
-            addedOrSubtractedColumns.push({
-              index: startIndex + 1 + i,
+          addedOrDeletedColumns.push(
+            ...deletedColumnIndices.map(index => ({
+              index,
               isDelete: true,
-            });
-          }
+            })),
+          );
           isExtendingAction = false;
         }
         if (bottomRowDiff > 0) {
           amount = bottomRowDiff;
-          this.dataLayer.extendGridBy(
+          const { addedRowIndices } = this.dataLayer.extendGridBy(
             ButtonDirection.BOTTOM,
             amount,
             dataGridIndices.bottomRowIndex,
           );
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
-          for (let i = 0; i < amount; i++) {
-            addedOrSubtractedRows.push({
-              index: startIndex + 1 + i,
+          addedOrDeletedRows.push(
+            ...addedRowIndices.map(index => ({
+              index,
               isDelete: false,
-            });
-          }
+            })),
+          );
           isExtendingAction = true;
         } else if (bottomRowDiff < 0) {
           amount = -bottomRowDiff;
-          this.dataLayer.shortenGridBy(
+          const { deletedRowIndices } = this.dataLayer.shortenGridBy(
             ButtonDirection.BOTTOM,
             amount,
             dataGridIndices.bottomRowIndex,
           );
           direction = ButtonDirection.BOTTOM;
           startIndex = dataGridIndices.bottomRowIndex;
-          for (let i = 0; i < amount; i++) {
-            addedOrSubtractedRows.push({
-              index: startIndex - 1 - i,
+          addedOrDeletedRows.push(
+            ...deletedRowIndices.map(index => ({
+              index,
               isDelete: true,
-            });
-          }
+            })),
+          );
           isExtendingAction = false;
         }
         if (rightColumnDiff > 0) {
           amount = rightColumnDiff;
-          this.dataLayer.extendGridBy(
+          const { addedColumnIndices } = this.dataLayer.extendGridBy(
             ButtonDirection.RIGHT,
             amount,
             dataGridIndices.rightColumnIndex,
           );
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
-          for (let i = 0; i < amount; i++) {
-            addedOrSubtractedColumns.push({
-              index: startIndex + 1 + i,
+          addedOrDeletedColumns.push(
+            ...addedColumnIndices.map(index => ({
+              index,
               isDelete: false,
-            });
-          }
+            })),
+          );
           isExtendingAction = true;
         } else if (rightColumnDiff < 0) {
           amount = -rightColumnDiff;
-          this.dataLayer.shortenGridBy(
+          const { deletedColumnIndices } = this.dataLayer.shortenGridBy(
             ButtonDirection.RIGHT,
             amount,
             dataGridIndices.rightColumnIndex,
           );
           direction = ButtonDirection.RIGHT;
           startIndex = dataGridIndices.rightColumnIndex;
-          for (let i = 0; i < amount; i++) {
-            addedOrSubtractedColumns.push({
-              index: startIndex - 1 - i,
+          addedOrDeletedColumns.push(
+            ...deletedColumnIndices.map(index => ({
+              index,
               isDelete: true,
-            });
-          }
+            })),
+          );
           isExtendingAction = false;
         }
 
@@ -1837,9 +1854,9 @@ export default class Editor extends EventDispatcher {
         data: updatedData,
         layerId: this.dataLayer.getCurrentLayer().getId(),
         delta: {
-          modifiedPixels: pixelModifyItems,
-          addedOrSubtractedRows,
-          addedOrSubtractedColumns,
+          modifiedPixels: modifiedPixels,
+          addedOrDeletedRows: addedOrDeletedRows,
+          addedOrDeletedColumns: addedOrDeletedColumns,
         },
       });
       const updatedColumnCount = getColumnCountFromData(updatedData);
@@ -1912,10 +1929,14 @@ export default class Editor extends EventDispatcher {
       this.interactionLayer.setSelectedArea(null);
       this.setBrushTool(BrushTool.DOT);
     }
+    const modifiedPixels = [];
+    const addedOrSubtractedColumns = [];
+    const addedOrSubtractedRows = [];
     switch (type) {
       case ActionType.ColorChange:
         const colorChangeAction = action as ColorChangeAction;
         this.dataLayer.updatePixelColors(colorChangeAction.data, layerId);
+        modifiedPixels.push(...colorChangeAction.data);
         break;
 
       case ActionType.SizeChange:
@@ -1938,6 +1959,7 @@ export default class Editor extends EventDispatcher {
           }
           const sizeChangePixels = sizeChangeAction.data;
           this.dataLayer.updatePixelColors(sizeChangePixels, layerId);
+          modifiedPixels.push(...sizeChangePixels);
         }
         break;
 
@@ -2087,8 +2109,8 @@ export default class Editor extends EventDispatcher {
       layerId: modifiedLayerId,
       delta: {
         modifiedPixels: dataForAction,
-        addedOrSubtractedColumns: [],
-        addedOrSubtractedRows: [],
+        addedOrDeletedColumns: [],
+        addedOrDeletedRows: [],
       },
     });
     this.renderAll();
@@ -2165,13 +2187,13 @@ export default class Editor extends EventDispatcher {
       layerId: modifiedLayerId,
       delta: {
         modifiedPixels: dataForAction,
-        addedOrSubtractedColumns: Array.from(addedColumnIndices).map(
+        addedOrDeletedColumns: Array.from(addedColumnIndices).map(
           columnIndex => ({
             index: columnIndex,
             isDelete: false,
           }),
         ),
-        addedOrSubtractedRows: Array.from(addedRowIndices).map(rowIndex => ({
+        addedOrDeletedRows: Array.from(addedRowIndices).map(rowIndex => ({
           index: rowIndex,
           isDelete: false,
         })),

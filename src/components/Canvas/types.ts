@@ -56,11 +56,11 @@ export enum BrushTool {
 
 export interface CanvasDelta {
   modifiedPixels: Array<PixelModifyItem>;
-  addedOrSubtractedRows?: Array<{
+  addedOrDeletedRows?: Array<{
     isDelete: boolean;
     index: number;
   }>;
-  addedOrSubtractedColumns?: Array<{
+  addedOrDeletedColumns?: Array<{
     isDelete: boolean;
     index: number;
   }>;
