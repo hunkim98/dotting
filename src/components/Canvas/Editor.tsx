@@ -1110,24 +1110,6 @@ export default class Editor extends EventDispatcher {
     }
   };
 
-  addRowIndices(
-    rowIndices: Array<number>,
-    data?: Array<PixelModifyItem>,
-    layerId?: string,
-  ) {
-    this.dataLayer.addGridIndices({
-      rowIndicesToAdd: rowIndices,
-      columnIndicesToAdd: [],
-    });
-    const modifiedLayerId = layerId
-      ? layerId
-      : this.dataLayer.getCurrentLayer().getId();
-    const modifiedPixels = this.dataLayer.updatePixelColors(
-      data,
-      modifiedLayerId,
-    );
-  }
-
   addGridIndices({
     rowIndices,
     columnIndices,
@@ -1203,6 +1185,7 @@ export default class Editor extends EventDispatcher {
       });
     }
     this.relayDataDimensionsToLayers();
+    this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
@@ -1277,6 +1260,7 @@ export default class Editor extends EventDispatcher {
       });
     }
     this.relayDataDimensionsToLayers();
+    this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );

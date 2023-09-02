@@ -5,6 +5,7 @@ import GridStyling from "./GridStyling";
 import SetData from "./SetData";
 import SetIndicatorPixels from "./SetIndicatorPixels";
 import UndoRedo from "./UndoRedo";
+import GridChange from "./GridChange";
 
 export {
   Clear,
@@ -14,4 +15,5 @@ export {
   GridStyling,
   UndoRedo,
   SetData,
+  GridChange,
 };
