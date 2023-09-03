@@ -1,8 +1,6 @@
 import { fireEvent } from "@testing-library/react";
 
-import {
-  DefaultButtonHeight,
-} from "../../components/Canvas/config";
+import { DefaultButtonHeight } from "../../components/Canvas/config";
 import Editor from "../../components/Canvas/Editor";
 import { FakeMouseEvent } from "../../utils/testUtils";
 
@@ -217,5 +215,81 @@ describe("test for undo and redo", () => {
     editor.redo();
     const dataAfterRedo = editor.getLayers()[0].data;
     expect(dataAfterRedo.get(0)?.get(0)?.color).toBe(brushColor);
+  });
+
+  it("undo and redo grid change by calling add grid indices function", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // select left top pixel inde
+    const { topRowIndex, leftColumnIndex } = editor.getGridIndices();
+    editor.addGridIndices({
+      rowIndices: [-1],
+      columnIndices: [-1],
+    });
+    expect(editor.getRowCount()).toBe(rowCount + 1);
+    expect(editor.getColumnCount()).toBe(columnCount + 1);
+    const {
+      topRowIndex: topRowIndexAfterAdding,
+      leftColumnIndex: leftColumnIndexAfterAdding,
+    } = editor.getGridIndices();
+    expect(topRowIndexAfterAdding).toBe(topRowIndex - 1);
+    expect(leftColumnIndexAfterAdding).toBe(leftColumnIndex - 1);
+    editor.undo();
+    expect(editor.getRowCount()).toBe(rowCount);
+    expect(editor.getColumnCount()).toBe(columnCount);
+    const {
+      topRowIndex: topRowIndexAfterUndo,
+      leftColumnIndex: leftColumnIndexAfterUndo,
+    } = editor.getGridIndices();
+    expect(topRowIndexAfterUndo).toBe(topRowIndex);
+    expect(leftColumnIndexAfterUndo).toBe(leftColumnIndex);
+    editor.redo();
+    expect(editor.getRowCount()).toBe(rowCount + 1);
+    expect(editor.getColumnCount()).toBe(columnCount + 1);
+    const {
+      topRowIndex: topRowIndexAfterRedo,
+      leftColumnIndex: leftColumnIndexAfterRedo,
+    } = editor.getGridIndices();
+    expect(topRowIndexAfterRedo).toBe(topRowIndex - 1);
+    expect(leftColumnIndexAfterRedo).toBe(leftColumnIndex - 1);
+  });
+
+  it("undo and redo grid change by calling delete grid indices function", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    // select left top pixel index
+    const { topRowIndex, leftColumnIndex } = editor.getGridIndices();
+    editor.deleteGridIndices({
+      rowIndices: [0],
+      columnIndices: [0],
+    });
+    expect(editor.getRowCount()).toBe(rowCount - 1);
+    expect(editor.getColumnCount()).toBe(columnCount - 1);
+    const {
+      topRowIndex: topRowIndexAfterDeleting,
+      leftColumnIndex: leftColumnIndexAfterDeleting,
+    } = editor.getGridIndices();
+    expect(topRowIndexAfterDeleting).toBe(topRowIndex + 1);
+    expect(leftColumnIndexAfterDeleting).toBe(leftColumnIndex + 1);
+    editor.undo();
+    expect(editor.getRowCount()).toBe(rowCount);
+    expect(editor.getColumnCount()).toBe(columnCount);
+    const {
+      topRowIndex: topRowIndexAfterUndo,
+      leftColumnIndex: leftColumnIndexAfterUndo,
+    } = editor.getGridIndices();
+    expect(topRowIndexAfterUndo).toBe(topRowIndex);
+    expect(leftColumnIndexAfterUndo).toBe(leftColumnIndex);
+    editor.redo();
+    expect(editor.getRowCount()).toBe(rowCount - 1);
+    expect(editor.getColumnCount()).toBe(columnCount - 1);
+    const {
+      topRowIndex: topRowIndexAfterRedo,
+      leftColumnIndex: leftColumnIndexAfterRedo,
+    } = editor.getGridIndices();
+    expect(topRowIndexAfterRedo).toBe(topRowIndex + 1);
+    expect(leftColumnIndexAfterRedo).toBe(leftColumnIndex + 1);
   });
 });
