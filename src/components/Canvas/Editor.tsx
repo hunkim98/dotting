@@ -1126,10 +1126,10 @@ export default class Editor extends EventDispatcher {
     const modifiedLayerId = layerId
       ? layerId
       : this.dataLayer.getCurrentLayer().getId();
-    const modifiedPixels = this.dataLayer.updatePixelColors(
-      data,
-      modifiedLayerId,
-    );
+    const modifiedPixels =
+      data && data.length > 0
+        ? this.dataLayer.updatePixelColors(data, modifiedLayerId)
+        : [];
     const addedOrDeletedRows = validRowIndices.map(rowIndex => {
       return {
         index: rowIndex,
@@ -1151,8 +1151,8 @@ export default class Editor extends EventDispatcher {
     }
 
     this.recordSizeChangeAction(
-      rowIndices,
-      columnIndices,
+      validRowIndices,
+      validColumnIndices,
       [],
       [],
       modifiedPixels.map(pixel => ({
@@ -1187,10 +1187,10 @@ export default class Editor extends EventDispatcher {
     }
     this.relayDataDimensionsToLayers();
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    this.interactionLayer.resetCapturedData();
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
-    this.interactionLayer.resetCapturedData();
     this.renderAll();
   }
 
@@ -1229,10 +1229,10 @@ export default class Editor extends EventDispatcher {
     }
 
     this.recordSizeChangeAction(
-      rowIndices,
-      columnIndices,
       [],
       [],
+      validRowIndices,
+      validColumnIndices,
       swipedPixels,
     );
     this.emitDataChangeEvent({
@@ -1262,10 +1262,10 @@ export default class Editor extends EventDispatcher {
     }
     this.relayDataDimensionsToLayers();
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    this.interactionLayer.resetCapturedData();
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
-    this.interactionLayer.resetCapturedData();
     this.renderAll();
   }
 
@@ -1951,19 +1951,19 @@ export default class Editor extends EventDispatcher {
    * @description records the size change action of the user interaction
    */
   recordSizeChangeAction(
-    rowIndicesToDelete: Array<number>,
-    columnIndicesToDelete: Array<number>,
     rowIndicesToAdd: Array<number>,
     columnIndicesToAdd: Array<number>,
+    rowIndicesToDelete: Array<number>,
+    columnIndicesToDelete: Array<number>,
     deletedPixels: Array<PixelModifyItem>,
   ) {
     this.recordAction(
       new ColorSizeChangeAction(
         deletedPixels,
-        rowIndicesToDelete,
-        columnIndicesToDelete,
         rowIndicesToAdd,
         columnIndicesToAdd,
+        rowIndicesToDelete,
+        columnIndicesToDelete,
         this.dataLayer.getCurrentLayer().getId(),
       ),
     );
