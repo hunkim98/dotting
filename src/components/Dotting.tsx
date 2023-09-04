@@ -475,6 +475,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       dataCanvas,
       backgroundCanvas,
       initLayers: props.initLayers,
+      gridSquareLength: props.gridSquareLength,
     });
     editor.setIsGridFixed(props.isGridFixed);
     editor.setIsInteractionApplicable(props.isInteractionApplicable);

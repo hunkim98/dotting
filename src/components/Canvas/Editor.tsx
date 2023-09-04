@@ -137,14 +137,17 @@ export default class Editor extends EventDispatcher {
     dataCanvas,
     backgroundCanvas,
     initLayers,
+    gridSquareLength,
   }: {
     gridCanvas: HTMLCanvasElement;
     interactionCanvas: HTMLCanvasElement;
     dataCanvas: HTMLCanvasElement;
     backgroundCanvas: HTMLCanvasElement;
     initLayers?: Array<LayerProps>;
+    gridSquareLength?: number;
   }) {
     super();
+    this.gridSquareLength = gridSquareLength || this.gridSquareLength;
     this.dataLayer = new DataLayer({
       canvas: dataCanvas,
       layers: initLayers,
@@ -1653,12 +1656,29 @@ export default class Editor extends EventDispatcher {
           if (brushPatternItem === 0) {
             continue;
           }
+          const {
+            topRowIndex,
+            leftColumnIndex,
+            bottomRowIndex,
+            rightColumnIndex,
+          } = getGridIndicesFromData(data);
+          const rowIndexToColor = rowIndex + i - brushPatternCenterRowIndex;
+          const columnIndexToColor =
+            columnIndex + j - brushPatternCenterColumnIndex;
+          if (
+            rowIndexToColor < topRowIndex ||
+            rowIndexToColor > bottomRowIndex ||
+            columnIndexToColor < leftColumnIndex ||
+            columnIndexToColor > rightColumnIndex
+          ) {
+            continue;
+          }
           const previousColor = data
-            .get(rowIndex + i - brushPatternCenterRowIndex)
-            ?.get(columnIndex + j - brushPatternCenterColumnIndex)?.color;
+            .get(rowIndexToColor)
+            ?.get(columnIndexToColor)?.color;
           interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
-            rowIndex: rowIndex + i - brushPatternCenterRowIndex,
-            columnIndex: columnIndex + j - brushPatternCenterColumnIndex,
+            rowIndex: rowIndexToColor,
+            columnIndex: columnIndexToColor,
             color: this.brushColor,
             previousColor,
           });
