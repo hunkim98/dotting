@@ -46,7 +46,6 @@ import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
 import {
   createColumnKeyOrderMapfromData,
   createRowKeyOrderMapfromData,
-  getAllGridIndicesSorted,
   getColumnCountFromData,
   getColumnKeysFromData,
   getGridIndicesFromData,
@@ -2334,9 +2333,11 @@ export default class Editor extends EventDispatcher {
       },
       scale: this.panZoom.scale,
     };
-    const gridIndices = this.dataLayer.getGridIndices();
-    const { rowIndices, columnIndices } = getAllGridIndicesSorted(
-      this.dataLayer.getData(),
+    // rowKeyOrderMap is a sorted map of rowKeys
+    const rowIndices = Array.from(this.dataLayer.getRowKeyOrderMap().keys());
+    // columnKeyOrderMap is a sorted map of columnKeys
+    const columnIndices = Array.from(
+      this.dataLayer.getColumnKeyOrderMap().keys(),
     );
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       mouseCartCoord,
@@ -2498,9 +2499,11 @@ export default class Editor extends EventDispatcher {
       y: mouseCartCoord.y,
     };
     this.styleMouseCursor(mouseCartCoord);
-    const gridIndices = this.dataLayer.getGridIndices();
-    const { rowIndices, columnIndices } = getAllGridIndicesSorted(
-      this.dataLayer.getData(),
+    // rowKeyOrderMap is a sorted map of rowKeys
+    const rowIndices = Array.from(this.dataLayer.getRowKeyOrderMap().keys());
+    // columnKeyOrderMap is a sorted map of columnKeys
+    const columnIndices = Array.from(
+      this.dataLayer.getColumnKeyOrderMap().keys(),
     );
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       mouseCartCoord,
