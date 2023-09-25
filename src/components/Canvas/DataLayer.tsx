@@ -347,6 +347,12 @@ export default class DataLayer extends BaseLayer {
       );
       totalAddedColumnIndices.push(...addedColumnIndices);
     }
+    if (totalAddedRowIndices.length > 0 || totalAddedColumnIndices.length > 0) {
+      this.addGridIndices({
+        rowIndicesToAdd: totalAddedRowIndices,
+        columnIndicesToAdd: totalAddedColumnIndices,
+      });
+    }
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
       const previousColor = layer
