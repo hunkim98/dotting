@@ -420,6 +420,13 @@ export default class DataLayer extends BaseLayer {
 
   deleteRow(rowIndex: number) {
     let validRowIndex = null;
+    // This is to prevent deleting a non-existent row
+    if (!this.getData().has(rowIndex)) {
+      return {
+        swipedPixels: [],
+        validRowIndex,
+      };
+    }
     const swipedPixels = extractColoredPixelsFromRow(this.getData(), rowIndex);
     this.layers.forEach(layer => {
       validRowIndex = layer.deleteRowOfData(rowIndex);
@@ -429,6 +436,14 @@ export default class DataLayer extends BaseLayer {
 
   deleteColumn(columnIndex: number) {
     let validColumnIndex = null;
+    const firstRowKey = this.getData().keys().next().value;
+    // This is to prevent deleting a non-existent column
+    if (!this.getData().get(firstRowKey).has(columnIndex)) {
+      return {
+        swipedPixels: [],
+        validColumnIndex,
+      };
+    }
     const swipedPixels = extractColoredPixelsFromColumn(
       this.getData(),
       columnIndex,
