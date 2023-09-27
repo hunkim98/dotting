@@ -1,15 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import {
+  BrushTool,
   CanvasDataChangeHandler,
   CanvasDelta,
 } from "../../src/components/Canvas/types";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useHandlers from "../../src/hooks/useHandlers";
+import { useBrush } from "../../src";
 
 const DataChangeListener = () => {
   const ref = useRef<DottingRef>(null);
   const { addDataChangeListener, removeDataChangeListener } = useHandlers(ref);
+  const [selectedBrushTool, setSelectedBrushTool] = useState<BrushTool>(
+    BrushTool.DOT,
+  );
+
   const [dataDelta, setDataDelta] = useState<CanvasDelta | null>(null);
 
   const handlDataChangeHandler: CanvasDataChangeHandler = ({
@@ -37,7 +43,12 @@ const DataChangeListener = () => {
         fontFamily: `'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif`,
       }}
     >
-      <Dotting ref={ref} width={"100%"} height={300} />
+      <Dotting
+        ref={ref}
+        width={"100%"}
+        height={300}
+        brushTool={selectedBrushTool}
+      />
       <div
         style={{
           marginTop: 25,
@@ -47,6 +58,23 @@ const DataChangeListener = () => {
           marginBottom: 50,
         }}
       >
+        <div
+          style={{
+            padding: "10px 0",
+          }}
+        >
+          <select
+            value={selectedBrushTool}
+            onChange={e => {
+              setSelectedBrushTool(e.target.value as BrushTool);
+            }}
+          >
+            <option value={BrushTool.DOT}>DOT</option>
+            <option value={BrushTool.ERASER}>ERASER</option>
+            <option value={BrushTool.PAINT_BUCKET}>LINE</option>
+            <option value={BrushTool.SELECT}>SELECT</option>
+          </select>
+        </div>
         <strong>Data Delta</strong>
         {dataDelta && (
           <>
