@@ -110,6 +110,7 @@ export class DottingDataLayer extends Observable<DottingData> {
 
   clearData() {
     const previousPixels = [];
+    const newPixels = [];
     const rowKeys = Array.from(this.data.keys());
     const columnKeys = Array.from(this.data.get(rowKeys[0])!.keys());
     for (const i of rowKeys) {
@@ -119,11 +120,16 @@ export class DottingDataLayer extends Observable<DottingData> {
           columnIndex: j,
           color: this.data.get(i)!.get(j)!.color,
         });
+        newPixels.push({
+          rowIndex: i,
+          columnIndex: j,
+          color: "",
+        });
         this.data.get(i)!.set(j, { color: "" });
       }
     }
     this.notify(this.getCopiedData());
-    return previousPixels;
+    return { previousPixels, newPixels };
   }
 
   getCopiedData = (): DottingData => {
