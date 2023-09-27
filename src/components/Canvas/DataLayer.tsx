@@ -484,10 +484,10 @@ export default class DataLayer extends BaseLayer {
       data: Array<PixelModifyItem>;
     }> = [];
     this.layers.forEach(layer => {
-      const previousPixels = layer.clearData();
+      const { newPixels } = layer.clearData();
       clearedPixels.push({
         layerId: layer.getId(),
-        data: previousPixels,
+        data: newPixels,
       });
     });
     return clearedPixels;
