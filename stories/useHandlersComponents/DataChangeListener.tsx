@@ -7,7 +7,7 @@ import {
 } from "../../src/components/Canvas/types";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useHandlers from "../../src/hooks/useHandlers";
-import { useBrush } from "../../src";
+import { useDotting } from "../../src";
 
 const DataChangeListener = () => {
   const ref = useRef<DottingRef>(null);
@@ -15,6 +15,7 @@ const DataChangeListener = () => {
   const [selectedBrushTool, setSelectedBrushTool] = useState<BrushTool>(
     BrushTool.DOT,
   );
+  const { clear } = useDotting(ref);
 
   const [dataDelta, setDataDelta] = useState<CanvasDelta | null>(null);
 
@@ -74,6 +75,19 @@ const DataChangeListener = () => {
             <option value={BrushTool.PAINT_BUCKET}>LINE</option>
             <option value={BrushTool.SELECT}>SELECT</option>
           </select>
+        </div>
+        <div
+          style={{
+            padding: "10px 0",
+          }}
+        >
+          <button
+            onClick={() => {
+              clear();
+            }}
+          >
+            Clear
+          </button>
         </div>
         <strong>Data Delta</strong>
         {dataDelta && (

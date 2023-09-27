@@ -478,6 +478,21 @@ export default class DataLayer extends BaseLayer {
     return { validRowIndices, validColumnIndices };
   }
 
+  clear() {
+    const clearedPixels: Array<{
+      layerId: string;
+      data: Array<PixelModifyItem>;
+    }> = [];
+    this.layers.forEach(layer => {
+      const previousPixels = layer.clearData();
+      clearedPixels.push({
+        layerId: layer.getId(),
+        data: previousPixels,
+      });
+    });
+    return clearedPixels;
+  }
+
   deleteGridIndices({
     rowIndicesToDelete,
     columnIndicesToDelete,

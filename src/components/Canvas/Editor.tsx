@@ -3010,6 +3010,11 @@ export default class Editor extends EventDispatcher {
         isLocalChange: true,
         data: newData,
         layerId: this.dataLayer.getCurrentLayer().getId(),
+        delta: {
+          modifiedPixels: effectiveColorChangeItems,
+          addedOrDeletedColumns: [],
+          addedOrDeletedRows: [],
+        },
       });
     }
 
@@ -3092,16 +3097,24 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.render();
   }
 
+  // clear will delete all layer data and history
   clear() {
-    const rowKeys = getRowKeysFromData(this.dataLayer.getData());
-    const columnKeys = getColumnKeysFromData(this.dataLayer.getData());
-    this.dataLayer.setData(new Map());
-    const data = this.dataLayer.getData();
-    for (const i of rowKeys) {
-      data.set(i, new Map());
-      for (const j of columnKeys) {
-        data.get(i)!.set(j, { color: "" });
-      }
+    const clearedPixels = this.dataLayer.clear();
+    // this clear callback is undoable
+    this.undoHistory = [];
+    this.redoHistory = [];
+    for (let i = 0; i < clearedPixels.length; i++) {
+      const { layerId, data } = clearedPixels[i];
+      this.emitDataChangeEvent({
+        isLocalChange: true,
+        layerId,
+        data: this.dataLayer.getLayer(layerId).getCopiedData(),
+        delta: {
+          addedOrDeletedColumns: [],
+          addedOrDeletedRows: [],
+          modifiedPixels: data,
+        },
+      });
     }
     this.renderDataLayer();
   }
