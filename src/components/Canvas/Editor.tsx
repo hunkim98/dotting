@@ -2906,6 +2906,11 @@ export default class Editor extends EventDispatcher {
         isLocalChange: true,
         data: newData,
         layerId: this.dataLayer.getCurrentLayer().getId(),
+        delta: {
+          modifiedPixels: effectiveColorChangeItems,
+          addedOrDeletedColumns: [],
+          addedOrDeletedRows: [],
+        },
       });
     }
     this.interactionLayer.setSelectedArea(finalSelectedArea);
