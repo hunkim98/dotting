@@ -1541,7 +1541,7 @@ export default class Editor extends EventDispatcher {
 
   // we should allow panning with pinch zoom too
   handlePinchZoom = (evt: TouchyEvent) => {
-    if (!this.isPanZoomable) {
+    if (!this.isPanZoomable || this.interactionLayer.getCapturedData()) {
       return;
     }
     // const lastMousePos = this.panPoint.lastMousePos;
@@ -2419,7 +2419,7 @@ export default class Editor extends EventDispatcher {
     } else {
       const touchesCount =
         evt.touches && evt.touches.length ? evt.touches.length : 0;
-      if (pixelIndex && this.brushTool !== BrushTool.NONE && touchesCount < 1) {
+      if (pixelIndex && this.brushTool !== BrushTool.NONE && touchesCount < 2) {
         this.drawPixelInInteractionLayer(
           pixelIndex.rowIndex,
           pixelIndex.columnIndex,
