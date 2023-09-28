@@ -2682,8 +2682,10 @@ export default class Editor extends EventDispatcher {
       }
       const buttonDirection = this.detectButtonClicked(mouseCartCoord);
       if (buttonDirection) {
-        this.gridLayer.setHoveredButton(buttonDirection);
-        this.renderGridLayer();
+        if (!this.interactionLayer.getCapturedData()) {
+          this.gridLayer.setHoveredButton(buttonDirection);
+          this.renderGridLayer();
+        }
         return;
       } else {
         if (this.mouseMode !== MouseMode.EXTENDING) {
