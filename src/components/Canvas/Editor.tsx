@@ -105,10 +105,12 @@ export default class Editor extends EventDispatcher {
   private undoHistory: Array<Action> = [];
   private redoHistory: Array<Action> = [];
   private extensionPoint: {
+    startWorldPos: Coord | null;
     direction: ButtonDirection | null;
     offsetYAmount: number;
     offsetXAmount: number;
   } = {
+    startWorldPos: null,
     direction: null,
     offsetYAmount: 0,
     offsetXAmount: 0,
@@ -953,11 +955,18 @@ export default class Editor extends EventDispatcher {
       interactionLayer.setCapturedData(this.dataLayer.getCopiedData());
       interactionCapturedData = interactionLayer.getCapturedData();
     }
+    // data layer row count and column count differs from interaction layer row count and column count
+    const dataLayerRowCount = this.dataLayer.getRowCount();
+    const dataLayerColumnCount = this.dataLayer.getColumnCount();
     const minAmountForExtension = this.gridSquareLength;
     if (window.TouchEvent && evt instanceof TouchEvent) {
       if (evt.touches.length > 1) {
         return;
       }
+    }
+    const originCoord = this.extensionPoint.startWorldPos;
+    if (!originCoord) {
+      return;
     }
     const mouseDownPanZoom = this.mouseDownPanZoom!;
     const mouseCartCoord = getMouseCartCoord(
@@ -985,6 +994,26 @@ export default class Editor extends EventDispatcher {
     ) {
       return;
     }
+
+    const updatedRowCount =
+      buttonDirection === ButtonDirection.TOP ||
+      buttonDirection === ButtonDirection.TOPLEFT ||
+      buttonDirection === ButtonDirection.TOPRIGHT
+        ? dataLayerRowCount + mouseOffsetChangeYAmount
+        : dataLayerRowCount - mouseOffsetChangeYAmount;
+    const updatedColumnCount =
+      buttonDirection === ButtonDirection.TOPLEFT ||
+      buttonDirection === ButtonDirection.BOTTOMLEFT ||
+      buttonDirection === ButtonDirection.LEFT
+        ? dataLayerColumnCount + mouseOffsetChangeXAmount
+        : dataLayerColumnCount - mouseOffsetChangeXAmount;
+    console.log(
+      "original row count: ",
+      dataLayerRowCount,
+      " updated: ",
+      updatedRowCount,
+    );
+    // console.log(updatedColumnCount, updatedRowCount);
     const changeYAmountDiff =
       mouseOffsetChangeYAmount - this.extensionPoint.offsetYAmount;
     const changeXAmountDiff =
@@ -998,111 +1027,148 @@ export default class Editor extends EventDispatcher {
     const minimumCount = interactionLayer.getMinimumCount();
 
     if (buttonDirection) {
-      switch (buttonDirection) {
-        case ButtonDirection.TOP:
-          if (changeYAmountDiff > 0) {
-            this.extendInteractionGridBy(ButtonDirection.TOP, {
+      if (
+        buttonDirection === ButtonDirection.TOP ||
+        buttonDirection === ButtonDirection.BOTTOM
+      ) {
+        if (updatedRowCount > baseRowCount) {
+          this.extendInteractionGridBy(buttonDirection, {
+            x: 0,
+            y: updatedRowCount - baseRowCount,
+          });
+        } else {
+          if (updatedRowCount >= minimumCount) {
+            this.shortenInteractionGridBy(buttonDirection, {
               x: 0,
-              y: changeYAmountDiff,
+              y: baseRowCount - updatedRowCount,
             });
-          } else {
+          }
+        }
+      } else if (
+        buttonDirection === ButtonDirection.LEFT ||
+        buttonDirection === ButtonDirection.RIGHT
+      ) {
+        if (updatedColumnCount > baseColumnCount) {
+          this.extendInteractionGridBy(buttonDirection, {
+            x: updatedColumnCount - baseColumnCount,
+            y: 0,
+          });
+        } else {
+          if (updatedColumnCount >= minimumCount) {
+            this.shortenInteractionGridBy(buttonDirection, {
+              x: baseColumnCount - updatedColumnCount,
+              y: 0,
+            });
+          }
+        }
+      } else if (buttonDirection === ButtonDirection.TOPLEFT) {
+        if (updatedColumnCount > baseColumnCount) {
+          this.extendInteractionGridBy(ButtonDirection.LEFT, {
+            x: updatedColumnCount - baseColumnCount,
+            y: 0,
+          });
+        } else {
+          if (updatedColumnCount >= minimumCount) {
+            this.shortenInteractionGridBy(ButtonDirection.LEFT, {
+              x: baseColumnCount - updatedColumnCount,
+              y: 0,
+            });
+          }
+        }
+        if (updatedRowCount > baseRowCount) {
+          this.extendInteractionGridBy(ButtonDirection.TOP, {
+            x: 0,
+            y: updatedRowCount - baseRowCount,
+          });
+        } else {
+          if (updatedRowCount >= minimumCount) {
             this.shortenInteractionGridBy(ButtonDirection.TOP, {
               x: 0,
-              y: baseRowCount > minimumCount ? -changeYAmountDiff : 0,
+              y: baseRowCount - updatedRowCount,
             });
           }
-          break;
-        case ButtonDirection.BOTTOM:
-          if (changeYAmountDiff < 0) {
-            this.extendInteractionGridBy(ButtonDirection.BOTTOM, {
-              x: 0,
-              y: -changeYAmountDiff,
+        }
+      } else if (buttonDirection === ButtonDirection.TOPRIGHT) {
+        if (updatedColumnCount > baseColumnCount) {
+          this.extendInteractionGridBy(ButtonDirection.RIGHT, {
+            x: updatedColumnCount - baseColumnCount,
+            y: 0,
+          });
+        } else {
+          if (updatedColumnCount >= minimumCount) {
+            this.shortenInteractionGridBy(ButtonDirection.RIGHT, {
+              x: baseColumnCount - updatedColumnCount,
+              y: 0,
             });
-          } else {
+          }
+        }
+        if (updatedRowCount > baseRowCount) {
+          this.extendInteractionGridBy(ButtonDirection.TOP, {
+            x: 0,
+            y: updatedRowCount - baseRowCount,
+          });
+        } else {
+          if (updatedRowCount >= minimumCount) {
+            this.shortenInteractionGridBy(ButtonDirection.TOP, {
+              x: 0,
+              y: baseRowCount - updatedRowCount,
+            });
+          }
+        }
+      } else if (buttonDirection === ButtonDirection.BOTTOMLEFT) {
+        if (updatedColumnCount > baseColumnCount) {
+          this.extendInteractionGridBy(ButtonDirection.LEFT, {
+            x: updatedColumnCount - baseColumnCount,
+            y: 0,
+          });
+        } else {
+          if (updatedColumnCount >= minimumCount) {
+            this.shortenInteractionGridBy(ButtonDirection.LEFT, {
+              x: baseColumnCount - updatedColumnCount,
+              y: 0,
+            });
+          }
+        }
+        if (updatedRowCount > baseRowCount) {
+          this.extendInteractionGridBy(ButtonDirection.BOTTOM, {
+            x: 0,
+            y: updatedRowCount - baseRowCount,
+          });
+        } else {
+          if (updatedRowCount >= minimumCount) {
             this.shortenInteractionGridBy(ButtonDirection.BOTTOM, {
               x: 0,
-              y: baseRowCount > minimumCount ? changeYAmountDiff : 0,
+              y: baseRowCount - updatedRowCount,
             });
           }
-          break;
-        case ButtonDirection.LEFT:
-          if (changeXAmountDiff > 0) {
-            this.extendInteractionGridBy(ButtonDirection.LEFT, {
-              x: changeXAmountDiff,
-              y: 0,
-            });
-          } else {
-            this.shortenInteractionGridBy(ButtonDirection.LEFT, {
-              x: baseColumnCount > minimumCount ? -changeXAmountDiff : 0,
-              y: 0,
-            });
-          }
-          break;
-        case ButtonDirection.RIGHT:
-          if (changeXAmountDiff < 0) {
-            this.extendInteractionGridBy(ButtonDirection.RIGHT, {
-              x: -changeXAmountDiff,
-              y: 0,
-            });
-          } else {
+        }
+      } else if (buttonDirection === ButtonDirection.BOTTOMRIGHT) {
+        if (updatedColumnCount > baseColumnCount) {
+          this.extendInteractionGridBy(ButtonDirection.RIGHT, {
+            x: updatedColumnCount - baseColumnCount,
+            y: 0,
+          });
+        } else {
+          if (updatedColumnCount >= minimumCount) {
             this.shortenInteractionGridBy(ButtonDirection.RIGHT, {
-              x: baseColumnCount > minimumCount ? changeXAmountDiff : 0,
+              x: baseColumnCount - updatedColumnCount,
               y: 0,
             });
           }
-          break;
-        case ButtonDirection.TOPLEFT:
-          if (changeXAmountDiff > 0 || changeYAmountDiff > 0) {
-            this.extendInteractionGridBy(ButtonDirection.TOPLEFT, {
-              x: changeXAmountDiff,
-              y: changeYAmountDiff,
-            });
-          } else {
-            this.shortenInteractionGridBy(ButtonDirection.TOPLEFT, {
-              x: baseColumnCount > minimumCount ? -changeXAmountDiff : 0,
-              y: baseRowCount > minimumCount ? -changeYAmountDiff : 0,
-            });
-          }
-          break;
-        case ButtonDirection.TOPRIGHT:
-          if (changeXAmountDiff < 0 || changeYAmountDiff > 0) {
-            this.extendInteractionGridBy(ButtonDirection.TOPRIGHT, {
-              x: -changeXAmountDiff,
-              y: changeYAmountDiff,
-            });
-          } else {
-            this.shortenInteractionGridBy(ButtonDirection.TOPRIGHT, {
-              x: baseColumnCount > minimumCount ? changeXAmountDiff : 0,
-              y: baseRowCount > minimumCount ? -changeYAmountDiff : 0,
+        }
+        if (updatedRowCount > baseRowCount) {
+          this.extendInteractionGridBy(ButtonDirection.BOTTOM, {
+            x: 0,
+            y: updatedRowCount - baseRowCount,
+          });
+        } else {
+          if (updatedRowCount >= minimumCount) {
+            this.shortenInteractionGridBy(ButtonDirection.BOTTOM, {
+              x: 0,
+              y: baseRowCount - updatedRowCount,
             });
           }
-          break;
-        case ButtonDirection.BOTTOMLEFT:
-          if (changeXAmountDiff > 0 || changeYAmountDiff < 0) {
-            this.extendInteractionGridBy(ButtonDirection.BOTTOMLEFT, {
-              x: changeXAmountDiff,
-              y: -changeYAmountDiff,
-            });
-          } else {
-            this.shortenInteractionGridBy(ButtonDirection.BOTTOMLEFT, {
-              x: baseColumnCount > minimumCount ? -changeXAmountDiff : 0,
-              y: baseRowCount > minimumCount ? changeYAmountDiff : 0,
-            });
-          }
-          break;
-        case ButtonDirection.BOTTOMRIGHT:
-          if (changeXAmountDiff < 0 || changeYAmountDiff < 0) {
-            this.extendInteractionGridBy(ButtonDirection.BOTTOMRIGHT, {
-              x: -changeXAmountDiff,
-              y: -changeYAmountDiff,
-            });
-          } else {
-            this.shortenInteractionGridBy(ButtonDirection.BOTTOMRIGHT, {
-              x: baseColumnCount > minimumCount ? changeXAmountDiff : 0,
-              y: baseRowCount > minimumCount ? changeYAmountDiff : 0,
-            });
-          }
-          break;
+        }
       }
       this.extensionPoint.offsetXAmount = mouseOffsetChangeXAmount;
       this.extensionPoint.offsetYAmount = mouseOffsetChangeYAmount;
@@ -2432,6 +2498,10 @@ export default class Editor extends EventDispatcher {
       if (!isGridFixed) {
         const buttonDirection = this.detectButtonClicked(mouseCartCoord);
         if (buttonDirection) {
+          this.extensionPoint.startWorldPos = {
+            x: mouseCartCoord.x,
+            y: mouseCartCoord.y,
+          };
           this.extensionPoint.direction = buttonDirection;
           this.mouseMode = MouseMode.EXTENDING;
           touchy(this.element, addEvent, "mousemove", this.handleExtension);
