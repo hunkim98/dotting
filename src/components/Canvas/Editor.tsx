@@ -359,7 +359,6 @@ export default class Editor extends EventDispatcher {
     if (isPanZoomable !== undefined) {
       this.isPanZoomable = isPanZoomable;
     }
-    console.log(this.isPanZoomable);
   }
 
   setIsDrawingEnabled(isDrawingEnabled: boolean) {
@@ -1540,10 +1539,12 @@ export default class Editor extends EventDispatcher {
     }
   }
 
+  // we should allow panning with pinch zoom too
   handlePinchZoom = (evt: TouchyEvent) => {
     if (!this.isPanZoomable) {
       return;
     }
+    // const lastMousePos = this.panPoint.lastMousePos;
     const newPanZoom = calculateNewPanZoomFromPinchZoom(
       evt,
       this.element,
@@ -1605,11 +1606,11 @@ export default class Editor extends EventDispatcher {
       return;
     }
     const lastMousePos = this.panPoint.lastMousePos;
-    if (window.TouchEvent && evt instanceof TouchEvent) {
-      if (evt.touches.length > 1) {
-        return;
-      }
-    }
+    // if (window.TouchEvent && evt instanceof TouchEvent) {
+    //   if (evt.touches.length > 1) {
+    //     return;
+    //   }
+    // }
     const point = getPointFromTouchyEvent(evt, this.element, this.panZoom);
     const currentMousePos: Coord = { x: point.offsetX, y: point.offsetY };
     this.panPoint.lastMousePos = currentMousePos;
@@ -2416,7 +2417,9 @@ export default class Editor extends EventDispatcher {
         // move the pixels to interaction layer
       }
     } else {
-      if (pixelIndex && this.brushTool !== BrushTool.NONE) {
+      const touchesCount =
+        evt.touches && evt.touches.length ? evt.touches.length : 0;
+      if (pixelIndex && this.brushTool !== BrushTool.NONE && touchesCount < 1) {
         this.drawPixelInInteractionLayer(
           pixelIndex.rowIndex,
           pixelIndex.columnIndex,
@@ -2489,6 +2492,16 @@ export default class Editor extends EventDispatcher {
 
   onMouseMove(evt: TouchyEvent) {
     evt.preventDefault();
+    if (
+      window.TouchEvent &&
+      evt instanceof TouchEvent &&
+      evt.touches.length > 1
+    ) {
+      // the user can use two fingers while drawing
+      // we should change the mode to panning mode (zooming mode)
+      touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
+      return;
+    }
     const mouseCartCoord = getMouseCartCoord(
       evt,
       this.element,
