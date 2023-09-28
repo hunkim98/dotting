@@ -359,6 +359,7 @@ export default class Editor extends EventDispatcher {
     if (isPanZoomable !== undefined) {
       this.isPanZoomable = isPanZoomable;
     }
+    console.log(this.isPanZoomable);
   }
 
   setIsDrawingEnabled(isDrawingEnabled: boolean) {
@@ -1539,7 +1540,7 @@ export default class Editor extends EventDispatcher {
     }
   }
 
-  handlePinchZoom(evt: TouchyEvent) {
+  handlePinchZoom = (evt: TouchyEvent) => {
     if (!this.isPanZoomable) {
       return;
     }
@@ -1556,7 +1557,7 @@ export default class Editor extends EventDispatcher {
       this.pinchZoomDiff = newPanZoom.pinchZoomDiff;
       this.setPanZoom(newPanZoom.panZoom);
     }
-  }
+  };
 
   handleKeyDown = (e: KeyboardEvent) => {
     if (e.code === "KeyZ" && (e.ctrlKey || e.metaKey)) {
