@@ -20,6 +20,7 @@ import {
   CanvasHoverPixelChangeHandler,
   CanvasStrokeEndHandler,
   DeleteGridIndicesParams,
+  DottingData,
   ImageDownloadOptions,
   LayerChangeHandler,
   LayerProps,
@@ -124,6 +125,7 @@ export interface DottingRef {
     type: string,
     listener: EventListenerOrEventListenerObject,
   ) => void;
+  getLayers: () => Array<{ id: string; data: DottingData }>;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -841,6 +843,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
+  const getLayers = useCallback(() => {
+    return editor?.getLayers();
+  }, [editor]);
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -887,6 +893,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       // for canvas element listener
       addCanvasElementEventListener,
       removeCanvasElementEventListener,
+      getLayers,
     }),
     [
       // for useDotting
@@ -929,6 +936,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       // for canvas element listener
       addCanvasElementEventListener,
       removeCanvasElementEventListener,
+      getLayers,
     ],
   );
 
