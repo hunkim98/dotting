@@ -213,7 +213,7 @@ td input:focus {
 
 With `useDotting`, you can manipulate the grids.
 
-#### Features provided by `useDotting`
+#### Callbacks provided by `useDotting`
 
 <table>
   <thead>
@@ -229,42 +229,41 @@ With `useDotting`, you can manipulate the grids.
   </thead>
   <tbody>
     <tr>
-      <td>`downloadImage(options?: ImageDownloadOptions)`</td>
+      <td>`downloadImage`</td>
       <td>Allows you to download the pixel image</td>
       <td>
-        `ImageDownloadOptions`
-        ```ts
-        export interface ImageDownloadOptions {
-          isGridVisible?: boolean;
-        }
-        ```
+        `ImageDownloadOptions` For more information about the parameters, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section1");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 1</u>.
       </td>
     </tr>
     <tr>
-      <td>`clear()`</td>
+      <td>`clear`</td>
       <td>Allows you to clear the canvas</td>
       <td></td>
     </tr>
     <tr>
-      <td>`colorPixels(data: Array<PixelModifyItem>)`</td>
+      <td>`colorPixels`</td>
       <td>
         Allows you to color pixels on specific indices. If the index provided is 
         not in the grid, the grid first extends its grid and then colors it
       </td>
       <td>
-        `Array<PixelModifyItem>`
-        `PixelModifyItem` is defined as follows:
-        ```ts
-        export interface PixelModifyItem {
-          rowIndex: number;
-          columnIndex: number;
-          color: string;
-        }
-        ```
+        `Array<PixelModifyItem>`. For more information about the type, please refer to 
+        <u onClick={() => {
+          const el = document.getElementById("section2");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 2</u>.
       </td>
     </tr>
     <tr>
-      <td>`erasePixels(data: Array<{rowIndex: number; columnIndex: number}>)`</td>
+      <td>`erasePixels`</td>
       <td>
         Allows you to erase pixels on specific indices. If the index provided is
         not in the grid, that data is ignored
@@ -272,60 +271,93 @@ With `useDotting`, you can manipulate the grids.
       <td>`Array<{rowIndex: number; columnIndex: number}>`</td>
     </tr>
     <tr>
-      <td>`setIndicatorPixels(indicators: Array<PixelModifyItem>)`</td>
+      <td>`setIndicatorPixels`</td>
       <td>
         Allows you to set the indicator pixels. If the index provided is not in
         the grid, that data is ignored
       </td>
-      <td>`Array<PixelModifyItem>`</td>
+      <td>
+        `Array<PixelModifyItem>` For more information about the type, please refer to  
+        <u onClick={() => {
+          const el = document.getElementById("section5");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 5</u>.
+      </td>
     </tr>
     <tr>
-      <td>`undo()`</td>
+      <td>`undo`</td>
       <td>
         Allows you to undo the last action
       </td>
       <td></td>
     </tr>
     <tr>
-      <td>`redo()`</td>
+      <td>`redo`</td>
       <td>
         Allows you to redo the last action
       </td>
       <td></td>
     </tr>
     <tr>
-      <td>`setData(data: Array<Array<PixelModifyItem>>)`</td>
+      <td>`setData`</td>
       <td>
         Allows you to set the data of the pixel canvas. (The 2d array should be a square array)
       </td>
       <td>
-        `Array<PixelModifyItem>`
-        `PixelModifyItem` is defined as follows:
-        ```ts
-        export interface PixelModifyItem {
-          rowIndex: number;
-          columnIndex: number;
-          color: string;
-        }
-        ```
+        `Array<PixelModifyItem>` For more information about the type, please refer to 
+        <u onClick={() => {
+          const el = document.getElementById("section7");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 7</u>.
       </td>
     </tr>
     <tr>
-      <td>`addGridIndices(params: AddGridIndicesParams)`</td>
+      <td>`addGridIndices`</td>
       <td>
         Allows you to add grid indices to the grid.
       </td>
       <td>
-        `AddGridIndicesParams`. For more information about the type, please refer to section 3.
+        `AddGridIndicesParams`. For more information about the type, please refer to 
+        <u onClick={() => {
+          const el = document.getElementById("section3");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 3</u>.
       </td>
     </tr>
     <tr>
-      <td>`deleteGridIndices(params: DeleteGridIndicesParams)`</td>
+      <td>`deleteGridIndices`</td>
       <td>
         Allows you to delete grid indices to the grid.
       </td>
       <td>
-        `DeleteGridIndicesParams`. For more information about the type, please refer to section 3.
+        `DeleteGridIndicesParams`. For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section3");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 3</u>.
+      </td>
+    </tr>
+    <tr>
+    <td>`setLayers`</td>
+      <td>
+        Allows you to set layers. You must provide an array of `LayerProps` to this method.
+      </td>
+      <td>
+        `Array<LayerProps>`. For more information about the type, Please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section8");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 8</u>.
       </td>
     </tr>
 
@@ -334,15 +366,24 @@ With `useDotting`, you can manipulate the grids.
 
 ### Examples
 
-#### 1. Download Image Example `downloadImage()`
+<div id="section1"></div>
+#### 1. Download Image Example `downloadImage`
 
-With `downloadImage` method, you can download the image of the grid.
+With `downloadImage(options?: ImageDownloadOptions)` method, you can download the image of the grid. The parameter that you can pass to the callback is `ImageDownloadOptions`.
+The `ImageDownloadOptions` type is defined as follows:
+
+```ts
+export interface ImageDownloadOptions {
+  isGridVisible?: boolean;
+}
+```
 
 <DownloadImage />
 
-#### 2. Change Pixel Color Example `colorPixels(data: PixelModifyData)`, `erasePixels(data: Array<{rowIndex: number; columnIndex: number}>)`
+<div id="section2"></div>
+#### 2. Change Pixel Color Example `colorPixels`, `erasePixels`
 
-With `colorPixels` method, you can change the color of specific pixels.
+With `colorPixels(data: PixelModifyData)` method, you can change the color of specific pixels.
 The `PixelModifyData` type is defined as follows:
 
 ```ts
@@ -359,15 +400,16 @@ By passing an array of `PixelModifyItem` you are able to color the pixels.
 If the rowIndex and columnIndex of the pixel is not in the grid, the grid
 first extends its grid and then colors it.
 
-You can also erase pixels using `erasePixels` method. The `erasePixels` method
+You can also erase pixels using `erasePixels` method. The `erasePixels(data: Array<{rowIndex: number; columnIndex: number}>)` method
 takes an array of `{rowIndex: number; columnIndex: number}` as a parameter. If the rowIndex and
 columnIndex of the pixel is not in the grid, that data is ignored.
 
 <ColorPixels />
 
-#### 3. Grid Change Example `addGridIndices(params: AddGridIndicesParams)`, `deleteGridIndices(params: DeleteGridIndicesParams)`
+<div id="section3"></div>
+#### 3. Grid Change Example `addGridIndices`,`deleteGridIndices`
 
-With `addGridIndices` method, you can add grid indices to the grid.
+With `addGridIndices(params: AddGridIndicesParams)` method, you can add grid indices to the grid.
 The `AddGridIndicesParams` type is defined as follows:
 
 ```ts
@@ -382,7 +424,7 @@ export type AddGridIndicesParams = {
 
 By passing an array of `rowIndices` and `columnIndices` you are able to add grid indices to the grid.
 
-With `deleteGridIndices` method, you can delete grid indices to the grid.
+With `deleteGridIndices(params: DeleteGridIndicesParams)` method, you can delete grid indices to the grid.
 The `DeleteGridIndicesParams` type is defined as follows:
 
 ```ts
@@ -396,15 +438,17 @@ export type DeleteGridIndicesParams = {
 
 <GridChange />
 
-#### 4. Clear Example `clear()`
+<div id="section4"></div>
+#### 4. Clear Example `clear`
 
-With `clear` method, you can clear all the pixels in the grid.
+With `clear()` method, you can clear all the pixels in the grid.
 
 <Clear />
 
-#### 5. Set Indicator Pixels `setIndicatorPixels(data: Array<PixelModifyItem>)`
+<div id="section5"></div>
+#### 5. Set Indicator Pixels `setIndicatorPixels`
 
-With `setIndicatorPixels` method, you can set the indicator pixels. The indicator pixels are
+With `setIndicatorPixels(data: Array<PixelModifyItem>)` method, you can set the indicator pixels. The indicator pixels are
 the pixels that are shwon as indicators in the grid. Their opacity is lower than the real pixel data.
 They do not affect the data of the grid.
 
@@ -412,23 +456,66 @@ By the way, if you want to initially have the indicator pixels before the canvas
 you need to pass the `initIndicatorData` prop to the `Dotting` component.
 The data type of the `initIndicatorData` is the `Array<PixelModifyItem>`.
 
+PixelModifyItem is defined as follows:
+
+```ts
+export interface PixelModifyItem {
+  rowIndex: number;
+  columnIndex: number;
+  color: string;
+}
+```
+
 <SetIndicatorPixels />
 
-#### 6. Undo and Redo Example `undo()`, `redo()`
+<div id="section6"></div>
+#### 6. Undo and Redo Example `undo`, `redo`
 
-With `undo` and `redo` methods, you can undo and redo the last action.
+With `undo()` and `redo()` methods, you can undo and redo the last action.
 
 <UndoRedo />
 
-#### 7. SetData Example `setData(data: Array<Array<PixelModifyItem>>)`
+<div id="section7"></div>
+#### 7. SetData Example `setData`
 
-With `setData`, you can set the data of the pixel canvas. (The 2d array should be a square array)
+With `setData(data: Array<Array<PixelModifyItem>>)`, you can set the data of the pixel canvas. You must pass a 2d array of `PixelModifyItem` to this method.
+The type of `PixelModifyItem` is defined as follows:
+
+```ts
+export interface PixelModifyItem {
+  rowIndex: number;
+  columnIndex: number;
+  color: string;
+}
+```
+
+The 2d array should be a square array.
 
 <SetData />
 
-#### 8. SetLayers Example `setLayers(data: Array<LayerProps>)`
+<div id="section8"></div>
+#### 8. SetLayers Example `setLayers`
 
-With `setLayers`, you can set the layers of the pixel canvas. (The 2d array should be a square array)
+With `setLayers(data: Array<LayerProps>)`, you can set the layers of the pixel canvas. You must pass an array of `LayerProps` to this method.
+The `LayerProps` type is defined as follows:
+
+```ts
+export interface LayerProps {
+  id: string;
+  data: Array<Array<PixelModifyItem>>;
+}
+```
+
+By passing an array of `LayerProps` you are able to set the layers of the pixel canvas.
+The type of `PixelModifyItem` is defined as follows:
+
+```ts
+export interface PixelModifyItem {
+  rowIndex: number;
+  columnIndex: number;
+  color: string;
+}
+```
 
 <SetLayers />
 

@@ -101,13 +101,6 @@ const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
-  const setLayers = useCallback(
-    (layers: Array<LayerProps>) => {
-      ref.current?.setLayers(layers);
-    },
-    [ref],
-  );
-
   return {
     currentLayer,
     layers: layersInfo,

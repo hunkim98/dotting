@@ -5,8 +5,8 @@ import GridChange from "./GridChange";
 import GridStyling from "./GridStyling";
 import SetData from "./SetData";
 import SetIndicatorPixels from "./SetIndicatorPixels";
-import UndoRedo from "./UndoRedo";
 import SetLayers from "./SetLayers";
+import UndoRedo from "./UndoRedo";
 
 export {
   Clear,
