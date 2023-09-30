@@ -55,6 +55,13 @@ import {
   validateLayers,
   validateSquareArray,
 } from "../../utils/data";
+import {
+  InvalidDataDimensionsError,
+  InvalidDataIndicesError,
+  InvalidSquareDataError,
+  LayerNotFoundError,
+  UnspecifiedLayerIdError,
+} from "../../utils/error";
 import EventDispatcher from "../../utils/eventDispatcher";
 import { generatePixelId } from "../../utils/identifier";
 import {
@@ -803,7 +810,7 @@ export default class Editor extends EventDispatcher {
   ) {
     const { isDataValid, rowCount, columnCount } = validateSquareArray(data);
     if (!isDataValid) {
-      throw new Error(`Data is not valid`);
+      throw new InvalidSquareDataError();
     }
     // reset history when set data is called
     this.undoHistory = [];
@@ -823,28 +830,26 @@ export default class Editor extends EventDispatcher {
     }
     if (layerId === undefined) {
       if (this.dataLayer.getLayers().length > 1) {
-        throw new Error(
-          "Layer id must be specified if there are multiple layers",
-        );
+        throw new UnspecifiedLayerIdError();
       }
       this.dataLayer.setData(newData);
     } else {
       const layer = this.dataLayer.getLayer(layerId);
       if (!layer) {
-        throw new Error("Layer not found");
+        throw new LayerNotFoundError(layerId);
       }
       const layerInfo = layer.getDataInfo();
       if (
         layerInfo.rowCount !== rowCount ||
         layerInfo.columnCount !== columnCount
       ) {
-        throw new Error("Data dimensions do not match layer dimensions");
+        throw new InvalidDataDimensionsError();
       }
       if (
         layerInfo.gridIndices.leftColumnIndex !== leftColumnIndex ||
         layerInfo.gridIndices.topRowIndex !== topRowIndex
       ) {
-        throw new Error("Data indices do not match layer indices");
+        throw new InvalidDataIndicesError();
       }
       this.dataLayer.setData(newData, layerId);
     }
@@ -879,14 +884,12 @@ export default class Editor extends EventDispatcher {
   }
 
   setLayers(layers: Array<LayerProps>) {
-    try {
-      validateLayers(layers);
-      // reset history when set layer is called
-      this.undoHistory = [];
-      this.redoHistory = [];
-    } catch (e) {
-      console.error(e);
-    }
+    validateLayers(layers);
+    // if validate layers is passed, then we have no problem with layers
+    this.dataLayer.setLayers(layers);
+    // reset history when set layer is called
+    this.undoHistory = [];
+    this.redoHistory = [];
   }
 
   setPanZoom({
