@@ -1,3 +1,9 @@
+import {
+  DuplicateLayerIdError,
+  InvalidDataDimensionsError,
+  InvalidDataIndicesError,
+  InvalidSquareDataError,
+} from "./error";
 import { getBressenhamIndices } from "./math";
 import { getPixelIndexFromMouseCartCoord } from "./position";
 import {
@@ -274,9 +280,7 @@ export const validateLayers = (layers: Array<LayerProps>) => {
   // 3) all data should have same topRowIndex and leftColumnIndex
   layers.forEach(layer => {
     if (layerIdSet.has(layer.id)) {
-      throw new Error(
-        `Duplicate layer id ${layer.id}. Please make sure all layer ids are unique.`,
-      );
+      throw new DuplicateLayerIdError(layer.id);
     }
     layerIdSet.add(layer.id);
     const { isDataValid, columnCount, rowCount } = validateSquareArray(
@@ -287,9 +291,7 @@ export const validateLayers = (layers: Array<LayerProps>) => {
         measuredColumnCount !== columnCount ||
         measuredRowCount !== rowCount
       ) {
-        throw new Error(
-          `Invalid data for layer ${layer.id}. Please check the data.`,
-        );
+        throw new InvalidDataDimensionsError(layer.id);
       }
     } else {
       measuredColumnCount = columnCount;
@@ -297,9 +299,7 @@ export const validateLayers = (layers: Array<LayerProps>) => {
     }
 
     if (!isDataValid) {
-      throw new Error(
-        `Invalid data for layer ${layer.id}. Please check the data.`,
-      );
+      throw new InvalidSquareDataError(layer.id);
     }
     if (measuredLeftColumnIndex == null || measuredTopRowIndex == null) {
       measuredLeftColumnIndex = layer.data[0][0].columnIndex;
@@ -308,14 +308,10 @@ export const validateLayers = (layers: Array<LayerProps>) => {
     const topRowIndex = layer.data[0][0].rowIndex;
     const leftColumnIndex = layer.data[0][0].columnIndex;
     if (topRowIndex !== measuredTopRowIndex) {
-      throw new Error(
-        `Invalid data for layer ${layer.id}. Please check the data.`,
-      );
+      throw new InvalidDataIndicesError(layer.id);
     }
     if (leftColumnIndex !== measuredLeftColumnIndex) {
-      throw new Error(
-        `Invalid data for layer ${layer.id}. Please check the data.`,
-      );
+      throw new InvalidDataIndicesError(layer.id);
     }
   });
   return true;
