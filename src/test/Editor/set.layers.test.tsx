@@ -3,6 +3,8 @@ import Editor from "../../components/Canvas/Editor";
 import {
   DuplicateLayerIdError,
   InvalidDataDimensionsError,
+  InvalidDataIndicesError,
+  InvalidSquareDataError,
 } from "../../utils/error";
 
 describe("test set layers", () => {
@@ -112,6 +114,177 @@ describe("test set layers", () => {
       editor.setLayers(newLayers);
     } catch (error) {
       expect(error).toBeInstanceOf(InvalidDataDimensionsError);
+    }
+  });
+
+  it("set layers with wrong indices", () => {
+    const newLayers = [
+      {
+        id: "layer1",
+        data: [
+          [
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 0,
+            },
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 1,
+            },
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 2,
+            },
+          ],
+          [
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 0,
+            },
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 1,
+            },
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 2,
+            },
+          ],
+        ],
+      },
+      {
+        id: "layer2",
+        data: [
+          [
+            {
+              color: "red",
+              rowIndex: 1,
+              columnIndex: 0,
+            },
+            {
+              color: "red",
+              rowIndex: 1,
+              columnIndex: 1,
+            },
+            {
+              color: "red",
+              rowIndex: 1,
+              columnIndex: 2,
+            },
+          ],
+          [
+            {
+              color: "red",
+              rowIndex: 2,
+              columnIndex: 0,
+            },
+            {
+              color: "red",
+              rowIndex: 2,
+              columnIndex: 1,
+            },
+            {
+              color: "red",
+              rowIndex: 2,
+              columnIndex: 2,
+            },
+          ],
+        ],
+      },
+    ];
+    try {
+      editor.setLayers(newLayers);
+    } catch (error) {
+      expect(error).toBeInstanceOf(InvalidDataIndicesError);
+    }
+  });
+
+  it("set layers with wrong square data", () => {
+    const newLayers = [
+      {
+        id: "layer1",
+        data: [
+          [
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 0,
+            },
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 1,
+            },
+          ],
+          [
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 0,
+            },
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 1,
+            },
+            {
+              color: "red",
+              rowIndex: 0,
+              columnIndex: 2,
+            },
+          ],
+        ],
+      },
+      {
+        id: "layer2",
+        data: [
+          [
+            {
+              color: "red",
+              rowIndex: 1,
+              columnIndex: 0,
+            },
+            {
+              color: "red",
+              rowIndex: 1,
+              columnIndex: 1,
+            },
+            {
+              color: "red",
+              rowIndex: 1,
+              columnIndex: 2,
+            },
+          ],
+          [
+            {
+              color: "red",
+              rowIndex: 2,
+              columnIndex: 0,
+            },
+            {
+              color: "red",
+              rowIndex: 2,
+              columnIndex: 1,
+            },
+            {
+              color: "red",
+              rowIndex: 2,
+              columnIndex: 2,
+            },
+          ],
+        ],
+      },
+    ];
+    try {
+      editor.setLayers(newLayers);
+    } catch (error) {
+      expect(error).toBeInstanceOf(InvalidSquareDataError);
     }
   });
 });
