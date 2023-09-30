@@ -250,6 +250,18 @@ export default class DataLayer extends BaseLayer {
     }
   }
 
+  // this is for setting all layers together
+  setLayers(layers: Array<LayerProps>) {
+    this.layers = [];
+    this.layers = layers.map(
+      layer =>
+        new DottingDataLayer({
+          data: layer.data,
+          id: layer.id,
+        }),
+    );
+  }
+
   setGridSquareLength(length: number) {
     this.gridSquareLength = length;
   }

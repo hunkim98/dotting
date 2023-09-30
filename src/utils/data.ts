@@ -5,6 +5,7 @@ import {
   GridIndices,
   PixelModifyItem,
   Coord,
+  LayerProps,
 } from "../components/Canvas/types";
 
 export const getGridIndicesFromData = (data: DottingData): GridIndices => {
@@ -251,4 +252,71 @@ export const getInBetweenPixelIndicesfromCoords = (
       }
     }
   }
+};
+
+export const validateLayers = (layers: Array<LayerProps>) => {
+  if (!layers) {
+    throw new Error("No layer provided");
+  }
+  if (layers.length === 0) {
+    throw new Error(
+      "initLayers should not be empty. Please provide at least one layer.",
+    );
+  }
+  const layerIdSet: Set<string> = new Set();
+  let measuredColumnCount = null;
+  let measuredRowCount = null;
+  let measuredTopRowIndex = null;
+  let measuredLeftColumnIndex = null;
+  // all init data passed initially, should be
+  // 1) a square array
+  // 2) all data should have same row and column count
+  // 3) all data should have same topRowIndex and leftColumnIndex
+  layers.forEach(layer => {
+    if (layerIdSet.has(layer.id)) {
+      throw new Error(
+        `Duplicate layer id ${layer.id}. Please make sure all layer ids are unique.`,
+      );
+    }
+    layerIdSet.add(layer.id);
+    const { isDataValid, columnCount, rowCount } = validateSquareArray(
+      layer.data,
+    );
+    if (measuredColumnCount !== null && measuredRowCount !== null) {
+      if (
+        measuredColumnCount !== columnCount ||
+        measuredRowCount !== rowCount
+      ) {
+        throw new Error(
+          `Invalid data for layer ${layer.id}. Please check the data.`,
+        );
+      }
+    } else {
+      measuredColumnCount = columnCount;
+      measuredRowCount = rowCount;
+    }
+
+    if (!isDataValid) {
+      throw new Error(
+        `Invalid data for layer ${layer.id}. Please check the data.`,
+      );
+    }
+    if (measuredLeftColumnIndex == null || measuredTopRowIndex == null) {
+      measuredLeftColumnIndex = layer.data[0][0].columnIndex;
+      measuredTopRowIndex = layer.data[0][0].rowIndex;
+    }
+    const topRowIndex = layer.data[0][0].rowIndex;
+    const leftColumnIndex = layer.data[0][0].columnIndex;
+    if (topRowIndex !== measuredTopRowIndex) {
+      throw new Error(
+        `Invalid data for layer ${layer.id}. Please check the data.`,
+      );
+    }
+    if (leftColumnIndex !== measuredLeftColumnIndex) {
+      throw new Error(
+        `Invalid data for layer ${layer.id}. Please check the data.`,
+      );
+    }
+  });
+  return true;
 };
