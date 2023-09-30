@@ -890,6 +890,36 @@ export default class Editor extends EventDispatcher {
     // reset history when set layer is called
     this.undoHistory = [];
     this.redoHistory = [];
+    this.dataLayer.setCurrentLayer(layers[0].id);
+    this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    const rowCount = this.dataLayer.getRowCount();
+    const columnCount = this.dataLayer.getColumnCount();
+    this.gridLayer.setRowCount(rowCount);
+    this.gridLayer.setColumnCount(columnCount);
+    this.interactionLayer.setDataLayerRowCount(rowCount);
+    this.interactionLayer.setDataLayerColumnCount(columnCount);
+    this.emitDataChangeEvent({
+      isLocalChange: false,
+      data: this.dataLayer.getCopiedData(),
+      layerId: this.dataLayer.getCurrentLayer().getId(),
+    });
+    this.emitGridChangeEvent({
+      dimensions: this.dataLayer.getDimensions(),
+      indices: this.dataLayer.getGridIndices(),
+    });
+    this.interactionLayer.setCriterionDataForRendering(
+      this.dataLayer.getData(),
+    );
+    this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
+    this.interactionLayer.resetCapturedData();
+    this.setPanZoom({
+      offset: {
+        x: -this.panZoom.scale * (columnCount / 2) * this.gridSquareLength,
+        y: -this.panZoom.scale * (rowCount / 2) * this.gridSquareLength,
+      },
+    });
+    this.emitCurrentLayerStatus();
+    this.renderAll();
   }
 
   setPanZoom({
