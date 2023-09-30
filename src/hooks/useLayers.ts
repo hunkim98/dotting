@@ -4,13 +4,14 @@ import useHandlers from "./useHandlers";
 import {
   LayerChangeParams,
   LayerDataForHook,
+  LayerProps,
   PixelModifyItem,
 } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
 
 const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
   const [currentLayer, setCurrentLayerHook] = useState<LayerDataForHook>();
-  const [layers, setLayers] = useState<Array<LayerDataForHook>>([]);
+  const [layersInfo, setLayersInfo] = useState<Array<LayerDataForHook>>([]);
 
   const { addLayerChangeEventListener, removeLayerChangeEventListener } =
     useHandlers(ref);
@@ -22,7 +23,7 @@ const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
         data: currentLayer.getDataArray(),
         isVisible: currentLayer.getIsVisible(),
       });
-      setLayers(
+      setLayersInfo(
         layers.map(layer => ({
           id: layer.getId(),
           data: layer.getDataArray(),
@@ -100,9 +101,16 @@ const useLayers = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
+  const setLayers = useCallback(
+    (layers: Array<LayerProps>) => {
+      ref.current?.setLayers(layers);
+    },
+    [ref],
+  );
+
   return {
     currentLayer,
-    layers,
+    layers: layersInfo,
     addLayer,
     removeLayer,
     changeLayerPosition,
