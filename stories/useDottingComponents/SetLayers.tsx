@@ -1,6 +1,6 @@
 import React, { BaseSyntheticEvent, useRef, useState } from "react";
 
-import { useBrush } from "../../src";
+import { useBrush, useDotting } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useLayers from "../../src/hooks/useLayers";
 import { CreateEmptySquareData } from "../utils/dataCreator";
@@ -10,17 +10,16 @@ const SetLayers = () => {
   const { changeBrushColor } = useBrush(ref);
   const {
     layers,
-    addLayer,
     removeLayer,
     changeLayerPosition,
     currentLayer,
     setCurrentLayer,
     reorderLayersByIds,
   } = useLayers(ref);
+  const { setLayers } = useDotting(ref);
   const [draggingSectionId, setDraggingSectionId] = useState(null);
   const draggingItemIndex = useRef<number | null>(null);
   const draggingOverItemIndex = useRef<number | null>(null);
-  const [createdLayerCount, setCreatedLayerCount] = useState(3);
 
   const onDragStart = (e: BaseSyntheticEvent, index: number, id: string) => {
     draggingItemIndex.current = index;
@@ -129,14 +128,6 @@ const SetLayers = () => {
               </div>
             </li>
           ))}
-          <button
-            onClick={() => {
-              addLayer("layer" + (createdLayerCount + 1), layers.length);
-              setCreatedLayerCount(createdLayerCount + 1);
-            }}
-          >
-            Add Layer
-          </button>
         </ul>
       </div>
 
@@ -167,6 +158,7 @@ const SetLayers = () => {
             },
           ]}
         />
+
         <div>
           {[
             "#FF0000",
@@ -191,6 +183,44 @@ const SetLayers = () => {
               }}
             />
           ))}
+        </div>
+        <div>
+          <button
+            style={{
+              padding: "5px 10px",
+              background: "none",
+            }}
+            onClick={() => {
+              setLayers([
+                {
+                  id: "layer1",
+                  data: CreateEmptySquareData(15),
+                },
+              ]);
+            }}
+          >
+            Set Single Layer
+          </button>
+          <button
+            style={{
+              padding: "5px 10px",
+              background: "none",
+            }}
+            onClick={() => {
+              setLayers([
+                {
+                  id: "layer1",
+                  data: CreateEmptySquareData(15),
+                },
+                {
+                  id: "layer2",
+                  data: CreateEmptySquareData(15),
+                },
+              ]);
+            }}
+          >
+            Set Two Layers
+          </button>
         </div>
       </div>
     </div>

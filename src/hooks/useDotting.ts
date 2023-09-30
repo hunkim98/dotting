@@ -4,6 +4,7 @@ import {
   AddGridIndicesParams,
   DeleteGridIndicesParams,
   ImageDownloadOptions,
+  LayerProps,
   PixelModifyItem,
 } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
@@ -56,6 +57,13 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
+  const setLayers = useCallback(
+    (layers: Array<LayerProps>) => {
+      ref.current?.setLayers(layers);
+    },
+    [ref],
+  );
+
   const addGridIndices = useCallback(
     (params: AddGridIndicesParams) => {
       ref.current?.addGridIndices(params);
@@ -79,6 +87,7 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     undo,
     redo,
     setData,
+    setLayers,
     addGridIndices,
     deleteGridIndices,
   };
