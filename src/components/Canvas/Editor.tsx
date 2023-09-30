@@ -52,6 +52,7 @@ import {
   getInBetweenPixelIndicesfromCoords,
   getRowCountFromData,
   getRowKeysFromData,
+  validateLayers,
   validateSquareArray,
 } from "../../utils/data";
 import EventDispatcher from "../../utils/eventDispatcher";
@@ -663,7 +664,7 @@ export default class Editor extends EventDispatcher {
     return this.dataLayer.getLayers().map(layer => {
       return {
         id: layer.getId(),
-        data: layer.getDataArray()
+        data: layer.getDataArray(),
       };
     });
   }
@@ -875,6 +876,17 @@ export default class Editor extends EventDispatcher {
       },
     });
     this.renderAll();
+  }
+
+  setLayers(layers: Array<LayerProps>) {
+    try {
+      validateLayers(layers);
+      // reset history when set layer is called
+      this.undoHistory = [];
+      this.redoHistory = [];
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   setPanZoom({

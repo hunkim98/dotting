@@ -26,7 +26,7 @@ import {
   LayerProps,
   PixelModifyItem,
 } from "./Canvas/types";
-import { validateSquareArray } from "../utils/data";
+import { validateLayers } from "../utils/data";
 
 export interface DottingProps {
   width: number | string;
@@ -130,6 +130,7 @@ export interface DottingRef {
     id: string;
     data: Array<Array<PixelModifyItem>>;
   }>;
+  setLayers: (layers: Array<LayerProps>) => void;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -411,76 +412,17 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       return;
     }
     // this only happens once
-    if (props.initLayers) {
-      // validation
-      if (props.initLayers.length === 0) {
-        throw new Error(
-          "initLayers should not be empty. Please provide at least one layer.",
-        );
-      }
-      const layerIdSet: Set<string> = new Set();
-      let measuredColumnCount = null;
-      let measuredRowCount = null;
-      let measuredTopRowIndex = null;
-      let measuredLeftColumnIndex = null;
-      // all init data passed initially, should be
-      // 1) a square array
-      // 2) all data should have same row and column count
-      // 3) all data should have same topRowIndex and leftColumnIndex
-      props.initLayers.forEach(layer => {
-        if (layerIdSet.has(layer.id)) {
-          throw new Error(
-            `Duplicate layer id ${layer.id}. Please make sure all layer ids are unique.`,
-          );
-        }
-        layerIdSet.add(layer.id);
-        const { isDataValid, columnCount, rowCount } = validateSquareArray(
-          layer.data,
-        );
-        if (measuredColumnCount !== null && measuredRowCount !== null) {
-          if (
-            measuredColumnCount !== columnCount ||
-            measuredRowCount !== rowCount
-          ) {
-            throw new Error(
-              `Invalid data for layer ${layer.id}. Please check the data.`,
-            );
-          }
-        } else {
-          measuredColumnCount = columnCount;
-          measuredRowCount = rowCount;
-        }
-
-        if (!isDataValid) {
-          throw new Error(
-            `Invalid data for layer ${layer.id}. Please check the data.`,
-          );
-        }
-        if (measuredLeftColumnIndex == null || measuredTopRowIndex == null) {
-          measuredLeftColumnIndex = layer.data[0][0].columnIndex;
-          measuredTopRowIndex = layer.data[0][0].rowIndex;
-        }
-        const topRowIndex = layer.data[0][0].rowIndex;
-        const leftColumnIndex = layer.data[0][0].columnIndex;
-        if (topRowIndex !== measuredTopRowIndex) {
-          throw new Error(
-            `Invalid data for layer ${layer.id}. Please check the data.`,
-          );
-        }
-        if (leftColumnIndex !== measuredLeftColumnIndex) {
-          throw new Error(
-            `Invalid data for layer ${layer.id}. Please check the data.`,
-          );
-        }
-      });
-    }
+    const validatedLayers =
+      props.initLayers && validateLayers(props.initLayers)
+        ? props.initLayers
+        : undefined;
 
     const editor = new Editor({
       gridCanvas,
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
-      initLayers: props.initLayers,
+      initLayers: validatedLayers,
       gridSquareLength: props.gridSquareLength,
     });
     editor.setIsGridFixed(props.isGridFixed);
@@ -855,6 +797,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     return editor?.getLayersAsArray();
   }, [editor]);
 
+  const setLayers = useCallback(
+    (layers: Array<LayerProps>) => {
+      editor?.setLayers(layers);
+    },
+    [editor],
+  );
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -903,6 +852,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       removeCanvasElementEventListener,
       getLayers,
       getLayersAsArray,
+      setLayers,
     }),
     [
       // for useDotting
@@ -947,6 +897,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       removeCanvasElementEventListener,
       getLayers,
       getLayersAsArray,
+      setLayers,
     ],
   );
 
