@@ -12,7 +12,14 @@ export const parameters = {
   options: {
     storySort: {
       // Introduction will be shown first
-      order: ["Introduction", "Customization", "Components", "Hooks", "Hooks/Setup"],
+      order: [
+        "Introduction",
+        "Customization",
+        "Components",
+        "Hooks",
+        "Hooks/Setup",
+        "Hooks/useDotting",
+      ],
     },
   },
 };
