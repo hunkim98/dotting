@@ -4,7 +4,6 @@ import useHandlers from "./useHandlers";
 import {
   LayerChangeParams,
   LayerDataForHook,
-  LayerProps,
   PixelModifyItem,
 } from "../components/Canvas/types";
 import { DottingRef } from "../components/Dotting";
