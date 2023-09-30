@@ -126,6 +126,10 @@ export interface DottingRef {
     listener: EventListenerOrEventListenerObject,
   ) => void;
   getLayers: () => Array<{ id: string; data: DottingData }>;
+  getLayersAsArray: () => Array<{
+    id: string;
+    data: Array<Array<PixelModifyItem>>;
+  }>;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -847,6 +851,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     return editor?.getLayers();
   }, [editor]);
 
+  const getLayersAsArray = useCallback(() => {
+    return editor?.getLayersAsArray();
+  }, [editor]);
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -894,6 +902,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       addCanvasElementEventListener,
       removeCanvasElementEventListener,
       getLayers,
+      getLayersAsArray,
     }),
     [
       // for useDotting
@@ -937,6 +946,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       addCanvasElementEventListener,
       removeCanvasElementEventListener,
       getLayers,
+      getLayersAsArray,
     ],
   );
 

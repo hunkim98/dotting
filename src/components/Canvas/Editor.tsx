@@ -659,6 +659,15 @@ export default class Editor extends EventDispatcher {
     });
   }
 
+  getLayersAsArray() {
+    return this.dataLayer.getLayers().map(layer => {
+      return {
+        id: layer.getId(),
+        data: layer.getDataArray()
+      };
+    });
+  }
+
   setSize(width: number, height: number, devicePixelRatio?: number) {
     this.setWidth(width, devicePixelRatio);
     this.setHeight(height, devicePixelRatio);
