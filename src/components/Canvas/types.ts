@@ -127,6 +127,18 @@ export type LayerChangeParams = {
 
 export type LayerChangeHandler = (params: LayerChangeParams) => void;
 
+export type CanvasInfoChangeParams = {
+  panZoom: PanZoom;
+  dimensions: Dimensions;
+  topLeftCornerOffset: Coord;
+  topRightCornerOffset: Coord;
+  bottomLeftCornerOffset: Coord;
+  bottomRightCornerOffset: Coord;
+  gridSize: number;
+};
+
+export type CanvasInfoChangeHandler = (params: CanvasInfoChangeParams) => void;
+
 export type GridIndices = {
   topRowIndex: number;
   bottomRowIndex: number;
