@@ -130,10 +130,6 @@ export type LayerChangeHandler = (params: LayerChangeParams) => void;
 
 export type CanvasInfoChangeParams = {
   panZoom: PanZoom;
-  gridCount: {
-    rowCount: number;
-    columnCount: number;
-  };
   topLeftCornerOffset: Coord;
   topRightCornerOffset: Coord;
   bottomLeftCornerOffset: Coord;
