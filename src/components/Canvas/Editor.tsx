@@ -22,6 +22,7 @@ import {
   CanvasEvents,
   CanvasGridChangeParams,
   CanvasHoverPixelChangeParams,
+  CanvasInfoChangeParams,
   CanvasStrokeEndParams,
   ColorChangeItem,
   Coord,
@@ -244,6 +245,10 @@ export default class Editor extends EventDispatcher {
       layers: this.dataLayer.getLayers(),
       currentLayer: this.dataLayer.getCurrentLayer(),
     });
+  }
+
+  emitCanvasInfoChangeEvent(parmas: CanvasInfoChangeParams) {
+    this.emit(CanvasEvents.CANVAS_INFO_CHANGE, parmas);
   }
 
   emitDataChangeEvent(params: CanvasDataChangeParams) {
@@ -930,18 +935,15 @@ export default class Editor extends EventDispatcher {
     baseColumnCount,
     baseRowCount,
   }: Partial<PanZoom> & { baseColumnCount?: number; baseRowCount?: number }) {
+    const columnCount = baseColumnCount
+      ? baseColumnCount
+      : this.dataLayer.getColumnCount();
+    const rowCount = baseRowCount ? baseRowCount : this.dataLayer.getRowCount();
     if (scale) {
       this.panZoom.scale = scale;
     }
     if (offset) {
       const correctedOffset = { ...offset };
-      const columnCount = baseColumnCount
-        ? baseColumnCount
-        : this.dataLayer.getColumnCount();
-      const rowCount = baseRowCount
-        ? baseRowCount
-        : this.dataLayer.getRowCount();
-
       // rowCount * this.gridSquareLength * this.panZoom.scale < this.height
       // Offset changes when grid is bigger than canvas
       const isGridRowsBiggerThanCanvas =
@@ -988,6 +990,41 @@ export default class Editor extends EventDispatcher {
     this.relayPanZoomToOtherLayers();
     // we must render all when panzoom changes!
     this.renderAll();
+    const leftTopPoint: Coord = {
+      x: 0,
+      y: 0,
+    };
+    const convertedLeftTopScreenPoint = convertCartesianToScreen(
+      this.element,
+      leftTopPoint,
+      this.dpr,
+    );
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLeftTopScreenPoint,
+      this.panZoom,
+    );
+    const gridSquareSize = this.gridSquareLength * this.panZoom.scale;
+    this.emitCanvasInfoChangeEvent({
+      panZoom: this.panZoom,
+      gridCount: {
+        rowCount: rowCount,
+        columnCount: columnCount,
+      },
+      gridSquareSize: gridSquareSize,
+      topLeftCornerOffset: correctedLeftTopScreenPoint,
+      topRightCornerOffset: {
+        x: correctedLeftTopScreenPoint.x + gridSquareSize * columnCount,
+        y: correctedLeftTopScreenPoint.y,
+      },
+      bottomLeftCornerOffset: {
+        x: correctedLeftTopScreenPoint.x,
+        y: correctedLeftTopScreenPoint.y + gridSquareSize * rowCount,
+      },
+      bottomRightCornerOffset: {
+        x: correctedLeftTopScreenPoint.x + gridSquareSize * columnCount,
+        y: correctedLeftTopScreenPoint.y + gridSquareSize * rowCount,
+      },
+    });
   }
 
   relayPanZoomToOtherLayers() {

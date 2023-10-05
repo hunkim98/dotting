@@ -45,6 +45,7 @@ export enum CanvasEvents {
   BRUSH_CHANGE = "brushChange",
   HOVER_PIXEL_CHANGE = "hoverPixelChange",
   LAYER_CHANGE = "layerChange",
+  CANVAS_INFO_CHANGE = "canvasInfoChange",
 }
 
 export enum BrushTool {
@@ -129,12 +130,15 @@ export type LayerChangeHandler = (params: LayerChangeParams) => void;
 
 export type CanvasInfoChangeParams = {
   panZoom: PanZoom;
-  dimensions: Dimensions;
+  gridCount: {
+    rowCount: number;
+    columnCount: number;
+  };
   topLeftCornerOffset: Coord;
   topRightCornerOffset: Coord;
   bottomLeftCornerOffset: Coord;
   bottomRightCornerOffset: Coord;
-  gridSize: number;
+  gridSquareSize: number;
 };
 
 export type CanvasInfoChangeHandler = (params: CanvasInfoChangeParams) => void;
