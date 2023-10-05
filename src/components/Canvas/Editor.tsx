@@ -247,6 +247,44 @@ export default class Editor extends EventDispatcher {
     });
   }
 
+  emitCurrentCanvasInfoStatus(baseColumnCount?: number, baseRowCount?: number) {
+    const leftTopPoint: Coord = {
+      x: 0,
+      y: 0,
+    };
+    const convertedLeftTopScreenPoint = convertCartesianToScreen(
+      this.element,
+      leftTopPoint,
+      this.dpr,
+    );
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLeftTopScreenPoint,
+      this.panZoom,
+    );
+    const gridSquareSize = this.gridSquareLength * this.panZoom.scale;
+    const columnCount = baseColumnCount
+      ? baseColumnCount
+      : this.dataLayer.getColumnCount();
+    const rowCount = baseRowCount ? baseRowCount : this.dataLayer.getRowCount();
+    this.emitCanvasInfoChangeEvent({
+      panZoom: this.panZoom,
+      topLeftCornerOffset: correctedLeftTopScreenPoint,
+      topRightCornerOffset: {
+        x: correctedLeftTopScreenPoint.x + columnCount * gridSquareSize,
+        y: correctedLeftTopScreenPoint.y,
+      },
+      bottomLeftCornerOffset: {
+        x: correctedLeftTopScreenPoint.x,
+        y: correctedLeftTopScreenPoint.y + rowCount * gridSquareSize,
+      },
+      bottomRightCornerOffset: {
+        x: correctedLeftTopScreenPoint.x + columnCount * gridSquareSize,
+        y: correctedLeftTopScreenPoint.y + rowCount * gridSquareSize,
+      },
+      gridSquareSize,
+    });
+  }
+
   emitCanvasInfoChangeEvent(parmas: CanvasInfoChangeParams) {
     this.emit(CanvasEvents.CANVAS_INFO_CHANGE, parmas);
   }
@@ -875,6 +913,7 @@ export default class Editor extends EventDispatcher {
       dimensions: this.dataLayer.getDimensions(),
       indices: this.dataLayer.getGridIndices(),
     });
+    this.emitCurrentCanvasInfoStatus();
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
@@ -914,6 +953,7 @@ export default class Editor extends EventDispatcher {
       dimensions: this.dataLayer.getDimensions(),
       indices: this.dataLayer.getGridIndices(),
     });
+    this.emitCurrentCanvasInfoStatus();
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
@@ -990,41 +1030,7 @@ export default class Editor extends EventDispatcher {
     this.relayPanZoomToOtherLayers();
     // we must render all when panzoom changes!
     this.renderAll();
-    const leftTopPoint: Coord = {
-      x: 0,
-      y: 0,
-    };
-    const convertedLeftTopScreenPoint = convertCartesianToScreen(
-      this.element,
-      leftTopPoint,
-      this.dpr,
-    );
-    const correctedLeftTopScreenPoint = getScreenPoint(
-      convertedLeftTopScreenPoint,
-      this.panZoom,
-    );
-    const gridSquareSize = this.gridSquareLength * this.panZoom.scale;
-    this.emitCanvasInfoChangeEvent({
-      panZoom: this.panZoom,
-      gridCount: {
-        rowCount: rowCount,
-        columnCount: columnCount,
-      },
-      gridSquareSize: gridSquareSize,
-      topLeftCornerOffset: correctedLeftTopScreenPoint,
-      topRightCornerOffset: {
-        x: correctedLeftTopScreenPoint.x + gridSquareSize * columnCount,
-        y: correctedLeftTopScreenPoint.y,
-      },
-      bottomLeftCornerOffset: {
-        x: correctedLeftTopScreenPoint.x,
-        y: correctedLeftTopScreenPoint.y + gridSquareSize * rowCount,
-      },
-      bottomRightCornerOffset: {
-        x: correctedLeftTopScreenPoint.x + gridSquareSize * columnCount,
-        y: correctedLeftTopScreenPoint.y + gridSquareSize * rowCount,
-      },
-    });
+    this.emitCurrentCanvasInfoStatus(baseColumnCount, baseRowCount);
   }
 
   relayPanZoomToOtherLayers() {
@@ -1227,6 +1233,7 @@ export default class Editor extends EventDispatcher {
         dimensions: updatedDimensions,
         indices: updatedGridIndices,
       });
+      this.emitCurrentCanvasInfoStatus();
     }
     this.relayDataDimensionsToLayers();
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
@@ -1302,6 +1309,7 @@ export default class Editor extends EventDispatcher {
         dimensions: updatedDimensions,
         indices: updatedGridIndices,
       });
+      this.emitCurrentCanvasInfoStatus();
     }
     this.relayDataDimensionsToLayers();
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
@@ -1994,6 +2002,7 @@ export default class Editor extends EventDispatcher {
           dimensions: updatedDimensions,
           indices: updatedGridIndices,
         });
+        this.emitCurrentCanvasInfoStatus();
       }
 
       // deletes the records of the current user
