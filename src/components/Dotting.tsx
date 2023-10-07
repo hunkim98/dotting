@@ -62,7 +62,7 @@ export interface DottingRef {
   clear: () => void;
   colorPixels: (data: Array<PixelModifyItem>) => void;
   erasePixels: (data: Array<{ rowIndex: number; columnIndex: number }>) => void;
-  downloadImage: (options?: ImageDownloadOptions) => void;
+  downloadImage: (options: ImageDownloadOptions) => void;
   setIndicatorPixels: (data: Array<PixelModifyItem>) => void;
   undo: () => void;
   redo: () => void;

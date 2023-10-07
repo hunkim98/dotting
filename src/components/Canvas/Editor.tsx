@@ -60,6 +60,7 @@ import {
   InvalidDataIndicesError,
   InvalidSquareDataError,
   LayerNotFoundError,
+  UnrecognizedDownloadOptionError,
   UnspecifiedLayerIdError,
 } from "../../utils/error";
 import EventDispatcher from "../../utils/eventDispatcher";
@@ -3142,72 +3143,132 @@ export default class Editor extends EventDispatcher {
     this.renderDataLayer();
   }
 
-  downloadImage(props?: ImageDownloadOptions) {
+  downloadImage(options: ImageDownloadOptions) {
     const data = this.dataLayer.getData();
-    const imageCanvas = document.createElement("canvas");
     const columnCount = this.getColumnCount();
     const rowCount = this.getRowCount();
-    imageCanvas.width = columnCount * this.gridSquareLength;
-    imageCanvas.height = rowCount * this.gridSquareLength;
-    const imageContext = imageCanvas.getContext("2d")!;
     const allRowKeys = getRowKeysFromData(data);
     const allColumnKeys = getColumnKeysFromData(data);
     const rowKeyOrderMap = createRowKeyOrderMapfromData(data);
     const columnKeyOrderMap = createColumnKeyOrderMapfromData(data);
-    for (const i of allRowKeys) {
-      for (const j of allColumnKeys) {
-        const rowIndex = i;
-        const columnIndex = j;
-        const relativeRowIndex = rowKeyOrderMap.get(rowIndex);
-        const relativeColumnIndex = columnKeyOrderMap.get(columnIndex);
-        const pixel = data.get(rowIndex)!.get(columnIndex);
-        if (pixel && pixel.color) {
-          const pixelCoord = {
-            x: relativeColumnIndex * this.gridSquareLength,
-            y: relativeRowIndex * this.gridSquareLength,
-          };
-          imageContext.save();
-          imageContext.fillStyle = pixel.color;
-          imageContext.fillRect(
-            pixelCoord.x,
-            pixelCoord.y,
-            this.gridSquareLength,
-            this.gridSquareLength,
-          );
-          imageContext.restore();
+    if (options.type === "png") {
+      const imageCanvas = document.createElement("canvas");
+      imageCanvas.width = columnCount * this.gridSquareLength;
+      imageCanvas.height = rowCount * this.gridSquareLength;
+      const imageContext = imageCanvas.getContext("2d")!;
+      for (const i of allRowKeys) {
+        for (const j of allColumnKeys) {
+          const rowIndex = i;
+          const columnIndex = j;
+          const relativeRowIndex = rowKeyOrderMap.get(rowIndex);
+          const relativeColumnIndex = columnKeyOrderMap.get(columnIndex);
+          const pixel = data.get(rowIndex)!.get(columnIndex);
+          if (pixel && pixel.color) {
+            const pixelCoord = {
+              x: relativeColumnIndex * this.gridSquareLength,
+              y: relativeRowIndex * this.gridSquareLength,
+            };
+            imageContext.save();
+            imageContext.fillStyle = pixel.color;
+            imageContext.fillRect(
+              pixelCoord.x,
+              pixelCoord.y,
+              this.gridSquareLength,
+              this.gridSquareLength,
+            );
+            imageContext.restore();
+          }
+        }
+        imageContext.save();
+        imageContext.strokeStyle = "#000000";
+        imageContext.lineWidth = 1;
+        if (options && options.isGridVisible) {
+          for (let i = 0; i <= this.getColumnCount(); i++) {
+            imageContext.beginPath();
+            imageContext.moveTo(i * this.gridSquareLength, 0);
+            imageContext.lineTo(
+              i * this.gridSquareLength,
+              rowCount * this.gridSquareLength,
+            );
+            imageContext.stroke();
+            imageContext.closePath();
+          }
+          for (let j = 0; j <= this.getRowCount(); j++) {
+            imageContext.beginPath();
+            imageContext.moveTo(0, j * this.gridSquareLength);
+            imageContext.lineTo(
+              columnCount * this.gridSquareLength,
+              j * this.gridSquareLength,
+            );
+            imageContext.stroke();
+            imageContext.closePath();
+          }
+        }
+        imageContext.restore();
+      }
+      const anchor = document.createElement("a");
+
+      anchor.href = imageCanvas.toDataURL("image/png");
+      anchor.download = "dotting.png";
+      anchor.click();
+    } else if (options.type === "svg") {
+      const svgDom = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+      );
+      let validTopRowIndex = rowCount - 1;
+      let validBottomRowIndex = 0;
+      let validLeftColumnIndex = columnCount - 1;
+      let validRightColumnIndex = 0;
+      const validPixelModifyItems: Array<PixelModifyItem> = [];
+
+      for (let i = 0; i < allRowKeys.length; i++) {
+        const rowKey = allRowKeys[i];
+        for (let j = 0; j < allColumnKeys.length; j++) {
+          const columnKey = allColumnKeys[j];
+          if (data.get(rowKey)?.get(columnKey)?.color) {
+            validTopRowIndex = Math.min(validTopRowIndex, rowKey);
+            validBottomRowIndex = Math.max(validBottomRowIndex, rowKey);
+            validLeftColumnIndex = Math.min(validLeftColumnIndex, columnKey);
+            validRightColumnIndex = Math.max(validRightColumnIndex, columnKey);
+            validPixelModifyItems.push({
+              rowIndex: i,
+              columnIndex: j,
+              color: data.get(rowKey)?.get(columnKey)?.color || "",
+            });
+          }
         }
       }
-      imageContext.save();
-      imageContext.strokeStyle = "#000000";
-      imageContext.lineWidth = 1;
-      if (props && props.isGridVisible) {
-        for (let i = 0; i <= this.getColumnCount(); i++) {
-          imageContext.beginPath();
-          imageContext.moveTo(i * this.gridSquareLength, 0);
-          imageContext.lineTo(
-            i * this.gridSquareLength,
-            rowCount * this.gridSquareLength,
-          );
-          imageContext.stroke();
-          imageContext.closePath();
-        }
-        for (let j = 0; j <= this.getRowCount(); j++) {
-          imageContext.beginPath();
-          imageContext.moveTo(0, j * this.gridSquareLength);
-          imageContext.lineTo(
-            columnCount * this.gridSquareLength,
-            j * this.gridSquareLength,
-          );
-          imageContext.stroke();
-          imageContext.closePath();
-        }
+      const svgWidth =
+        (validRightColumnIndex - validLeftColumnIndex + 1) *
+        this.gridSquareLength;
+      const svgHeight =
+        (validBottomRowIndex - validTopRowIndex + 1) * this.gridSquareLength;
+      svgDom.setAttribute("width", `${svgWidth}`);
+      svgDom.setAttribute("height", `${svgHeight}`);
+      for (let i = 0; validPixelModifyItems.length; i++) {
+        const { rowIndex, columnIndex, color } = validPixelModifyItems[i];
+        const svgRect = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "rect",
+        );
+        svgRect.setAttribute("x", `${columnIndex * this.gridSquareLength}`);
+        svgRect.setAttribute("y", `${rowIndex * this.gridSquareLength}`);
+        svgRect.setAttribute("width", `${this.gridSquareLength}`);
+        svgRect.setAttribute("height", `${this.gridSquareLength}`);
+        svgRect.setAttribute("fill", `${color}`);
+        svgDom.appendChild(svgRect);
       }
-      imageContext.restore();
+      const svgString = new XMLSerializer().serializeToString(svgDom);
+      const anchor = document.createElement("a");
+      anchor.href = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
+        svgString,
+      )}`;
+      anchor.download = "dotting.svg";
+      anchor.click();
+    } else {
+      throw new UnrecognizedDownloadOptionError();
     }
-    const anchor = document.createElement("a");
-    anchor.href = imageCanvas.toDataURL("image/png");
-    anchor.download = "dotting.png";
-    anchor.click();
   }
 
   renderAll() {
