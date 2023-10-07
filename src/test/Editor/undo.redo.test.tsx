@@ -292,4 +292,32 @@ describe("test for undo and redo", () => {
     expect(topRowIndexAfterRedo).toBe(topRowIndex + 1);
     expect(leftColumnIndexAfterRedo).toBe(leftColumnIndex + 1);
   });
+
+  /**
+   * TODO:
+   * 1) add test for undo and redo for LayerCreateDeleteAction and LayerReorderAction
+   * 2) add test for undo and redo for SelectAreaMoveAction and SelectAreaResizeAction
+   * Assigned to: 석재원
+   * ⬇️
+   */
+  it("undo and redo for layer create action", () => {
+    expect(1).toBe(1);
+  });
+
+  it("undo and redo for layer delete action", () => {
+    expect(1).toBe(1);
+  });
+
+  it("undo and redo for layer reorder action", () => {
+    expect(1).toBe(1);
+  });
+
+  it("undo and redo for select area move action", () => {
+    expect(1).toBe(1);
+  });
+
+  it("undo and redo for select area resize action", () => {
+    expect(1).toBe(1);
+  });
+  /** ⬆️ */
 });
