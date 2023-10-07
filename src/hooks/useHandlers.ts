@@ -5,6 +5,7 @@ import {
   CanvasDataChangeHandler,
   CanvasGridChangeHandler,
   CanvasHoverPixelChangeHandler,
+  CanvasInfoChangeHandler,
   CanvasStrokeEndHandler,
   LayerChangeHandler,
 } from "../components/Canvas/types";
@@ -95,6 +96,20 @@ const useHandlers = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
+  const addCanvasInfoChangeEventListener = useCallback(
+    (listener: CanvasInfoChangeHandler) => {
+      ref.current?.addCanvasInfoChangeEventListener(listener);
+    },
+    [ref],
+  );
+
+  const removeCanvasInfoChangeEventListener = useCallback(
+    (listener: CanvasInfoChangeHandler) => {
+      ref.current?.removeCanvasInfoChangeEventListener(listener);
+    },
+    [ref],
+  );
+
   const addCanvasElementEventListener = useCallback(
     (event: string, listener: EventListenerOrEventListenerObject) => {
       ref.current?.addCanvasElementEventListener(event, listener);
@@ -122,6 +137,8 @@ const useHandlers = (ref: MutableRefObject<DottingRef | null>) => {
     removeHoverPixelChangeListener,
     addLayerChangeEventListener,
     removeLayerChangeEventListener,
+    addCanvasInfoChangeEventListener,
+    removeCanvasInfoChangeEventListener,
     // Below are for canvas element listener
     addCanvasElementEventListener,
     removeCanvasElementEventListener,
