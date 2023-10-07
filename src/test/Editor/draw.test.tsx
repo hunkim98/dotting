@@ -1,7 +1,4 @@
-import { fireEvent } from "@testing-library/react";
-import { DefaultButtonHeight } from "../../components/Canvas/config";
 import Editor from "../../components/Canvas/Editor";
-import { FakeMouseEvent } from "../../utils/testUtils";
 
 describe("test for drawing interaction", () => {
   let editor: Editor;
