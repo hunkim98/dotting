@@ -1,6 +1,9 @@
+import { fireEvent } from "@testing-library/react";
+import { DefaultButtonHeight } from "../../components/Canvas/config";
 import Editor from "../../components/Canvas/Editor";
+import { FakeMouseEvent } from "../../utils/testUtils";
 
-describe("test for color pixel method in Editor", () => {
+describe("test for drawing interaction", () => {
   let editor: Editor;
   let canvasElement: HTMLCanvasElement;
   beforeEach(() => {
@@ -39,23 +42,15 @@ describe("test for color pixel method in Editor", () => {
 
   /**
    * TODO:
-   * 1. test colorPixels method for single item
-   * 2. test colorPixels method for multiple items
-   * Assigned to: 권혁범
+   * 1. test if bressenhamindices work when mouse is moved around the canvas
+   *    (hint: use FakeMouseEvent, refer to extension.test.tsx for example)
+   * Assigned to: 방호찬
    * ⬇️
    */
-  it("test color pixel for a single item", () => {
+  it("test if bressenhamindces work when mouse is moved along the canvas", () => {
     expect(1).toBe(1);
   });
-
-  it("test color pixel for multiple items", () => {
-    expect(1).toBe(1);
-  });
-
-  it("test color pixel for items that are out of bounds", () => {
-    expect(1).toBe(1);
-  });
-  // add more tests below...
-  // Remind to test for all cases in if-else statements
+  // You do not need to add additional tests!
+  // Just make sure that the test above is working!
   /** ⬆️ */
 });

@@ -319,5 +319,7 @@ describe("test for undo and redo", () => {
   it("undo and redo for select area resize action", () => {
     expect(1).toBe(1);
   });
+  // add more tests below...
+  // Remind to test for all cases in if-else statements
   /** ⬆️ */
 });

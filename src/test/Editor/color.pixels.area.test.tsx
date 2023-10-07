@@ -1,6 +1,6 @@
 import Editor from "../../components/Canvas/Editor";
 
-describe("test for color pixel method in Editor", () => {
+describe("test for color pixels area", () => {
   let editor: Editor;
   let canvasElement: HTMLCanvasElement;
   beforeEach(() => {
@@ -39,20 +39,13 @@ describe("test for color pixel method in Editor", () => {
 
   /**
    * TODO:
-   * 1. test colorPixels method for single item
-   * 2. test colorPixels method for multiple items
-   * Assigned to: 권혁범
+   * 1. test colorPixelsArea method
+   * 2. test if colorPixelsArea method is called correctly when mouse is down in canvas
+   *    (hint: use FakeMouseEvent, refer to extension.test.tsx for example)
+   * Assigned to: 조유진
    * ⬇️
    */
-  it("test color pixel for a single item", () => {
-    expect(1).toBe(1);
-  });
-
-  it("test color pixel for multiple items", () => {
-    expect(1).toBe(1);
-  });
-
-  it("test color pixel for items that are out of bounds", () => {
+  it("test color pixels area function", () => {
     expect(1).toBe(1);
   });
   // add more tests below...
