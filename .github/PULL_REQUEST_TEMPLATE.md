@@ -1,4 +1,4 @@
-🚀 [Related Issue: #]
+🚀 [Resolves: #]
 
 ### Preview
 
@@ -32,10 +32,9 @@
 
 ## Notes
 
-- There are some things that I would like to discuss with you.
-  2
-  <br/>
+<!-- Write a note if you have any -->
+<br/>
 
 ## Next Up?
 
-- I will continue to develop this feature.
+<!-- Write your next plans if you have any -->
