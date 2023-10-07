@@ -18,6 +18,7 @@ import {
   CanvasEvents,
   CanvasGridChangeHandler,
   CanvasHoverPixelChangeHandler,
+  CanvasInfoChangeHandler,
   CanvasStrokeEndHandler,
   DeleteGridIndicesParams,
   DottingData,
@@ -116,6 +117,10 @@ export interface DottingRef {
   ) => void;
   addLayerChangeEventListener: (listener: LayerChangeHandler) => void;
   removeLayerChangeEventListener: (listener: LayerChangeHandler) => void;
+  addCanvasInfoChangeEventListener: (listener: CanvasInfoChangeHandler) => void;
+  removeCanvasInfoChangeEventListener: (
+    listener: CanvasInfoChangeHandler,
+  ) => void;
   // for canvas element event listeners
   addCanvasElementEventListener: (
     type: string,
@@ -163,6 +168,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   >([]);
   const [layerChangeListeners, setLayerChangeListeners] = useState<
     LayerChangeHandler[]
+  >([]);
+  const [canvasInfoChangeListeners, setCanvasInfoChangeListeners] = useState<
+    CanvasInfoChangeHandler[]
   >([]);
 
   const [canvasElementEventListeners, setCanvasElementEventListeners] =
@@ -333,6 +341,21 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       });
     };
   }, [editor, layerChangeListeners]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    canvasInfoChangeListeners.forEach(listener => {
+      editor.addEventListener(CanvasEvents.CANVAS_INFO_CHANGE, listener);
+    });
+    editor.emitCurrentCanvasInfoStatus();
+    return () => {
+      canvasInfoChangeListeners.forEach(listener => {
+        editor?.removeEventListener(CanvasEvents.CANVAS_INFO_CHANGE, listener);
+      });
+    };
+  }, [editor, canvasInfoChangeListeners]);
 
   // The below is to add event listeners directly to the canvas element
   // E.g. for mousemove, mousedown, mouseup, etc.
@@ -555,6 +578,23 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     (listener: CanvasHoverPixelChangeHandler) => {
       editor.removeEventListener(CanvasEvents.HOVER_PIXEL_CHANGE, listener);
       setHoverPixelChangeListeners(listeners =>
+        listeners.filter(l => l !== listener),
+      );
+    },
+    [editor],
+  );
+
+  const addCanvasInfoChangeEventListener = useCallback(
+    (listener: CanvasInfoChangeHandler) => {
+      setCanvasInfoChangeListeners(listeners => [...listeners, listener]);
+    },
+    [],
+  );
+
+  const removeCanvasInfoChangeEventListener = useCallback(
+    (listener: CanvasInfoChangeHandler) => {
+      editor.removeEventListener(CanvasEvents.CANVAS_INFO_CHANGE, listener);
+      setCanvasInfoChangeListeners(listeners =>
         listeners.filter(l => l !== listener),
       );
     },
@@ -847,6 +887,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       removeHoverPixelChangeListener,
       addLayerChangeEventListener,
       removeLayerChangeEventListener,
+      addCanvasInfoChangeEventListener,
+      removeCanvasInfoChangeEventListener,
       // for canvas element listener
       addCanvasElementEventListener,
       removeCanvasElementEventListener,
@@ -892,6 +934,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       removeHoverPixelChangeListener,
       addLayerChangeEventListener,
       removeLayerChangeEventListener,
+      addCanvasInfoChangeEventListener,
+      removeCanvasInfoChangeEventListener,
       // for canvas element listener
       addCanvasElementEventListener,
       removeCanvasElementEventListener,
