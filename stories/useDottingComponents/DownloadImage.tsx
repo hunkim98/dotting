@@ -20,12 +20,30 @@ const DownloadImage = () => {
         style={{
           padding: "5px 10px",
           background: "none",
+          marginTop: 15,
+        }}
+        onClick={() =>
+          downloadImage({
+            type: "png",
+          })
+        }
+      >
+        Download as PNG
+      </button>
+      <button
+        style={{
+          padding: "5px 10px",
+          background: "none",
           marginTop: 10,
           marginBottom: 50,
         }}
-        onClick={() => downloadImage()}
+        onClick={() =>
+          downloadImage({
+            type: "svg",
+          })
+        }
       >
-        Download
+        Download as SVG
       </button>
     </div>
   );
