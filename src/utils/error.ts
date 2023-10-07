@@ -64,3 +64,10 @@ export class LayerNotFoundError extends DottingError {
     super(`Layer ${layerId} not found.`);
   }
 }
+
+export class UnrecognizedDownloadOptionError extends DottingError {
+  name = "UnrecognizedDownloadOptionError";
+  constructor() {
+    super(`Unrecognized download option.`);
+  }
+}

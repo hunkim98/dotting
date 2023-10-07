@@ -23,6 +23,7 @@ export type PixelData = {
 
 export interface ImageDownloadOptions {
   isGridVisible?: boolean;
+  type: "png" | "svg";
 }
 
 export type DottingData = Map<number, Map<number, PixelData>>;
