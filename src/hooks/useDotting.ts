@@ -29,7 +29,7 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
   );
 
   const downloadImage = useCallback(
-    (options?: ImageDownloadOptions) => {
+    (options: ImageDownloadOptions) => {
       ref.current?.downloadImage(options);
     },
     [ref],

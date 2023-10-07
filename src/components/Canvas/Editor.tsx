@@ -60,6 +60,7 @@ import {
   InvalidDataIndicesError,
   InvalidSquareDataError,
   LayerNotFoundError,
+  NoDataToMakeSvgError,
   UnrecognizedDownloadOptionError,
   UnspecifiedLayerIdError,
 } from "../../utils/error";
@@ -3151,6 +3152,8 @@ export default class Editor extends EventDispatcher {
     const allColumnKeys = getColumnKeysFromData(data);
     const rowKeyOrderMap = createRowKeyOrderMapfromData(data);
     const columnKeyOrderMap = createColumnKeyOrderMapfromData(data);
+    const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
+      getGridIndicesFromData(data);
     if (options.type === "png") {
       const imageCanvas = document.createElement("canvas");
       imageCanvas.width = columnCount * this.gridSquareLength;
@@ -3226,7 +3229,8 @@ export default class Editor extends EventDispatcher {
         const rowKey = allRowKeys[i];
         for (let j = 0; j < allColumnKeys.length; j++) {
           const columnKey = allColumnKeys[j];
-          if (data.get(rowKey)?.get(columnKey)?.color) {
+          const color = data.get(rowKey)?.get(columnKey)?.color;
+          if (color) {
             validTopRowIndex = Math.min(validTopRowIndex, rowKey);
             validBottomRowIndex = Math.max(validBottomRowIndex, rowKey);
             validLeftColumnIndex = Math.min(validLeftColumnIndex, columnKey);
@@ -3234,11 +3238,14 @@ export default class Editor extends EventDispatcher {
             validPixelModifyItems.push({
               rowIndex: i,
               columnIndex: j,
-              color: data.get(rowKey)?.get(columnKey)?.color || "",
+              color: color,
             });
           }
         }
       }
+      const validTopRowIndexOrder = rowKeyOrderMap.get(validTopRowIndex);
+      const validLeftColumnIndexOrder =
+        columnKeyOrderMap.get(validLeftColumnIndex);
       const svgWidth =
         (validRightColumnIndex - validLeftColumnIndex + 1) *
         this.gridSquareLength;
@@ -3246,14 +3253,25 @@ export default class Editor extends EventDispatcher {
         (validBottomRowIndex - validTopRowIndex + 1) * this.gridSquareLength;
       svgDom.setAttribute("width", `${svgWidth}`);
       svgDom.setAttribute("height", `${svgHeight}`);
-      for (let i = 0; validPixelModifyItems.length; i++) {
+      if (validPixelModifyItems.length === 0) {
+        throw new NoDataToMakeSvgError();
+      }
+      for (let i = 0; i < validPixelModifyItems.length; i++) {
         const { rowIndex, columnIndex, color } = validPixelModifyItems[i];
         const svgRect = document.createElementNS(
           "http://www.w3.org/2000/svg",
           "rect",
         );
-        svgRect.setAttribute("x", `${columnIndex * this.gridSquareLength}`);
-        svgRect.setAttribute("y", `${rowIndex * this.gridSquareLength}`);
+        const correctedRowIndex = rowIndex - validTopRowIndexOrder;
+        const correctedColumnIndex = columnIndex - validLeftColumnIndexOrder;
+        svgRect.setAttribute(
+          "y",
+          `${correctedRowIndex * this.gridSquareLength}`,
+        );
+        svgRect.setAttribute(
+          "x",
+          `${correctedColumnIndex * this.gridSquareLength}`,
+        );
         svgRect.setAttribute("width", `${this.gridSquareLength}`);
         svgRect.setAttribute("height", `${this.gridSquareLength}`);
         svgRect.setAttribute("fill", `${color}`);

@@ -71,3 +71,10 @@ export class UnrecognizedDownloadOptionError extends DottingError {
     super(`Unrecognized download option.`);
   }
 }
+
+export class NoDataToMakeSvgError extends DottingError {
+  name = "NoDataToMakeSvgError";
+  constructor() {
+    super(`No data to make svg.`);
+  }
+}
