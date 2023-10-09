@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import {
-  CanvasHoverPixelChangeHandler,
   CanvasInfoChangeHandler,
 } from "../../src/components/Canvas/types";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
