@@ -13,6 +13,7 @@ import {
   HoverPixelListener,
   CanvasElementEvents,
   DataChangeListener,
+  CanvasInfoChangeListener,
 } from "./useHandlersComponents";
 
 <Meta title="Hooks/useHandlers" />
@@ -232,185 +233,198 @@ The events that you can listen to are:
   </thead>
   <tbody>
     <tr>
-      <td>`addDataChangeListener(listener: CanvasDataChangeHandler)`</td>
+      <td>`addDataChangeListener`</td>
       <td>
         Allows you to listen to data change events. This event is triggered when the user draws on the canvas.
         The `delta` parameter tells you the exact changes that happened on the canvas.
       </td>
       <td> 
-        `CanvasDataChangeHandler`
-        ```ts
-        export type CanvasDataChangeParams = {
-          isLocalChange: boolean;
-          data: DottingData;
-          layerId: string;
-          delta?: CanvasDelta;
-        };
-        export type CanvasDataChangeHandler = (params: CanvasDataChangeParams) => void;
-        export type DottingData = Map<number, Map<number, PixelData>>;
-        export type PixelData = {
-            color: string;
-        };
-        epxort type CanvasDelta = {
-          modifiedPixels: Array<PixelModifyItem>;
-            addedOrDeletedRows?: Array<{
-              isDelete: boolean;
-              index: number;
-            }>;
-            addedOrDeletedColumns?: Array<{
-              isDelete: boolean;
-              index: number;
-            }>;
-        }
-        ```
+        `CanvasDataChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section1");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 1</u>.
       </td>
     </tr>
     <tr>
-      <td>`removeDataChangeListener(listener: CanvasDataChangeHandler)`</td>
+      <td>`removeDataChangeListener`</td>
       <td>
         Allows you to remove a data change listener
       </td>
-      <td>`CanvasDataChangeHandler`</td>
+      <td>`CanvasDataChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section1");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 1</u>.</td>
     </tr>
     <tr>
-      <td>`addGridChangeListener(listener: CanvasGridChangeHandler)`</td>
+      <td>`addGridChangeListener`</td>
       <td>
         Allows you to the listen to grid change events.
       </td>
       <td>
-        `CanvasGridChangeHandler`
-        ```ts
-        export type CanvasGridChangeParams = {
-          dimensions: {
-            columnCount: number;
-            rowCount: number;
-          };
-          indices: {
-            topRowIndex: number;
-            bottomRowIndex: number;
-            leftColumnIndex: number;
-            rightColumnIndex: number;
-          };
-        };
-
-        export type CanvasGridChangeHandler = (params: CanvasGridChangeParams) => void;
-        ```
+        `CanvasGridChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section2");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 2</u>.
       </td>
     </tr>
     <tr>
-      <td>`removeGridChangeListener(listener: CanvasGridChangeHandler)`</td>
+      <td>`removeGridChangeListener`</td>
       <td>
         Allows you to remove a grid change listener
       </td>
-      <td>`CanvasGridChangeHandler`</td>
+      <td>`CanvasGridChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section2");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 2</u>.</td>
     </tr>
     <tr>
-      <td>`addBrushChangeListener(listener: CanvasBrushChangeHandler)`</td>
+      <td>`addBrushChangeListener`</td>
       <td>
         Allows you to listen to brush change events
       </td>
       <td>
-        `CanvasBrushChangeHandler`
-        ```ts
-        export type CanvasBrushChangeParams = {
-          brushColor: string;
-          brushTool: BrushTool;
-        };
-
-        export type CanvasBrushChangeHandler = (
-          params: CanvasBrushChangeParams,
-        ) => void;
-
-        export enum BrushTool {
-          DOT = "DOT",
-          ERASER = "ERASER",
-          PAINT_BUCKET = "PAINT_BUCKET",
-          SELECT = "SELECT",
-        }
-        ```
+        `CanvasBrushChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section3");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 3</u>.
       </td>
     </tr>
     <tr>
-      <td>`removeBrushChangeListener(listener: CanvasBrushChangeHandler)`</td>
+      <td>`removeBrushChangeListener`</td>
       <td>
         Allows you to remove a brush change listener
       </td>
-      <td>`CanvasBrushChangeHandler`</td>
+      <td>`CanvasBrushChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section3");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 3</u>.</td>
     </tr>
     <tr>
-      <td>`addStrokeEndListener(listener: CanvasStrokeEndHandler)`</td>
+      <td>`addStrokeEndListener`</td>
       <td>
         Allows you to add a listener to stroke end events
       </td>
       <td>
-        `CanvasStrokeEndHandler`
-        ```ts
-
-        export type CanvasStrokeEndParams = {
-          strokedPixels: Array<ColorChangeItem>;
-          data: DottingData;
-          strokeTool: BrushTool;
-        };
-
-        export type CanvasStrokeEndHandler = (params: CanvasStrokeEndParams) => void;
-
-        export interface ColorChangeItem {
-            rowIndex: number;
-            columnIndex: number;
-            color: string;
-            previousColor: string;
-        }
-        export type DottingData = Map<number, Map<number, PixelData>>;
-        export type PixelData = {
-            color: string;
-        };
-        ```
+        `CanvasStrokeEndHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section4");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 4</u>.
       </td>
     </tr>
     <tr>
-      <td>`removeStrokeEndListener(listener: CanvasStrokeEndHandler)`</td>
+      <td>`removeStrokeEndListener`</td>
       <td>
         Allows you to remove a stroke end listener
       </td>
-      <td>`CanvasStrokeEndHandler`</td>
+      <td>`CanvasStrokeEndHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section4");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 4</u>.</td>
     </tr>
     <tr>
-      <td>`addHoverPixelChangeListener(listener: CanvasHoverPixelChangeHandler)`</td>
+      <td>`addHoverPixelChangeListener`</td>
       <td>
         Allows you to listen to hover pixel change events
       </td>
       <td>
-        `CanvasHoverPixelChangeHandler`
-        ```ts
-        export type CanvasHoverPixelChangeHandler = ({
-          indices: {
-            rowIndex: number;
-            columnIndex: number;
-          } | null
-        }) => void;
-        ```
+        `CanvasHoverPixelChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section5");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 5</u>.
+
       </td>
     </tr>
     <tr>
-      <td>`removeHoverPixelChangeListener(listener: CanvasHoverPixelChangeHandler)`</td>
+      <td>`removeHoverPixelChangeListener`</td>
       <td>
         Allows you to remove pixel change listener
       </td>
-      <td>`CanvasHoverPixelChangeHandler`</td>
+      <td>`CanvasHoverPixelChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section5");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 5</u>.</td>
     </tr>
      <tr>
-      <td>`addCanvasElementEventListener(event: string, listener: EventListenerOrEventListenerObject) `</td>
+      <td>`addCanvasElementEventListener`</td>
       <td>
         Allows you to directly add event listeners to the canvas element (E.g. `mousemove`)
       </td>
-      <td>`string`, `EventListenerOrEventListenerObject`</td>
+      <td>`string`, `EventListenerOrEventListenerObject` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section6");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 6</u>.</td>
     </tr>
      <tr>
-      <td>`removeCanvasElementEventListener(event: string, listener: EventListenerOrEventListenerObject)`</td>
+      <td>`removeCanvasElementEventListener`</td>
       <td>
         Allows you to directly remove event listeners from the canvas element
       </td>
-      <td>`string`, `EventListenerOrEventListenerObject`</td>
+      <td>`string`, `EventListenerOrEventListenerObject` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section6");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 6</u>.</td>
+    </tr>
+    <tr>
+      <td>`addCanvasInfoChangeListener`</td>
+      <td>
+        Allows you to listen to canvas info `panZoom`, `topLeftCornerOffset`, `topRightCornerOffset`, `bottomLeftCornerOffset`, `bottomRightCornerOffset`, `gridSquareSize` change events
+      </td>
+      <td>`CanvasInfoChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section7");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 7</u>.</td>
+    </tr>
+     <tr>
+      <td>`removeCanvasInfoChangeListener`</td>
+      <td>
+        Allows you to remove listeners of canvas info change events
+      </td>
+      <td>`CanvasInfoChangeHandler` For more information about the type, please refer to
+        <u onClick={() => {
+          const el = document.getElementById("section7");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }} style={{cursor: "pointer"}}>section 7</u>.</td>
     </tr>
 
   </tbody>
@@ -418,32 +432,244 @@ The events that you can listen to are:
 
 ### Examples
 
-#### 1. Data change listener `addDataChangeListener`, `removeDataChangeListener`
+<div id="section1"></div>
+#### 1. Data change listener
+
+`addDataChangeListener`, `removeDataChangeListener`
 
 With data change listeners, you can observe the changes when the user draws on the canvas.
 You can check the `delta` parameter to see the exact changes that happened on the canvas.
 
+The params you should pass to the listener is `CanvasDataChangeParams`:
+
+```ts
+export type CanvasDataChangeParams = {
+  isLocalChange: boolean;
+  data: DottingData;
+  layerId: string;
+  delta?: CanvasDelta;
+};
+
+export type CanvasDataChangeHandler = (params: CanvasDataChangeParams) => void;
+```
+
+`DottingData` is a map of `rowIndex` to `columnIndex` to `PixelData`
+It contains information about the current colored areas of the canvas:
+
+```ts
+export type DottingData = Map<number, Map<number, PixelData>>;
+
+export type PixelData = {
+  color: string;
+};
+```
+
+`CanvasDelta` is an object that contains information about the changes that happened on the canvas.
+The `modifiedPixels` tells you what pixels have been modified.
+The `addedOrDeletedRows` and `addedOrDeletedColumns` tell you what rows and columns have been added or deleted.
+
+```ts
+export type CanvasDelta = {
+  modifiedPixels: Array<PixelModifyItem>;
+  addedOrDeletedRows?: Array<{
+    isDelete: boolean;
+    index: number;
+  }>;
+  addedOrDeletedColumns?: Array<{
+    isDelete: boolean;
+    index: number;
+  }>;
+};
+```
+
 <DataChangeListener />
 
-#### 2. Stroke end listener `addStrokeEndListener`, `removeStrokeEndListener`
+<div id="section2"></div>
+#### 2. Grid Change listener
 
-With stroke end related listeners, you can observer the changes when the user ends the stroke.
+`addGridChangeListener`, `removeGridChangeListener`
+
+With grid change listeners, you can observe changes in the grids
+
+The params you should pass to the listener is `CanvasGridChangeParams`.
+With the canvas grid change params, you can know the dimensions and the 4 indices of the canvas grid.
+
+```ts
+export type CanvasGridChangeParams = {
+  dimensions: {
+    columnCount: number;
+    rowCount: number;
+  };
+  indices: {
+    topRowIndex: number;
+    bottomRowIndex: number;
+    leftColumnIndex: number;
+    rightColumnIndex: number;
+  };
+};
+
+export type CanvasGridChangeHandler = (params: CanvasGridChangeParams) => void;
+```
+
+<br />
+
+<div id="section3"></div>
+#### 3. Brush Change Listener
+
+`addBrushChangeListener`, `removeBrushChangeListener`
+
+Brush change listeners allows you to observe the changes when the user changes the brush tool or the brush color.
+The parameter you should pass to the listener is defiend as below
+
+```ts
+export type CanvasBrushChangeParams = {
+  brushColor: string;
+  brushTool: BrushTool;
+};
+
+export type CanvasBrushChangeHandler = (
+  params: CanvasBrushChangeParams,
+) => void;
+```
+
+The brush tool is an enum that you can import from the library.
+Currently we have four tools
+
+```ts
+export enum BrushTool {
+  DOT = "DOT",
+  ERASER = "ERASER",
+  PAINT_BUCKET = "PAINT_BUCKET",
+  SELECT = "SELECT",
+}
+```
+
+<br />
+
+<div id="section4"></div>
+#### 4. Stroke end listener{" "}
+
+`addStrokeEndListener`, `removeStrokeEndListener`
+
+With stroke end related listeners, you can observe the changes when the user ends the stroke.
+
+The stroke end listener tells you whate pixels were stroked and what tool was used for stroking them
+Additionally you can get the `DottingData` which is a map of `rowIndex` to `columnIndex` to `PixelData`
+
+The params you should pass to the listener is `CanvasStrokeEndParams`:
+
+```ts
+export type CanvasStrokeEndParams = {
+  strokedPixels: Array<ColorChangeItem>;
+  data: DottingData;
+  strokeTool: BrushTool;
+};
+
+export type CanvasStrokeEndHandler = (params: CanvasStrokeEndParams) => void;
+```
+
+The `ColorChangeItem` is defined as below.
+You are able to get the previous color and the current color of the pixel.
+
+```ts
+export interface ColorChangeItem {
+  rowIndex: number;
+  columnIndex: number;
+  color: string;
+  previousColor: string;
+}
+```
+
+The `DottingData` is defined as below.
+It is a map of `rowIndex` to `columnIndex` to `PixelData`.
+
+```ts
+export type DottingData = Map<number, Map<number, PixelData>>;
+export type PixelData = {
+  color: string;
+};
+```
 
 <StrokeListener />
 
-#### 3. Hover Pixel Change Listener `addHoverPixelChangeListener`, `removeHoverPixelChangeListener`
+<div id="section5"></div>
+#### 5. Hover Pixel Change Listener{" "}
+
+`addHoverPixelChangeListener`, `removeHoverPixelChangeListener`
 
 With the hover pixel change listener, you can observe the changes when the user hovers over the canvas.
 When there is no hovered pixel, the return value will be `null`
 
+The params you should pass to the listener is `CanvasHoverPixelChangeHandler`:
+
+```ts
+export type CanvasHoverPixelChangeHandler = ({
+  indices: {
+    rowIndex: number;
+    columnIndex: number;
+  } | null
+}) => void;
+```
+
 <HoverPixelListener />
 
-#### 4. Canvas Element Custom Event Listener `addCanvasElementEventListener`, `removeCanvasElementEventListener`
+<div id="section6"></div>
+#### 6. Canvas Element Custom Event Listener
+
+`addCanvasElementEventListener`, `removeCanvasElementEventListener`
 
 You can also directly add event listeners to the canvas element.
 This is useful when you want to listen to events that are not provided by the library.
 
+The parameter you should pass to the listener is `CanvasElementEventParams`:
+
+```ts
+export type CanvasElementEventParams = {
+  eventName: string;
+  listener: EventListenerOrEventListenerObject;
+};
+```
+
 <CanvasElementEvents />
+
+<div id="section7"></div>
+#### 7. Canvas Info Change Event Listener
+
+`addCanvasElementEventListener`,`removeCanvasElementEventListener`
+
+You can listen to canvas info change events with `addCanvasInfoChangeListener`.
+The info you can get from the event is:
+
+```ts
+export type CanvasInfoChangeParams = {
+  panZoom: PanZoom;
+  topLeftCornerOffset: Coord;
+  topRightCornerOffset: Coord;
+  bottomLeftCornerOffset: Coord;
+  bottomRightCornerOffset: Coord;
+  gridSquareSize: number;
+};
+```
+
+The PanZoom object is:
+
+```ts
+export type PanZoom = {
+  scale: number;
+  offset: Coord;
+};
+```
+
+and the Coord object is:
+
+```ts
+export interface Coord {
+  x: number;
+  y: number;
+}
+```
+
+<CanvasInfoChangeListener />
 
 <div className="subheading">Example Source Codes</div>
 
