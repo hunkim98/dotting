@@ -71,7 +71,6 @@ import {
   convertCartesianToScreen,
   diffPoints,
   getScreenPoint,
-  getWorldPoint,
   lerpRanges,
 } from "../../utils/math";
 import {
@@ -83,7 +82,6 @@ import {
   convertWorldPosAreaToPixelGridArea,
   returnScrollOffsetFromMouseOffset,
   getDoesAreaOverlapPixelgrid,
-  getPointFromTouch,
   getCenterCartCoordFromTwoTouches,
 } from "../../utils/position";
 import Queue from "../../utils/queue";
