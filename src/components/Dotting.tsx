@@ -852,7 +852,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const onMouseDown = useCallback(
     (e: { offsetX: number; offsetY: number }) => {
-      const fakeMouseEvent = new FakeMouseEvent("mousedown", e);
+      const fakeMouseEvent = new MouseEvent("mousedown", {
+        clientX: e.offsetX,
+        clientY: e.offsetY,
+      });
       editor?.onMouseDown(fakeMouseEvent as TouchyEvent);
     },
     [editor],
@@ -860,7 +863,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const onMouseMove = useCallback(
     (e: { offsetX: number; offsetY: number }) => {
-      const fakeMouseEvent = new FakeMouseEvent("mousemove", e);
+      const fakeMouseEvent = new MouseEvent("mousemove", {
+        clientX: e.offsetX,
+        clientY: e.offsetY,
+      });
       editor?.onMouseMove(fakeMouseEvent as TouchyEvent);
     },
     [editor],
@@ -868,7 +874,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
 
   const onMouseUp = useCallback(
     (e: { offsetX: number; offsetY: number }) => {
-      const fakeMouseEvent = new FakeMouseEvent("mouseup", e);
+      const fakeMouseEvent = new MouseEvent("mouseup", {
+        clientX: e.offsetX,
+        clientY: e.offsetY,
+      });
       editor?.onMouseUp(fakeMouseEvent as TouchyEvent);
     },
     [editor],

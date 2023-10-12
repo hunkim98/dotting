@@ -122,7 +122,7 @@ export default class Editor extends EventDispatcher {
   };
   private isPanZoomable = true;
   private isAltPressed = false;
-  private mouseMode: MouseMode = MouseMode.PANNING;
+  private mouseMode: MouseMode = MouseMode.NULL;
   private brushTool: BrushTool = BrushTool.DOT;
 
   private mouseDownWorldPos: Coord | null = null;
@@ -495,7 +495,10 @@ export default class Editor extends EventDispatcher {
   }
 
   styleMouseCursor = (mouseCoord: Coord) => {
-    const hoveredButton = this.gridLayer.getHoveredButton();
+    let hoveredButton: ButtonDirection = this.detectButtonClicked(mouseCoord);
+    if (this.mouseMode === MouseMode.EXTENDING) {
+      hoveredButton = this.extensionPoint.direction;
+    }
     if (hoveredButton) {
       switch (hoveredButton) {
         case ButtonDirection.TOP:
@@ -1652,15 +1655,7 @@ export default class Editor extends EventDispatcher {
   };
 
   handlePanning = (evt: TouchyEvent) => {
-    if (!this.isPanZoomable) {
-      return;
-    }
     const lastMousePos = this.panPoint.lastMousePos;
-    // if (window.TouchEvent && evt instanceof TouchEvent) {
-    //   if (evt.touches.length > 1) {
-    //     return;
-    //   }
-    // }
     const point = getPointFromTouchyEvent(evt, this.element, this.panZoom);
     const currentMousePos: Coord = { x: point.offsetX, y: point.offsetY };
     this.panPoint.lastMousePos = currentMousePos;
@@ -2485,15 +2480,22 @@ export default class Editor extends EventDispatcher {
         if (buttonDirection) {
           this.extensionPoint.direction = buttonDirection;
           this.mouseMode = MouseMode.EXTENDING;
-          touchy(this.element, addEvent, "mousemove", this.handleExtension);
+          // touchy(this.element, addEvent, "mousemove", this.handleExtension);
         }
       }
     }
 
     if (this.mouseMode === MouseMode.PANNING) {
-      touchy(this.element, addEvent, "mousemove", this.handlePanning);
-      touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
+      if (evt.touches && evt.touches.length > 1) {
+        this.mouseMode = MouseMode.PINCHZOOMING;
+        // touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
+      } else {
+        this.mouseMode = MouseMode.PANNING;
+        // touchy(this.element, addEvent, "mousemove", this.handlePanning);
+      }
     }
+
+    this.previousMouseMoveWorldPos = this.mouseDownWorldPos;
   }
 
   private getColoredPixelsInSelectedArea(
@@ -2543,16 +2545,16 @@ export default class Editor extends EventDispatcher {
 
   onMouseMove(evt: TouchyEvent) {
     evt.preventDefault();
-    if (
-      window.TouchEvent &&
-      evt instanceof TouchEvent &&
-      evt.touches.length > 1
-    ) {
-      // the user can use two fingers while drawing
-      // we should change the mode to panning mode (zooming mode)
-      touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
-      return;
-    }
+    // if (
+    //   window.TouchEvent &&
+    //   evt instanceof TouchEvent &&
+    //   evt.touches.length > 1
+    // ) {
+    //   // the user can use two fingers while drawing
+    //   // we should change the mode to panning mode (zooming mode)
+    //   touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
+    //   return;
+    // }
     const mouseCartCoord = getMouseCartCoord(
       evt,
       this.element,
@@ -2563,120 +2565,186 @@ export default class Editor extends EventDispatcher {
       x: mouseCartCoord.x,
       y: mouseCartCoord.y,
     };
+
     this.styleMouseCursor(mouseCartCoord);
-    // rowKeyOrderMap is a sorted map of rowKeys
-    const rowIndices = Array.from(this.dataLayer.getRowKeyOrderMap().keys());
-    // columnKeyOrderMap is a sorted map of columnKeys
-    const columnIndices = Array.from(
-      this.dataLayer.getColumnKeyOrderMap().keys(),
-    );
-    const pixelIndex = getPixelIndexFromMouseCartCoord(
-      mouseCartCoord,
-      rowIndices,
-      columnIndices,
-      this.gridSquareLength,
-    );
-    const hoveredPixel = this.interactionLayer.getHoveredPixel();
-    if (this.brushTool === BrushTool.SELECT) {
-      const previousSelectingArea = this.interactionLayer.getSelectingArea();
-      const previousSelectedArea = this.interactionLayer.getSelectedArea();
-      const previousSelectedAreaPixels =
-        this.interactionLayer.getSelectedAreaPixels();
-      const movingSelectedPixels =
-        this.interactionLayer.getMovingSelectedPixels();
-      // mouseDownWorldPos may be null
-      const directionToExtendSelectedArea =
-        this.interactionLayer.getDirectionToExtendSelectedArea();
 
-      if (directionToExtendSelectedArea !== null) {
-        // if there is a direction to extend selected area, it means that there is a selected area
-        this.interactionLayer.extendSelectedArea(
-          directionToExtendSelectedArea,
-          this.mouseMoveWorldPos,
-          this.isAltPressed,
-        );
-        this.gridLayer.render();
-        this.gridLayer.renderSelection(
-          this.interactionLayer.getExtendingSelectedArea(),
-        );
-        this.interactionLayer.render();
-      }
-      if (
-        movingSelectedPixels &&
-        this.mouseDownWorldPos &&
-        previousSelectedArea
-      ) {
-        const mouseMoveDistance = diffPoints(
-          this.mouseDownWorldPos,
-          this.mouseMoveWorldPos,
-        );
-        const pixelWiseDeltaX = Math.round(
-          mouseMoveDistance.x / this.gridSquareLength,
-        );
-        const pixelWiseDeltaY = Math.round(
-          mouseMoveDistance.y / this.gridSquareLength,
-        );
-        const newMovingSelectedPixels = previousSelectedAreaPixels.map(
-          pixel => {
-            return {
-              ...pixel,
-              rowIndex: pixel.rowIndex - pixelWiseDeltaY,
-              columnIndex: pixel.columnIndex - pixelWiseDeltaX,
-            };
-          },
-        );
-        this.interactionLayer.setMovingSelectedArea({
-          startWorldPos: {
-            x:
-              previousSelectedArea.startWorldPos.x -
-              pixelWiseDeltaX * this.gridSquareLength,
-            y:
-              previousSelectedArea.startWorldPos.y -
-              pixelWiseDeltaY * this.gridSquareLength,
-          },
-          endWorldPos: {
-            x:
-              previousSelectedArea.endWorldPos.x -
-              pixelWiseDeltaX * this.gridSquareLength,
-            y:
-              previousSelectedArea.endWorldPos.y -
-              pixelWiseDeltaY * this.gridSquareLength,
-          },
-          startPixelIndex: {
-            rowIndex:
-              previousSelectedArea.startPixelIndex.rowIndex - pixelWiseDeltaY,
-            columnIndex:
-              previousSelectedArea.startPixelIndex.columnIndex -
-              pixelWiseDeltaX,
-          },
-          endPixelIndex: {
-            rowIndex:
-              previousSelectedArea.endPixelIndex.rowIndex - pixelWiseDeltaY,
-            columnIndex:
-              previousSelectedArea.endPixelIndex.columnIndex - pixelWiseDeltaX,
-          },
-        });
+    if (this.mouseMode === MouseMode.NULL) {
+      // just show hover pixel, and show hovered button
+      const rowIndices = Array.from(this.dataLayer.getRowKeyOrderMap().keys());
+      // columnKeyOrderMap is a sorted map of columnKeys
+      const columnIndices = Array.from(
+        this.dataLayer.getColumnKeyOrderMap().keys(),
+      );
+      const hoveredPixel = this.interactionLayer.getHoveredPixel();
 
-        this.interactionLayer.setMovingSelectedPixels(newMovingSelectedPixels);
-        const selectedArea = this.interactionLayer.getMovingSelectedArea();
-        this.gridLayer.render();
-        this.gridLayer.renderSelection(selectedArea);
-        this.interactionLayer.render();
-        return;
-      }
-      if (previousSelectingArea !== null) {
-        this.interactionLayer.setSelectingArea({
-          startWorldPos: this.mouseDownWorldPos,
-          endWorldPos: this.mouseMoveWorldPos,
-        });
-        const selectingArea = this.interactionLayer.getSelectingArea()!;
-        this.renderGridLayer();
-        this.gridLayer.renderSelection(selectingArea);
-        return;
-      }
-    } else {
+      const pixelIndex = getPixelIndexFromMouseCartCoord(
+        mouseCartCoord,
+        rowIndices,
+        columnIndices,
+        this.gridSquareLength,
+      );
       if (pixelIndex) {
-        if (this.mouseMode === MouseMode.DRAWING) {
+        if (
+          // We should also consider when the hovered pixel is null
+          !hoveredPixel ||
+          hoveredPixel.rowIndex !== pixelIndex.rowIndex ||
+          hoveredPixel.columnIndex !== pixelIndex.columnIndex
+        ) {
+          this.interactionLayer.setHoveredPixel({
+            rowIndex: pixelIndex.rowIndex,
+            columnIndex: pixelIndex.columnIndex,
+            color:
+              this.brushTool !== BrushTool.ERASER ? this.brushColor : "white",
+          });
+          this.emitHoverPixelChangeEvent({
+            indices: pixelIndex,
+          });
+          this.renderInteractionLayer();
+        }
+      } else {
+        this.emitHoverPixelChangeEvent({
+          indices: null,
+        });
+        this.interactionLayer.setHoveredPixel(null);
+        this.renderInteractionLayer();
+      }
+
+      const buttonDirection = this.detectButtonClicked(mouseCartCoord);
+      this.gridLayer.setHoveredButton(buttonDirection);
+      this.renderGridLayer();
+    } else if (this.mouseMode == MouseMode.EXTENDING) {
+      if (this.gridLayer.getIsGridFixed()) {
+        return;
+      }
+      const buttonDirection = this.extensionPoint.direction;
+      if (!this.interactionLayer.getCapturedData()) {
+        this.gridLayer.setHoveredButton(buttonDirection);
+        this.renderGridLayer();
+      }
+      this.handleExtension(evt);
+    } else if (this.mouseMode == MouseMode.PANNING) {
+      if (!this.isPanZoomable) {
+        return;
+      }
+      this.handlePanning(evt);
+    } else if (this.mouseMode == MouseMode.DRAWING) {
+      // rowKeyOrderMap is a sorted map of rowKeys
+      const rowIndices = Array.from(this.dataLayer.getRowKeyOrderMap().keys());
+      // columnKeyOrderMap is a sorted map of columnKeys
+      const columnIndices = Array.from(
+        this.dataLayer.getColumnKeyOrderMap().keys(),
+      );
+      const pixelIndex = getPixelIndexFromMouseCartCoord(
+        mouseCartCoord,
+        rowIndices,
+        columnIndices,
+        this.gridSquareLength,
+      );
+
+      // select tool
+      if (this.brushTool === BrushTool.SELECT) {
+        const previousSelectingArea = this.interactionLayer.getSelectingArea();
+        const previousSelectedArea = this.interactionLayer.getSelectedArea();
+        const previousSelectedAreaPixels =
+          this.interactionLayer.getSelectedAreaPixels();
+        const movingSelectedPixels =
+          this.interactionLayer.getMovingSelectedPixels();
+        // mouseDownWorldPos may be null
+        const directionToExtendSelectedArea =
+          this.interactionLayer.getDirectionToExtendSelectedArea();
+
+        if (directionToExtendSelectedArea !== null) {
+          // if there is a direction to extend selected area, it means that there is a selected area
+          this.interactionLayer.extendSelectedArea(
+            directionToExtendSelectedArea,
+            this.mouseMoveWorldPos,
+            this.isAltPressed,
+          );
+          this.gridLayer.render();
+          this.gridLayer.renderSelection(
+            this.interactionLayer.getExtendingSelectedArea(),
+          );
+          this.interactionLayer.render();
+        }
+        if (
+          movingSelectedPixels &&
+          this.mouseDownWorldPos &&
+          previousSelectedArea
+        ) {
+          const mouseMoveDistance = diffPoints(
+            this.mouseDownWorldPos,
+            this.mouseMoveWorldPos,
+          );
+          const pixelWiseDeltaX = Math.round(
+            mouseMoveDistance.x / this.gridSquareLength,
+          );
+          const pixelWiseDeltaY = Math.round(
+            mouseMoveDistance.y / this.gridSquareLength,
+          );
+          const newMovingSelectedPixels = previousSelectedAreaPixels.map(
+            pixel => {
+              return {
+                ...pixel,
+                rowIndex: pixel.rowIndex - pixelWiseDeltaY,
+                columnIndex: pixel.columnIndex - pixelWiseDeltaX,
+              };
+            },
+          );
+          this.interactionLayer.setMovingSelectedArea({
+            startWorldPos: {
+              x:
+                previousSelectedArea.startWorldPos.x -
+                pixelWiseDeltaX * this.gridSquareLength,
+              y:
+                previousSelectedArea.startWorldPos.y -
+                pixelWiseDeltaY * this.gridSquareLength,
+            },
+            endWorldPos: {
+              x:
+                previousSelectedArea.endWorldPos.x -
+                pixelWiseDeltaX * this.gridSquareLength,
+              y:
+                previousSelectedArea.endWorldPos.y -
+                pixelWiseDeltaY * this.gridSquareLength,
+            },
+            startPixelIndex: {
+              rowIndex:
+                previousSelectedArea.startPixelIndex.rowIndex - pixelWiseDeltaY,
+              columnIndex:
+                previousSelectedArea.startPixelIndex.columnIndex -
+                pixelWiseDeltaX,
+            },
+            endPixelIndex: {
+              rowIndex:
+                previousSelectedArea.endPixelIndex.rowIndex - pixelWiseDeltaY,
+              columnIndex:
+                previousSelectedArea.endPixelIndex.columnIndex -
+                pixelWiseDeltaX,
+            },
+          });
+
+          this.interactionLayer.setMovingSelectedPixels(
+            newMovingSelectedPixels,
+          );
+          const selectedArea = this.interactionLayer.getMovingSelectedArea();
+          this.gridLayer.render();
+          this.gridLayer.renderSelection(selectedArea);
+          this.interactionLayer.render();
+          return;
+        }
+        if (previousSelectingArea !== null) {
+          this.interactionLayer.setSelectingArea({
+            startWorldPos: this.mouseDownWorldPos,
+            endWorldPos: this.mouseMoveWorldPos,
+          });
+          const selectingArea = this.interactionLayer.getSelectingArea()!;
+          this.renderGridLayer();
+          this.gridLayer.renderSelection(selectingArea);
+          return;
+        }
+      } else {
+        // other tools: draw, erase, paint bucket
+        if (pixelIndex) {
           this.drawPixelInInteractionLayer(
             pixelIndex.rowIndex,
             pixelIndex.columnIndex,
@@ -2702,49 +2770,10 @@ export default class Editor extends EventDispatcher {
           if (this.brushTool === BrushTool.ERASER) {
             this.renderErasedPixelsFromInteractionLayerInDataLayer();
           }
-        } else {
-          if (
-            // We should also consider when the hovered pixel is null
-            !hoveredPixel ||
-            hoveredPixel.rowIndex !== pixelIndex.rowIndex ||
-            hoveredPixel.columnIndex !== pixelIndex.columnIndex
-          ) {
-            this.emitHoverPixelChangeEvent({
-              indices: pixelIndex,
-            });
-          }
-
-          this.interactionLayer.setHoveredPixel({
-            rowIndex: pixelIndex.rowIndex,
-            columnIndex: pixelIndex.columnIndex,
-            color:
-              this.brushTool !== BrushTool.ERASER ? this.brushColor : "white",
-          });
-          this.renderInteractionLayer();
-        }
-      } else {
-        if (hoveredPixel !== null) {
-          this.emitHoverPixelChangeEvent({
-            indices: null,
-          });
-          this.interactionLayer.setHoveredPixel(null);
-          this.renderInteractionLayer();
-        }
-      }
-      const buttonDirection = this.detectButtonClicked(mouseCartCoord);
-      if (buttonDirection) {
-        if (!this.interactionLayer.getCapturedData()) {
-          this.gridLayer.setHoveredButton(buttonDirection);
-          this.renderGridLayer();
-        }
-        return;
-      } else {
-        if (this.mouseMode !== MouseMode.EXTENDING) {
-          this.gridLayer.setHoveredButton(null);
-          this.renderGridLayer();
         }
       }
     }
+
     this.previousMouseMoveWorldPos = this.mouseMoveWorldPos;
   }
 
@@ -3107,7 +3136,7 @@ export default class Editor extends EventDispatcher {
 
   onMouseUp(evt: TouchyEvent) {
     evt.preventDefault();
-    this.mouseMode = MouseMode.PANNING;
+    this.mouseMode = MouseMode.NULL;
     if (this.brushTool === BrushTool.SELECT) {
       this.relaySelectingAreaToSelectedArea();
       this.relayMovingSelectedAreaToSelectedArea();
@@ -3129,9 +3158,7 @@ export default class Editor extends EventDispatcher {
       }
     }
     this.relayInteractionDataToDataLayer();
-    touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
-    touchy(this.element, removeEvent, "mousemove", this.handleExtension);
     this.pinchZoomDiff = undefined;
     this.gridLayer.setHoveredButton(null);
     this.renderGridLayer();
@@ -3147,9 +3174,7 @@ export default class Editor extends EventDispatcher {
     this.relayInteractionDataToDataLayer();
 
     this.interactionLayer.setSelectingArea(null);
-    touchy(this.element, removeEvent, "mousemove", this.handlePanning);
     touchy(this.element, removeEvent, "mousemove", this.handlePinchZoom);
-    touchy(this.element, removeEvent, "mousemove", this.handleExtension);
     if (this.gridLayer.getHoveredButton() !== null) {
       this.emitHoverPixelChangeEvent({
         indices: null,

@@ -14,6 +14,7 @@ const CustomExample = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        position: "relative",
       }}
     >
       <Dotting ref={ref} width={"100%"} height={300} />
@@ -24,6 +25,34 @@ const CustomExample = () => {
       >
         hi
       </button> */}
+      {/* <div
+        style={{
+          position: "absolute",
+          width: "100%",
+          height: 300,
+          backgroundColor: "rgba(0,0,0,0.5)",
+          top: 0,
+          left: 0,
+        }}
+        onMouseDown={e => {
+          ref.current.onMouseDown({
+            offsetX: e.nativeEvent.offsetX,
+            offsetY: e.nativeEvent.offsetY,
+          });
+        }}
+        onMouseMove={e => {
+          ref.current.onMouseMove({
+            offsetX: e.nativeEvent.offsetX,
+            offsetY: e.nativeEvent.offsetY,
+          });
+        }}
+        onMouseUp={e => {
+          ref.current.onMouseUp({
+            offsetX: e.nativeEvent.offsetX,
+            offsetY: e.nativeEvent.offsetY,
+          });
+        }}
+      ></div> */}
       <div>
         {[
           "#FF0000",
