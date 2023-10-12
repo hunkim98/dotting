@@ -2506,14 +2506,17 @@ export default class Editor extends EventDispatcher {
     const columnKeys = getColumnKeysFromData(data);
     const sortedRowKeys = rowKeys.sort((a, b) => a - b);
     const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
-    const { includedPixelsIndices } = convertWorldPosAreaToPixelGridArea(
+    const includedPixelsIndices = convertWorldPosAreaToPixelGridArea(
       selectedArea,
       rowCount,
       columnCount,
       this.gridSquareLength,
       sortedRowKeys,
       sortedColumnKeys,
-    );
+    )?.includedPixelsIndices;
+    if (!includedPixelsIndices) {
+      return [];
+    }
     const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
       getGridIndicesFromData(data);
     const selectedAreaPixels: Array<ColorChangeItem> = [];
