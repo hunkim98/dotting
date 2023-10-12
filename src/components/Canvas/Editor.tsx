@@ -2480,7 +2480,6 @@ export default class Editor extends EventDispatcher {
         if (buttonDirection) {
           this.extensionPoint.direction = buttonDirection;
           this.mouseMode = MouseMode.EXTENDING;
-          // touchy(this.element, addEvent, "mousemove", this.handleExtension);
         }
       }
     }
@@ -2488,10 +2487,8 @@ export default class Editor extends EventDispatcher {
     if (this.mouseMode === MouseMode.PANNING) {
       if (evt.touches && evt.touches.length > 1) {
         this.mouseMode = MouseMode.PINCHZOOMING;
-        // touchy(this.element, addEvent, "mousemove", this.handlePinchZoom);
       } else {
         this.mouseMode = MouseMode.PANNING;
-        // touchy(this.element, addEvent, "mousemove", this.handlePanning);
       }
     }
 
@@ -2569,6 +2566,14 @@ export default class Editor extends EventDispatcher {
     this.styleMouseCursor(mouseCartCoord);
 
     if (this.mouseMode === MouseMode.NULL) {
+      if (this.brushTool === BrushTool.SELECT) {
+        const selectedArea = this.interactionLayer.getSelectedArea();
+        if (selectedArea) {
+          this.gridLayer.render();
+          this.gridLayer.renderSelection(selectedArea);
+        }
+        return;
+      }
       // just show hover pixel, and show hovered button
       const rowIndices = Array.from(this.dataLayer.getRowKeyOrderMap().keys());
       // columnKeyOrderMap is a sorted map of columnKeys
@@ -2611,6 +2616,7 @@ export default class Editor extends EventDispatcher {
 
       const buttonDirection = this.detectButtonClicked(mouseCartCoord);
       this.gridLayer.setHoveredButton(buttonDirection);
+
       this.renderGridLayer();
     } else if (this.mouseMode == MouseMode.EXTENDING) {
       if (this.gridLayer.getIsGridFixed()) {
@@ -3162,6 +3168,10 @@ export default class Editor extends EventDispatcher {
     this.pinchZoomDiff = undefined;
     this.gridLayer.setHoveredButton(null);
     this.renderGridLayer();
+    const selectedArea = this.interactionLayer.getSelectedArea();
+    if (selectedArea) {
+      this.gridLayer.renderSelection(selectedArea);
+    }
     // we make mouse down world position null
     this.mouseDownWorldPos = null;
     this.mouseDownPanZoom = null;
@@ -3182,6 +3192,10 @@ export default class Editor extends EventDispatcher {
     }
     this.gridLayer.setHoveredButton(null);
     this.renderGridLayer();
+    const selectedArea = this.interactionLayer.getSelectedArea();
+    if (selectedArea) {
+      this.gridLayer.renderSelection(selectedArea);
+    }
     return;
   }
 

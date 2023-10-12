@@ -28,7 +28,6 @@ import {
   PixelModifyItem,
 } from "./Canvas/types";
 import { validateLayers } from "../utils/data";
-import { FakeMouseEvent } from "../utils/testUtils";
 import { TouchyEvent } from "../utils/touch";
 
 export interface DottingProps {
