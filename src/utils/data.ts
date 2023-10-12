@@ -220,6 +220,7 @@ export const getInBetweenPixelIndicesfromCoords = (
   gridSquareLength: number,
   data: DottingData,
 ) => {
+  if (!previousCoord || !currentCoord) return [];
   if (
     Math.abs(currentCoord.x - previousCoord.x) >= gridSquareLength ||
     Math.abs(currentCoord.y - previousCoord.y) >= gridSquareLength
