@@ -1,4 +1,4 @@
-🚀 [Resolves: #]
+🚀 [Resolves #]
 
 ### Preview
 
