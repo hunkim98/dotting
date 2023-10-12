@@ -28,6 +28,8 @@ import {
   PixelModifyItem,
 } from "./Canvas/types";
 import { validateLayers } from "../utils/data";
+import { FakeMouseEvent } from "../utils/testUtils";
+import { TouchyEvent } from "../utils/touch";
 
 export interface DottingProps {
   width: number | string;
@@ -136,6 +138,10 @@ export interface DottingRef {
     data: Array<Array<PixelModifyItem>>;
   }>;
   setLayers: (layers: Array<LayerProps>) => void;
+  // for manipulating innate mouse events
+  onMouseDown: (e: { offsetX: number; offsetY: number }) => void;
+  onMouseMove: (e: { offsetX: number; offsetY: number }) => void;
+  onMouseUp: (e: { offsetX: number; offsetY: number }) => void;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -844,6 +850,30 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
+  const onMouseDown = useCallback(
+    (e: { offsetX: number; offsetY: number }) => {
+      const fakeMouseEvent = new FakeMouseEvent("mousedown", e);
+      editor?.onMouseDown(fakeMouseEvent as TouchyEvent);
+    },
+    [editor],
+  );
+
+  const onMouseMove = useCallback(
+    (e: { offsetX: number; offsetY: number }) => {
+      const fakeMouseEvent = new FakeMouseEvent("mousemove", e);
+      editor?.onMouseMove(fakeMouseEvent as TouchyEvent);
+    },
+    [editor],
+  );
+
+  const onMouseUp = useCallback(
+    (e: { offsetX: number; offsetY: number }) => {
+      const fakeMouseEvent = new FakeMouseEvent("mouseup", e);
+      editor?.onMouseUp(fakeMouseEvent as TouchyEvent);
+    },
+    [editor],
+  );
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -895,6 +925,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       getLayers,
       getLayersAsArray,
       setLayers,
+      // for manipulating innate mouse events
+      onMouseDown,
+      onMouseMove,
+      onMouseUp,
     }),
     [
       // for useDotting
@@ -942,6 +976,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       getLayers,
       getLayersAsArray,
       setLayers,
+      // for manipulating innate mouse events
+      onMouseDown,
+      onMouseMove,
+      onMouseUp,
     ],
   );
 
