@@ -45,15 +45,92 @@ describe("test for color pixel method in Editor", () => {
    * ⬇️
    */
   it("test color pixel for a single item", () => {
-    expect(1).toBe(1);
+    const rowIndex = 0;
+    const columnIndex = 0;
+    const color = "red";
+
+    editor.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor =
+      editor.getLayersAsArray()[0].data[rowIndex][columnIndex].color;
+
+    expect(targetColor).toBe(color);
   });
 
   it("test color pixel for multiple items", () => {
-    expect(1).toBe(1);
+    const itemsToColor = [
+      {
+        rowIndex: 0,
+        columnIndex: 0,
+        color: "red",
+      },
+      {
+        rowIndex: 1,
+        columnIndex: 1,
+        color: "black",
+      },
+    ];
+
+    editor.colorPixels(itemsToColor);
+
+    for (const item of itemsToColor) {
+      const targetColor =
+        editor.getLayersAsArray()[0].data[item.rowIndex][item.columnIndex]
+          .color;
+      expect(targetColor).toBe(item.color);
+    }
   });
 
-  it("test color pixel for items that are out of bounds", () => {
-    expect(1).toBe(1);
+  it("test color pixel for an item that has a rowIndex smaller than topRowIndex", () => {
+    const rowIndex = -5;
+    const columnIndex = 0;
+    const color = "red";
+
+    editor.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor =
+      editor.getLayersAsArray()[0].data[editor.getRowCount() - 1][columnIndex]
+        .color;
+    expect(targetColor).toBe(color);
+  });
+
+  it("test color pixel for an item that has a rowIndex bigger than bottomRowIndex", () => {
+    const rowIndex = editor.getRowCount() + 5;
+    const columnIndex = 0;
+    const color = "red";
+
+    editor.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor =
+      editor.getLayersAsArray()[0].data[editor.getRowCount() - 1][columnIndex]
+        .color;
+    expect(targetColor).toBe(color);
+  });
+
+  it("test color pixel for an item that has a columnIndex smaller than leftColumnIndex", () => {
+    const rowIndex = 0;
+    const columnIndex = -5;
+    const color = "red";
+
+    editor.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor =
+      editor.getLayersAsArray()[0].data[rowIndex][editor.getColumnCount() - 1]
+        .color;
+    expect(targetColor).toBe(color);
+  });
+
+  it("test color pixel for an item that has a columnIndex bigger than rightColumnIndex", () => {
+    const rowIndex = 0;
+    const columnIndex = editor.getColumnCount() + 5;
+    const color = "red";
+
+    editor.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor =
+      editor.getLayersAsArray()[0].data[rowIndex][editor.getColumnCount() - 1]
+        .color;
+    expect(targetColor).toBe(color);
   });
   // add more tests below...
   // Remind to test for all cases in if-else statements
