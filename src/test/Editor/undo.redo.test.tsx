@@ -295,13 +295,12 @@ describe("test for undo and redo", () => {
     expect(leftColumnIndexAfterRedo).toBe(leftColumnIndex + 1);
   });
 
-  
   // Layer hierarchy not maintained after undo and redo
   // both createlayer, removelayer
   it("undo and redo for layer create action", () => {
-    editor.setLayers([{id: "newLayer",data: CreateEmptySquareData(15),}]);
-    editor.addLayer("testLayer", 1, CreateEmptySquareData(15), true)
-    
+    editor.setLayers([{ id: "newLayer", data: CreateEmptySquareData(15) }]);
+    editor.addLayer("testLayer", 1, CreateEmptySquareData(15), true);
+
     let layers = editor.getLayersAsArray();
     expect(layers.length).toEqual(2);
     expect(layers[1].id).toEqual("testLayer");
@@ -324,7 +323,10 @@ describe("test for undo and redo", () => {
   });
 
   it("undo and redo for layer delete action", () => {
-    editor.setLayers([{id: "basicLayer",data: CreateEmptySquareData(15),},{id: "newLayer",data: CreateEmptySquareData(15),}]);
+    editor.setLayers([
+      { id: "basicLayer", data: CreateEmptySquareData(15) },
+      { id: "newLayer", data: CreateEmptySquareData(15) },
+    ]);
     let layers = editor.getLayersAsArray();
     editor.removeLayer("newLayer", true);
 
@@ -345,36 +347,41 @@ describe("test for undo and redo", () => {
 
   // originalLayerIdsInOrderForHistory don't save data when calling editor.setLayers function
   it("undo and redo for layer reorder action", () => {
-    editor.setLayers([{id: "firstLayer",data: CreateEmptySquareData(2),},{id: "secondLayer",data: CreateEmptySquareData(2),}]);
+    const firstLayerId = "firstLayer";
+    const secondLayerId = "secondLayer";
+    editor.setLayers([
+      { id: firstLayerId, data: CreateEmptySquareData(2) },
+      { id: secondLayerId, data: CreateEmptySquareData(2) },
+    ]);
     let layers = editor.getLayersAsArray();
-    editor.reorderLayersByIds([ "secondLayer", "firstLayer",]);
+    editor.reorderLayersByIds([secondLayerId, firstLayerId]);
 
     layers = editor.getLayersAsArray();
     expect(layers.length).toEqual(2);
-    expect(layers[0].id).toEqual("secondLayer");
+    expect(layers[0].id).toEqual(secondLayerId);
     expect(layers[0].data.length).toEqual(2);
     expect(layers[0].data[0].length).toEqual(2);
-    expect(layers[1].id).toEqual("firstLayer");
+    expect(layers[1].id).toEqual(firstLayerId);
     expect(layers[1].data.length).toEqual(2);
     expect(layers[1].data[1].length).toEqual(2);
 
     editor.undo();
     layers = editor.getLayersAsArray();
     expect(layers.length).toEqual(2);
-    expect(layers[0].id).toEqual("firstLayer");
+    expect(layers[0].id).toEqual(firstLayerId);
     expect(layers[0].data.length).toEqual(2);
     expect(layers[0].data[1].length).toEqual(2);
-    expect(layers[1].id).toEqual("secondLayer");
+    expect(layers[1].id).toEqual(secondLayerId);
     expect(layers[1].data.length).toEqual(2);
     expect(layers[1].data[0].length).toEqual(2);
-    
+
     editor.redo();
     layers = editor.getLayersAsArray();
     expect(layers.length).toEqual(2);
-    expect(layers[0].id).toEqual("secondLayer");
+    expect(layers[0].id).toEqual(secondLayerId);
     expect(layers[0].data.length).toEqual(2);
     expect(layers[0].data[0].length).toEqual(2);
-    expect(layers[1].id).toEqual("firstLayer");
+    expect(layers[1].id).toEqual(firstLayerId);
     expect(layers[1].data.length).toEqual(2);
     expect(layers[1].data[1].length).toEqual(2);
   });
@@ -428,12 +435,20 @@ describe("test for undo and redo", () => {
         offsetY: canvasElement.height / 4,
       }),
     );
-      
+
     selectedArea = editor.getSelectedArea();
-    expect(selectedArea?.startWorldPos.x).toBe(startWorldx - canvasElement.width / 4);
-    expect(selectedArea?.startWorldPos.y).toBe(startWorldy - canvasElement.height / 4);
-    expect(selectedArea?.endWorldPos.x).toBe(endWorldx - canvasElement.width / 4);
-    expect(selectedArea?.endWorldPos.y).toBe(endWorldy - canvasElement.height / 4);
+    expect(selectedArea?.startWorldPos.x).toBe(
+      startWorldx - canvasElement.width / 4,
+    );
+    expect(selectedArea?.startWorldPos.y).toBe(
+      startWorldy - canvasElement.height / 4,
+    );
+    expect(selectedArea?.endWorldPos.x).toBe(
+      endWorldx - canvasElement.width / 4,
+    );
+    expect(selectedArea?.endWorldPos.y).toBe(
+      endWorldy - canvasElement.height / 4,
+    );
 
     editor.undo();
     selectedArea = editor.getSelectedArea();
@@ -444,10 +459,18 @@ describe("test for undo and redo", () => {
 
     editor.redo();
     selectedArea = editor.getSelectedArea();
-    expect(selectedArea?.startWorldPos.x).toBe(startWorldx - canvasElement.width / 4);
-    expect(selectedArea?.startWorldPos.y).toBe(startWorldy - canvasElement.height / 4);
-    expect(selectedArea?.endWorldPos.x).toBe(endWorldx - canvasElement.width / 4);
-    expect(selectedArea?.endWorldPos.y).toBe(endWorldy - canvasElement.height / 4);
+    expect(selectedArea?.startWorldPos.x).toBe(
+      startWorldx - canvasElement.width / 4,
+    );
+    expect(selectedArea?.startWorldPos.y).toBe(
+      startWorldy - canvasElement.height / 4,
+    );
+    expect(selectedArea?.endWorldPos.x).toBe(
+      endWorldx - canvasElement.width / 4,
+    );
+    expect(selectedArea?.endWorldPos.y).toBe(
+      endWorldy - canvasElement.height / 4,
+    );
   });
 
   it("undo and redo for select area resize action", () => {
@@ -473,7 +496,7 @@ describe("test for undo and redo", () => {
         offsetY: canvasElement.height,
       }),
     );
-    
+
     const columnCount = editor.getColumnCount();
     const rowCount = editor.getRowCount();
     const gridSquareLength = editor.getGridSquareLength();

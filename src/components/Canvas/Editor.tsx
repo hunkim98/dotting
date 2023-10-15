@@ -933,6 +933,7 @@ export default class Editor extends EventDispatcher {
     validateLayers(layers);
     // if validate layers is passed, then we have no problem with layers
     this.dataLayer.setLayers(layers);
+    this.originalLayerIdsInOrderForHistory = layers.map(layer => layer.id);
     // reset history when set layer is called
     this.undoHistory = [];
     this.redoHistory = [];
