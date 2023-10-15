@@ -1,10 +1,10 @@
 import { fireEvent } from "@testing-library/react";
 
+import { CreateEmptySquareData } from "../../../stories/utils/dataCreator";
 import { DefaultButtonHeight } from "../../components/Canvas/config";
 import Editor from "../../components/Canvas/Editor";
-import { FakeMouseEvent } from "../../utils/testUtils";
-import { CreateEmptySquareData } from "../../../stories/utils/dataCreator";
 import { BrushTool } from "../../components/Canvas/types";
+import { FakeMouseEvent } from "../../utils/testUtils";
 
 describe("test for undo and redo", () => {
   let editor: Editor;
@@ -345,7 +345,6 @@ describe("test for undo and redo", () => {
     expect(layers.length).toEqual(1);
   });
 
-  // originalLayerIdsInOrderForHistory don't save data when calling editor.setLayers function
   it("undo and redo for layer reorder action", () => {
     const firstLayerId = "firstLayer";
     const secondLayerId = "secondLayer";
@@ -410,10 +409,10 @@ describe("test for undo and redo", () => {
       }),
     );
     let selectedArea = editor.getSelectedArea();
-    let startWorldx = selectedArea?.startWorldPos.x || 0;
-    let startWorldy = selectedArea?.startWorldPos.y || 0;
-    let endWorldx = selectedArea?.endWorldPos.x || 0;
-    let endWorldy = selectedArea?.endWorldPos.y || 0;
+    const startWorldx = selectedArea?.startWorldPos.x || 0;
+    const startWorldy = selectedArea?.startWorldPos.y || 0;
+    const endWorldx = selectedArea?.endWorldPos.x || 0;
+    const endWorldy = selectedArea?.endWorldPos.y || 0;
     fireEvent(
       canvasElement,
       new FakeMouseEvent("mousedown", {

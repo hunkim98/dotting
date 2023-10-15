@@ -37,13 +37,6 @@ describe("test for color pixel method in Editor", () => {
     jest.clearAllMocks();
   });
 
-  /**
-   * TODO:
-   * 1. test colorPixels method for single item
-   * 2. test colorPixels method for multiple items
-   * Assigned to: 권혁범
-   * ⬇️
-   */
   it("test color pixel for a single item", () => {
     const rowIndex = 0;
     const columnIndex = 0;
@@ -132,7 +125,4 @@ describe("test for color pixel method in Editor", () => {
         .color;
     expect(targetColor).toBe(color);
   });
-  // add more tests below...
-  // Remind to test for all cases in if-else statements
-  /** ⬆️ */
 });
