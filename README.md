@@ -1,5 +1,15 @@
 ![dotting_github](https://user-images.githubusercontent.com/57612141/225073544-94a2f8b4-187c-475f-a079-3b427efbdd02.png)
 
+<div style="display:flex; gap:10px; justify-content:center;">
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=hunkim98_dotting&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=hunkim98_dotting)
+
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=hunkim98_dotting&metric=coverage)](https://sonarcloud.io/summary/new_code?id=hunkim98_dotting)
+
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=hunkim98_dotting&metric=bugs)](https://sonarcloud.io/summary/new_code?id=hunkim98_dotting)
+
+</div>
+
 <br/>
 
 <h2 align="center"> Dotting: Flexible Pixel Art Editor for React </h2>
