@@ -3,6 +3,8 @@ import { fireEvent } from "@testing-library/react";
 import { DefaultButtonHeight } from "../../components/Canvas/config";
 import Editor from "../../components/Canvas/Editor";
 import { FakeMouseEvent } from "../../utils/testUtils";
+import { CreateEmptySquareData } from "../../../stories/utils/dataCreator";
+import { BrushTool } from "../../components/Canvas/types";
 
 describe("test for undo and redo", () => {
   let editor: Editor;
@@ -293,33 +295,240 @@ describe("test for undo and redo", () => {
     expect(leftColumnIndexAfterRedo).toBe(leftColumnIndex + 1);
   });
 
-  /**
-   * TODO:
-   * 1) add test for undo and redo for LayerCreateDeleteAction and LayerReorderAction
-   * 2) add test for undo and redo for SelectAreaMoveAction and SelectAreaResizeAction
-   * Assigned to: 석재원
-   * ⬇️
-   */
+  
+  // Layer hierarchy not maintained after undo and redo
+  // both createlayer, removelayer
   it("undo and redo for layer create action", () => {
-    expect(1).toBe(1);
+    editor.setLayers([{id: "newLayer",data: CreateEmptySquareData(15),}]);
+    editor.addLayer("testLayer", 1, CreateEmptySquareData(15), true)
+    
+    let layers = editor.getLayersAsArray();
+    expect(layers.length).toEqual(2);
+    expect(layers[1].id).toEqual("testLayer");
+    expect(layers[1].data.length).toEqual(15);
+    expect(layers[1].data[0].length).toEqual(15);
+
+    editor.undo();
+    layers = editor.getLayersAsArray();
+    expect(layers.length).toEqual(1);
+    expect(layers[0].id).toEqual("newLayer");
+    expect(layers[0].data.length).toEqual(15);
+    expect(layers[0].data[0].length).toEqual(15);
+
+    editor.redo();
+    layers = editor.getLayersAsArray();
+    expect(layers.length).toEqual(2);
+    expect(layers[0].id).toEqual("testLayer");
+    expect(layers[0].data.length).toEqual(15);
+    expect(layers[0].data[0].length).toEqual(15);
   });
 
   it("undo and redo for layer delete action", () => {
-    expect(1).toBe(1);
+    editor.setLayers([{id: "basicLayer",data: CreateEmptySquareData(15),},{id: "newLayer",data: CreateEmptySquareData(15),}]);
+    let layers = editor.getLayersAsArray();
+    editor.removeLayer("newLayer", true);
+
+    layers = editor.getLayersAsArray();
+    expect(layers.length).toEqual(1);
+
+    editor.undo();
+    layers = editor.getLayersAsArray();
+    expect(layers.length).toEqual(2);
+    expect(layers[0].id).toEqual("newLayer");
+    expect(layers[0].data.length).toEqual(15);
+    expect(layers[0].data[0].length).toEqual(15);
+
+    editor.redo();
+    layers = editor.getLayersAsArray();
+    expect(layers.length).toEqual(1);
   });
 
+  // originalLayerIdsInOrderForHistory don't save data when calling editor.setLayers function
   it("undo and redo for layer reorder action", () => {
-    expect(1).toBe(1);
+    editor.setLayers([{id: "firstLayer",data: CreateEmptySquareData(2),},{id: "secondLayer",data: CreateEmptySquareData(2),}]);
+    let layers = editor.getLayersAsArray();
+    editor.reorderLayersByIds([ "secondLayer", "firstLayer",]);
+
+    layers = editor.getLayersAsArray();
+    expect(layers.length).toEqual(2);
+    expect(layers[0].id).toEqual("secondLayer");
+    expect(layers[0].data.length).toEqual(2);
+    expect(layers[0].data[0].length).toEqual(2);
+    expect(layers[1].id).toEqual("firstLayer");
+    expect(layers[1].data.length).toEqual(2);
+    expect(layers[1].data[1].length).toEqual(2);
+
+    editor.undo();
+    layers = editor.getLayersAsArray();
+    expect(layers.length).toEqual(2);
+    expect(layers[0].id).toEqual("firstLayer");
+    expect(layers[0].data.length).toEqual(2);
+    expect(layers[0].data[1].length).toEqual(2);
+    expect(layers[1].id).toEqual("secondLayer");
+    expect(layers[1].data.length).toEqual(2);
+    expect(layers[1].data[0].length).toEqual(2);
+    
+    editor.redo();
+    layers = editor.getLayersAsArray();
+    expect(layers.length).toEqual(2);
+    expect(layers[0].id).toEqual("secondLayer");
+    expect(layers[0].data.length).toEqual(2);
+    expect(layers[0].data[0].length).toEqual(2);
+    expect(layers[1].id).toEqual("firstLayer");
+    expect(layers[1].data.length).toEqual(2);
+    expect(layers[1].data[1].length).toEqual(2);
   });
 
   it("undo and redo for select area move action", () => {
-    expect(1).toBe(1);
+    editor.setBrushTool(BrushTool.SELECT);
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: 0,
+        offsetY: 0,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX: canvasElement.width,
+        offsetY: canvasElement.height,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: canvasElement.width,
+        offsetY: canvasElement.height,
+      }),
+    );
+    let selectedArea = editor.getSelectedArea();
+    let startWorldx = selectedArea?.startWorldPos.x || 0;
+    let startWorldy = selectedArea?.startWorldPos.y || 0;
+    let endWorldx = selectedArea?.endWorldPos.x || 0;
+    let endWorldy = selectedArea?.endWorldPos.y || 0;
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2,
+        offsetY: canvasElement.height / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX: canvasElement.width / 4,
+        offsetY: canvasElement.height / 4,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: canvasElement.width / 4,
+        offsetY: canvasElement.height / 4,
+      }),
+    );
+      
+    selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startWorldPos.x).toBe(startWorldx - canvasElement.width / 4);
+    expect(selectedArea?.startWorldPos.y).toBe(startWorldy - canvasElement.height / 4);
+    expect(selectedArea?.endWorldPos.x).toBe(endWorldx - canvasElement.width / 4);
+    expect(selectedArea?.endWorldPos.y).toBe(endWorldy - canvasElement.height / 4);
+
+    editor.undo();
+    selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startWorldPos.x).toBe(startWorldx);
+    expect(selectedArea?.startWorldPos.y).toBe(startWorldy);
+    expect(selectedArea?.endWorldPos.x).toBe(endWorldx);
+    expect(selectedArea?.endWorldPos.y).toBe(endWorldy);
+
+    editor.redo();
+    selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.startWorldPos.x).toBe(startWorldx - canvasElement.width / 4);
+    expect(selectedArea?.startWorldPos.y).toBe(startWorldy - canvasElement.height / 4);
+    expect(selectedArea?.endWorldPos.x).toBe(endWorldx - canvasElement.width / 4);
+    expect(selectedArea?.endWorldPos.y).toBe(endWorldy - canvasElement.height / 4);
   });
 
   it("undo and redo for select area resize action", () => {
-    expect(1).toBe(1);
+    editor.setBrushTool(BrushTool.SELECT);
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: 0,
+        offsetY: 0,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX: canvasElement.width,
+        offsetY: canvasElement.height,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: canvasElement.width,
+        offsetY: canvasElement.height,
+      }),
+    );
+    
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: canvasElement.width / 2 + (gridSquareLength * columnCount) / 2,
+        offsetY: canvasElement.height / 2 + (gridSquareLength * rowCount) / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 +
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength,
+      }),
+    );
+
+    let selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.endPixelIndex).toStrictEqual({
+      rowIndex: rowCount,
+      columnIndex: columnCount,
+    });
+
+    editor.undo();
+    selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.endPixelIndex).toStrictEqual({
+      rowIndex: rowCount - 1,
+      columnIndex: columnCount - 1,
+    });
+
+    editor.redo();
+    selectedArea = editor.getSelectedArea();
+    expect(selectedArea?.endPixelIndex).toStrictEqual({
+      rowIndex: rowCount,
+      columnIndex: columnCount,
+    });
   });
-  // add more tests below...
-  // Remind to test for all cases in if-else statements
-  /** ⬆️ */
 });
