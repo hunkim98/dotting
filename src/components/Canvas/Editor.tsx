@@ -27,6 +27,7 @@ import {
   ColorChangeItem,
   Coord,
   DeleteGridIndicesParams,
+  Dimensions,
   GridIndices,
   ImageDownloadOptions,
   LayerChangeParams,
@@ -96,7 +97,9 @@ export default class Editor extends EventDispatcher {
   private backgroundLayer: BackgroundLayer;
   private zoomSensitivity: number = DefaultZoomSensitivity;
   private maxScale: number = DefaultMaxScale;
-  private minScale: number = DefaultMinScale;
+  private minScale: number = 1 / DefaultGridSquareLength;
+  private staticMinScale: number | null = null;
+  private staticMaxScale: number | null = null;
   private extensionAllowanceRatio = 2;
   private pinchZoomDiff: number | null = null;
   private width: number;
@@ -376,26 +379,49 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setGridSquareLength(length);
     this.interactionLayer.setGridSquareLength(length);
     this.dataLayer.setGridSquareLength(length);
+    this.adjustMinScaleByGridSquareLength(length);
     this.renderAll();
   }
 
+  adjustMinScaleByGridSquareLength(gridSquareLength: number) {
+    if (this.staticMinScale === null) {
+      // we can freely dynamically adjust the min scale
+      // we should let min scale be the minimum scale that can fit the canvas
+      // the minimum grid square length can be 1px
+      const newScale = 1 / this.gridSquareLength;
+      this.minScale = newScale;
+    }
+  }
+
+  /**
+   * @description This function will set the static min scale of the canvas
+   * @param minScale
+   * @returns
+   */
   setMinScale(minScale: number) {
     if (minScale === undefined) {
       return;
     }
-    if (minScale > this.maxScale) {
+    if (this.staticMaxScale !== null && minScale > this.staticMaxScale) {
       throw new Error("minScale cannot be greater than maxScale");
     }
+    this.staticMinScale = minScale;
     this.minScale = minScale;
   }
 
+  /**
+   * @description This function will set the static max scale of the canvas
+   * @param maxScale
+   * @returns
+   */
   setMaxScale(maxScale: number) {
     if (maxScale === undefined) {
       return;
     }
-    if (maxScale < this.minScale) {
+    if (this.staticMinScale !== null && maxScale < this.staticMinScale) {
       throw new Error("maxScale cannot be less than minScale");
     }
+    this.staticMaxScale = maxScale;
     this.maxScale = maxScale;
   }
 
