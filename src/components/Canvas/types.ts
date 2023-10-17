@@ -94,7 +94,6 @@ export type CanvasGridChangeHandler = (params: CanvasGridChangeParams) => void;
 
 export type CanvasStrokeEndParams = {
   strokedPixels: Array<ColorChangeItem>;
-  data: DottingData;
   strokeTool: BrushTool;
 };
 

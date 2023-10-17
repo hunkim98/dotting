@@ -221,31 +221,40 @@ export default class Editor extends EventDispatcher {
     const { width, height } = dimensions;
     const minMargin = 20;
     const gridWidth = width * this.gridSquareLength;
-    const canvasWidth = this.element.width * this.dpr;
+    const canvasWidth = this.width;
     const gridHeight = height * this.gridSquareLength;
-    const canvasHeight = this.element.height * this.dpr;
+    const canvasHeight = this.height;
     const horizontalMargin = Math.max((canvasWidth - gridWidth) / 2, minMargin);
     const verticalMargin = Math.max((canvasHeight - gridHeight) / 2, minMargin);
     const horizontalScale = canvasWidth / (gridWidth + horizontalMargin * 2);
     const verticalScale = canvasHeight / (gridHeight + verticalMargin * 2);
     const scale = Math.min(horizontalScale, verticalScale);
+    const originWordPos = {
+      x: 0,
+      y: 0,
+    };
+    const canvasMiddlePoint = {
+      x: canvasWidth / 2,
+      y: canvasHeight / 2,
+    };
+
+    const originalScreenPos = getScreenPoint(canvasMiddlePoint, {
+      scale: 1,
+      offset: originWordPos,
+    });
+    const newScreenPos = getScreenPoint(canvasMiddlePoint, {
+      scale: scale,
+      offset: originWordPos,
+    });
+    const diff = diffPoints(originalScreenPos, newScreenPos);
+
     this.setPanZoom({
+      scale,
       offset: {
-        x: (-width / 2) * this.gridSquareLength,
-        y: (-height / 2) * this.gridSquareLength,
+        x: diff.x - (width / 2) * this.gridSquareLength * scale,
+        y: diff.y - (height / 2) * this.gridSquareLength * scale,
       },
     });
-    const newOffset = returnScrollOffsetFromMouseOffset(
-      { x: canvasWidth / 2, y: canvasHeight / 2 },
-      this.panZoom,
-      scale,
-    );
-    this.setPanZoom({
-      offset: newOffset,
-      scale: scale,
-    });
-
-    return;
   }
 
   emitCurrentGridStatus() {
@@ -270,7 +279,7 @@ export default class Editor extends EventDispatcher {
   emitCurrentData() {
     this.emitDataChangeEvent({
       isLocalChange: false,
-      data: this.dataLayer.getCopiedData(),
+      data: this.dataLayer.getData(),
       layerId: this.dataLayer.getCurrentLayer().getId(),
     });
   }
@@ -776,7 +785,7 @@ export default class Editor extends EventDispatcher {
     return this.dataLayer.getLayers().map(layer => {
       return {
         id: layer.getId(),
-        data: layer.getCopiedData(),
+        data: layer.getData(),
       };
     });
   }
@@ -788,6 +797,10 @@ export default class Editor extends EventDispatcher {
         data: layer.getDataArray(),
       };
     });
+  }
+
+  getPanZoom() {
+    return this.panZoom;
   }
 
   setSize(width: number, height: number, devicePixelRatio?: number) {
@@ -975,7 +988,7 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setDataLayerColumnCount(columnCount);
     this.emitDataChangeEvent({
       isLocalChange,
-      data: this.dataLayer.getCopiedData(),
+      data: this.dataLayer.getData(),
       layerId: this.dataLayer.getCurrentLayer().getId(),
     });
     this.emitGridChangeEvent({
@@ -989,11 +1002,9 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.interactionLayer.resetCapturedData();
 
-    this.setPanZoom({
-      offset: {
-        x: -this.panZoom.scale * (columnCount / 2) * this.gridSquareLength,
-        y: -this.panZoom.scale * (rowCount / 2) * this.gridSquareLength,
-      },
+    this.adjustInitialZoomScale({
+      width: columnCount,
+      height: rowCount,
     });
     this.renderAll();
   }
@@ -1016,7 +1027,7 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setDataLayerColumnCount(columnCount);
     this.emitDataChangeEvent({
       isLocalChange: false,
-      data: this.dataLayer.getCopiedData(),
+      data: this.dataLayer.getData(),
       layerId: this.dataLayer.getCurrentLayer().getId(),
     });
     this.emitGridChangeEvent({
@@ -1029,11 +1040,9 @@ export default class Editor extends EventDispatcher {
     );
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.interactionLayer.resetCapturedData();
-    this.setPanZoom({
-      offset: {
-        x: -this.panZoom.scale * (columnCount / 2) * this.gridSquareLength,
-        y: -this.panZoom.scale * (rowCount / 2) * this.gridSquareLength,
-      },
+    this.adjustInitialZoomScale({
+      width: columnCount,
+      height: rowCount,
     });
     this.emitCurrentLayerStatus();
     this.renderAll();
@@ -1097,8 +1106,8 @@ export default class Editor extends EventDispatcher {
     }
 
     // relay updated information to layers
-    this.relayPanZoomToOtherLayers();
     // we must render all when panzoom changes!
+    this.relayPanZoomToOtherLayers();
     this.renderAll();
     this.emitCurrentCanvasInfoStatus(baseColumnCount, baseRowCount);
   }
@@ -1282,7 +1291,7 @@ export default class Editor extends EventDispatcher {
     );
     this.emitDataChangeEvent({
       isLocalChange,
-      data: this.dataLayer.getCopiedData(),
+      data: this.dataLayer.getData(),
       layerId: modifiedLayerId,
       delta: {
         modifiedPixels,
@@ -1290,7 +1299,7 @@ export default class Editor extends EventDispatcher {
         addedOrDeletedColumns,
       },
     });
-    const updatedData = this.dataLayer.getCopiedData();
+    const updatedData = this.dataLayer.getData();
     const updatedColumnCount = getColumnCountFromData(updatedData);
     const updatedRowCount = getRowCountFromData(updatedData);
     const updatedDimensions = {
@@ -1357,7 +1366,7 @@ export default class Editor extends EventDispatcher {
     );
     this.emitDataChangeEvent({
       isLocalChange,
-      data: this.dataLayer.getCopiedData(),
+      data: this.dataLayer.getData(),
       layerId: modifiedLayerId,
       delta: {
         // there will be no modified pixels since rows and columns are deleted
@@ -1366,7 +1375,7 @@ export default class Editor extends EventDispatcher {
         addedOrDeletedColumns,
       },
     });
-    const updatedData = this.dataLayer.getCopiedData();
+    const updatedData = this.dataLayer.getData();
     const updatedColumnCount = getColumnCountFromData(updatedData);
     const updatedRowCount = getRowCountFromData(updatedData);
     const updatedDimensions = {
@@ -1883,7 +1892,6 @@ export default class Editor extends EventDispatcher {
         );
         this.emitStrokeEndEvent({
           strokedPixels: pixelModifyItems,
-          data: this.dataLayer.getCopiedData(),
           strokeTool: this.brushTool,
         });
       }
@@ -2043,7 +2051,7 @@ export default class Editor extends EventDispatcher {
       }
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places
-      const updatedData = this.dataLayer.getCopiedData();
+      const updatedData = this.dataLayer.getData();
       // we only emit data change event when there is a change
       if (
         modifiedPixels.length !== 0 ||
@@ -2231,7 +2239,7 @@ export default class Editor extends EventDispatcher {
     if (!this.dataLayer.getLayer(layerId)) {
       return;
     }
-    const updatedData = this.dataLayer.getLayer(layerId).getCopiedData();
+    const updatedData = this.dataLayer.getLayer(layerId).getData();
     this.emitGridChangeEvent({
       dimensions: {
         rowCount: getRowCountFromData(updatedData),
@@ -2320,7 +2328,7 @@ export default class Editor extends EventDispatcher {
     this.recordAction(new ColorChangeAction(dataForAction, modifiedLayerId));
     this.emitDataChangeEvent({
       isLocalChange,
-      data: this.dataLayer.getLayer(modifiedLayerId).getCopiedData(),
+      data: this.dataLayer.getLayer(modifiedLayerId).getData(),
       layerId: modifiedLayerId,
       delta: {
         modifiedPixels: dataForAction,
@@ -2374,7 +2382,7 @@ export default class Editor extends EventDispatcher {
 
     this.emitDataChangeEvent({
       isLocalChange,
-      data: this.dataLayer.getLayer(modifiedLayerId).getCopiedData(),
+      data: this.dataLayer.getLayer(modifiedLayerId).getData(),
       layerId: modifiedLayerId,
       delta: {
         modifiedPixels: dataForAction,
@@ -2441,6 +2449,7 @@ export default class Editor extends EventDispatcher {
 
   onMouseDown(evt: TouchyEvent) {
     evt.preventDefault();
+
     const point = getPointFromTouchyEvent(evt, this.element, this.panZoom);
     this.panPoint.lastMousePos = { x: point.offsetX, y: point.offsetY };
     const mouseCartCoord = getMouseCartCoord(
@@ -2599,6 +2608,7 @@ export default class Editor extends EventDispatcher {
         }
       }
     }
+
     this.previousMouseMoveWorldPos = this.mouseDownWorldPos;
   }
 
@@ -3098,11 +3108,10 @@ export default class Editor extends EventDispatcher {
     const effectiveColorChangeItems = Array.from(
       effectiveColorChangeItemsMap.values(),
     );
-    const newData = this.dataLayer.getCopiedData();
+    const newData = this.dataLayer.getData();
     if (effectiveColorChangeItems.length > 0) {
       this.emitStrokeEndEvent({
         strokedPixels: effectiveColorChangeItems,
-        data: newData,
         strokeTool: BrushTool.SELECT,
       });
       // only emit data change event when there is a change
@@ -3211,7 +3220,6 @@ export default class Editor extends EventDispatcher {
     if (effectiveColorChangeItems.length > 0) {
       this.emitStrokeEndEvent({
         strokedPixels: effectiveColorChangeItems,
-        data: newData,
         strokeTool: BrushTool.SELECT,
       });
       // only emit data change event when there is a change
@@ -3282,20 +3290,24 @@ export default class Editor extends EventDispatcher {
 
   onMouseOut(evt: TouchEvent) {
     evt.preventDefault();
+    this.mouseMode = MouseMode.NULL;
     this.relayInteractionDataToDataLayer();
-
     this.interactionLayer.setSelectingArea(null);
     if (this.gridLayer.getHoveredButton() !== null) {
       this.emitHoverPixelChangeEvent({
         indices: null,
       });
     }
+    this.pinchZoomDiff = undefined;
     this.gridLayer.setHoveredButton(null);
     this.renderGridLayer();
     const selectedArea = this.interactionLayer.getSelectedArea();
     if (selectedArea) {
       this.gridLayer.renderSelection(selectedArea);
     }
+    this.mouseDownWorldPos = null;
+    this.mouseDownPanZoom = null;
+    this.previousMouseMoveWorldPos = null;
     return;
   }
 
@@ -3314,7 +3326,7 @@ export default class Editor extends EventDispatcher {
       this.emitDataChangeEvent({
         isLocalChange: true,
         layerId,
-        data: this.dataLayer.getLayer(layerId).getCopiedData(),
+        data: this.dataLayer.getLayer(layerId).getData(),
         delta: {
           addedOrDeletedColumns: [],
           addedOrDeletedRows: [],
