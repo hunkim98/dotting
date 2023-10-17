@@ -436,9 +436,16 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   ]);
 
   useEffect(() => {
-    if (!gridCanvas || !interactionCanvas || !dataCanvas || !backgroundCanvas) {
+    if (
+      !gridCanvas ||
+      !interactionCanvas ||
+      !dataCanvas ||
+      !backgroundCanvas ||
+      !containerRef.current
+    ) {
       return;
     }
+    const { width, height } = containerRef.current.getBoundingClientRect();
     // this only happens once
     const validatedLayers =
       props.initLayers && validateLayers(props.initLayers)
@@ -452,6 +459,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       backgroundCanvas,
       initLayers: validatedLayers,
       gridSquareLength: props.gridSquareLength,
+      width,
+      height,
     });
     editor.setIsGridFixed(props.isGridFixed);
     editor.setIsInteractionApplicable(props.isInteractionApplicable);

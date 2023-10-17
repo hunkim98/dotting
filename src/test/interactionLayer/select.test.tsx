@@ -22,6 +22,8 @@ describe("test for select tool", () => {
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
+      width: 300,
+      height: 300,
     });
     divElement.tabIndex = 1;
     divElement.onmousedown = () => {

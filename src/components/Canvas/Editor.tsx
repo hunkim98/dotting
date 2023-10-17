@@ -4,7 +4,6 @@ import BackgroundLayer from "./BackgroundLayer";
 import {
   DefaultGridSquareLength,
   DefaultMaxScale,
-  DefaultMinScale,
   DefaultZoomSensitivity,
   MouseMode,
   ButtonDirection,
@@ -148,6 +147,8 @@ export default class Editor extends EventDispatcher {
     backgroundCanvas,
     initLayers,
     gridSquareLength,
+    width,
+    height,
   }: {
     gridCanvas: HTMLCanvasElement;
     interactionCanvas: HTMLCanvasElement;
@@ -155,6 +156,8 @@ export default class Editor extends EventDispatcher {
     backgroundCanvas: HTMLCanvasElement;
     initLayers?: Array<LayerProps>;
     gridSquareLength?: number;
+    width: number;
+    height: number;
   }) {
     super();
     this.gridSquareLength = gridSquareLength || this.gridSquareLength;
@@ -185,11 +188,16 @@ export default class Editor extends EventDispatcher {
     );
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
-    this.setPanZoom({
-      offset: {
-        x: this.panZoom.scale * (-initColumnCount / 2) * this.gridSquareLength,
-        y: this.panZoom.scale * (-initRowCount / 2) * this.gridSquareLength,
-      },
+    // this.setPanZoom({
+    //   offset: {
+    //     x: this.panZoom.scale * (-initColumnCount / 2) * this.gridSquareLength,
+    //     y: this.panZoom.scale * (-initRowCount / 2) * this.gridSquareLength,
+    //   },
+    // });
+    this.setSize(width, height);
+    this.adjustInitialZoomScale({
+      width: initColumnCount,
+      height: initRowCount,
     });
     this.initialize();
   }
@@ -207,6 +215,37 @@ export default class Editor extends EventDispatcher {
     touchy(this.element, addEvent, "mouseout", this.onMouseOut);
     touchy(this.element, addEvent, "mousemove", this.onMouseMove);
     this.element.addEventListener("wheel", this.handleWheel);
+  }
+
+  adjustInitialZoomScale(dimensions: Dimensions) {
+    const { width, height } = dimensions;
+    const minMargin = 20;
+    const gridWidth = width * this.gridSquareLength;
+    const canvasWidth = this.element.width * this.dpr;
+    const gridHeight = height * this.gridSquareLength;
+    const canvasHeight = this.element.height * this.dpr;
+    const horizontalMargin = Math.max((canvasWidth - gridWidth) / 2, minMargin);
+    const verticalMargin = Math.max((canvasHeight - gridHeight) / 2, minMargin);
+    const horizontalScale = canvasWidth / (gridWidth + horizontalMargin * 2);
+    const verticalScale = canvasHeight / (gridHeight + verticalMargin * 2);
+    const scale = Math.min(horizontalScale, verticalScale);
+    this.setPanZoom({
+      offset: {
+        x: (-width / 2) * this.gridSquareLength,
+        y: (-height / 2) * this.gridSquareLength,
+      },
+    });
+    const newOffset = returnScrollOffsetFromMouseOffset(
+      { x: canvasWidth / 2, y: canvasHeight / 2 },
+      this.panZoom,
+      scale,
+    );
+    this.setPanZoom({
+      offset: newOffset,
+      scale: scale,
+    });
+
+    return;
   }
 
   emitCurrentGridStatus() {
