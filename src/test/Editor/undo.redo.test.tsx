@@ -24,8 +24,8 @@ describe("test for undo and redo", () => {
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
-      width: 300,
-      height: 300,
+      width: 800,
+      height: 800,
     });
     divElement.tabIndex = 1;
     divElement.onmousedown = () => {
@@ -35,8 +35,9 @@ describe("test for undo and redo", () => {
       editor.onKeyDown(e);
     });
 
-    mockEditor.setSize(800, 800);
+    mockEditor.setIsGridFixed(false);
     editor = mockEditor;
+
     // initialize the canvas with select tool selecting all the pixels
     canvasElement = editor.getCanvasElement();
   });
