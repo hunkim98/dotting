@@ -22,8 +22,8 @@ describe("test for select tool", () => {
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
-      width: 300,
-      height: 300,
+      width: 800,
+      height: 800,
     });
     divElement.tabIndex = 1;
     divElement.onmousedown = () => {
@@ -32,8 +32,6 @@ describe("test for select tool", () => {
     divElement.addEventListener("keydown", (e: any) => {
       editor.onKeyDown(e);
     });
-
-    mockEditor.setSize(800, 800);
     editor = mockEditor;
     // initialize the canvas with select tool selecting all the pixels
     canvasElement = editor.getCanvasElement();
