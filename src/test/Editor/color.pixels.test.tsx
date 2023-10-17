@@ -18,6 +18,8 @@ describe("test for color pixel method in Editor", () => {
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
+      width: 300,
+      height: 300,
     });
     divElement.tabIndex = 1;
     divElement.onmousedown = () => {

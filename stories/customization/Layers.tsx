@@ -176,15 +176,15 @@ const Layers = () => {
           initLayers={[
             {
               id: "layer1",
-              data: CreateEmptySquareData(15),
+              data: CreateEmptySquareData(128),
             },
             {
               id: "layer2",
-              data: CreateEmptySquareData(15),
+              data: CreateEmptySquareData(128),
             },
             {
               id: "layer3",
-              data: CreateEmptySquareData(15),
+              data: CreateEmptySquareData(128),
             },
           ]}
         />
