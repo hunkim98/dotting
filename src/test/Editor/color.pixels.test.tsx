@@ -18,8 +18,8 @@ describe("test for color pixel method in Editor", () => {
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
-      width: 300,
-      height: 300,
+      width: 800,
+      height: 800,
     });
     divElement.tabIndex = 1;
     divElement.onmousedown = () => {
@@ -29,7 +29,6 @@ describe("test for color pixel method in Editor", () => {
       editor.onKeyDown(e);
     });
 
-    mockEditor.setSize(800, 800);
     editor = mockEditor;
     // initialize the canvas with select tool selecting all the pixels
     canvasElement = editor.getCanvasElement();
