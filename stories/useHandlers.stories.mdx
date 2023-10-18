@@ -561,7 +561,6 @@ The params you should pass to the listener is `CanvasStrokeEndParams`:
 ```ts
 export type CanvasStrokeEndParams = {
   strokedPixels: Array<ColorChangeItem>;
-  data: DottingData;
   strokeTool: BrushTool;
 };
 
@@ -578,16 +577,6 @@ export interface ColorChangeItem {
   color: string;
   previousColor: string;
 }
-```
-
-The `DottingData` is defined as below.
-It is a map of `rowIndex` to `columnIndex` to `PixelData`.
-
-```ts
-export type DottingData = Map<number, Map<number, PixelData>>;
-export type PixelData = {
-  color: string;
-};
 ```
 
 <StrokeListener />
