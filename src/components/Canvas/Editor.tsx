@@ -97,8 +97,6 @@ export default class Editor extends EventDispatcher {
   private zoomSensitivity: number = DefaultZoomSensitivity;
   private maxScale: number = DefaultMaxScale;
   private minScale: number = 1 / DefaultGridSquareLength;
-  private staticMinScale: number | null = null;
-  private staticMaxScale: number | null = null;
   private extensionAllowanceRatio = 2;
   private pinchZoomDiff: number | null = null;
   private width: number;
@@ -439,10 +437,9 @@ export default class Editor extends EventDispatcher {
     if (minScale === undefined) {
       return;
     }
-    if (this.staticMaxScale !== null && minScale > this.staticMaxScale) {
+    if (minScale > this.maxScale) {
       throw new Error("minScale cannot be greater than maxScale");
     }
-    this.staticMinScale = minScale;
     this.minScale = minScale;
   }
 
@@ -455,10 +452,9 @@ export default class Editor extends EventDispatcher {
     if (maxScale === undefined) {
       return;
     }
-    if (this.staticMinScale !== null && maxScale < this.staticMinScale) {
+    if (maxScale < this.minScale) {
       throw new Error("maxScale cannot be less than minScale");
     }
-    this.staticMaxScale = maxScale;
     this.maxScale = maxScale;
   }
 
