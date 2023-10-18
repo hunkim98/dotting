@@ -428,11 +428,6 @@ export default class Editor extends EventDispatcher {
     this.renderAll();
   }
 
-  /**
-   * @description This function will set the static min scale of the canvas
-   * @param minScale
-   * @returns
-   */
   setMinScale(minScale: number) {
     if (minScale === undefined) {
       return;
@@ -443,11 +438,6 @@ export default class Editor extends EventDispatcher {
     this.minScale = minScale;
   }
 
-  /**
-   * @description This function will set the static max scale of the canvas
-   * @param maxScale
-   * @returns
-   */
   setMaxScale(maxScale: number) {
     if (maxScale === undefined) {
       return;
