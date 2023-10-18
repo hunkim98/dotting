@@ -106,6 +106,7 @@ export default class Editor extends EventDispatcher {
   private originalLayerIdsInOrderForHistory = [];
   private topRowIndex: number;
   private leftColumnIndex: number;
+  private capturedDataImageData: ImageData | null = null;
 
   private panZoom: PanZoom = {
     scale: 1,
@@ -3142,45 +3143,7 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.renderSelection(movingSelectedArea);
   }
 
-  onMouseUp(evt: TouchyEvent) {
-    evt.preventDefault();
-    this.mouseMode = MouseMode.NULL;
-    if (this.brushTool === BrushTool.SELECT) {
-      this.relaySelectingAreaToSelectedArea();
-      this.relayMovingSelectedAreaToSelectedArea();
-      this.relayExtendingSelectedAreaToSelectedArea();
-      // get the updated selected area
-      const selectedArea = this.interactionLayer.getSelectedArea();
-      const doesSelectedAreaExistInGrid = getDoesAreaOverlapPixelgrid(
-        selectedArea,
-        this.dataLayer.getRowCount(),
-        this.dataLayer.getColumnCount(),
-        this.gridSquareLength,
-      );
-      if (!doesSelectedAreaExistInGrid) {
-        this.interactionLayer.setMovingSelectedArea(null);
-        this.interactionLayer.setMovingSelectedPixels(null);
-        this.interactionLayer.setSelectedArea(null);
-        this.interactionLayer.setSelectedAreaPixels(null);
-        this.gridLayer.render();
-      }
-    }
-    this.relayInteractionDataToDataLayer();
-    this.pinchZoomDiff = undefined;
-    this.gridLayer.setHoveredButton(null);
-    this.renderGridLayer();
-    const selectedArea = this.interactionLayer.getSelectedArea();
-    if (selectedArea) {
-      this.gridLayer.renderSelection(selectedArea);
-    }
-    // we make mouse down world position null
-    this.mouseDownWorldPos = null;
-    this.mouseDownPanZoom = null;
-    this.previousMouseMoveWorldPos = null;
-    return;
-  }
-
-  onMouseOut(evt: TouchEvent) {
+  onInteractionEnded(evt: TouchyEvent) {
     evt.preventDefault();
     this.mouseMode = MouseMode.NULL;
     this.relayInteractionDataToDataLayer();
@@ -3201,6 +3164,34 @@ export default class Editor extends EventDispatcher {
     this.mouseDownPanZoom = null;
     this.previousMouseMoveWorldPos = null;
     return;
+  }
+
+  onMouseUp(evt: TouchyEvent) {
+    if (this.brushTool === BrushTool.SELECT) {
+      this.relaySelectingAreaToSelectedArea();
+      this.relayMovingSelectedAreaToSelectedArea();
+      this.relayExtendingSelectedAreaToSelectedArea();
+      // get the updated selected area
+      const selectedArea = this.interactionLayer.getSelectedArea();
+      const doesSelectedAreaExistInGrid = getDoesAreaOverlapPixelgrid(
+        selectedArea,
+        this.dataLayer.getRowCount(),
+        this.dataLayer.getColumnCount(),
+        this.gridSquareLength,
+      );
+      if (!doesSelectedAreaExistInGrid) {
+        this.interactionLayer.setMovingSelectedArea(null);
+        this.interactionLayer.setMovingSelectedPixels(null);
+        this.interactionLayer.setSelectedArea(null);
+        this.interactionLayer.setSelectedAreaPixels(null);
+        this.gridLayer.render();
+      }
+    }
+    this.onInteractionEnded(evt);
+  }
+
+  onMouseOut(evt: TouchyEvent) {
+    this.onInteractionEnded(evt);
   }
 
   renderGridLayer() {
