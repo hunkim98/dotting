@@ -548,7 +548,27 @@ export default class DataLayer extends BaseLayer {
     return { swipedPixels, validColumnIndices, validRowIndices };
   }
 
-  render() {
+  captureStatusAsImage() {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Cannot get context");
+    }
+    const { rowKeys, columnKeys } = this.renderOnCanvas(ctx);
+    const minRowKey = rowKeys[0]; // rowKeys are already ordered
+    const maxRowKey = rowKeys[rowKeys.length - 1];
+    const minColumnKey = columnKeys[0];
+    const maxColumnKey = columnKeys[columnKeys.length - 1];
+    const imageData = ctx.getImageData(
+      minColumnKey * this.gridSquareLength,
+      minRowKey * this.gridSquareLength,
+      (maxColumnKey - minColumnKey + 1) * this.gridSquareLength,
+      (maxRowKey - minRowKey + 1) * this.gridSquareLength,
+    );
+    return imageData;
+  }
+
+  renderOnCanvas(ctx: CanvasRenderingContext2D) {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const allRowKeys = getRowKeysFromData(this.getData());
@@ -557,7 +577,6 @@ export default class DataLayer extends BaseLayer {
       x: this.leftColumnIndex * this.gridSquareLength,
       y: this.topRowIndex * this.gridSquareLength,
     };
-    const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
     const convertedLeftTopScreenPoint = convertCartesianToScreen(
       this.element,
@@ -626,5 +645,13 @@ export default class DataLayer extends BaseLayer {
       }
     }
     ctx.restore();
+    return {
+      rowKeys: allRowKeys,
+      columnKeys: allColumnKeys,
+    };
+  }
+
+  render() {
+    this.renderOnCanvas(this.ctx);
   }
 }
