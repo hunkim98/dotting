@@ -427,18 +427,7 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setGridSquareLength(length);
     this.interactionLayer.setGridSquareLength(length);
     this.dataLayer.setGridSquareLength(length);
-    this.adjustMinScaleByGridSquareLength(length);
     this.renderAll();
-  }
-
-  adjustMinScaleByGridSquareLength(gridSquareLength: number) {
-    if (this.staticMinScale === null) {
-      // we can freely dynamically adjust the min scale
-      // we should let min scale be the minimum scale that can fit the canvas
-      // the minimum grid square length can be 1px
-      const newScale = 1 / this.gridSquareLength;
-      this.minScale = newScale;
-    }
   }
 
   /**
