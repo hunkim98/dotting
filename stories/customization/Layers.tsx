@@ -58,6 +58,8 @@ const Layers = () => {
     e.stopPropagation();
     setCurrentLayer(id);
   };
+
+  const size = 1000;
   return (
     <div
       style={{
@@ -176,15 +178,15 @@ const Layers = () => {
           initLayers={[
             {
               id: "layer1",
-              data: CreateEmptySquareData(32),
+              data: CreateEmptySquareData(size),
             },
             {
               id: "layer2",
-              data: CreateEmptySquareData(32),
+              data: CreateEmptySquareData(size),
             },
             {
               id: "layer3",
-              data: CreateEmptySquareData(32),
+              data: CreateEmptySquareData(size),
             },
           ]}
         />

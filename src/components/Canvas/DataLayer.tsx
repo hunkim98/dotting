@@ -29,6 +29,8 @@ export default class DataLayer extends BaseLayer {
   private layers: Array<DottingDataLayer>;
   private currentLayer: DottingDataLayer;
   private defaultPixelColor = DefaultPixelColor;
+  private capturedImageBitmap: ImageBitmap | null = null;
+  private capturedImageBitmapScale = 1;
 
   constructor({
     canvas,
@@ -282,6 +284,10 @@ export default class DataLayer extends BaseLayer {
 
   setDefaultPixelColor(color: string) {
     this.defaultPixelColor = color;
+  }
+
+  getCapturedImageBitmap() {
+    return this.capturedImageBitmap;
   }
 
   /**
@@ -548,27 +554,93 @@ export default class DataLayer extends BaseLayer {
     return { swipedPixels, validColumnIndices, validRowIndices };
   }
 
-  captureStatusAsImage() {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
+  updateCapturedImageBitmap() {
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    // leftTopPoint is a cartesian coordinate
+    const allRowKeys = getRowKeysFromData(this.getData());
+    const allColumnKeys = getColumnKeysFromData(this.getData());
+
+    const width = this.dpr
+      ? allColumnKeys.length * squareLength * this.dpr
+      : allColumnKeys.length * squareLength;
+    const height = this.dpr
+      ? allRowKeys.length * squareLength * this.dpr
+      : allRowKeys.length * squareLength;
+
+    const canvas = new OffscreenCanvas(width, height);
+    const fakeCtx: OffscreenCanvasRenderingContext2D = canvas.getContext(
+      "2d",
+    ) as any; // this is to forestall typescript error
+    if (!fakeCtx) {
       throw new Error("Cannot get context");
     }
-    const { rowKeys, columnKeys } = this.renderOnCanvas(ctx);
-    const minRowKey = rowKeys[0]; // rowKeys are already ordered
-    const maxRowKey = rowKeys[rowKeys.length - 1];
-    const minColumnKey = columnKeys[0];
-    const maxColumnKey = columnKeys[columnKeys.length - 1];
-    const imageData = ctx.getImageData(
-      minColumnKey * this.gridSquareLength,
-      minRowKey * this.gridSquareLength,
-      (maxColumnKey - minColumnKey + 1) * this.gridSquareLength,
-      (maxRowKey - minRowKey + 1) * this.gridSquareLength,
-    );
-    return imageData;
+    // getRowKeysFromData and getColumnKeysFromData are used to get the row and column indices
+    // the indices are sorted in ascending order
+
+    // color back with default color
+    if (this.defaultPixelColor) {
+      fakeCtx.save();
+      fakeCtx.fillStyle = this.defaultPixelColor;
+      fakeCtx.fillRect(
+        0,
+        0,
+        squareLength * allColumnKeys.length * this.dpr,
+        squareLength * allRowKeys.length * this.dpr,
+      );
+      fakeCtx.restore();
+    }
+
+    fakeCtx.save();
+    for (const i of allRowKeys) {
+      for (const j of allColumnKeys) {
+        const rowIndex = i;
+        const columnIndex = j;
+        const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
+        const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
+        if (
+          relativeRowIndex === undefined ||
+          relativeColumnIndex === undefined
+        ) {
+          continue;
+        }
+        const color = this.layers
+          .slice()
+          .reverse()
+          .reduce((acc, layer) => {
+            if (layer.getIsVisible() === false) {
+              return acc;
+            }
+            const layerColor = layer
+              .getData()
+              .get(rowIndex)
+              ?.get(columnIndex)?.color;
+            if (layerColor) {
+              return layerColor;
+            }
+            return acc;
+          }, "");
+
+        if (!color) {
+          continue;
+        }
+        fakeCtx.fillStyle = color;
+
+        fakeCtx.fillRect(
+          relativeColumnIndex * squareLength * this.dpr,
+          relativeRowIndex * squareLength * this.dpr,
+          squareLength * this.dpr,
+          squareLength * this.dpr,
+        );
+      }
+    }
+    fakeCtx.restore();
+    this.capturedImageBitmapScale = this.panZoom.scale;
+    this.capturedImageBitmap = canvas.transferToImageBitmap();
   }
 
-  renderOnCanvas(ctx: CanvasRenderingContext2D) {
+  renderOnCanvas(
+    ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+  ) {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const allRowKeys = getRowKeysFromData(this.getData());
@@ -652,6 +724,41 @@ export default class DataLayer extends BaseLayer {
   }
 
   render() {
+    console.log("rendering original");
     this.renderOnCanvas(this.ctx);
+  }
+
+  // only use this when panning since image data cannot be scaled
+  renderImageBitmap() {
+    if (!this.capturedImageBitmap) {
+      throw new Error("Captured image data is null");
+    }
+    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    // leftTopPoint is a cartesian coordinate
+    const leftTopPoint: Coord = {
+      x: 0,
+      y: 0,
+    };
+    const convertedLeftTopScreenPoint = convertCartesianToScreen(
+      this.element,
+      leftTopPoint,
+      this.dpr,
+    );
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLeftTopScreenPoint,
+      this.panZoom,
+    );
+    this.ctx.save();
+    this.ctx.clearRect(0, 0, this.width, this.height);
+    const newScale = this.panZoom.scale / this.capturedImageBitmapScale;
+    console.log("rendering image bitmap");
+    this.ctx.drawImage(
+      this.capturedImageBitmap,
+      correctedLeftTopScreenPoint.x,
+      correctedLeftTopScreenPoint.y,
+      (this.capturedImageBitmap.width / this.dpr) * newScale,
+      (this.capturedImageBitmap.height / this.dpr) * newScale,
+    );
+    this.ctx.restore();
   }
 }
