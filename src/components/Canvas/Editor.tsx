@@ -107,6 +107,7 @@ export default class Editor extends EventDispatcher {
   private topRowIndex: number;
   private leftColumnIndex: number;
   private capturedDataImageData: ImageData | null = null;
+  private lastRenderAllCall: number | null = null;
 
   private panZoom: PanZoom = {
     scale: 1,
@@ -135,6 +136,8 @@ export default class Editor extends EventDispatcher {
   private mouseDownPanZoom: PanZoom | null = null;
   private mouseMoveWorldPos: Coord = { x: 0, y: 0 };
   private previousMouseMoveWorldPos: Coord | null = null;
+  private dataLayerWorker = new Worker("./dataLayerWorker.ts");
+
   // TODO: why do we need this? For games?
   private isDrawingEnabled = true;
   // We need isInteractionApplicable to allow multiplayer
@@ -224,6 +227,7 @@ export default class Editor extends EventDispatcher {
     touchy(this.element, addEvent, "mouseup", this.onMouseUp);
     touchy(this.element, addEvent, "mouseout", this.onMouseOut);
     touchy(this.element, addEvent, "mousemove", this.onMouseMove);
+    // this.element.addEventListener("message", () => {});
     this.element.addEventListener("wheel", this.handleWheel);
   }
 
@@ -430,7 +434,13 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setGridSquareLength(length);
     this.interactionLayer.setGridSquareLength(length);
     this.dataLayer.setGridSquareLength(length);
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
   }
 
   setMinScale(minScale: number) {
@@ -1013,7 +1023,13 @@ export default class Editor extends EventDispatcher {
       width: columnCount,
       height: rowCount,
     });
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
   }
 
   setLayers(layers: Array<LayerProps>) {
@@ -1055,7 +1071,10 @@ export default class Editor extends EventDispatcher {
       height: rowCount,
     });
     this.emitCurrentLayerStatus();
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(this.renderAll);
   }
 
   convertWorldPosToCanvasOffset(worldPos: Coord): Coord {
@@ -1142,7 +1161,13 @@ export default class Editor extends EventDispatcher {
     // relay updated information to layers
     // we must render all when panzoom changes!
     this.relayPanZoomToOtherLayers();
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
     this.emitCurrentCanvasInfoStatus(baseColumnCount, baseRowCount);
   }
 
@@ -1269,7 +1294,13 @@ export default class Editor extends EventDispatcher {
       this.interactionLayer.setCriterionDataForRendering(
         this.interactionLayer.getCapturedData(),
       );
-      this.renderAll();
+      if (this.lastRenderAllCall) {
+        cancelAnimationFrame(this.lastRenderAllCall);
+      }
+      this.lastRenderAllCall = requestAnimationFrame(() => {
+        this.renderAll();
+        this.lastRenderAllCall = null;
+      });
     }
   };
 
@@ -1355,7 +1386,13 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
   }
 
   deleteGridIndices({
@@ -1432,7 +1469,13 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
   }
 
   private extendInteractionGridBy(
@@ -1986,7 +2029,6 @@ export default class Editor extends EventDispatcher {
       this.dataLayer.getData(),
     );
     interactionLayer.resetCapturedData();
-    this.renderAll();
   }
 
   /**
@@ -2177,7 +2219,13 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
   }
 
   redo() {
@@ -2198,7 +2246,13 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
   }
 
   erasePixels(
@@ -2226,7 +2280,13 @@ export default class Editor extends EventDispatcher {
         addedOrDeletedRows: [],
       },
     });
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
   }
 
   // this only applies for multiplayer mode or user direct function call
@@ -2292,7 +2352,13 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setCriterionDataForRendering(
       this.dataLayer.getLayer(modifiedLayerId).getData(),
     );
-    this.renderAll();
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
   }
 
   // this will be only used by the current device user
@@ -3145,8 +3211,12 @@ export default class Editor extends EventDispatcher {
 
   onInteractionEnded(evt: TouchyEvent) {
     evt.preventDefault();
-    this.mouseMode = MouseMode.NULL;
     this.relayInteractionDataToDataLayer();
+    if (this.mouseMode !== MouseMode.NULL) {
+      this.dataLayer.render();
+      this.dataLayer.updateCapturedImageBitmap();
+    }
+    this.mouseMode = MouseMode.NULL;
     this.interactionLayer.setSelectingArea(null);
     if (this.gridLayer.getHoveredButton() !== null) {
       this.emitHoverPixelChangeEvent({
@@ -3163,6 +3233,13 @@ export default class Editor extends EventDispatcher {
     this.mouseDownWorldPos = null;
     this.mouseDownPanZoom = null;
     this.previousMouseMoveWorldPos = null;
+    if (this.lastRenderAllCall) {
+      cancelAnimationFrame(this.lastRenderAllCall);
+    }
+    this.lastRenderAllCall = requestAnimationFrame(() => {
+      this.renderAll();
+      this.lastRenderAllCall = null;
+    });
     return;
   }
 
@@ -3371,7 +3448,16 @@ export default class Editor extends EventDispatcher {
     // when extending the grid, the original data layer will not be considered
     const capturedData = this.interactionLayer.getCapturedData();
     if (!capturedData) {
-      this.renderDataLayer();
+      if (
+        (this.mouseMode === MouseMode.PANNING ||
+          this.mouseMode === MouseMode.PINCHZOOMING ||
+          this.mouseMode === MouseMode.NULL) &&
+        this.dataLayer.getCapturedImageBitmap()
+      ) {
+        this.dataLayer.renderImageBitmap();
+      } else {
+        this.renderDataLayer();
+      }
       this.renderErasedPixelsFromInteractionLayerInDataLayer();
     } else {
       // if captured data is not null, we will render grid layer based on captured data
@@ -3449,6 +3535,10 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.render();
 
     // this.renderSwipedPixelsFromInteractionLayerInDataLayer();
+  }
+
+  workerListener(e: MessageEvent) {
+    return;
   }
 
   destroy() {
