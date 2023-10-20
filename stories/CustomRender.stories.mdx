@@ -1,0 +1,290 @@
+import { Meta } from "@storybook/addon-docs";
+import Code from "./assets/code-brackets.svg";
+import Colors from "./assets/colors.svg";
+import Comments from "./assets/comments.svg";
+import Direction from "./assets/direction.svg";
+import Flow from "./assets/flow.svg";
+import Plugin from "./assets/plugin.svg";
+import Repo from "./assets/repo.svg";
+import StackAlt from "./assets/stackalt.svg";
+import Dotting from "../src/components/Dotting";
+import { ChangeBrushColor } from "./useBrushComponents";
+import CustomRender from "./customization/CustomRender";
+
+<Meta title="Customization/CustomRender" />
+
+<style>
+  {`
+  .subheading {
+    --mediumdark: '#999999';
+    font-weight: 900;
+    font-size: 13px;
+    color: #999;
+    letter-spacing: 6px;
+    line-height: 24px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    margin-top: 40px;
+    font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  }
+
+  .link-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+    row-gap: 10px;
+  }
+
+  @media (min-width: 620px) {
+    .link-list {
+      row-gap: 20px;
+      column-gap: 20px;
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media all and (-ms-high-contrast:none) {
+  .link-list {
+      display: -ms-grid;
+      -ms-grid-columns: 1fr 1fr;
+      -ms-grid-rows: 1fr 1fr;
+    }
+  }
+
+  .link-item {
+    display: block;
+    padding: 20px 30px 20px 15px;
+    border: 1px solid #00000010;
+    border-radius: 5px;
+    transition: background 150ms ease-out, border 150ms ease-out, transform 150ms ease-out;
+    color: #333333;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .link-item:hover {
+    border-color: #1EA7FD50;
+    transform: translate3d(0, -3px, 0);
+    box-shadow: rgba(0, 0, 0, 0.08) 0 3px 10px 0;
+  }
+
+  .link-item:active {
+    border-color: #1EA7FD;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .link-item strong {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+  
+  .link-item img {
+    height: 40px;
+    width: 40px;
+    margin-right: 15px;
+    flex: none;
+  }
+
+  .link-item span {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .tip {
+    display: inline-block;
+    border-radius: 1em;
+    font-size: 11px;
+    line-height: 12px;
+    font-weight: 700;
+    background: #E7FDD8;
+    color: #66BF3C;
+    padding: 4px 12px;
+    margin-right: 10px;
+    vertical-align: top;
+  }
+
+  .tip-wrapper {
+    font-size: 13px;
+    line-height: 20px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+  }
+
+  .tip-wrapper code {
+    font-size: 12px;
+    display: inline-block;
+  }
+`}
+</style>
+
+# Adding your own render logic
+
+#### Manipulating foreground or background canvas rendering context
+
+Dotting provides users to manipulate the rendering context of the foreground and background canvas.
+Users can access the foreground canvas and background canvas by using `getForegroundCanvas` and `getBackgroundCanvas` methods from `useDotting`
+
+### To get the foreground or background canvas, you must use `useDotting` hook
+
+```tsx
+import { useDotting, DottingRef } from "dotting";
+
+const DottingComponent = () => {
+  const { getForegroundCanvas, getBackgroundCanvas } =
+    useDotting<DottingRef>(ref);
+
+  // use getForegroundCanvas or getBackgroundCanvas
+
+  return <Dotting ref={ref} width={300} height={300} />;
+};
+```
+
+<CustomRender />
+
+Code Base
+
+```tsx
+import React, { useEffect, useRef } from "react";
+
+import {
+  Dotting,
+  DottingRef,
+  CanvasInfoChangeParams,
+  useDotting,
+  useHandlers,
+} from "dotting";
+
+const CustomRender = () => {
+  const ref = useRef<DottingRef>(null);
+  const { getCustomBackGroundCanvas, getCustomForeGroundCanvas } =
+    useDotting(ref);
+  const {
+    addCanvasInfoChangeEventListener,
+    removeCanvasInfoChangeEventListener,
+    addCanvasElementEventListener,
+    removeCanvasElementEventListener,
+  } = useHandlers(ref);
+
+  useEffect(() => {
+    const renderer: EventListenerOrEventListenerObject = (e: any) => {
+      const fgCanvas = getCustomForeGroundCanvas();
+      const width = fgCanvas.width;
+      const height = fgCanvas.height;
+      const fgCtx = getCustomForeGroundCanvas().getContext("2d");
+      fgCtx.clearRect(0, 0, width, height);
+      fgCtx.fillStyle = "#FFFFFF";
+      fgCtx.strokeStyle = "#000000";
+      const dpr = window.devicePixelRatio;
+      const offsetX = dpr ? e.offsetX * dpr : e.offsetX;
+      const offsetY = dpr ? e.offsetY * dpr : e.offsetY;
+      const mouseOffset = {
+        x: offsetX,
+        y: offsetY,
+      };
+      fgCtx.beginPath();
+      fgCtx.arc(mouseOffset.x, mouseOffset.y, 20, 0, 2 * Math.PI);
+      fgCtx.closePath();
+
+      fgCtx.fill();
+      fgCtx.stroke();
+    };
+    addCanvasElementEventListener("mousemove", renderer);
+    return () => {
+      removeCanvasElementEventListener("mousemove", renderer);
+    };
+  }, []);
+
+  useEffect(() => {
+    const renderer = ({
+      topLeftCornerOffset,
+      gridSquareSize,
+    }: CanvasInfoChangeParams) => {
+      const bgCanvas = getCustomBackGroundCanvas();
+      const width = bgCanvas.width;
+      const height = bgCanvas.height;
+      const bgCtx = getCustomBackGroundCanvas().getContext("2d");
+      const imgUrl =
+        "https://www.cosy.sbg.ac.at/~pmeerw/Watermarking/lena_gray.gif";
+      const img = new Image();
+      img.src = imgUrl;
+      const dpr = window.devicePixelRatio;
+      const imageWidth = dpr ? gridSquareSize * 10 * dpr : gridSquareSize * 10;
+      const imageHeight = dpr ? gridSquareSize * 10 * dpr : gridSquareSize * 10;
+
+      img.onload = () => {
+        bgCtx.clearRect(0, 0, width, height);
+        bgCtx.drawImage(
+          img,
+          topLeftCornerOffset.x * window.devicePixelRatio,
+          topLeftCornerOffset.y * window.devicePixelRatio,
+          imageWidth,
+          imageHeight,
+        );
+      };
+    };
+    addCanvasInfoChangeEventListener(renderer);
+    return () => {
+      removeCanvasInfoChangeEventListener(renderer);
+    };
+  }, [
+    getCustomBackGroundCanvas,
+    getCustomForeGroundCanvas,
+    addCanvasInfoChangeEventListener,
+    removeCanvasInfoChangeEventListener,
+  ]);
+
+  return (
+    <div
+      style={{
+        width: "100%",
+        display: "flex",
+        fontFamily: `'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif`,
+        marginBottom: 50,
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Dotting
+          ref={ref}
+          width={"100%"}
+          height={500}
+          defaultPixelColor="transparent"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default CustomRender;
+```
+
+<div className="subheading">Resources</div>
+
+<div className="link-list">
+
+<a
+  className="link-item"
+  href="https://github.com/hunkim98/dotting/tree/main/stories/customization/CustomRender.tsx"
+  target="_blank"
+>
+  <img src={StackAlt} alt="Build" />
+  <span>
+    <strong>Github Source Code</strong>
+    View the source code and contribute to the project!
+  </span>
+</a>
+
+</div>
+
+<div className="tip-wrapper">
+  {/* <span className="tip">Tip</span>Edit the Markdown in{" "}
+  <code>src/stories/Introduction.stories.mdx</code> */}
+</div>
+```

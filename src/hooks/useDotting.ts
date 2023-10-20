@@ -78,6 +78,14 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
+  const getCustomForeGroundCanvas = useCallback(() => {
+    return ref.current?.getCustomForeGroundCanvas();
+  }, [ref]);
+
+  const getCustomBackGroundCanvas = useCallback(() => {
+    return ref.current?.getCustomBackGroundCanvas();
+  }, [ref]);
+
   return {
     clear,
     colorPixels,
@@ -90,6 +98,8 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     setLayers,
     addGridIndices,
     deleteGridIndices,
+    getCustomForeGroundCanvas,
+    getCustomBackGroundCanvas,
   };
 };
 

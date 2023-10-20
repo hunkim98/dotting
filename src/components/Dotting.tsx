@@ -396,6 +396,20 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         editor.setSize(rect.width, rect.height, dpr);
         editor.scale(dpr, dpr);
         editor.renderAll();
+
+        // This is to resize the custom foreground and background canvas
+        if (customForeGroundCanvas) {
+          customForeGroundCanvas.width = dpr ? rect.width * dpr : rect.width;
+          customForeGroundCanvas.height = dpr ? rect.height * dpr : rect.height;
+          customForeGroundCanvas.style.width = `${rect.width}px`;
+          customForeGroundCanvas.style.height = `${rect.height}px`;
+        }
+        if (customBackGroundCanvas) {
+          customBackGroundCanvas.width = dpr ? rect.width * dpr : rect.width;
+          customBackGroundCanvas.height = dpr ? rect.height * dpr : rect.height;
+          customBackGroundCanvas.style.width = `${rect.width}px`;
+          customBackGroundCanvas.style.height = `${rect.height}px`;
+        }
       }
     };
     onResize();
@@ -403,7 +417,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     return () => {
       window.removeEventListener("resize", onResize);
     };
-  }, [editor, containerRef, props.height, props.width]);
+  }, [
+    editor,
+    containerRef,
+    props.height,
+    props.width,
+    customBackGroundCanvas,
+    customForeGroundCanvas,
+  ]);
 
   useEffect(() => {
     if (!editor) {
