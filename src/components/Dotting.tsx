@@ -141,6 +141,9 @@ export interface DottingRef {
   onMouseDown: (e: { offsetX: number; offsetY: number }) => void;
   onMouseMove: (e: { offsetX: number; offsetY: number }) => void;
   onMouseUp: (e: { offsetX: number; offsetY: number }) => void;
+  // for manipulating custom foreground and background canvas
+  getCustomForeGroundCanvas: () => HTMLCanvasElement | null;
+  getCustomBackGroundCanvas: () => HTMLCanvasElement | null;
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -149,6 +152,10 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   ref: ForwardedRef<DottingRef>,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [customForeGroundCanvas, setCustomForeGroundCanvas] =
+    useState<HTMLCanvasElement | null>(null);
+  const [customBackGroundCanvas, setCustomBackGroundCanvas] =
+    useState<HTMLCanvasElement | null>(null);
   const [gridCanvas, setGridCanvas] = useState<HTMLCanvasElement | null>(null);
   const [dataCanvas, setDataCanvas] = useState<HTMLCanvasElement | null>(null);
   const [interactionCanvas, setInteractionCanvas] =
@@ -514,6 +521,28 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     element.style["touchAction"] = "none";
     setBackgroundCanvas(element);
   }, []);
+
+  const gotCustomForeGroundCanvasRef = useCallback(
+    (element: HTMLCanvasElement) => {
+      if (!element) {
+        return;
+      }
+      element.style["touchAction"] = "none";
+      setCustomForeGroundCanvas(element);
+    },
+    [],
+  );
+
+  const gotCustomBackGroundCanvasRef = useCallback(
+    (element: HTMLCanvasElement) => {
+      if (!element) {
+        return;
+      }
+      element.style["touchAction"] = "none";
+      setCustomBackGroundCanvas(element);
+    },
+    [],
+  );
 
   const addDataChangeListener = useCallback(
     (listener: CanvasDataChangeHandler) => {
@@ -891,6 +920,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
+  const getCustomForeGroundCanvas = useCallback(() => {
+    return customForeGroundCanvas;
+  }, [customForeGroundCanvas]);
+
+  const getCustomBackGroundCanvas = useCallback(() => {
+    return customBackGroundCanvas;
+  }, [customBackGroundCanvas]);
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -946,6 +983,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       onMouseDown,
       onMouseMove,
       onMouseUp,
+      // for manipulating custom foreground and background canvas
+      getCustomForeGroundCanvas,
+      getCustomBackGroundCanvas,
     }),
     [
       // for useDotting
@@ -997,6 +1037,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       onMouseDown,
       onMouseMove,
       onMouseUp,
+      // for manipulating custom foreground and background canvas
+      getCustomForeGroundCanvas,
+      getCustomBackGroundCanvas,
     ],
   );
 
@@ -1021,14 +1064,27 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       }}
     >
       <canvas
+        id="dotting-background-canvas"
         ref={gotBackgroundCanvasRef}
         style={{
           position: "absolute",
+          border: "1px solid #555555",
+          pointerEvents: "none",
+          ...props.style,
+        }}
+      />
+      <canvas
+        id="dotting-custom-background-canvas"
+        ref={gotCustomBackGroundCanvasRef}
+        style={{
+          position: "absolute",
+          pointerEvents: "none",
           border: "1px solid #555555",
           ...props.style,
         }}
       />
       <canvas
+        id="dotting-data-canvas"
         ref={gotDataCanvasRef}
         style={{
           position: "absolute",
@@ -1038,6 +1094,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         }}
       />
       <canvas
+        id="dotting-interaction-canvas"
         ref={gotInteractionCanvasRef}
         style={{
           position: "absolute",
@@ -1046,7 +1103,18 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         }}
       />
       <canvas
+        id="dotting-grid-canvas"
         ref={gotGridCanvasRef}
+        style={{
+          position: "absolute",
+          pointerEvents: "none",
+          border: "1px solid #555555",
+          ...props.style,
+        }}
+      />
+      <canvas
+        ref={gotCustomForeGroundCanvasRef}
+        id="dotting-custom-foreground-canvas"
         style={{
           position: "absolute",
           pointerEvents: "none",
