@@ -198,12 +198,6 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
-    // this.setPanZoom({
-    //   offset: {
-    //     x: this.panZoom.scale * (-initColumnCount / 2) * this.gridSquareLength,
-    //     y: this.panZoom.scale * (-initRowCount / 2) * this.gridSquareLength,
-    //   },
-    // });
     this.setSize(width, height);
     this.adjustInitialZoomScale({
       width: initColumnCount,
@@ -1121,9 +1115,6 @@ export default class Editor extends EventDispatcher {
         : this.height -
           (this.height / 2 + leftTopCornerWorldPos.y + gridHeightInWorld) *
             this.panZoom.scale;
-      // this.height -
-      //   rowCount * this.gridSquareLength * this.panZoom.scale -
-      //   (this.height / 2) * this.panZoom.scale;
 
       if (correctedOffset.x < minXPosition) {
         correctedOffset.x = minXPosition;
@@ -1492,90 +1483,6 @@ export default class Editor extends EventDispatcher {
     );
     this.gridLayer.setTopRowIndex(updatedGridIndices.topRowIndex);
     this.gridLayer.setLeftColumnIndex(updatedGridIndices.leftColumnIndex);
-
-    /* cut if amount is not effective */
-    if (extendAmount.x <= 0 && extendAmount.y <= 0) return;
-
-    // const baseRowCount = getRowCountFromData(interactionCapturedData);
-    // const baseColumnCount = getColumnCountFromData(interactionCapturedData);
-
-    // const panZoomDiff = {
-    //   x: this.gridSquareLength * extendAmount.x * this.panZoom.scale,
-    //   y: this.gridSquareLength * extendAmount.y * this.panZoom.scale,
-    // };
-    // if (direction === ButtonDirection.TOP) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y - panZoomDiff.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.BOTTOM) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.LEFT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x - panZoomDiff.x,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.RIGHT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.TOPLEFT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x - panZoomDiff.x,
-    //       y: this.panZoom.offset.y - panZoomDiff.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.TOPRIGHT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y - panZoomDiff.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.BOTTOMLEFT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x - panZoomDiff.x,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.BOTTOMRIGHT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // }
   }
 
   private shortenInteractionGridBy(
@@ -1633,91 +1540,6 @@ export default class Editor extends EventDispatcher {
     );
     this.gridLayer.setLeftColumnIndex(updatedGridIndices.leftColumnIndex);
     this.gridLayer.setTopRowIndex(updatedGridIndices.topRowIndex);
-
-    // we do not need to shorten the grid when shortenAmount is 0
-    if (shortenAmount.x <= 0 && shortenAmount.y <= 0) return;
-
-    // const interactionCapturedData = interactionLayer.getCapturedData()!;
-    // const baseRowCount = getRowCountFromData(interactionCapturedData);
-    // const baseColumnCount = getColumnCountFromData(interactionCapturedData);
-
-    // const panZoomDiff = {
-    //   x: (this.gridSquareLength / 2) * shortenAmount.x * this.panZoom.scale,
-    //   y: (this.gridSquareLength / 2) * shortenAmount.y * this.panZoom.scale,
-    // };
-    // if (direction === ButtonDirection.TOP) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y + panZoomDiff.y * 2,
-    //     },
-    //     baseColumnCount,
-    //     baseRowCount,
-    //   });
-    // } else if (direction === ButtonDirection.BOTTOM) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseColumnCount,
-    //     baseRowCount,
-    //   });
-    // } else if (direction === ButtonDirection.LEFT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x + panZoomDiff.x * 2,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseColumnCount,
-    //     baseRowCount,
-    //   });
-    // } else if (direction === ButtonDirection.RIGHT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseColumnCount,
-    //     baseRowCount,
-    //   });
-    // } else if (direction === ButtonDirection.TOPLEFT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x + panZoomDiff.x * 2,
-    //       y: this.panZoom.offset.y + panZoomDiff.y * 2,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.TOPRIGHT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y + panZoomDiff.y * 2,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.BOTTOMLEFT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x + panZoomDiff.x * 2,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // } else if (direction === ButtonDirection.BOTTOMRIGHT) {
-    //   this.setPanZoom({
-    //     offset: {
-    //       x: this.panZoom.offset.x,
-    //       y: this.panZoom.offset.y,
-    //     },
-    //     baseRowCount,
-    //     baseColumnCount,
-    //   });
-    // }
   }
 
   // we should allow panning with pinch zoom too
