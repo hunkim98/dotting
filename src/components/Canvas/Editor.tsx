@@ -1,6 +1,5 @@
 import React, { KeyboardEvent } from "react";
 
-import BackgroundLayer from "./BackgroundLayer";
 import {
   DefaultGridSquareLength,
   DefaultMaxScale,
@@ -93,7 +92,10 @@ export default class Editor extends EventDispatcher {
   private gridLayer: GridLayer;
   private interactionLayer: InteractionLayer;
   private dataLayer: DataLayer;
-  private backgroundLayer: BackgroundLayer;
+  private foregroundCanvasElement: HTMLCanvasElement;
+  private backgroundCanvasElement: HTMLCanvasElement;
+  private foregroundCtx: CanvasRenderingContext2D;
+  private backgroundCtx: CanvasRenderingContext2D;
   private zoomSensitivity: number = DefaultZoomSensitivity;
   private maxScale: number = DefaultMaxScale;
   private minScale: number = 1 / DefaultGridSquareLength;
@@ -143,6 +145,7 @@ export default class Editor extends EventDispatcher {
     interactionCanvas,
     dataCanvas,
     backgroundCanvas,
+    foregroundCanvas,
     initLayers,
     gridSquareLength,
     width,
@@ -152,6 +155,7 @@ export default class Editor extends EventDispatcher {
     interactionCanvas: HTMLCanvasElement;
     dataCanvas: HTMLCanvasElement;
     backgroundCanvas: HTMLCanvasElement;
+    foregroundCanvas: HTMLCanvasElement;
     initLayers?: Array<LayerProps>;
     gridSquareLength?: number;
     width: number;
@@ -178,9 +182,10 @@ export default class Editor extends EventDispatcher {
       rowCount: initRowCount,
       canvas: interactionCanvas,
     });
-    this.backgroundLayer = new BackgroundLayer({
-      canvas: backgroundCanvas,
-    });
+    this.foregroundCanvasElement = foregroundCanvas;
+    this.foregroundCtx = foregroundCanvas.getContext("2d")!;
+    this.backgroundCanvasElement = backgroundCanvas;
+    this.backgroundCtx = backgroundCanvas.getContext("2d")!;
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
@@ -372,20 +377,11 @@ export default class Editor extends EventDispatcher {
     });
   }
 
-  // background related functions ⬇
-  setBackgroundMode(backgroundMode?: "checkerboard" | "color") {
-    this.backgroundLayer.setBackgroundMode(backgroundMode);
-    this.renderBackgroundLayer();
-  }
-
-  setBackgroundColor(color: React.CSSProperties["color"]) {
-    this.backgroundLayer.setBackgroundColor(color);
-    this.interactionLayer.setBackgroundColor(color);
-    this.renderBackgroundLayer();
-  }
-  // background related functions ⬆
-
   // interaction related functions ⬇
+  setBackgroundColor(color: React.CSSProperties["color"]) {
+    this.interactionLayer.setBackgroundColor(color);
+  }
+
   setIndicatorPixels(indicatorPixels: Array<PixelModifyItem>) {
     this.interactionLayer.setIndicatorPixels(indicatorPixels);
     this.renderInteractionLayer();
@@ -725,7 +721,8 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.scale(x, y);
     this.gridLayer.scale(x, y);
     this.interactionLayer.scale(x, y);
-    this.backgroundLayer.scale(x, y);
+    this.foregroundCtx.scale(x, y);
+    this.backgroundCtx.scale(x, y);
   }
 
   setWidth(width: number, devicePixelRatio?: number) {
@@ -733,7 +730,14 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setWidth(width, devicePixelRatio);
     this.gridLayer.setWidth(width, devicePixelRatio);
     this.interactionLayer.setWidth(width, devicePixelRatio);
-    this.backgroundLayer.setWidth(width, devicePixelRatio);
+    this.foregroundCanvasElement.width = devicePixelRatio
+      ? width * devicePixelRatio
+      : width;
+    this.foregroundCanvasElement.style.width = `${width}px`;
+    this.backgroundCanvasElement.width = devicePixelRatio
+      ? width * devicePixelRatio
+      : width;
+    this.backgroundCanvasElement.style.width = `${width}px`;
   }
 
   setHeight(height: number, devicePixelRatio?: number) {
@@ -741,7 +745,14 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setHeight(height, devicePixelRatio);
     this.gridLayer.setHeight(height, devicePixelRatio);
     this.interactionLayer.setHeight(height, devicePixelRatio);
-    this.backgroundLayer.setHeight(height, devicePixelRatio);
+    this.foregroundCanvasElement.height = devicePixelRatio
+      ? height * devicePixelRatio
+      : height;
+    this.foregroundCanvasElement.style.height = `${height}px`;
+    this.backgroundCanvasElement.height = devicePixelRatio
+      ? height * devicePixelRatio
+      : height;
+    this.backgroundCanvasElement.style.height = `${height}px`;
   }
 
   getWidth() {
@@ -1021,6 +1032,20 @@ export default class Editor extends EventDispatcher {
     });
     this.emitCurrentLayerStatus();
     this.renderAll();
+  }
+
+  convertWorldPosToCanvasOffset(worldPos: Coord): Coord {
+    const convertedLeftTopScreenPoint = convertCartesianToScreen(
+      this.element,
+      worldPos,
+      this.dpr,
+    );
+    const correctedLeftTopScreenPoint = getScreenPoint(
+      convertedLeftTopScreenPoint,
+      this.panZoom,
+    );
+
+    return correctedLeftTopScreenPoint;
   }
 
   setPanZoom({
@@ -3458,7 +3483,6 @@ export default class Editor extends EventDispatcher {
   }
 
   renderAll() {
-    this.renderBackgroundLayer();
     // if there is captured data in interaction layer we will not render data layer
     // captured data will not be null when user is extending the grid
     // when extending the grid, the original data layer will not be considered
@@ -3542,10 +3566,6 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.render();
 
     // this.renderSwipedPixelsFromInteractionLayerInDataLayer();
-  }
-
-  renderBackgroundLayer() {
-    this.backgroundLayer.render();
   }
 
   destroy() {

@@ -13,11 +13,15 @@ describe("test for color pixel method in Editor", () => {
     const backgroundCanvas = divElement.appendChild(
       document.createElement("canvas"),
     );
+    const foregroundCanvas = divElement.appendChild(
+      document.createElement("canvas"),
+    );
     const mockEditor = new Editor({
       gridCanvas,
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
+      foregroundCanvas,
       width: 800,
       height: 800,
     });

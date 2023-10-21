@@ -5,8 +5,11 @@ import Dotting, { DottingRef } from "../../src/components/Dotting";
 
 const CustomRender = () => {
   const ref = useRef<DottingRef>(null);
-  const { getCustomBackGroundCanvas, getCustomForeGroundCanvas } =
-    useDotting(ref);
+  const {
+    getForegroundCanvas,
+    getBackgroundCanvas,
+    convertWorldPosToCanvasOffset,
+  } = useDotting(ref);
   const {
     addCanvasInfoChangeEventListener,
     removeCanvasInfoChangeEventListener,
@@ -16,16 +19,15 @@ const CustomRender = () => {
 
   useEffect(() => {
     const renderer: EventListenerOrEventListenerObject = (e: any) => {
-      const fgCanvas = getCustomForeGroundCanvas();
+      const fgCanvas = getForegroundCanvas();
       const width = fgCanvas.width;
       const height = fgCanvas.height;
-      const fgCtx = getCustomForeGroundCanvas().getContext("2d");
+      const fgCtx = fgCanvas.getContext("2d");
       fgCtx.clearRect(0, 0, width, height);
       fgCtx.fillStyle = "#FFFFFF";
       fgCtx.strokeStyle = "#000000";
-      const dpr = window.devicePixelRatio;
-      const offsetX = dpr ? e.offsetX * dpr : e.offsetX;
-      const offsetY = dpr ? e.offsetY * dpr : e.offsetY;
+      const offsetX = e.offsetX;
+      const offsetY = e.offsetY;
       const mouseOffset = {
         x: offsetX,
         y: offsetY,
@@ -48,27 +50,28 @@ const CustomRender = () => {
       topLeftCornerOffset,
       gridSquareSize,
     }: CanvasInfoChangeParams) => {
-      const bgCanvas = getCustomBackGroundCanvas();
+      const bgCanvas = getBackgroundCanvas();
       const width = bgCanvas.width;
       const height = bgCanvas.height;
-      const bgCtx = getCustomBackGroundCanvas().getContext("2d");
+      const bgCtx = bgCanvas.getContext("2d");
       const imgUrl =
         "https://www.cosy.sbg.ac.at/~pmeerw/Watermarking/lena_gray.gif";
       const img = new Image();
       img.src = imgUrl;
-      const dpr = window.devicePixelRatio;
-      const imageWidth = dpr ? gridSquareSize * 10 * dpr : gridSquareSize * 10;
-      const imageHeight = dpr ? gridSquareSize * 10 * dpr : gridSquareSize * 10;
+      const imageWorldPosX = 0;
+      const imageWorldPosY = 0;
+
+      const { x, y } = convertWorldPosToCanvasOffset(
+        imageWorldPosX,
+        imageWorldPosY,
+      );
+
+      const imageWidth = gridSquareSize * 10;
+      const imageHeight = gridSquareSize * 10;
 
       img.onload = () => {
         bgCtx.clearRect(0, 0, width, height);
-        bgCtx.drawImage(
-          img,
-          topLeftCornerOffset.x * window.devicePixelRatio,
-          topLeftCornerOffset.y * window.devicePixelRatio,
-          imageWidth,
-          imageHeight,
-        );
+        bgCtx.drawImage(img, x, y, imageWidth, imageHeight);
       };
     };
     addCanvasInfoChangeEventListener(renderer);
@@ -76,8 +79,8 @@ const CustomRender = () => {
       removeCanvasInfoChangeEventListener(renderer);
     };
   }, [
-    getCustomBackGroundCanvas,
-    getCustomForeGroundCanvas,
+    getForegroundCanvas,
+    getBackgroundCanvas,
     addCanvasInfoChangeEventListener,
     removeCanvasInfoChangeEventListener,
   ]);

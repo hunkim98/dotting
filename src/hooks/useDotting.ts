@@ -78,13 +78,20 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     [ref],
   );
 
-  const getCustomForeGroundCanvas = useCallback(() => {
-    return ref.current?.getCustomForeGroundCanvas();
+  const getForegroundCanvas = useCallback(() => {
+    return ref.current?.getForegroundCanvas();
   }, [ref]);
 
-  const getCustomBackGroundCanvas = useCallback(() => {
-    return ref.current?.getCustomBackGroundCanvas();
+  const getBackgroundCanvas = useCallback(() => {
+    return ref.current?.getBackgroundCanvas();
   }, [ref]);
+
+  const convertWorldPosToCanvasOffset = useCallback(
+    (x: number, y: number) => {
+      return ref.current?.convertWorldPosToCanvasOffset(x, y);
+    },
+    [ref],
+  );
 
   return {
     clear,
@@ -98,8 +105,9 @@ const useDotting = (ref: MutableRefObject<DottingRef | null>) => {
     setLayers,
     addGridIndices,
     deleteGridIndices,
-    getCustomForeGroundCanvas,
-    getCustomBackGroundCanvas,
+    getForegroundCanvas,
+    getBackgroundCanvas,
+    convertWorldPosToCanvasOffset,
   };
 };
 
