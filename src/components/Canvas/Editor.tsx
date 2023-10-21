@@ -1091,27 +1091,40 @@ export default class Editor extends EventDispatcher {
         rowCount * this.gridSquareLength * this.panZoom.scale > this.height;
       const isGridColumnsBiggerThanCanvas =
         columnCount * this.gridSquareLength * this.panZoom.scale > this.width;
+      const leftTopCornerWorldPos = {
+        x: this.leftColumnIndex * this.gridSquareLength,
+        y: this.topRowIndex * this.gridSquareLength,
+      };
+      const gridWidthInWorld = columnCount * this.gridSquareLength;
+      const gridHeightInWorld = rowCount * this.gridSquareLength;
 
       const minXPosition = isGridColumnsBiggerThanCanvas
-        ? -(columnCount * this.gridSquareLength * this.panZoom.scale) -
-          (this.width / 2) * this.panZoom.scale
-        : (-this.width / 2) * this.panZoom.scale;
+        ? (-leftTopCornerWorldPos.x - this.width / 2 - gridWidthInWorld) *
+          this.panZoom.scale
+        : (-leftTopCornerWorldPos.x - this.width / 2) * this.panZoom.scale;
 
       const minYPosition = isGridRowsBiggerThanCanvas
-        ? -rowCount * this.gridSquareLength * this.panZoom.scale -
-          (this.height / 2) * this.panZoom.scale
-        : (-this.height / 2) * this.panZoom.scale;
+        ? (-leftTopCornerWorldPos.y - this.height / 2 - gridHeightInWorld) *
+          this.panZoom.scale
+        : (-leftTopCornerWorldPos.y - this.height / 2) * this.panZoom.scale;
 
       const maxXPosition = isGridColumnsBiggerThanCanvas
-        ? this.width - (this.width / 2) * this.panZoom.scale
+        ? this.width -
+          (this.width / 2 + leftTopCornerWorldPos.x) * this.panZoom.scale
         : this.width -
-          columnCount * this.gridSquareLength * this.panZoom.scale -
-          (this.width / 2) * this.panZoom.scale;
+          (this.width / 2 + leftTopCornerWorldPos.x + gridWidthInWorld) *
+            this.panZoom.scale;
+
       const maxYPosition = isGridRowsBiggerThanCanvas
-        ? this.height - (this.height / 2) * this.panZoom.scale
+        ? this.height -
+          (this.height / 2 + leftTopCornerWorldPos.y) * this.panZoom.scale
         : this.height -
-          rowCount * this.gridSquareLength * this.panZoom.scale -
-          (this.height / 2) * this.panZoom.scale;
+          (this.height / 2 + leftTopCornerWorldPos.y + gridHeightInWorld) *
+            this.panZoom.scale;
+      // this.height -
+      //   rowCount * this.gridSquareLength * this.panZoom.scale -
+      //   (this.height / 2) * this.panZoom.scale;
+
       if (correctedOffset.x < minXPosition) {
         correctedOffset.x = minXPosition;
       }
