@@ -524,16 +524,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     setBackgroundCanvas(element);
   }, []);
 
-  const gotCustomForeGroundCanvasRef = useCallback(
-    (element: HTMLCanvasElement) => {
-      if (!element) {
-        return;
-      }
-      element.style["touchAction"] = "none";
-      setForeGroundCanvas(element);
-    },
-    [],
-  );
+  const gotForeGroundCanvasRef = useCallback((element: HTMLCanvasElement) => {
+    if (!element) {
+      return;
+    }
+    element.style["touchAction"] = "none";
+    setForeGroundCanvas(element);
+  }, []);
 
   const addDataChangeListener = useCallback(
     (listener: CanvasDataChangeHandler) => {
@@ -1110,7 +1107,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         }}
       />
       <canvas
-        ref={gotCustomForeGroundCanvasRef}
+        ref={gotForeGroundCanvasRef}
         id="dotting-foreground-canvas"
         style={{
           position: "absolute",
