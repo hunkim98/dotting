@@ -2467,6 +2467,7 @@ export default class Editor extends EventDispatcher {
       this.panZoom,
       this.dpr,
     );
+    console.log(mouseCartCoord);
     this.mouseDownWorldPos = {
       x: mouseCartCoord.x,
       y: mouseCartCoord.y,

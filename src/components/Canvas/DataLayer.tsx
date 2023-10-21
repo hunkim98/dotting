@@ -543,9 +543,11 @@ export default class DataLayer extends BaseLayer {
     // the indices are sorted in ascending order
     const allRowKeys = getRowKeysFromData(this.getData());
     const allColumnKeys = getColumnKeysFromData(this.getData());
+    const leftColumnKey = Math.min(...allColumnKeys.keys());
+    const topRowKey = Math.min(...allRowKeys.keys());
     const leftTopPoint: Coord = {
-      x: Math.min(...allColumnKeys) * this.gridSquareLength,
-      y: Math.min(...allRowKeys) * this.gridSquareLength,
+      x: leftColumnKey * this.gridSquareLength,
+      y: topRowKey * this.gridSquareLength,
     };
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
