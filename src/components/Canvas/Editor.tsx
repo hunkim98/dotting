@@ -311,8 +311,8 @@ export default class Editor extends EventDispatcher {
 
   emitCurrentCanvasInfoStatus(baseColumnCount?: number, baseRowCount?: number) {
     const leftTopPoint: Coord = {
-      x: 0,
-      y: 0,
+      x: this.leftColumnIndex * this.gridSquareLength,
+      y: this.topRowIndex * this.gridSquareLength,
     };
     const convertedLeftTopScreenPoint = convertCartesianToScreen(
       this.element,
