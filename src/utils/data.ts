@@ -117,7 +117,9 @@ export const deleteRowOfData = (data: DottingData, rowIndex: number) => {
 
 export const deleteColumnOfData = (data: DottingData, columnIndex: number) => {
   data.forEach(row => {
-    if (!row.has(columnIndex)) return;
+    if (!row.has(columnIndex)) {
+      return;
+    }
     row.delete(columnIndex);
   });
 };

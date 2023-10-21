@@ -40,6 +40,10 @@ export default class DataLayer extends BaseLayer {
     super({ canvas });
 
     if (layers) {
+      const topRowIndex = layers[0].data[0][0].rowIndex;
+      const leftColumnIndex = layers[0].data[0][0].columnIndex;
+      this.setTopRowIndex(topRowIndex);
+      this.setLeftColumnIndex(leftColumnIndex);
       this.layers = layers.map(
         layer =>
           new DottingDataLayer({
@@ -48,6 +52,10 @@ export default class DataLayer extends BaseLayer {
           }),
       );
     } else {
+      const topRowIndex = 0;
+      const leftColumnIndex = 0;
+      this.setTopRowIndex(topRowIndex);
+      this.setLeftColumnIndex(leftColumnIndex);
       const defaultNestedArray: Array<Array<PixelModifyItem>> = [];
       const { rowCount, columnCount } = DefaultPixelDataDimensions;
       for (let i = 0; i < rowCount; i++) {
@@ -255,6 +263,10 @@ export default class DataLayer extends BaseLayer {
   // this is for setting all layers together
   setLayers(layers: Array<LayerProps>) {
     this.layers = [];
+    const topRowIndex = layers[0].data[0][0].rowIndex;
+    const leftColumnIndex = layers[0].data[0][0].columnIndex;
+    this.setTopRowIndex(topRowIndex);
+    this.setLeftColumnIndex(leftColumnIndex);
     this.layers = layers.map(
       layer =>
         new DottingDataLayer({
@@ -541,11 +553,9 @@ export default class DataLayer extends BaseLayer {
     // leftTopPoint is a cartesian coordinate
     const allRowKeys = getRowKeysFromData(this.getData());
     const allColumnKeys = getColumnKeysFromData(this.getData());
-    const leftColumnKey = Math.min(...allColumnKeys);
-    const topRowKey = Math.min(...allRowKeys);
     const leftTopPoint: Coord = {
-      x: leftColumnKey * this.gridSquareLength,
-      y: topRowKey * this.gridSquareLength,
+      x: this.leftColumnIndex * this.gridSquareLength,
+      y: this.topRowIndex * this.gridSquareLength,
     };
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
