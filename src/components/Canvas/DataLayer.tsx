@@ -539,12 +539,10 @@ export default class DataLayer extends BaseLayer {
   render() {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
-    // getRowKeysFromData and getColumnKeysFromData are used to get the row and column indices
-    // the indices are sorted in ascending order
     const allRowKeys = getRowKeysFromData(this.getData());
     const allColumnKeys = getColumnKeysFromData(this.getData());
-    const leftColumnKey = Math.min(...allColumnKeys.keys());
-    const topRowKey = Math.min(...allRowKeys.keys());
+    const leftColumnKey = Math.min(...allColumnKeys);
+    const topRowKey = Math.min(...allRowKeys);
     const leftTopPoint: Coord = {
       x: leftColumnKey * this.gridSquareLength,
       y: topRowKey * this.gridSquareLength,
@@ -557,7 +555,7 @@ export default class DataLayer extends BaseLayer {
       this.dpr,
     );
     const correctedLeftTopScreenPoint = getScreenPoint(
-      leftTopPoint,
+      convertedLeftTopScreenPoint,
       this.panZoom,
     );
 
