@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 
+import { DefaultBackgroundColor } from "./Canvas/config";
 import Editor from "./Canvas/Editor";
 import {
   AddGridIndicesParams,
@@ -29,7 +30,6 @@ import {
 } from "./Canvas/types";
 import { validateLayers } from "../utils/data";
 import { TouchyEvent } from "../utils/touch";
-import { DefaultBackgroundColor } from "./Canvas/config";
 
 export interface DottingProps {
   width: number | string;

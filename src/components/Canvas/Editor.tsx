@@ -189,6 +189,7 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
+    this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
     // this.setPanZoom({
@@ -1315,6 +1316,7 @@ export default class Editor extends EventDispatcher {
       this.emitCurrentCanvasInfoStatus();
     }
     this.relayDataDimensionsToLayers();
+    this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.interactionLayer.resetCapturedData();
     this.interactionLayer.setCriterionDataForRendering(
@@ -1391,6 +1393,7 @@ export default class Editor extends EventDispatcher {
       this.emitCurrentCanvasInfoStatus();
     }
     this.relayDataDimensionsToLayers();
+    this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.interactionLayer.resetCapturedData();
     this.interactionLayer.setCriterionDataForRendering(
@@ -2094,6 +2097,7 @@ export default class Editor extends EventDispatcher {
       this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     }
     this.relayDataDimensionsToLayers();
+    this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
@@ -2284,6 +2288,7 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setColumnCount(columnCount);
     this.interactionLayer.setDataLayerRowCount(rowCount);
     this.interactionLayer.setDataLayerColumnCount(columnCount);
+    this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
@@ -2304,6 +2309,7 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setColumnCount(columnCount);
     this.interactionLayer.setDataLayerRowCount(rowCount);
     this.interactionLayer.setDataLayerColumnCount(columnCount);
+    this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
@@ -2396,6 +2402,9 @@ export default class Editor extends EventDispatcher {
         })),
       },
     });
+    this.gridLayer.setCriterionDataForRendering(
+      this.dataLayer.getLayer(modifiedLayerId).getData(),
+    );
     this.dataLayer.setCriterionDataForRendering(
       this.dataLayer.getLayer(modifiedLayerId).getData(),
     );

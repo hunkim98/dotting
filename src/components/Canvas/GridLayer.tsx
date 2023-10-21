@@ -704,6 +704,10 @@ export default class GridLayer extends BaseLayer {
    * @returns {void}
    */
   render() {
+    const columnKeys = this.getColumnKeyOrderMap();
+    const rowKeys = this.getRowKeyOrderMap();
+    const leftColumnKey = Math.min(...columnKeys.keys());
+    const topRowKey = Math.min(...rowKeys.keys());
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
     const squareLength = this.gridSquareLength * this.panZoom.scale;
