@@ -38,6 +38,7 @@ export default class DataLayer extends BaseLayer {
     layers?: Array<LayerProps>;
   }) {
     super({ canvas });
+
     if (layers) {
       this.layers = layers.map(
         layer =>
@@ -59,6 +60,7 @@ export default class DataLayer extends BaseLayer {
           });
         }
       }
+
       this.layers = [
         new DottingDataLayer({
           data: defaultNestedArray,
@@ -537,9 +539,13 @@ export default class DataLayer extends BaseLayer {
   render() {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
+    // getRowKeysFromData and getColumnKeysFromData are used to get the row and column indices
+    // the indices are sorted in ascending order
+    const allRowKeys = getRowKeysFromData(this.getData());
+    const allColumnKeys = getColumnKeysFromData(this.getData());
     const leftTopPoint: Coord = {
-      x: 0,
-      y: 0,
+      x: Math.min(...allColumnKeys) * this.gridSquareLength,
+      y: Math.min(...allRowKeys) * this.gridSquareLength,
     };
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
@@ -549,14 +555,9 @@ export default class DataLayer extends BaseLayer {
       this.dpr,
     );
     const correctedLeftTopScreenPoint = getScreenPoint(
-      convertedLeftTopScreenPoint,
+      leftTopPoint,
       this.panZoom,
     );
-
-    // getRowKeysFromData and getColumnKeysFromData are used to get the row and column indices
-    // the indices are sorted in ascending order
-    const allRowKeys = getRowKeysFromData(this.getData());
-    const allColumnKeys = getColumnKeysFromData(this.getData());
 
     // color back with default color
     if (this.defaultPixelColor) {
