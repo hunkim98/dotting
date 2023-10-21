@@ -182,9 +182,11 @@ export const getPixelIndexFromMouseCartCoord = (
   sortedColumnIndices: number[],
   gridSquareLength: number,
 ) => {
+  const leftColumnIndex = sortedColumnIndices[0];
+  const topRowIndex = sortedRowIndices[0];
   const leftTopPoint: Coord = {
-    x: 0,
-    y: 0,
+    x: leftColumnIndex * gridSquareLength,
+    y: topRowIndex * gridSquareLength,
   };
   if (
     mouseCartCoord.x > leftTopPoint.x &&
