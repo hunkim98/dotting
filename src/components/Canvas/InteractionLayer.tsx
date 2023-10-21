@@ -1680,9 +1680,13 @@ export default class InteractionLayer extends BaseLayer {
   render() {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
+    const columnKeys = this.getColumnKeyOrderMap();
+    const rowKeys = this.getRowKeyOrderMap();
+    const leftColumnKey = Math.min(...columnKeys.keys());
+    const topRowKey = Math.min(...rowKeys.keys());
     const leftTopPoint: Coord = {
-      x: 0,
-      y: 0,
+      x: leftColumnKey * this.gridSquareLength,
+      y: topRowKey * this.gridSquareLength,
     };
     const convertedLetTopScreenPoint = convertCartesianToScreen(
       this.element,
