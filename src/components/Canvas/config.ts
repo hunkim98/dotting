@@ -11,6 +11,8 @@ export const DefaultButtonHeight = 30;
 
 export const DefaultButtonMargin = DefaultButtonHeight / 2;
 
+export const MaxImageBitMapSideLength = 2500;
+
 export enum ButtonDirection {
   TOP = "TOP",
   BOTTOM = "BOTTOM",

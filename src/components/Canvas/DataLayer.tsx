@@ -3,6 +3,7 @@ import {
   DefaultGridSquareLength,
   DefaultPixelColor,
   DefaultPixelDataDimensions,
+  MaxImageBitMapSideLength,
 } from "./config";
 import {
   ColorChangeItem,
@@ -556,10 +557,21 @@ export default class DataLayer extends BaseLayer {
   }
 
   updateCapturedImageBitmap() {
-    const squareLength = this.gridSquareLength * this.panZoom.scale;
+    let squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const allRowKeys = getRowKeysFromData(this.getData());
     const allColumnKeys = getColumnKeysFromData(this.getData());
+    const imageWidth = allColumnKeys.length * squareLength;
+    const imageHeight = allRowKeys.length * squareLength;
+    const capturedPanZoomValue = {
+      offset: { ...this.panZoom.offset },
+      scale: this.panZoom.scale,
+    };
+    if (imageWidth > MaxImageBitMapSideLength) {
+      squareLength = MaxImageBitMapSideLength / allColumnKeys.length;
+      capturedPanZoomValue.scale = squareLength / this.gridSquareLength;
+    }
+
     const width = this.dpr
       ? allColumnKeys.length * squareLength * this.dpr
       : allColumnKeys.length * squareLength;
@@ -634,7 +646,7 @@ export default class DataLayer extends BaseLayer {
       }
     }
     fakeCtx.restore();
-    this.capturedImageBitmapScale = this.panZoom.scale;
+    this.capturedImageBitmapScale = capturedPanZoomValue.scale;
     this.capturedImageBitmap = canvas.transferToImageBitmap();
   }
 
