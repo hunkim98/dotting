@@ -106,7 +106,6 @@ export default class Editor extends EventDispatcher {
   private originalLayerIdsInOrderForHistory = [];
   private topRowIndex: number;
   private leftColumnIndex: number;
-  private capturedDataImageData: ImageData | null = null;
   private lastRenderAllCall: number | null = null;
 
   private panZoom: PanZoom = {
