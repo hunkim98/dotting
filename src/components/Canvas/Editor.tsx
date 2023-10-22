@@ -156,6 +156,7 @@ export default class Editor extends EventDispatcher {
     width,
     height,
     initAutoScale,
+    dpr,
   }: {
     gridCanvas: HTMLCanvasElement;
     interactionCanvas: HTMLCanvasElement;
@@ -167,6 +168,7 @@ export default class Editor extends EventDispatcher {
     width: number;
     height: number;
     initAutoScale?: boolean;
+    dpr?: number;
   }) {
     super();
     this.gridSquareLength = gridSquareLength || this.gridSquareLength;
@@ -203,6 +205,10 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
+
+    if (dpr) {
+      this.scale(dpr, dpr);
+    }
     this.setSize(width, height);
     this.adjustInitialZoomScale(
       {
@@ -211,7 +217,9 @@ export default class Editor extends EventDispatcher {
       },
       initAutoScale ? undefined : 1,
     );
+
     this.initialize();
+    this.dataLayer.updateCapturedImageBitmap();
   }
 
   initialize() {
