@@ -59,7 +59,7 @@ const Layers = () => {
     setCurrentLayer(id);
   };
 
-  const size = 200;
+  const size = 1000;
   return (
     <div
       style={{

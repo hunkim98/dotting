@@ -73,7 +73,7 @@ export class DottingDataLayer extends Observable<DottingData> {
     for (const i of columnKeys) {
       this.data.get(rowIndex)!.set(i, { color: "" });
     }
-    // this.notify(this.getCopiedData());
+    this.notify(this.getData());
     return rowIndex;
   };
 
@@ -85,7 +85,7 @@ export class DottingDataLayer extends Observable<DottingData> {
         row.set(columnIndex, { color: "" });
       }
     });
-    // this.notify(this.getCopiedData());
+    this.notify(this.getData());
     this.columnKeys.add(columnIndex);
     return validColumnIndex;
   };
@@ -98,7 +98,7 @@ export class DottingDataLayer extends Observable<DottingData> {
     validRowIndex = rowIndex;
     this.data.delete(rowIndex);
     this.rowKeys.delete(rowIndex);
-    // this.notify(this.getCopiedData());
+    this.notify(this.getData());
     return validRowIndex;
   }
 
@@ -112,7 +112,7 @@ export class DottingDataLayer extends Observable<DottingData> {
       row.delete(columnIndex);
     });
     this.columnKeys.delete(columnIndex);
-    // this.notify(this.getCopiedData());
+    this.notify(this.getData());
     return validColumnIndex;
   }
 
@@ -136,7 +136,7 @@ export class DottingDataLayer extends Observable<DottingData> {
         this.data.get(i)!.set(j, { color: "" });
       }
     }
-    this.notify(this.getCopiedData());
+    this.notify(this.getData());
     return { previousPixels, newPixels };
   }
 
@@ -155,7 +155,7 @@ export class DottingDataLayer extends Observable<DottingData> {
     this.data = data;
     this.rowKeys = new Set(data.keys());
     this.columnKeys = new Set(data.get(Array.from(data.keys())[0])!.keys());
-    // this.notify(this.getCopiedData());
+    this.notify(this.getData());
   }
 
   setIsVisible(isVisible: boolean) {
