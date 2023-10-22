@@ -559,7 +559,7 @@ export default class DataLayer extends BaseLayer {
     // leftTopPoint is a cartesian coordinate
     const allRowKeys = getRowKeysFromData(this.getData());
     const allColumnKeys = getColumnKeysFromData(this.getData());
-
+    console.log(this.dpr);
     const width = this.dpr
       ? allColumnKeys.length * squareLength * this.dpr
       : allColumnKeys.length * squareLength;

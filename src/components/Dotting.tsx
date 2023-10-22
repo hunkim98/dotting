@@ -457,6 +457,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         ? props.initLayers
         : undefined;
 
+    const dpr = window.devicePixelRatio;
     const editor = new Editor({
       gridCanvas,
       interactionCanvas,
@@ -467,11 +468,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       gridSquareLength: props.gridSquareLength,
       width,
       height,
+      dpr,
     });
+    if (dpr) {
+      editor.scale(dpr, dpr);
+    }
     editor.setIsGridFixed(props.isGridFixed);
     editor.setIsInteractionApplicable(props.isInteractionApplicable);
     editor.setIsDrawingEnabled(props.isDrawingEnabled);
-    // editor.setBackgroundMode(props.backgroundMode);
     editor.setIsPanZoomable(props.isPanZoomable);
     editor.setIsGridVisible(props.isGridVisible);
     editor.setGridStrokeColor(props.gridStrokeColor);
