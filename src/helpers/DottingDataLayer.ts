@@ -11,6 +11,8 @@ export class DottingDataLayer extends Observable<DottingData> {
   private data: DottingData;
   private id: string;
   private isVisible = true;
+  private rowKeys: Set<number>;
+  private columnKeys: Set<number>;
   constructor({
     data,
     id,
@@ -36,6 +38,8 @@ export class DottingDataLayer extends Observable<DottingData> {
           .set(leftColumnIndex + j, { color: data[i][j].color });
       }
     }
+    this.rowKeys = new Set(this.data.keys());
+    this.columnKeys = new Set(this.data.get(topRowIndex)!.keys());
   }
 
   getDataInfo() {
@@ -60,15 +64,16 @@ export class DottingDataLayer extends Observable<DottingData> {
   };
 
   addRowToData = (rowIndex: number) => {
-    const columnKeys = this.getColumnKeysFromData();
+    const columnKeys = this.columnKeys;
     if (this.data.has(rowIndex)) {
       return null;
     }
     this.data.set(rowIndex, new Map());
+    this.rowKeys.add(rowIndex);
     for (const i of columnKeys) {
       this.data.get(rowIndex)!.set(i, { color: "" });
     }
-    this.notify(this.getCopiedData());
+    // this.notify(this.getCopiedData());
     return rowIndex;
   };
 
@@ -80,7 +85,8 @@ export class DottingDataLayer extends Observable<DottingData> {
         row.set(columnIndex, { color: "" });
       }
     });
-    this.notify(this.getCopiedData());
+    // this.notify(this.getCopiedData());
+    this.columnKeys.add(columnIndex);
     return validColumnIndex;
   };
 
@@ -91,7 +97,8 @@ export class DottingDataLayer extends Observable<DottingData> {
     }
     validRowIndex = rowIndex;
     this.data.delete(rowIndex);
-    this.notify(this.getCopiedData());
+    this.rowKeys.delete(rowIndex);
+    // this.notify(this.getCopiedData());
     return validRowIndex;
   }
 
@@ -104,7 +111,8 @@ export class DottingDataLayer extends Observable<DottingData> {
       validColumnIndex = columnIndex;
       row.delete(columnIndex);
     });
-    this.notify(this.getCopiedData());
+    this.columnKeys.delete(columnIndex);
+    // this.notify(this.getCopiedData());
     return validColumnIndex;
   }
 
@@ -145,7 +153,9 @@ export class DottingDataLayer extends Observable<DottingData> {
 
   setData(data: DottingData) {
     this.data = data;
-    this.notify(this.getCopiedData());
+    this.rowKeys = new Set(data.keys());
+    this.columnKeys = new Set(data.get(Array.from(data.keys())[0])!.keys());
+    // this.notify(this.getCopiedData());
   }
 
   setIsVisible(isVisible: boolean) {
