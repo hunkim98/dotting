@@ -1830,10 +1830,13 @@ export default class Editor extends EventDispatcher {
       }
 
       const capturedData = interactionLayer.getCapturedData();
-      // if there is capturedData, it means that the user has changed the dimension
+      // if there is capturedData, it means that the user has changed the dimensionc
+
       if (capturedData) {
+        console.log("start!");
         // for action of grid change, we do not need to consider modifiedPixels
         const interactionGridIndices = getGridIndicesFromData(capturedData);
+
         const dataGridIndices =
           this.interactionLayer.getCapturedDataOriginalIndices()!;
         const topRowDiff =
@@ -1964,7 +1967,7 @@ export default class Editor extends EventDispatcher {
           const deletedRowIndices = addedOrDeletedRows
             .filter(item => item.isDelete === true)
             .map(el => el.index);
-
+          // this part takes much time
           this.dataLayer.addGridIndices({
             rowIndicesToAdd: addedRowIndices,
             columnIndicesToAdd: addedColumIndices,
@@ -1981,6 +1984,7 @@ export default class Editor extends EventDispatcher {
             swipedPixels,
           );
         }
+        console.log("end!");
       }
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places

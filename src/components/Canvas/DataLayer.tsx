@@ -495,6 +495,7 @@ export default class DataLayer extends BaseLayer {
   }) {
     const validRowIndices: Array<number> = [];
     const validColumnIndices: Array<number> = [];
+    console.log(rowIndicesToAdd, columnIndicesToAdd);
     for (const rowIndex of rowIndicesToAdd) {
       const { validRowIndex } = this.addRow(rowIndex);
       if (validRowIndex !== null) {
@@ -559,7 +560,6 @@ export default class DataLayer extends BaseLayer {
     // leftTopPoint is a cartesian coordinate
     const allRowKeys = getRowKeysFromData(this.getData());
     const allColumnKeys = getColumnKeysFromData(this.getData());
-    console.log(this.dpr);
     const width = this.dpr
       ? allColumnKeys.length * squareLength * this.dpr
       : allColumnKeys.length * squareLength;
