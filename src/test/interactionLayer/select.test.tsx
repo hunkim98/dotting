@@ -9,18 +9,6 @@ describe("test for select tool", () => {
   let canvasElement: HTMLCanvasElement;
 
   beforeEach(async () => {
-    window.OffscreenCanvasRenderingContext2D = jest
-      .fn()
-      .mockImplementation(() => {
-        return {
-          fillStyle: null,
-          fillRect: jest.fn(),
-          restore: jest.fn(),
-          save: jest.fn(),
-          putImageData: jest.fn(),
-        };
-      });
-
     const divElement = document.createElement("div");
     const interactionCanvas = divElement.appendChild(
       document.createElement("canvas"),
