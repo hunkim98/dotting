@@ -496,7 +496,6 @@ export default class DataLayer extends BaseLayer {
   }) {
     const validRowIndices: Array<number> = [];
     const validColumnIndices: Array<number> = [];
-    console.log(rowIndicesToAdd, columnIndicesToAdd);
     for (const rowIndex of rowIndicesToAdd) {
       const { validRowIndex } = this.addRow(rowIndex);
       if (validRowIndex !== null) {
@@ -569,6 +568,10 @@ export default class DataLayer extends BaseLayer {
     };
     if (imageWidth > MaxImageBitMapSideLength) {
       squareLength = MaxImageBitMapSideLength / allColumnKeys.length;
+      capturedPanZoomValue.scale = squareLength / this.gridSquareLength;
+    }
+    if (imageHeight > MaxImageBitMapSideLength) {
+      squareLength = MaxImageBitMapSideLength / allRowKeys.length;
       capturedPanZoomValue.scale = squareLength / this.gridSquareLength;
     }
 
@@ -650,9 +653,8 @@ export default class DataLayer extends BaseLayer {
     this.capturedImageBitmap = canvas.transferToImageBitmap();
   }
 
-  renderOnCanvas(
-    ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
-  ) {
+  render() {
+    const ctx = this.ctx;
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const allRowKeys = getRowKeysFromData(this.getData());
@@ -735,17 +737,11 @@ export default class DataLayer extends BaseLayer {
     };
   }
 
-  render() {
-    console.log("rendering original");
-    this.renderOnCanvas(this.ctx);
-  }
-
   // only use this when panning since image data cannot be scaled
   renderImageBitmap() {
     if (!this.capturedImageBitmap) {
       throw new Error("Captured image data is null");
     }
-    const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const leftTopPoint: Coord = {
       x: this.leftColumnIndex * this.gridSquareLength,
@@ -763,7 +759,6 @@ export default class DataLayer extends BaseLayer {
     this.ctx.save();
     this.ctx.clearRect(0, 0, this.width, this.height);
     const newScale = this.panZoom.scale / this.capturedImageBitmapScale;
-    console.log("rendering image bitmap");
     this.ctx.drawImage(
       this.capturedImageBitmap,
       correctedLeftTopScreenPoint.x,

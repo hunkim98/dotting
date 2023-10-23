@@ -135,7 +135,7 @@ export default class Editor extends EventDispatcher {
   private mouseDownPanZoom: PanZoom | null = null;
   private mouseMoveWorldPos: Coord = { x: 0, y: 0 };
   private previousMouseMoveWorldPos: Coord | null = null;
-  private dataLayerWorker = new Worker("./dataLayerWorker.ts");
+  private renderDataLayerTimeout: NodeJS.Timeout | null = null;
 
   // TODO: why do we need this? For games?
   private isDrawingEnabled = true;
@@ -1833,7 +1833,6 @@ export default class Editor extends EventDispatcher {
       // if there is capturedData, it means that the user has changed the dimensionc
 
       if (capturedData) {
-        console.log("start!");
         // for action of grid change, we do not need to consider modifiedPixels
         const interactionGridIndices = getGridIndicesFromData(capturedData);
 
@@ -1984,7 +1983,6 @@ export default class Editor extends EventDispatcher {
             swipedPixels,
           );
         }
-        console.log("end!");
       }
       // this will handle all data change actions done by the current device user
       // no need to record the action of the current device user in any other places
@@ -3484,6 +3482,12 @@ export default class Editor extends EventDispatcher {
     if (selectedArea) {
       this.gridLayer.renderSelection(selectedArea);
     }
+
+    clearTimeout(this.renderDataLayerTimeout);
+    // this is for rendering the data layer after 2 seconds if no interaction happens
+    this.renderDataLayerTimeout = setTimeout(() => {
+      this.renderDataLayer();
+    }, 500);
   }
 
   renderErasedPixelsFromInteractionLayerInDataLayer() {
@@ -3546,10 +3550,6 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.render();
 
     // this.renderSwipedPixelsFromInteractionLayerInDataLayer();
-  }
-
-  workerListener(e: MessageEvent) {
-    return;
   }
 
   destroy() {
