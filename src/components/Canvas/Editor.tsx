@@ -152,6 +152,7 @@ export default class Editor extends EventDispatcher {
     gridSquareLength,
     width,
     height,
+    initAutoScale,
   }: {
     gridCanvas: HTMLCanvasElement;
     interactionCanvas: HTMLCanvasElement;
@@ -162,6 +163,7 @@ export default class Editor extends EventDispatcher {
     gridSquareLength?: number;
     width: number;
     height: number;
+    initAutoScale?: boolean;
   }) {
     super();
     this.gridSquareLength = gridSquareLength || this.gridSquareLength;
@@ -199,10 +201,13 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.element = interactionCanvas;
     this.setSize(width, height);
-    this.adjustInitialZoomScale({
-      width: initColumnCount,
-      height: initRowCount,
-    });
+    this.adjustInitialZoomScale(
+      {
+        width: initColumnCount,
+        height: initRowCount,
+      },
+      initAutoScale ? undefined : 1,
+    );
     this.initialize();
   }
 
@@ -221,7 +226,7 @@ export default class Editor extends EventDispatcher {
     this.element.addEventListener("wheel", this.handleWheel);
   }
 
-  adjustInitialZoomScale(dimensions: Dimensions) {
+  adjustInitialZoomScale(dimensions: Dimensions, initScale?: number) {
     const { width, height } = dimensions;
     const minMargin = 20;
     const gridWidth = width * this.gridSquareLength;
@@ -232,7 +237,9 @@ export default class Editor extends EventDispatcher {
     const verticalMargin = Math.max((canvasHeight - gridHeight) / 2, minMargin);
     const horizontalScale = canvasWidth / (gridWidth + horizontalMargin * 2);
     const verticalScale = canvasHeight / (gridHeight + verticalMargin * 2);
-    const scale = Math.min(horizontalScale, verticalScale);
+    const scale = initScale
+      ? initScale
+      : Math.min(horizontalScale, verticalScale);
     const originWordPos = {
       x: 0,
       y: 0,

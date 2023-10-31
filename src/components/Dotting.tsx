@@ -38,10 +38,6 @@ export interface DottingProps {
   gridStrokeColor?: string;
   gridStrokeWidth?: number;
   isGridVisible?: boolean;
-  // TODO: The background mode has been removed for now
-  //       This is because the `renderCanvasMask` function in interactionLayer does not work for
-  //       backgroundMode "checkerboard"
-  // backgroundMode?: "checkerboard" | "color";
   backgroundColor?: string;
   initLayers?: Array<LayerProps>;
   isPanZoomable?: boolean;
@@ -55,6 +51,7 @@ export interface DottingProps {
   defaultPixelColor?: string;
   minScale?: number;
   maxScale?: number;
+  initAutoScale?: boolean;
   // children?: React.ReactNode;
   // initIndicatorData?: Array<PixelModifyItem>;
   // initBrushColor?: string;
