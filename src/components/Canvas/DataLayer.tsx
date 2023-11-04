@@ -38,7 +38,12 @@ export default class DataLayer extends BaseLayer {
     layers?: Array<LayerProps>;
   }) {
     super({ canvas });
+
     if (layers) {
+      const topRowIndex = layers[0].data[0][0].rowIndex;
+      const leftColumnIndex = layers[0].data[0][0].columnIndex;
+      this.setTopRowIndex(topRowIndex);
+      this.setLeftColumnIndex(leftColumnIndex);
       this.layers = layers.map(
         layer =>
           new DottingDataLayer({
@@ -47,6 +52,10 @@ export default class DataLayer extends BaseLayer {
           }),
       );
     } else {
+      const topRowIndex = 0;
+      const leftColumnIndex = 0;
+      this.setTopRowIndex(topRowIndex);
+      this.setLeftColumnIndex(leftColumnIndex);
       const defaultNestedArray: Array<Array<PixelModifyItem>> = [];
       const { rowCount, columnCount } = DefaultPixelDataDimensions;
       for (let i = 0; i < rowCount; i++) {
@@ -59,6 +68,7 @@ export default class DataLayer extends BaseLayer {
           });
         }
       }
+
       this.layers = [
         new DottingDataLayer({
           data: defaultNestedArray,
@@ -253,6 +263,10 @@ export default class DataLayer extends BaseLayer {
   // this is for setting all layers together
   setLayers(layers: Array<LayerProps>) {
     this.layers = [];
+    const topRowIndex = layers[0].data[0][0].rowIndex;
+    const leftColumnIndex = layers[0].data[0][0].columnIndex;
+    this.setTopRowIndex(topRowIndex);
+    this.setLeftColumnIndex(leftColumnIndex);
     this.layers = layers.map(
       layer =>
         new DottingDataLayer({
@@ -537,9 +551,11 @@ export default class DataLayer extends BaseLayer {
   render() {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
+    const allRowKeys = getRowKeysFromData(this.getData());
+    const allColumnKeys = getColumnKeysFromData(this.getData());
     const leftTopPoint: Coord = {
-      x: 0,
-      y: 0,
+      x: this.leftColumnIndex * this.gridSquareLength,
+      y: this.topRowIndex * this.gridSquareLength,
     };
     const ctx = this.ctx;
     ctx.clearRect(0, 0, this.width, this.height);
@@ -552,11 +568,6 @@ export default class DataLayer extends BaseLayer {
       convertedLeftTopScreenPoint,
       this.panZoom,
     );
-
-    // getRowKeysFromData and getColumnKeysFromData are used to get the row and column indices
-    // the indices are sorted in ascending order
-    const allRowKeys = getRowKeysFromData(this.getData());
-    const allColumnKeys = getColumnKeysFromData(this.getData());
 
     // color back with default color
     if (this.defaultPixelColor) {

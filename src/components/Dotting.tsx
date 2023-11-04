@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 
+import { DefaultBackgroundColor } from "./Canvas/config";
 import Editor from "./Canvas/Editor";
 import {
   AddGridIndicesParams,
@@ -28,6 +29,7 @@ import {
   PixelModifyItem,
 } from "./Canvas/types";
 import { validateLayers } from "../utils/data";
+import { TouchyEvent } from "../utils/touch";
 
 export interface DottingProps {
   width: number | string;
@@ -36,10 +38,6 @@ export interface DottingProps {
   gridStrokeColor?: string;
   gridStrokeWidth?: number;
   isGridVisible?: boolean;
-  // TODO: The background mode has been removed for now
-  //       This is because the `renderCanvasMask` function in interactionLayer does not work for
-  //       backgroundMode "checkerboard"
-  // backgroundMode?: "checkerboard" | "color";
   backgroundColor?: string;
   initLayers?: Array<LayerProps>;
   isPanZoomable?: boolean;
@@ -53,6 +51,7 @@ export interface DottingProps {
   defaultPixelColor?: string;
   minScale?: number;
   maxScale?: number;
+  initAutoScale?: boolean;
   // children?: React.ReactNode;
   // initIndicatorData?: Array<PixelModifyItem>;
   // initBrushColor?: string;
@@ -136,6 +135,14 @@ export interface DottingRef {
     data: Array<Array<PixelModifyItem>>;
   }>;
   setLayers: (layers: Array<LayerProps>) => void;
+  // for manipulating innate mouse events
+  onMouseDown: (e: { offsetX: number; offsetY: number }) => void;
+  onMouseMove: (e: { offsetX: number; offsetY: number }) => void;
+  onMouseUp: (e: { offsetX: number; offsetY: number }) => void;
+  // for manipulating custom foreground and background canvas
+  getForegroundCanvas: () => HTMLCanvasElement | null;
+  getBackgroundCanvas: () => HTMLCanvasElement | null;
+  convertWorldPosToCanvasOffset: (x, y) => { x: number; y: number };
 }
 
 // forward ref makes the a ref used in a FC component used in the place that uses the FC component
@@ -144,6 +151,8 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   ref: ForwardedRef<DottingRef>,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [foregroundCanvas, setForeGroundCanvas] =
+    useState<HTMLCanvasElement | null>(null);
   const [gridCanvas, setGridCanvas] = useState<HTMLCanvasElement | null>(null);
   const [dataCanvas, setDataCanvas] = useState<HTMLCanvasElement | null>(null);
   const [interactionCanvas, setInteractionCanvas] =
@@ -391,7 +400,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     return () => {
       window.removeEventListener("resize", onResize);
     };
-  }, [editor, containerRef, props.height, props.width]);
+  }, [
+    editor,
+    containerRef,
+    props.height,
+    props.width,
+    backgroundCanvas,
+    foregroundCanvas,
+  ]);
 
   useEffect(() => {
     if (!editor) {
@@ -421,19 +437,20 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (props.backgroundColor) {
       editor.setBackgroundColor(props.backgroundColor);
     }
-    // if (props.backgroundMode) {
-    //   editor.setBackgroundMode(props.backgroundMode);
-    // }
-  }, [
-    editor,
-    // props.backgroundMode,
-    props.backgroundColor,
-  ]);
+  }, [editor, props.backgroundColor]);
 
   useEffect(() => {
-    if (!gridCanvas || !interactionCanvas || !dataCanvas || !backgroundCanvas) {
+    if (
+      !gridCanvas ||
+      !interactionCanvas ||
+      !dataCanvas ||
+      !backgroundCanvas ||
+      !foregroundCanvas ||
+      !containerRef.current
+    ) {
       return;
     }
+    const { width, height } = containerRef.current.getBoundingClientRect();
     // this only happens once
     const validatedLayers =
       props.initLayers && validateLayers(props.initLayers)
@@ -445,8 +462,11 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
+      foregroundCanvas,
       initLayers: validatedLayers,
       gridSquareLength: props.gridSquareLength,
+      width,
+      height,
     });
     editor.setIsGridFixed(props.isGridFixed);
     editor.setIsInteractionApplicable(props.isInteractionApplicable);
@@ -499,6 +519,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     }
     element.style["touchAction"] = "none";
     setBackgroundCanvas(element);
+  }, []);
+
+  const gotForeGroundCanvasRef = useCallback((element: HTMLCanvasElement) => {
+    if (!element) {
+      return;
+    }
+    element.style["touchAction"] = "none";
+    setForeGroundCanvas(element);
   }, []);
 
   const addDataChangeListener = useCallback(
@@ -844,6 +872,57 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
+  const onMouseDown = useCallback(
+    (e: { offsetX: number; offsetY: number }) => {
+      const fakeMouseEvent = new MouseEvent("mousedown", {
+        clientX: e.offsetX,
+        clientY: e.offsetY,
+      });
+      editor?.onMouseDown(fakeMouseEvent as TouchyEvent);
+    },
+    [editor],
+  );
+
+  const onMouseMove = useCallback(
+    (e: { offsetX: number; offsetY: number }) => {
+      const fakeMouseEvent = new MouseEvent("mousemove", {
+        clientX: e.offsetX,
+        clientY: e.offsetY,
+      });
+      editor?.onMouseMove(fakeMouseEvent as TouchyEvent);
+    },
+    [editor],
+  );
+
+  const onMouseUp = useCallback(
+    (e: { offsetX: number; offsetY: number }) => {
+      const fakeMouseEvent = new MouseEvent("mouseup", {
+        clientX: e.offsetX,
+        clientY: e.offsetY,
+      });
+      editor?.onMouseUp(fakeMouseEvent as TouchyEvent);
+    },
+    [editor],
+  );
+
+  const getForegroundCanvas = useCallback(() => {
+    return foregroundCanvas;
+  }, [foregroundCanvas]);
+
+  const getBackgroundCanvas = useCallback(() => {
+    return backgroundCanvas;
+  }, [backgroundCanvas]);
+
+  const convertWorldPosToCanvasOffset = useCallback(
+    (x: number, y: number) => {
+      return editor?.convertWorldPosToCanvasOffset({
+        x,
+        y,
+      });
+    },
+    [editor],
+  );
+
   // useImperativeHandle makes the ref used in the place that uses the FC component
   // We will make our DotterRef manipulatable with the following functions
   useImperativeHandle(
@@ -895,6 +974,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       getLayers,
       getLayersAsArray,
       setLayers,
+      // for manipulating innate mouse events
+      onMouseDown,
+      onMouseMove,
+      onMouseUp,
+      // for manipulating custom foreground and background canvas
+      getForegroundCanvas,
+      getBackgroundCanvas,
+      convertWorldPosToCanvasOffset,
     }),
     [
       // for useDotting
@@ -942,6 +1029,14 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       getLayers,
       getLayersAsArray,
       setLayers,
+      // for manipulating innate mouse events
+      onMouseDown,
+      onMouseMove,
+      onMouseUp,
+      // for manipulating custom foreground and background canvas
+      getForegroundCanvas,
+      getBackgroundCanvas,
+      convertWorldPosToCanvasOffset,
     ],
   );
 
@@ -952,6 +1047,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         height: props.height,
         position: "relative",
         outline: "none",
+        backgroundColor: props.backgroundColor
+          ? props.backgroundColor
+          : DefaultBackgroundColor,
       }}
       ref={containerRef}
       tabIndex={1}
@@ -966,14 +1064,18 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       }}
     >
       <canvas
+        id="dotting-background-canvas"
         ref={gotBackgroundCanvasRef}
         style={{
           position: "absolute",
           border: "1px solid #555555",
+          pointerEvents: "none",
           ...props.style,
         }}
       />
+
       <canvas
+        id="dotting-data-canvas"
         ref={gotDataCanvasRef}
         style={{
           position: "absolute",
@@ -983,6 +1085,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         }}
       />
       <canvas
+        id="dotting-interaction-canvas"
         ref={gotInteractionCanvasRef}
         style={{
           position: "absolute",
@@ -991,7 +1094,18 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         }}
       />
       <canvas
+        id="dotting-grid-canvas"
         ref={gotGridCanvasRef}
+        style={{
+          position: "absolute",
+          pointerEvents: "none",
+          border: "1px solid #555555",
+          ...props.style,
+        }}
+      />
+      <canvas
+        ref={gotForeGroundCanvasRef}
+        id="dotting-foreground-canvas"
         style={{
           position: "absolute",
           pointerEvents: "none",

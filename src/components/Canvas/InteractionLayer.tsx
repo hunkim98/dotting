@@ -1681,8 +1681,8 @@ export default class InteractionLayer extends BaseLayer {
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const leftTopPoint: Coord = {
-      x: 0,
-      y: 0,
+      x: this.leftColumnIndex * this.gridSquareLength,
+      y: this.topRowIndex * this.gridSquareLength,
     };
     const convertedLetTopScreenPoint = convertCartesianToScreen(
       this.element,

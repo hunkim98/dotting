@@ -7,6 +7,8 @@ import { FakeMouseEvent } from "../../utils/testUtils";
 describe("test for extension interaction", () => {
   let editor: Editor;
   let canvasElement: HTMLCanvasElement;
+  let scale: number;
+  let offset: { x: number; y: number };
   beforeEach(() => {
     const divElement = document.createElement("div");
     const interactionCanvas = divElement.appendChild(
@@ -17,11 +19,18 @@ describe("test for extension interaction", () => {
     const backgroundCanvas = divElement.appendChild(
       document.createElement("canvas"),
     );
+    const foregroundCanvas = divElement.appendChild(
+      document.createElement("canvas"),
+    );
+
     const mockEditor = new Editor({
       gridCanvas,
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
+      foregroundCanvas,
+      width: 800,
+      height: 800,
     });
     divElement.tabIndex = 1;
     divElement.onmousedown = () => {
@@ -31,8 +40,12 @@ describe("test for extension interaction", () => {
       editor.onKeyDown(e);
     });
 
-    mockEditor.setSize(800, 800);
+    const panZoom = mockEditor.getPanZoom();
+    scale = panZoom.scale;
+    offset = panZoom.offset;
+
     editor = mockEditor;
+    editor.setIsGridFixed(false);
     // initialize the canvas with select tool selecting all the pixels
     canvasElement = editor.getCanvasElement();
   });
@@ -45,18 +58,19 @@ describe("test for extension interaction", () => {
     const columnCount = editor.getColumnCount();
     const rowCount = editor.getRowCount();
     const gridSquareLength = editor.getGridSquareLength();
+
     // select left top corner
     fireEvent(
       canvasElement,
       new FakeMouseEvent("mousedown", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
       }),
     );
     fireEvent(
@@ -64,14 +78,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
       }),
     );
     fireEvent(
@@ -79,14 +93,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mouseup", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
       }),
     );
     const { topRowIndex, leftColumnIndex } = editor.getGridIndices();
@@ -104,12 +118,12 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousedown", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
       }),
     );
     fireEvent(
@@ -117,14 +131,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
       }),
     );
     fireEvent(
@@ -132,14 +146,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mouseup", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
       }),
     );
     const { bottomRowIndex, rightColumnIndex } = editor.getGridIndices();
@@ -157,12 +171,12 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousedown", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
       }),
     );
     fireEvent(
@@ -170,14 +184,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
       }),
     );
     fireEvent(
@@ -185,14 +199,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mouseup", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
       }),
     );
     const { topRowIndex, rightColumnIndex } = editor.getGridIndices();
@@ -210,12 +224,12 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousedown", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
       }),
     );
     fireEvent(
@@ -223,14 +237,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
       }),
     );
     fireEvent(
@@ -238,14 +252,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mouseup", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
       }),
     );
     const { bottomRowIndex, leftColumnIndex } = editor.getGridIndices();
@@ -263,12 +277,12 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousedown", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
       }),
     );
     fireEvent(
@@ -276,14 +290,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
       }),
     );
     fireEvent(
@@ -291,14 +305,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mouseup", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
       }),
     );
     const { topRowIndex, leftColumnIndex } = editor.getGridIndices();
@@ -316,12 +330,12 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousedown", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
       }),
     );
     fireEvent(
@@ -329,14 +343,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
       }),
     );
     fireEvent(
@@ -344,14 +358,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mouseup", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
       }),
     );
     const { bottomRowIndex, rightColumnIndex } = editor.getGridIndices();
@@ -369,12 +383,12 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousedown", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
       }),
     );
     fireEvent(
@@ -382,14 +396,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
       }),
     );
     fireEvent(
@@ -397,14 +411,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mouseup", {
         offsetX:
           canvasElement.width / 2 +
-          (gridSquareLength * columnCount) / 2 +
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2 -
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
       }),
     );
     const { topRowIndex, rightColumnIndex } = editor.getGridIndices();
@@ -422,12 +436,12 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousedown", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
       }),
     );
     fireEvent(
@@ -435,14 +449,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
       }),
     );
     fireEvent(
@@ -450,14 +464,14 @@ describe("test for extension interaction", () => {
       new FakeMouseEvent("mouseup", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2 -
-          DefaultButtonHeight / 4 +
-          gridSquareLength,
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
         offsetY:
           canvasElement.height / 2 +
-          (gridSquareLength * rowCount) / 2 +
-          DefaultButtonHeight / 4 -
-          gridSquareLength,
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
       }),
     );
     const { bottomRowIndex, leftColumnIndex } = editor.getGridIndices();

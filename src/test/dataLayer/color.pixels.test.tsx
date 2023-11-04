@@ -29,38 +29,98 @@ describe("test for color pixel method in data layer", () => {
     jest.clearAllMocks();
   });
 
-  /**
-   * TODO:
-   * 1. test colorPixels method for single item
-   * 2. test colorPixels method for multiple items
-   * 3. test colorPixels method that are out of current bounds
-   * Assigned to: 권혁범
-   * ⬇️
-   */
   it("test color pixel for a single item", () => {
-    expect(1).toBe(1);
+    const rowIndex = 0;
+    const columnIndex = 0;
+    const color = "red";
+
+    dataLayer.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor = dataLayer
+      .getData()
+      .get(rowIndex)!
+      .get(columnIndex)!.color;
+    expect(targetColor).toBe(color);
   });
 
   it("test color pixel for multiple items", () => {
-    expect(1).toBe(1);
+    const itemsToColor: PixelModifyItem[] = [
+      {
+        rowIndex: 0,
+        columnIndex: 0,
+        color: "red",
+      },
+      {
+        rowIndex: 1,
+        columnIndex: 1,
+        color: "black",
+      },
+    ];
+
+    dataLayer.colorPixels(itemsToColor);
+
+    for (const item of itemsToColor) {
+      const targetColor = dataLayer
+        .getData()
+        .get(item.rowIndex)!
+        .get(item.columnIndex)!.color;
+      expect(targetColor).toBe(item.color);
+    }
   });
 
   it("test color pixel for an item that has a rowIndex smaller than topRowIndex", () => {
-    expect(1).toBe(1);
+    const rowIndex = -5;
+    const columnIndex = 0;
+    const color = "red";
+
+    dataLayer.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor = dataLayer
+      .getData()
+      .get(rowIndex)!
+      .get(columnIndex)!.color;
+    expect(targetColor).toBe(color);
   });
 
   it("test color pixel for an item that has a rowIndex bigger than bottomRowIndex", () => {
-    expect(1).toBe(1);
+    const rowIndex = dataLayer.getRowCount() + 5;
+    const columnIndex = 0;
+    const color = "red";
+
+    dataLayer.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor = dataLayer
+      .getData()
+      .get(rowIndex)!
+      .get(columnIndex)!.color;
+    expect(targetColor).toBe(color);
   });
 
   it("test color pixel for an item that has a columnIndex smaller than leftColumnIndex", () => {
-    expect(1).toBe(1);
+    const rowIndex = 0;
+    const columnIndex = -5;
+    const color = "red";
+
+    dataLayer.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor = dataLayer
+      .getData()
+      .get(rowIndex)!
+      .get(columnIndex)!.color;
+    expect(targetColor).toBe(color);
   });
 
   it("test color pixel for an item that has a columnIndex bigger than rightColumnIndex", () => {
-    expect(1).toBe(1);
+    const rowIndex = 0;
+    const columnIndex = dataLayer.getColumnCount() + 5;
+    const color = "red";
+
+    dataLayer.colorPixels([{ rowIndex, columnIndex, color }]);
+
+    const targetColor = dataLayer
+      .getData()
+      .get(rowIndex)!
+      .get(columnIndex)!.color;
+    expect(targetColor).toBe(color);
   });
-  // add more tests below...
-  // Remind to test for all cases in if-else statements
-  /** ⬆️ */
 });

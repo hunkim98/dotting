@@ -17,6 +17,9 @@ export abstract class BaseLayer {
   protected rowKeyOrderMap: Map<number, number> = new Map();
   protected columnKeyOrderMap: Map<number, number> = new Map();
 
+  protected topRowIndex = 0;
+  protected leftColumnIndex = 0;
+
   constructor({ canvas }: { canvas: HTMLCanvasElement }) {
     this.ctx = canvas.getContext("2d")!;
     this.element = canvas;
@@ -84,6 +87,22 @@ export abstract class BaseLayer {
     this.setWidth(width, devicePixelRatio);
     this.setHeight(height, devicePixelRatio);
     this.dpr = devicePixelRatio ? devicePixelRatio : this.dpr;
+  }
+
+  setTopRowIndex(topRowIndex: number) {
+    this.topRowIndex = topRowIndex;
+  }
+
+  setLeftColumnIndex(leftColumnIndex: number) {
+    this.leftColumnIndex = leftColumnIndex;
+  }
+
+  getTopRowIndex() {
+    return this.topRowIndex;
+  }
+
+  getLeftColumnIndex() {
+    return this.leftColumnIndex;
   }
 
   abstract render(): void;

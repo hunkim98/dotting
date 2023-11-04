@@ -79,6 +79,7 @@ const ChangeBrushPattern = () => {
           {patterns.map((pattern, index) => {
             return (
               <div
+                key={index}
                 style={{
                   display: "flex",
                   backgroundColor: selectedPatternIndex === index ? "grey" : "",
@@ -94,17 +95,19 @@ const ChangeBrushPattern = () => {
                   changeBrushPattern(pattern);
                 }}
               >
-                {pattern.map(row => {
+                {pattern.map((row, key) => {
                   return (
                     <div
+                      key={key}
                       style={{
                         display: "flex",
                         flexDirection: "column",
                       }}
                     >
-                      {row.map(cell => {
+                      {row.map((cell, idx) => {
                         return (
                           <div
+                            key={idx}
                             style={{
                               width: 10,
                               height: 10,

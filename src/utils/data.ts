@@ -117,7 +117,9 @@ export const deleteRowOfData = (data: DottingData, rowIndex: number) => {
 
 export const deleteColumnOfData = (data: DottingData, columnIndex: number) => {
   data.forEach(row => {
-    if (!row.has(columnIndex)) return;
+    if (!row.has(columnIndex)) {
+      return;
+    }
     row.delete(columnIndex);
   });
 };
@@ -220,6 +222,7 @@ export const getInBetweenPixelIndicesfromCoords = (
   gridSquareLength: number,
   data: DottingData,
 ) => {
+  if (!previousCoord || !currentCoord) return [];
   if (
     Math.abs(currentCoord.x - previousCoord.x) >= gridSquareLength ||
     Math.abs(currentCoord.y - previousCoord.y) >= gridSquareLength

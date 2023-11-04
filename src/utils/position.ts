@@ -110,7 +110,7 @@ export const calculateNewPanZoomFromPinchZoom = (
     }
 
     const deltaX = prevPinchZoomDiff - pinchZoomCurrentDiff;
-    const zoom = 1 - (deltaX * 2) / zoomSensitivity;
+    const zoom = 1 - (deltaX * 2) / (zoomSensitivity * 2);
     const newScale = panZoom.scale * zoom;
     if (minScale > newScale || newScale > maxScale) {
       return;
@@ -151,15 +151,42 @@ export const getMouseCartCoord = (
   return mouseCartCoord;
 };
 
+export const getCenterCartCoordFromTwoTouches = (
+  evt: TouchyEvent,
+  element: HTMLCanvasElement,
+  panZoom: PanZoom,
+  dpr: number,
+) => {
+  evt.preventDefault();
+  if (evt.touches && evt.touches.length < 2) return null;
+  if (evt.touches.length > 2) return null;
+  const touch1 = evt.touches[0];
+  const touch2 = evt.touches[1];
+  const touch1Point = getPointFromTouch(touch1, element, panZoom);
+  const touch2Point = getPointFromTouch(touch2, element, panZoom);
+  const touchCenterPos = {
+    x: (touch1Point.offsetX + touch2Point.offsetX) / 2,
+    y: (touch1Point.offsetY + touch2Point.offsetY) / 2,
+  };
+  const diffPointsOfMouseOffset = getWorldPoint(touchCenterPos, panZoom);
+  const mouseCartCoord = diffPoints(diffPointsOfMouseOffset, {
+    x: element.width / dpr / 2,
+    y: element.height / dpr / 2,
+  });
+  return mouseCartCoord;
+};
+
 export const getPixelIndexFromMouseCartCoord = (
   mouseCartCoord: Coord,
   sortedRowIndices: number[],
   sortedColumnIndices: number[],
   gridSquareLength: number,
 ) => {
+  const leftColumnIndex = sortedColumnIndices[0];
+  const topRowIndex = sortedRowIndices[0];
   const leftTopPoint: Coord = {
-    x: 0,
-    y: 0,
+    x: leftColumnIndex * gridSquareLength,
+    y: topRowIndex * gridSquareLength,
   };
   if (
     mouseCartCoord.x > leftTopPoint.x &&

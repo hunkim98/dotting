@@ -10,6 +10,9 @@ describe("test for color pixels area", () => {
     );
     const gridCanvas = divElement.appendChild(document.createElement("canvas"));
     const dataCanvas = divElement.appendChild(document.createElement("canvas"));
+    const foregroundCanvas = divElement.appendChild(
+      document.createElement("canvas"),
+    );
     const backgroundCanvas = divElement.appendChild(
       document.createElement("canvas"),
     );
@@ -18,6 +21,9 @@ describe("test for color pixels area", () => {
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
+      foregroundCanvas,
+      width: 800,
+      height: 800,
     });
     divElement.tabIndex = 1;
     divElement.onmousedown = () => {
@@ -27,7 +33,6 @@ describe("test for color pixels area", () => {
       editor.onKeyDown(e);
     });
 
-    mockEditor.setSize(800, 800);
     editor = mockEditor;
     // initialize the canvas with select tool selecting all the pixels
     canvasElement = editor.getCanvasElement();

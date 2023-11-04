@@ -29,8 +29,10 @@ export const DefaultPixelDataDimensions = {
 
 export enum MouseMode {
   PANNING = "PANNING",
+  PINCHZOOMING = "PINCHZOOMING",
   EXTENDING = "EXTENDING",
   DRAWING = "DRAWING",
+  NULL = "NULL",
 }
 
 export const DefaultZoomSensitivity = 200;

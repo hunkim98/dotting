@@ -13,11 +13,17 @@ describe("test for drawing interaction", () => {
     const backgroundCanvas = divElement.appendChild(
       document.createElement("canvas"),
     );
+    const foregroundCanvas = divElement.appendChild(
+      document.createElement("canvas"),
+    );
     const mockEditor = new Editor({
       gridCanvas,
       interactionCanvas,
       dataCanvas,
       backgroundCanvas,
+      foregroundCanvas,
+      width: 800,
+      height: 800,
     });
     divElement.tabIndex = 1;
     divElement.onmousedown = () => {
@@ -27,7 +33,6 @@ describe("test for drawing interaction", () => {
       editor.onKeyDown(e);
     });
 
-    mockEditor.setSize(800, 800);
     editor = mockEditor;
     // initialize the canvas with select tool selecting all the pixels
     canvasElement = editor.getCanvasElement();

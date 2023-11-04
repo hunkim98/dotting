@@ -2,10 +2,11 @@ import React, { useRef } from "react";
 
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useDotting from "../../src/hooks/useDotting";
+import { CreateEmptySquareData } from "../utils/dataCreator";
 
 const SetData = () => {
   const ref = useRef<DottingRef>(null);
-  const { setData } = useDotting(ref);
+  const { setData, setLayers } = useDotting(ref);
 
   return (
     <div
@@ -35,109 +36,32 @@ const SetData = () => {
               background: "none",
             }}
             onClick={() => {
-              setData([
-                [
-                  { rowIndex: 0, columnIndex: 0, color: "" },
-                  { rowIndex: 0, columnIndex: 1, color: "" },
-                  { rowIndex: 0, columnIndex: 2, color: "" },
-                ],
-                [
-                  { rowIndex: 1, columnIndex: 0, color: "" },
-                  { rowIndex: 1, columnIndex: 1, color: "" },
-                  { rowIndex: 1, columnIndex: 2, color: "" },
-                ],
-                [
-                  { rowIndex: 2, columnIndex: 0, color: "" },
-                  { rowIndex: 2, columnIndex: 1, color: "" },
-                  { rowIndex: 2, columnIndex: 2, color: "" },
-                ],
-              ]);
-            }}
-          >
-            Set Data to 3 X 3
-          </button>
-          <button
-            style={{
-              padding: "5px 10px",
-              background: "none",
-            }}
-            onClick={() => {
-              setData([
-                [
-                  { rowIndex: 0, columnIndex: 0, color: "" },
-                  { rowIndex: 0, columnIndex: 1, color: "" },
-                  { rowIndex: 0, columnIndex: 2, color: "" },
-                  { rowIndex: 0, columnIndex: 3, color: "" },
-                ],
-                [
-                  { rowIndex: 1, columnIndex: 0, color: "" },
-                  { rowIndex: 1, columnIndex: 1, color: "" },
-                  { rowIndex: 1, columnIndex: 2, color: "" },
-                  { rowIndex: 1, columnIndex: 3, color: "" },
-                ],
-                [
-                  { rowIndex: 2, columnIndex: 0, color: "" },
-                  { rowIndex: 2, columnIndex: 1, color: "" },
-                  { rowIndex: 2, columnIndex: 2, color: "" },
-                  { rowIndex: 2, columnIndex: 3, color: "" },
-                ],
-                [
-                  { rowIndex: 3, columnIndex: 0, color: "" },
-                  { rowIndex: 3, columnIndex: 1, color: "" },
-                  { rowIndex: 3, columnIndex: 2, color: "" },
-                  { rowIndex: 3, columnIndex: 3, color: "" },
-                ],
-              ]);
-            }}
-          >
-            Set Data to 4 X 4
-          </button>
-          <button
-            style={{
-              padding: "5px 10px",
-              background: "none",
-            }}
-            onClick={() => {
-              setData([
-                [
-                  { rowIndex: 0, columnIndex: 0, color: "" },
-                  { rowIndex: 0, columnIndex: 1, color: "" },
-                  { rowIndex: 0, columnIndex: 2, color: "" },
-                  { rowIndex: 0, columnIndex: 3, color: "" },
-                  { rowIndex: 0, columnIndex: 4, color: "" },
-                ],
-                [
-                  { rowIndex: 1, columnIndex: 0, color: "" },
-                  { rowIndex: 1, columnIndex: 1, color: "" },
-                  { rowIndex: 1, columnIndex: 2, color: "" },
-                  { rowIndex: 1, columnIndex: 3, color: "" },
-                  { rowIndex: 1, columnIndex: 4, color: "" },
-                ],
-                [
-                  { rowIndex: 2, columnIndex: 0, color: "" },
-                  { rowIndex: 2, columnIndex: 1, color: "" },
-                  { rowIndex: 2, columnIndex: 2, color: "" },
-                  { rowIndex: 2, columnIndex: 3, color: "" },
-                  { rowIndex: 2, columnIndex: 4, color: "" },
-                ],
-                [
-                  { rowIndex: 3, columnIndex: 0, color: "" },
-                  { rowIndex: 3, columnIndex: 1, color: "" },
-                  { rowIndex: 3, columnIndex: 2, color: "" },
-                  { rowIndex: 3, columnIndex: 3, color: "" },
-                  { rowIndex: 3, columnIndex: 4, color: "" },
-                ],
-                [
-                  { rowIndex: 4, columnIndex: 0, color: "" },
-                  { rowIndex: 4, columnIndex: 1, color: "" },
-                  { rowIndex: 4, columnIndex: 2, color: "" },
-                  { rowIndex: 4, columnIndex: 3, color: "" },
-                  { rowIndex: 4, columnIndex: 4, color: "" },
-                ],
-              ]);
+              setData(CreateEmptySquareData(5));
             }}
           >
             Set Data to 5 X 5
+          </button>
+          <button
+            style={{
+              padding: "5px 10px",
+              background: "none",
+            }}
+            onClick={() => {
+              setData(CreateEmptySquareData(64));
+            }}
+          >
+            Set Data to 64 X 64
+          </button>
+          <button
+            style={{
+              padding: "5px 10px",
+              background: "none",
+            }}
+            onClick={() => {
+              setData(CreateEmptySquareData(100));
+            }}
+          >
+            Set Data to 100 X 100
           </button>
         </div>
       </div>
