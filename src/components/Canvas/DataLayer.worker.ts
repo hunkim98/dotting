@@ -1,3 +1,7 @@
+// this is just an example of how to use a web worker
+// We will not use this for Dotting since Dotting has multiple canvases
+// which makes it difficult to use a web worker
+// Webworker works best when we have a single canvas to render all the data
 export const DataLayerWorkerString = `
 
 var canvasB = null;
