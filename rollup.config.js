@@ -28,4 +28,5 @@ export default {
     typescript({ useTsconfigDeclarationDir: true }),
     postcss(),
   ],
+  format: "esm",
 };
