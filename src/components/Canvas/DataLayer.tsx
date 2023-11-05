@@ -5,7 +5,6 @@ import {
   DefaultPixelDataDimensions,
   MaxImageBitMapSideLength,
 } from "./config";
-import { DataLayerWorkerString } from "./DataLayer.worker";
 import {
   ColorChangeItem,
   Coord,
@@ -42,9 +41,9 @@ export default class DataLayer extends BaseLayer {
     layers?: Array<LayerProps>;
   }) {
     super({ canvas });
-    const response = DataLayerWorkerString;
-    const blob = new Blob([response], { type: "application/javascript" });
-    this.setWorker(new Worker(URL.createObjectURL(blob)));
+    // const response = DataLayerWorkerString;
+    // const blob = new Blob([response], { type: "application/javascript" });
+    // this.setWorker(new Worker(URL.createObjectURL(blob)));
 
     if (layers) {
       const topRowIndex = layers[0].data[0][0].rowIndex;
@@ -658,8 +657,6 @@ export default class DataLayer extends BaseLayer {
   }
 
   render() {
-    // this.element.style.opacity = "1";
-    // this.clonedElement.style.opacity = "0";
     const ctx = this.ctx;
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
@@ -745,8 +742,6 @@ export default class DataLayer extends BaseLayer {
 
   // only use this when panning since image data cannot be scaled
   renderImageBitmap() {
-    // this.element.style.opacity = "0";
-    // this.clonedElement.style.opacity = "1";
     if (!this.capturedImageBitmap) {
       throw new Error("Captured image data is null");
     }
@@ -777,11 +772,5 @@ export default class DataLayer extends BaseLayer {
       newHeight,
     );
     this.ctx.restore();
-    // this.worker.postMessage({
-    //   capturedImageBitmap: this.capturedImageBitmap,
-    //   offset: correctedLeftTopScreenPoint,
-    //   width: newWidth,
-    //   height: newHeight,
-    // });
   }
 }
