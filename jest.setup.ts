@@ -18,6 +18,8 @@ class Worker {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  window.URL.createObjectURL = jest.fn();
+  window.URL.revokeObjectURL = jest.fn();
   window.Worker = Worker as any;
   window.OffscreenCanvas = jest
     .fn()
@@ -42,6 +44,7 @@ beforeEach(() => {
         dispatchEvent: jest.fn(),
       } as unknown as OffscreenCanvas;
     });
+  window.HTMLCanvasElement.prototype.transferControlToOffscreen = jest.fn();
 });
 
 afterAll(() => jest.restoreAllMocks());
