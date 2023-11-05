@@ -5,6 +5,7 @@ import {
   DefaultPixelDataDimensions,
   MaxImageBitMapSideLength,
 } from "./config";
+import { DataLayerWorkerString } from "./DataLayer.worker";
 import {
   ColorChangeItem,
   Coord,
@@ -24,8 +25,6 @@ import {
   validateSquareArray,
 } from "../../utils/data";
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
-import { DataLayerWorkerString } from "./DataLayer.worker";
-// import Worker from "web-worker:./Worker.js";
 
 export default class DataLayer extends BaseLayer {
   private gridSquareLength: number = DefaultGridSquareLength;
@@ -561,16 +560,16 @@ export default class DataLayer extends BaseLayer {
   }
 
   updateCapturedImageBitmap() {
-    let squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
-    const allRowKeys = getRowKeysFromData(this.getData());
-    const allColumnKeys = getColumnKeysFromData(this.getData());
-    const imageWidth = allColumnKeys.length * squareLength;
-    const imageHeight = allRowKeys.length * squareLength;
     const capturedPanZoomValue = {
       offset: { ...this.panZoom.offset },
       scale: this.panZoom.scale,
     };
+    let squareLength = this.gridSquareLength * this.panZoom.scale;
+    const allRowKeys = getRowKeysFromData(this.getData());
+    const allColumnKeys = getColumnKeysFromData(this.getData());
+    const imageWidth = allColumnKeys.length * squareLength;
+    const imageHeight = allRowKeys.length * squareLength;
     if (imageWidth > MaxImageBitMapSideLength) {
       squareLength = MaxImageBitMapSideLength / allColumnKeys.length;
       capturedPanZoomValue.scale = squareLength / this.gridSquareLength;
@@ -659,10 +658,9 @@ export default class DataLayer extends BaseLayer {
   }
 
   render() {
+    // this.element.style.opacity = "1";
+    // this.clonedElement.style.opacity = "0";
     const ctx = this.ctx;
-    this.worker.postMessage({
-      canvas: "dajkv",
-    });
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const allRowKeys = getRowKeysFromData(this.getData());
@@ -747,8 +745,8 @@ export default class DataLayer extends BaseLayer {
 
   // only use this when panning since image data cannot be scaled
   renderImageBitmap() {
-    this.element.style.display = "none";
-
+    // this.element.style.opacity = "0";
+    // this.clonedElement.style.opacity = "1";
     if (!this.capturedImageBitmap) {
       throw new Error("Captured image data is null");
     }
@@ -766,16 +764,24 @@ export default class DataLayer extends BaseLayer {
       convertedLeftTopScreenPoint,
       this.panZoom,
     );
+    const newScale = this.panZoom.scale / this.capturedImageBitmapScale;
+    const newWidth = (this.capturedImageBitmap.width / this.dpr) * newScale;
+    const newHeight = (this.capturedImageBitmap.height / this.dpr) * newScale;
     this.ctx.save();
     this.ctx.clearRect(0, 0, this.width, this.height);
-    const newScale = this.panZoom.scale / this.capturedImageBitmapScale;
     this.ctx.drawImage(
       this.capturedImageBitmap,
       correctedLeftTopScreenPoint.x,
       correctedLeftTopScreenPoint.y,
-      (this.capturedImageBitmap.width / this.dpr) * newScale,
-      (this.capturedImageBitmap.height / this.dpr) * newScale,
+      newWidth,
+      newHeight,
     );
     this.ctx.restore();
+    // this.worker.postMessage({
+    //   capturedImageBitmap: this.capturedImageBitmap,
+    //   offset: correctedLeftTopScreenPoint,
+    //   width: newWidth,
+    //   height: newHeight,
+    // });
   }
 }
