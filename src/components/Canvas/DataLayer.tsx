@@ -24,6 +24,8 @@ import {
   validateSquareArray,
 } from "../../utils/data";
 import { convertCartesianToScreen, getScreenPoint } from "../../utils/math";
+import { DataLayerWorkerString } from "./DataLayer.worker";
+// import Worker from "web-worker:./Worker.js";
 
 export default class DataLayer extends BaseLayer {
   private gridSquareLength: number = DefaultGridSquareLength;
@@ -41,6 +43,9 @@ export default class DataLayer extends BaseLayer {
     layers?: Array<LayerProps>;
   }) {
     super({ canvas });
+    const response = DataLayerWorkerString;
+    const blob = new Blob([response], { type: "application/javascript" });
+    this.setWorker(new Worker(URL.createObjectURL(blob)));
 
     if (layers) {
       const topRowIndex = layers[0].data[0][0].rowIndex;
@@ -655,6 +660,9 @@ export default class DataLayer extends BaseLayer {
 
   render() {
     const ctx = this.ctx;
+    this.worker.postMessage({
+      canvas: "dajkv",
+    });
     const squareLength = this.gridSquareLength * this.panZoom.scale;
     // leftTopPoint is a cartesian coordinate
     const allRowKeys = getRowKeysFromData(this.getData());
@@ -739,6 +747,8 @@ export default class DataLayer extends BaseLayer {
 
   // only use this when panning since image data cannot be scaled
   renderImageBitmap() {
+    this.element.style.display = "none";
+
     if (!this.capturedImageBitmap) {
       throw new Error("Captured image data is null");
     }

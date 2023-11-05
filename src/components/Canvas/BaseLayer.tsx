@@ -8,6 +8,7 @@ import {
 export abstract class BaseLayer {
   protected ctx: CanvasRenderingContext2D;
   protected element: HTMLCanvasElement;
+  protected clonedElement: HTMLCanvasElement;
   protected dpr: number;
   protected panZoom: PanZoom = DefaultPanZoom;
   protected width: number;
@@ -19,10 +20,25 @@ export abstract class BaseLayer {
 
   protected topRowIndex = 0;
   protected leftColumnIndex = 0;
+  protected worker: Worker | null = null;
 
   constructor({ canvas }: { canvas: HTMLCanvasElement }) {
     this.ctx = canvas.getContext("2d")!;
     this.element = canvas;
+    this.clonedElement = canvas.cloneNode() as HTMLCanvasElement;
+  }
+
+  setWorker(worker: Worker) {
+    if (worker) {
+      const offscreen = this.clonedElement.transferControlToOffscreen();
+      this.worker = worker;
+      this.worker.postMessage(
+        {
+          canvas: offscreen,
+        },
+        [offscreen],
+      );
+    }
   }
 
   getContext() {
@@ -63,12 +79,56 @@ export abstract class BaseLayer {
     this.width = width;
     this.element.width = devicePixelRatio ? width * devicePixelRatio : width;
     this.element.style.width = `${width}px`;
+    // after setting offscreen canvas, the canvas cannot change its size
+    // thus we need to clone a new canvas and replace the old one
+    if (this.clonedElement && this.worker) {
+      const newClonedElement = this.element.cloneNode() as HTMLCanvasElement;
+      newClonedElement.width = devicePixelRatio
+        ? width * devicePixelRatio
+        : width;
+      newClonedElement.style.width = `${width}px`;
+      this.clonedElement.replaceWith(newClonedElement);
+      this.clonedElement = newClonedElement;
+      const offscreen = this.clonedElement.transferControlToOffscreen();
+      this.worker.postMessage(
+        {
+          canvas: offscreen,
+        },
+        [offscreen],
+      );
+    } else {
+      this.clonedElement.width = devicePixelRatio
+        ? width * devicePixelRatio
+        : width;
+      this.clonedElement.style.width = `${width}px`;
+    }
   }
 
   setHeight(height: number, devicePixelRatio?: number) {
     this.height = height;
     this.element.height = devicePixelRatio ? height * devicePixelRatio : height;
     this.element.style.height = `${height}px`;
+    if (this.clonedElement && this.worker) {
+      const newClonedElement = this.element.cloneNode() as HTMLCanvasElement;
+      newClonedElement.height = devicePixelRatio
+        ? height * devicePixelRatio
+        : height;
+      newClonedElement.style.height = `${height}px`;
+      this.clonedElement.replaceWith(newClonedElement);
+      this.clonedElement = newClonedElement;
+      const offscreen = this.clonedElement.transferControlToOffscreen();
+      this.worker.postMessage(
+        {
+          canvas: offscreen,
+        },
+        [offscreen],
+      );
+    } else {
+      this.clonedElement.height = devicePixelRatio
+        ? height * devicePixelRatio
+        : height;
+      this.clonedElement.style.height = `${height}px`;
+    }
   }
 
   setDpr(dpr: number) {
