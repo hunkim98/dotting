@@ -1051,9 +1051,6 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
         height: props.height,
         position: "relative",
         outline: "none",
-        backgroundColor: props.backgroundColor
-          ? props.backgroundColor
-          : DefaultBackgroundColor,
       }}
       ref={containerRef}
       tabIndex={1}
@@ -1074,6 +1071,9 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
           position: "absolute",
           border: "1px solid #555555",
           pointerEvents: "none",
+          backgroundColor: props.backgroundColor
+            ? props.backgroundColor
+            : DefaultBackgroundColor,
           ...props.style,
         }}
       />
