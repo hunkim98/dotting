@@ -45,14 +45,7 @@ describe("test for drawing interaction", () => {
     jest.clearAllMocks();
   });
 
-  /**
-   * TODO:
-   * 1. test if bressenhamindices work when mouse is moved around the canvas
-   *    (hint: use FakeMouseEvent, refer to extension.test.tsx for example)
-   * Assigned to: 방호찬
-   * ⬇️
-   */
-  it.only("test if bressenhamindces work when mouse is moved along the canvas", () => {
+  it("test if bressenhamindces work when mouse is moved along the canvas", () => {
     const columnCount = editor.getColumnCount();
     const rowCount = editor.getRowCount();
     const gridSquareLength = editor.getGridSquareLength();
@@ -137,7 +130,4 @@ describe("test for drawing interaction", () => {
     ];
     expect(pixels).toEqual(answer);
   });
-  // You do not need to add additional tests!
-  // Just make sure that the test above is working!
-  /** ⬆️ */
 });

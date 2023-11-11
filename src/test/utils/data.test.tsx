@@ -30,12 +30,6 @@ describe("test for data utils", () => {
     jest.clearAllMocks();
   });
 
-  /**
-   * TODO:
-   * 1. check if getInBetweenPixelIndicesfromCoords returns correct indices
-   * Assigned to: 방호찬
-   * ⬇️
-   */
   it("test getInBetweenPixelIndicesfromCoords when coord is out of bound", () => {
     //testing with simple vertical line
     const result = getInBetweenPixelIndicesfromCoords(
@@ -55,14 +49,12 @@ describe("test for data utils", () => {
       10,
       data,
     );
-    const answer : Index[] = [];
-    answer.push({rowIndex: 0, columnIndex: 0});
-    answer.push({rowIndex: 1, columnIndex: 0});
-    answer.push({rowIndex: 2, columnIndex: 0});
-    answer.push({rowIndex: 3, columnIndex: 0});
+    const answer: Index[] = [];
+    answer.push({ rowIndex: 0, columnIndex: 0 });
+    answer.push({ rowIndex: 1, columnIndex: 0 });
+    answer.push({ rowIndex: 2, columnIndex: 0 });
+    answer.push({ rowIndex: 3, columnIndex: 0 });
     // answer.push({rowIndex: 4, columnIndex: 0});
     expect(result).toEqual(answer);
   });
-  // add more tests below...
-  /** ⬆️ */
 });
