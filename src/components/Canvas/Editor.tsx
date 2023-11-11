@@ -210,12 +210,13 @@ export default class Editor extends EventDispatcher {
       this.scale(dpr, dpr);
     }
     this.setSize(width, height);
+    console.log(initAutoScale);
     this.adjustInitialZoomScale(
       {
         width: initColumnCount,
         height: initRowCount,
       },
-      initAutoScale ? undefined : 1,
+      initAutoScale === false ? 1 : undefined,
     );
 
     this.initialize();
@@ -252,6 +253,7 @@ export default class Editor extends EventDispatcher {
     const scale = initScale
       ? initScale
       : Math.min(horizontalScale, verticalScale);
+    console.log(scale, initScale);
     const originWordPos = {
       x: 0,
       y: 0,
