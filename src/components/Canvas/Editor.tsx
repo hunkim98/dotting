@@ -881,6 +881,7 @@ export default class Editor extends EventDispatcher {
     }
     const removeIndex = this.dataLayer.getLayerIndex(layerId);
     this.dataLayer.getLayers().splice(removeIndex, 1);
+    this.dataLayer.setCurrentLayer(this.dataLayer.getLayers()[0].getId());
     if (shouldRecordAction) {
       this.recordAction(
         new LayerDeleteAction(layer.getId(), layer, removeIndex),
