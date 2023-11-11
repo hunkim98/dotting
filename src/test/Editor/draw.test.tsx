@@ -70,7 +70,7 @@ describe("test for drawing interaction", () => {
           gridSquareLength / 2,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2  +
+          (gridSquareLength * rowCount) / 2 +
           gridSquareLength / 2,
       }),
     );
@@ -79,11 +79,11 @@ describe("test for drawing interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2  +
+          (gridSquareLength * columnCount) / 2 +
           gridSquareLength / 2,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2  +
+          (gridSquareLength * rowCount) / 2 +
           gridSquareLength / 2,
       }),
     );
@@ -92,54 +92,50 @@ describe("test for drawing interaction", () => {
       new FakeMouseEvent("mousemove", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2  +
+          (gridSquareLength * columnCount) / 2 +
           gridSquareLength / 2 +
           gridSquareLength * moveTo.x,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2  +
+          (gridSquareLength * rowCount) / 2 +
           gridSquareLength / 2 +
           gridSquareLength * moveTo.y,
       }),
     );
-    
+
     fireEvent(
       canvasElement,
       new FakeMouseEvent("mouseup", {
         offsetX:
           canvasElement.width / 2 -
-          (gridSquareLength * columnCount) / 2  +
+          (gridSquareLength * columnCount) / 2 +
           gridSquareLength / 2 +
           gridSquareLength * moveTo.x,
         offsetY:
           canvasElement.height / 2 -
-          (gridSquareLength * rowCount) / 2  +
+          (gridSquareLength * rowCount) / 2 +
           gridSquareLength / 2 +
           gridSquareLength * moveTo.y,
       }),
     );
 
     const data = editor.getLayers()[0].data;
-    const pixels : {x:number, y:number}[] = [];
-    data.forEach((colElement,row) => {
-      colElement.forEach((pixel,col) => {
-        if(pixel.color!="")
-          pixels.push({x:row ,y:col});
+    const pixels: { x: number; y: number }[] = [];
+    data.forEach((colElement, row) => {
+      colElement.forEach((pixel, col) => {
+        if (pixel.color != "") pixels.push({ x: row, y: col });
       });
     });
-    
-    const answer =
-    [
-      {x: 0, y: 0},
-      {x: 1, y: 1},
-      {x: 2, y: 2},
-      {x: 3, y: 3},
-      {x: 4, y: 4},
-      {x: 5, y: 5},
-    ]
-    console.log(pixels);
-    expect(pixels).toEqual(answer);
 
+    const answer = [
+      { x: 0, y: 0 },
+      { x: 1, y: 1 },
+      { x: 2, y: 2 },
+      { x: 3, y: 3 },
+      { x: 4, y: 4 },
+      { x: 5, y: 5 },
+    ];
+    expect(pixels).toEqual(answer);
   });
   // You do not need to add additional tests!
   // Just make sure that the test above is working!
