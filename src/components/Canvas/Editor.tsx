@@ -431,6 +431,7 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setDefaultPixelColor(color);
     this.interactionLayer.setDefaultPixelColor(color);
     this.renderDataLayer();
+    this.dataLayer.updateCapturedImageBitmap();
   }
 
   setGridSquareLength(length: number) {
@@ -441,6 +442,7 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.setGridSquareLength(length);
     this.interactionLayer.setGridSquareLength(length);
     this.dataLayer.setGridSquareLength(length);
+    this.dataLayer.updateCapturedImageBitmap();
     if (this.lastRenderAllCall) {
       cancelAnimationFrame(this.lastRenderAllCall);
     }
@@ -826,6 +828,7 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.setDpr(dpr);
     this.gridLayer.setDpr(dpr);
     this.interactionLayer.setDpr(dpr);
+    this.dataLayer.updateCapturedImageBitmap();
   }
 
   setTopLeftIndices(topRowIndex: number, leftColumnIndex: number) {
@@ -862,6 +865,7 @@ export default class Editor extends EventDispatcher {
       );
     }
     this.renderDataLayer();
+    this.dataLayer.updateCapturedImageBitmap();
     this.emitCurrentLayerStatus();
   }
 
@@ -881,6 +885,7 @@ export default class Editor extends EventDispatcher {
       );
     }
     this.renderDataLayer();
+    this.dataLayer.updateCapturedImageBitmap();
     this.emitCurrentLayerStatus();
   }
 
@@ -888,12 +893,14 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.showLayer(layerId);
     this.emitCurrentLayerStatus();
     this.renderDataLayer();
+    this.dataLayer.updateCapturedImageBitmap();
   }
 
   hideLayer(layerId: string) {
     this.dataLayer.hideLayer(layerId);
     this.emitCurrentLayerStatus();
     this.renderDataLayer();
+    this.dataLayer.updateCapturedImageBitmap();
   }
 
   /**
@@ -904,6 +911,7 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.isolateLayer(layerId);
     this.emitCurrentLayerStatus();
     this.renderDataLayer();
+    this.dataLayer.updateCapturedImageBitmap();
   }
 
   /**
@@ -913,6 +921,7 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.showAllLayers();
     this.emitCurrentLayerStatus();
     this.renderDataLayer();
+    this.dataLayer.updateCapturedImageBitmap();
   }
 
   /**
@@ -933,6 +942,7 @@ export default class Editor extends EventDispatcher {
     this.dataLayer.getLayers().splice(toIndex, 0, layer);
     this.emitCurrentLayerStatus();
     this.renderDataLayer();
+    this.dataLayer.updateCapturedImageBitmap();
   }
 
   reorderLayersByIds(layerIds: Array<string>) {
@@ -946,6 +956,7 @@ export default class Editor extends EventDispatcher {
       .getLayers()
       .map(layer => layer.getId());
     this.renderDataLayer();
+    this.dataLayer.updateCapturedImageBitmap();
   }
 
   /**
@@ -1003,6 +1014,7 @@ export default class Editor extends EventDispatcher {
       }
       this.dataLayer.setData(newData, layerId);
     }
+    this.dataLayer.updateCapturedImageBitmap();
     this.gridLayer.setCriterionDataForRendering(this.dataLayer.getData());
     this.gridLayer.setRowCount(rowCount);
     this.gridLayer.setColumnCount(columnCount);
@@ -1043,6 +1055,7 @@ export default class Editor extends EventDispatcher {
     validateLayers(layers);
     // if validate layers is passed, then we have no problem with layers
     this.dataLayer.setLayers(layers);
+    this.dataLayer.updateCapturedImageBitmap();
     this.originalLayerIdsInOrderForHistory = layers.map(layer => layer.id);
     // reset history when set layer is called
     this.undoHistory = [];
@@ -1372,6 +1385,7 @@ export default class Editor extends EventDispatcher {
       },
     });
     const updatedData = this.dataLayer.getData();
+    this.dataLayer.updateCapturedImageBitmap();
     const updatedColumnCount = getColumnCountFromData(updatedData);
     const updatedRowCount = getRowCountFromData(updatedData);
     const updatedDimensions = {
@@ -1455,6 +1469,7 @@ export default class Editor extends EventDispatcher {
       },
     });
     const updatedData = this.dataLayer.getData();
+    this.dataLayer.updateCapturedImageBitmap();
     const updatedColumnCount = getColumnCountFromData(updatedData);
     const updatedRowCount = getRowCountFromData(updatedData);
     const updatedDimensions = {
@@ -2179,6 +2194,7 @@ export default class Editor extends EventDispatcher {
       return;
     }
     const updatedData = this.dataLayer.getLayer(layerId).getData();
+    this.dataLayer.updateCapturedImageBitmap();
     this.emitGridChangeEvent({
       dimensions: {
         rowCount: getRowCountFromData(updatedData),
@@ -2276,6 +2292,7 @@ export default class Editor extends EventDispatcher {
     if (this.interactionLayer.getCapturedData() !== null) {
       this.interactionLayer.erasePixels(data);
     }
+    this.dataLayer.updateCapturedImageBitmap();
     // we don't need to relay data dimensions to layers because there will be no
     // row column change in erasePixels
     this.recordAction(new ColorChangeAction(dataForAction, modifiedLayerId));
@@ -2320,6 +2337,7 @@ export default class Editor extends EventDispatcher {
         this.dataLayer.getLayer(modifiedLayerId).getData(),
       );
     }
+    this.dataLayer.updateCapturedImageBitmap();
     this.relayDataDimensionsToLayers();
     this.recordAction(
       new ColorSizeChangeAction(
@@ -2384,6 +2402,7 @@ export default class Editor extends EventDispatcher {
     indicesQueue.enqueue(currentIndices);
     interactionLayer.setCapturedData(this.dataLayer.getCopiedData());
     const data = this.interactionLayer.getCapturedData()!;
+
     while (indicesQueue.size() > 0) {
       const { rowIndex, columnIndex } = indicesQueue.dequeue()!;
       if (!isValidIndicesRange(rowIndex, columnIndex, gridIndices)) {
@@ -3303,6 +3322,7 @@ export default class Editor extends EventDispatcher {
         },
       });
     }
+    this.dataLayer.updateCapturedImageBitmap();
     this.renderDataLayer();
   }
 
