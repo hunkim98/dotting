@@ -32,6 +32,7 @@ export default class DataLayer extends BaseLayer {
   private defaultPixelColor = DefaultPixelColor;
   private capturedImageBitmap: ImageBitmap | null = null;
   private capturedImageBitmapScale = 1;
+  private offscreenCanvas: OffscreenCanvas | null = null;
 
   constructor({
     canvas,
@@ -64,6 +65,10 @@ export default class DataLayer extends BaseLayer {
       this.setLeftColumnIndex(leftColumnIndex);
       const defaultNestedArray: Array<Array<PixelModifyItem>> = [];
       const { rowCount, columnCount } = DefaultPixelDataDimensions;
+      this.offscreenCanvas = new OffscreenCanvas(
+        columnCount * this.gridSquareLength,
+        rowCount * this.gridSquareLength,
+      );
       for (let i = 0; i < rowCount; i++) {
         defaultNestedArray.push([]);
         for (let j = 0; j < columnCount; j++) {
@@ -557,6 +562,8 @@ export default class DataLayer extends BaseLayer {
     }
     return { swipedPixels, validColumnIndices, validRowIndices };
   }
+
+  private updateOffscreenCanvasToCurrentDimensions() {}
 
   updateCapturedImageBitmap() {
     // leftTopPoint is a cartesian coordinate
