@@ -141,6 +141,12 @@ const DottingComponentArgTypes: KeysEnum<
     description: "The maximum scale of the canvas.",
     disable: false,
   }),
+  initAutoScale: generateComponentControl<DottingProps["initAutoScale"]>({
+    defaultValue: false,
+    description:
+      "Wheter to initially auto scale the canvas to fit the grids inside the canvas",
+    disable: false,
+  }),
 };
 
 export default {
@@ -184,6 +190,7 @@ export const Dotting = (args: DottingProps) => {
       defaultPixelColor={args.defaultPixelColor}
       minScale={args.minScale}
       maxScale={args.maxScale}
+      initAutoScale={args.initAutoScale}
     />
   );
 };
