@@ -1797,6 +1797,7 @@ export default class Editor extends EventDispatcher {
   private relayInteractionDataToDataLayer() {
     const interactionLayer = this.interactionLayer;
     // if isInteractionApplication is false, the below logic should be done by the user
+    let isDataModified = false;
     if (this.isInteractionApplicable) {
       const strokedPixelModifyItems =
         interactionLayer.getEffectiveStrokePixelChanges(CurrentDeviceUserId);
@@ -2010,6 +2011,7 @@ export default class Editor extends EventDispatcher {
         addedOrDeletedRows.length !== 0 ||
         addedOrDeletedColumns.length !== 0
       ) {
+        isDataModified = true;
         this.emitDataChangeEvent({
           isLocalChange: true,
           data: updatedData,
@@ -2055,6 +2057,7 @@ export default class Editor extends EventDispatcher {
       this.dataLayer.getData(),
     );
     interactionLayer.resetCapturedData();
+    return isDataModified;
   }
 
   /**
@@ -3241,8 +3244,8 @@ export default class Editor extends EventDispatcher {
 
   onInteractionEnded(evt: TouchyEvent) {
     evt.preventDefault();
-    this.relayInteractionDataToDataLayer();
-    if (this.mouseMode !== MouseMode.NULL) {
+    const isDataModified = this.relayInteractionDataToDataLayer();
+    if (this.mouseMode !== MouseMode.NULL && isDataModified) {
       this.dataLayer.render();
       this.dataLayer.updateCapturedImageBitmap();
     }

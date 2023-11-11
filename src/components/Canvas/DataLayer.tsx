@@ -563,8 +563,6 @@ export default class DataLayer extends BaseLayer {
     return { swipedPixels, validColumnIndices, validRowIndices };
   }
 
-  private updateOffscreenCanvasToCurrentDimensions() {}
-
   updateCapturedImageBitmap() {
     // leftTopPoint is a cartesian coordinate
     const capturedPanZoomValue = {
