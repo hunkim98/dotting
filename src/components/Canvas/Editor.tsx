@@ -2198,6 +2198,9 @@ export default class Editor extends EventDispatcher {
       return;
     }
     const updatedData = this.dataLayer.getLayer(layerId).getData();
+    const leftColumnIndex = getColumnKeysFromData(updatedData)[0];
+    const topRowIndex = getRowKeysFromData(updatedData)[0];
+    this.setTopLeftIndices(topRowIndex, leftColumnIndex);
     this.dataLayer.updateCapturedImageBitmap();
     this.emitGridChangeEvent({
       dimensions: {
