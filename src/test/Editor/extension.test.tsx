@@ -9,6 +9,7 @@ describe("test for extension interaction", () => {
   let canvasElement: HTMLCanvasElement;
   let scale: number;
   let offset: { x: number; y: number };
+  let dataCanvasContext: CanvasRenderingContext2D;
   beforeEach(() => {
     const divElement = document.createElement("div");
     const interactionCanvas = divElement.appendChild(
@@ -48,6 +49,7 @@ describe("test for extension interaction", () => {
     editor.setIsGridFixed(false);
     // initialize the canvas with select tool selecting all the pixels
     canvasElement = editor.getCanvasElement();
+    dataCanvasContext = dataCanvas.getContext("2d")!;
   });
 
   afterEach(() => {
@@ -59,7 +61,37 @@ describe("test for extension interaction", () => {
     const rowCount = editor.getRowCount();
     const gridSquareLength = editor.getGridSquareLength();
 
-    // select left top corner
+    const panZoom = editor.getPanZoom();
+    const pixelSquareLength = gridSquareLength * panZoom.scale;
+    const futureTopLeftPixelSquareMiddleOffset =
+      editor.convertWorldPosToCanvasOffset({
+        x: -gridSquareLength / 2,
+        y: -gridSquareLength / 2,
+      });
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: futureTopLeftPixelSquareMiddleOffset.x,
+        offsetY: futureTopLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: futureTopLeftPixelSquareMiddleOffset.x,
+        offsetY: futureTopLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    const beforeExtendEvents = dataCanvasContext.__getDrawCalls();
+    const beforeExtendDrawEvents = beforeExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    // since the canvas is not extended yet there should be no draw events
+    expect(beforeExtendDrawEvents.length).toBe(0);
+
     fireEvent(
       canvasElement,
       new FakeMouseEvent("mousedown", {
@@ -106,12 +138,69 @@ describe("test for extension interaction", () => {
     const { topRowIndex, leftColumnIndex } = editor.getGridIndices();
     expect(topRowIndex).toBe(-1);
     expect(leftColumnIndex).toBe(-1);
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: futureTopLeftPixelSquareMiddleOffset.x,
+        offsetY: futureTopLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: futureTopLeftPixelSquareMiddleOffset.x,
+        offsetY: futureTopLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    const afterExtendEvents = dataCanvasContext.__getDrawCalls();
+    const afterExtendDrawEvents = afterExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+
+    // if this is not 1 this means that the grid was not extended
+    expect(afterExtendDrawEvents.length).toBe(1);
   });
 
   it("extends canvas grid diagonally to bottom right", () => {
     const columnCount = editor.getColumnCount();
     const rowCount = editor.getRowCount();
     const gridSquareLength = editor.getGridSquareLength();
+
+    const futureBottomRightPixelSquareMiddleOffset =
+      editor.convertWorldPosToCanvasOffset({
+        x: columnCount * gridSquareLength + gridSquareLength / 2,
+        y: rowCount * gridSquareLength + gridSquareLength / 2,
+      });
+    const panZoom = editor.getPanZoom();
+    const pixelSquareLength = gridSquareLength * panZoom.scale;
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: futureBottomRightPixelSquareMiddleOffset.x,
+        offsetY: futureBottomRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: futureBottomRightPixelSquareMiddleOffset.x,
+        offsetY: futureBottomRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    const beforeExtendEvents = dataCanvasContext.__getDrawCalls();
+    const beforeExtendDrawEvents = beforeExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    // since the canvas is not extended yet there should be no draw events
+    expect(beforeExtendDrawEvents.length).toBe(0);
     // select bottom right corner
     fireEvent(
       canvasElement,
@@ -159,12 +248,67 @@ describe("test for extension interaction", () => {
     const { bottomRowIndex, rightColumnIndex } = editor.getGridIndices();
     expect(bottomRowIndex).toBe(rowCount);
     expect(rightColumnIndex).toBe(columnCount);
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: futureBottomRightPixelSquareMiddleOffset.x,
+        offsetY: futureBottomRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: futureBottomRightPixelSquareMiddleOffset.x,
+        offsetY: futureBottomRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    const afterExtendEvents = dataCanvasContext.__getDrawCalls();
+    const afterExtendDrawEvents = afterExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    expect(afterExtendDrawEvents.length).toBe(1);
   });
 
   it("extends canvas grid diagonally to top right", () => {
     const columnCount = editor.getColumnCount();
     const rowCount = editor.getRowCount();
     const gridSquareLength = editor.getGridSquareLength();
+
+    const futureTopRightPixelSquareMiddleOffset =
+      editor.convertWorldPosToCanvasOffset({
+        x: columnCount * gridSquareLength + gridSquareLength / 2,
+        y: -gridSquareLength / 2,
+      });
+    const panZoom = editor.getPanZoom();
+    const pixelSquareLength = gridSquareLength * panZoom.scale;
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: futureTopRightPixelSquareMiddleOffset.x,
+        offsetY: futureTopRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: futureTopRightPixelSquareMiddleOffset.x,
+        offsetY: futureTopRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    const beforeExtendEvents = dataCanvasContext.__getDrawCalls();
+    const beforeExtendDrawEvents = beforeExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    // since the canvas is not extended yet there should be no draw events
+    expect(beforeExtendDrawEvents.length).toBe(0);
     // select top right corner
     fireEvent(
       canvasElement,
@@ -212,6 +356,29 @@ describe("test for extension interaction", () => {
     const { topRowIndex, rightColumnIndex } = editor.getGridIndices();
     expect(topRowIndex).toBe(-1);
     expect(rightColumnIndex).toBe(columnCount);
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: futureTopRightPixelSquareMiddleOffset.x,
+        offsetY: futureTopRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: futureTopRightPixelSquareMiddleOffset.x,
+        offsetY: futureTopRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    const afterExtendEvents = dataCanvasContext.__getDrawCalls();
+    const afterExtendDrawEvents = afterExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    expect(afterExtendDrawEvents.length).toBe(1);
   });
 
   it("extends canvas grid diagonally to bottom left", () => {
@@ -219,6 +386,39 @@ describe("test for extension interaction", () => {
     const rowCount = editor.getRowCount();
     const gridSquareLength = editor.getGridSquareLength();
     // select bottom left corner
+
+    const futureBottomLeftPixelSquareMiddleOffset =
+      editor.convertWorldPosToCanvasOffset({
+        x: -gridSquareLength / 2,
+        y: rowCount * gridSquareLength + gridSquareLength / 2,
+      });
+    const panZoom = editor.getPanZoom();
+    const pixelSquareLength = gridSquareLength * panZoom.scale;
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: futureBottomLeftPixelSquareMiddleOffset.x,
+        offsetY: futureBottomLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: futureBottomLeftPixelSquareMiddleOffset.x,
+        offsetY: futureBottomLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    const beforeExtendEvents = dataCanvasContext.__getDrawCalls();
+    const beforeExtendDrawEvents = beforeExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    // since the canvas is not extended yet there should be no draw events
+    expect(beforeExtendDrawEvents.length).toBe(0);
+
     fireEvent(
       canvasElement,
       new FakeMouseEvent("mousedown", {
@@ -265,6 +465,30 @@ describe("test for extension interaction", () => {
     const { bottomRowIndex, leftColumnIndex } = editor.getGridIndices();
     expect(bottomRowIndex).toBe(rowCount);
     expect(leftColumnIndex).toBe(-1);
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: futureBottomLeftPixelSquareMiddleOffset.x,
+        offsetY: futureBottomLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: futureBottomLeftPixelSquareMiddleOffset.x,
+        offsetY: futureBottomLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    const afterExtendEvents = dataCanvasContext.__getDrawCalls();
+    const afterExtendDrawEvents = afterExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    // since the canvas is not extended yet there should be no draw events
+    expect(afterExtendDrawEvents.length).toBe(1);
   });
 
   it("shortens grid diagonally from top left", () => {
@@ -318,6 +542,36 @@ describe("test for extension interaction", () => {
     const { topRowIndex, leftColumnIndex } = editor.getGridIndices();
     expect(topRowIndex).toBe(1);
     expect(leftColumnIndex).toBe(1);
+
+    const previousTopLeftPixelSquareMiddleOffset =
+      editor.convertWorldPosToCanvasOffset({
+        x: gridSquareLength / 2,
+        y: gridSquareLength / 2,
+      });
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: previousTopLeftPixelSquareMiddleOffset.x,
+        offsetY: previousTopLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: previousTopLeftPixelSquareMiddleOffset.x,
+        offsetY: previousTopLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    const panZoom = editor.getPanZoom();
+    const pixelSquareLength = gridSquareLength * panZoom.scale;
+    const afterExtendEvents = dataCanvasContext.__getDrawCalls();
+    const afterExtendDrawEvents = afterExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    expect(afterExtendDrawEvents.length).toBe(0);
   });
 
   it("shortens grid diagonally from bottom right", () => {
@@ -371,6 +625,36 @@ describe("test for extension interaction", () => {
     const { bottomRowIndex, rightColumnIndex } = editor.getGridIndices();
     expect(bottomRowIndex).toBe(rowCount - 2);
     expect(rightColumnIndex).toBe(columnCount - 2);
+
+    const previousBottomRightPixelSquareMiddleOffset =
+      editor.convertWorldPosToCanvasOffset({
+        x: columnCount * gridSquareLength - gridSquareLength / 2,
+        y: rowCount * gridSquareLength - gridSquareLength / 2,
+      });
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: previousBottomRightPixelSquareMiddleOffset.x,
+        offsetY: previousBottomRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: previousBottomRightPixelSquareMiddleOffset.x,
+        offsetY: previousBottomRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    const panZoom = editor.getPanZoom();
+    const pixelSquareLength = gridSquareLength * panZoom.scale;
+    const afterExtendEvents = dataCanvasContext.__getDrawCalls();
+    const afterExtendDrawEvents = afterExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    expect(afterExtendDrawEvents.length).toBe(0);
   });
 
   it("shortens grid diagonally from top right", () => {
@@ -424,6 +708,36 @@ describe("test for extension interaction", () => {
     const { topRowIndex, rightColumnIndex } = editor.getGridIndices();
     expect(topRowIndex).toBe(1);
     expect(rightColumnIndex).toBe(columnCount - 2);
+
+    const previousTopRightPixelSquareMiddleOffset =
+      editor.convertWorldPosToCanvasOffset({
+        x: columnCount * gridSquareLength - gridSquareLength / 2,
+        y: gridSquareLength / 2,
+      });
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: previousTopRightPixelSquareMiddleOffset.x,
+        offsetY: previousTopRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: previousTopRightPixelSquareMiddleOffset.x,
+        offsetY: previousTopRightPixelSquareMiddleOffset.y,
+      }),
+    );
+    const panZoom = editor.getPanZoom();
+    const pixelSquareLength = gridSquareLength * panZoom.scale;
+    const afterExtendEvents = dataCanvasContext.__getDrawCalls();
+    const afterExtendDrawEvents = afterExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    expect(afterExtendDrawEvents.length).toBe(0);
   });
 
   it("shortens grid diagonally from bottom left", () => {
@@ -477,5 +791,35 @@ describe("test for extension interaction", () => {
     const { bottomRowIndex, leftColumnIndex } = editor.getGridIndices();
     expect(bottomRowIndex).toBe(rowCount - 2);
     expect(leftColumnIndex).toBe(1);
+
+    const previousBottomLeftPixelSquareMiddleOffset =
+      editor.convertWorldPosToCanvasOffset({
+        x: gridSquareLength / 2,
+        y: rowCount * gridSquareLength - gridSquareLength / 2,
+      });
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX: previousBottomLeftPixelSquareMiddleOffset.x,
+        offsetY: previousBottomLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX: previousBottomLeftPixelSquareMiddleOffset.x,
+        offsetY: previousBottomLeftPixelSquareMiddleOffset.y,
+      }),
+    );
+    const panZoom = editor.getPanZoom();
+    const pixelSquareLength = gridSquareLength * panZoom.scale;
+    const afterExtendEvents = dataCanvasContext.__getDrawCalls();
+    const afterExtendDrawEvents = afterExtendEvents.filter(event => {
+      return (
+        event.props.width === pixelSquareLength &&
+        event.props.height === pixelSquareLength
+      );
+    });
+    expect(afterExtendDrawEvents.length).toBe(0);
   });
 });
