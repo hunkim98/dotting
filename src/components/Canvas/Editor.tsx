@@ -3244,10 +3244,13 @@ export default class Editor extends EventDispatcher {
     this.gridLayer.renderSelection(movingSelectedArea);
   }
 
-  onInteractionEnded(evt: TouchyEvent) {
+  onInteractionEnded(evt: TouchyEvent, shouldUpdateCapturedImage: boolean) {
     evt.preventDefault();
     const isDataModified = this.relayInteractionDataToDataLayer();
-    if (this.mouseMode !== MouseMode.NULL && isDataModified) {
+    if (
+      shouldUpdateCapturedImage ||
+      (this.mouseMode !== MouseMode.NULL && isDataModified)
+    ) {
       this.dataLayer.render();
       this.dataLayer.updateCapturedImageBitmap();
     }
@@ -3279,12 +3282,16 @@ export default class Editor extends EventDispatcher {
   }
 
   onMouseUp(evt: TouchyEvent) {
+    let shouldUpdateCapturedImage = false;
     if (this.brushTool === BrushTool.SELECT) {
       this.relaySelectingAreaToSelectedArea();
       this.relayMovingSelectedAreaToSelectedArea();
       this.relayExtendingSelectedAreaToSelectedArea();
       // get the updated selected area
       const selectedArea = this.interactionLayer.getSelectedArea();
+      if (selectedArea) {
+        shouldUpdateCapturedImage = true;
+      }
       const doesSelectedAreaExistInGrid = getDoesAreaOverlapPixelgrid(
         selectedArea,
         this.dataLayer.getRowCount(),
@@ -3299,11 +3306,11 @@ export default class Editor extends EventDispatcher {
         this.gridLayer.render();
       }
     }
-    this.onInteractionEnded(evt);
+    this.onInteractionEnded(evt, shouldUpdateCapturedImage);
   }
 
   onMouseOut(evt: TouchyEvent) {
-    this.onInteractionEnded(evt);
+    this.onInteractionEnded(evt, false);
   }
 
   renderGridLayer() {
