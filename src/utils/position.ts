@@ -279,12 +279,14 @@ export const convertWorldPosAreaToPixelGridArea = (
   rowKeysInOrder: number[],
   columnKeysInOrder: number[],
 ) => {
+  const leftColumnIndex = columnKeysInOrder[0];
+  const topRowIndex = rowKeysInOrder[0];
   const { areaTopLeftPos, areaBottomRightPos } =
     getAreaTopLeftAndBottomRight(selectingArea);
 
   const pixelGridLeftTopPoint: Coord = {
-    x: 0,
-    y: 0,
+    x: leftColumnIndex * gridSquareLength,
+    y: topRowIndex * gridSquareLength,
   };
   const selectedRegionTopLeft: Coord = {
     x: 0,
