@@ -1299,7 +1299,7 @@ export default class InteractionLayer extends BaseLayer {
 
   renderErasedPixels(correctedLeftTopScreenPoint: Coord, squareLength: number) {
     const tempErasePixels = this.tempStrokedPixels.filter(
-      item => item.color == "",
+      item => item.color === "",
     );
     const allErasedPixels = this.getAllErasedPixels();
     const ctx = this.ctx;
@@ -1316,6 +1316,13 @@ export default class InteractionLayer extends BaseLayer {
         squareLength,
         squareLength,
       );
+      ctx.fillStyle = this.defaultPixelColor;
+      ctx.fillRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
     }
     for (const item of tempErasePixels) {
       const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
@@ -1324,6 +1331,13 @@ export default class InteractionLayer extends BaseLayer {
         continue;
       }
       ctx.clearRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+      ctx.fillStyle = this.defaultPixelColor;
+      ctx.fillRect(
         relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
         relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
         squareLength,
@@ -1402,8 +1416,6 @@ export default class InteractionLayer extends BaseLayer {
    * @returns void
    */
   renderCanvasMask(correctedLeftTopScreenPoint: Coord, squareLength: number) {
-    // TODO: this function only works for background mode "color"
-    //       We need to implement this function for "checkboard" mode
     if (
       this.capturedData === null ||
       this.capturedDataOriginalIndices === null
