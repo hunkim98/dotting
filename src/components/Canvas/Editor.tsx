@@ -2380,12 +2380,17 @@ export default class Editor extends EventDispatcher {
         })),
       },
     });
+
     this.gridLayer.setCriterionDataForRendering(
       this.dataLayer.getLayer(modifiedLayerId).getData(),
     );
     this.dataLayer.setCriterionDataForRendering(
       this.dataLayer.getLayer(modifiedLayerId).getData(),
     );
+    const topRowIndex = this.dataLayer.getTopRowIndex();
+    const leftColumnIndex = this.dataLayer.getLeftColumnIndex();
+    this.setTopLeftIndices(topRowIndex, leftColumnIndex);
+    this.dataLayer.updateCapturedImageBitmap();
     if (this.lastRenderAllCall) {
       cancelAnimationFrame(this.lastRenderAllCall);
     }
