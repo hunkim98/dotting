@@ -2380,13 +2380,9 @@ export default class Editor extends EventDispatcher {
         })),
       },
     });
-
-    this.gridLayer.setCriterionDataForRendering(
-      this.dataLayer.getLayer(modifiedLayerId).getData(),
-    );
-    this.dataLayer.setCriterionDataForRendering(
-      this.dataLayer.getLayer(modifiedLayerId).getData(),
-    );
+    const criterionData = this.dataLayer.getLayer(modifiedLayerId).getData();
+    this.gridLayer.setCriterionDataForRendering(criterionData);
+    this.dataLayer.setCriterionDataForRendering(criterionData);
     const topRowIndex = this.dataLayer.getTopRowIndex();
     const leftColumnIndex = this.dataLayer.getLeftColumnIndex();
     this.setTopLeftIndices(topRowIndex, leftColumnIndex);
@@ -3351,8 +3347,8 @@ export default class Editor extends EventDispatcher {
     const rowCount = this.getRowCount();
     const allRowKeys = getRowKeysFromData(data);
     const allColumnKeys = getColumnKeysFromData(data);
-    const rowKeyOrderMap = createRowKeyOrderMapfromData(data);
-    const columnKeyOrderMap = createColumnKeyOrderMapfromData(data);
+    const { rowKeyOrderMap } = createRowKeyOrderMapfromData(data);
+    const { columnKeyOrderMap } = createColumnKeyOrderMapfromData(data);
     const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
       getGridIndicesFromData(data);
     if (options.type === "png") {

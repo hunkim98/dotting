@@ -48,12 +48,16 @@ export abstract class BaseLayer {
 
   setCriterionDataForRendering(criterionDataForRendering: DottingData) {
     this.criterionDataForRendering = criterionDataForRendering;
-    this.rowKeyOrderMap = createRowKeyOrderMapfromData(
+    const { rowKeyOrderMap, minRowKey } = createRowKeyOrderMapfromData(
       criterionDataForRendering,
     );
-    this.columnKeyOrderMap = createColumnKeyOrderMapfromData(
+    const { columnKeyOrderMap, minColumnKey } = createColumnKeyOrderMapfromData(
       criterionDataForRendering,
     );
+    this.rowKeyOrderMap = rowKeyOrderMap;
+    this.columnKeyOrderMap = columnKeyOrderMap;
+    this.topRowIndex = minRowKey;
+    this.leftColumnIndex = minColumnKey;
   }
 
   scale(x: number, y: number) {

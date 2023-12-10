@@ -199,21 +199,23 @@ export const createPixelDataSquareArray = (
 export const createRowKeyOrderMapfromData = (data: DottingData) => {
   const rowKeys = getRowKeysFromData(data);
   const sortedRowKeys = rowKeys.sort((a, b) => a - b);
+  const minRowKey = sortedRowKeys[0];
   const rowKeyOrderMap = new Map<number, number>();
   sortedRowKeys.forEach((key, index) => {
     rowKeyOrderMap.set(key, index);
   });
-  return rowKeyOrderMap;
+  return { rowKeyOrderMap, minRowKey };
 };
 
 export const createColumnKeyOrderMapfromData = (data: DottingData) => {
   const columnKeys = getColumnKeysFromData(data);
   const sortedColumnKeys = columnKeys.sort((a, b) => a - b);
+  const minColumnKey = sortedColumnKeys[0];
   const columnKeyOrderMap = new Map<number, number>();
   sortedColumnKeys.forEach((key, index) => {
     columnKeyOrderMap.set(key, index);
   });
-  return columnKeyOrderMap;
+  return { columnKeyOrderMap, minColumnKey };
 };
 
 export const getInBetweenPixelIndicesfromCoords = (
