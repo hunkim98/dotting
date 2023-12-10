@@ -1408,6 +1408,10 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
+    const topRowIndex = this.dataLayer.getTopRowIndex();
+    const leftColumnIndex = this.dataLayer.getLeftColumnIndex();
+    this.setTopLeftIndices(topRowIndex, leftColumnIndex);
+    this.dataLayer.updateCapturedImageBitmap();
     if (this.lastRenderAllCall) {
       cancelAnimationFrame(this.lastRenderAllCall);
     }
@@ -1492,6 +1496,10 @@ export default class Editor extends EventDispatcher {
     this.interactionLayer.setCriterionDataForRendering(
       this.dataLayer.getData(),
     );
+    const topRowIndex = this.dataLayer.getTopRowIndex();
+    const leftColumnIndex = this.dataLayer.getLeftColumnIndex();
+    this.setTopLeftIndices(topRowIndex, leftColumnIndex);
+    this.dataLayer.updateCapturedImageBitmap();
     if (this.lastRenderAllCall) {
       cancelAnimationFrame(this.lastRenderAllCall);
     }
