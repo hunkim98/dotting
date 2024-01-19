@@ -146,6 +146,8 @@ export default class Editor extends EventDispatcher {
 
   private element: HTMLCanvasElement;
 
+  private resizeUnit = 1; // this is default set to 1
+
   constructor({
     gridCanvas,
     interactionCanvas,
@@ -512,6 +514,10 @@ export default class Editor extends EventDispatcher {
 
   setIsAltPressed(isAltPressed: boolean) {
     this.isAltPressed = isAltPressed;
+  }
+
+  setResizeUnit(resizeUnit: number) {
+    this.resizeUnit = resizeUnit;
   }
 
   changeBrushColor(color: string) {
@@ -1262,23 +1268,31 @@ export default class Editor extends EventDispatcher {
       buttonDirection === ButtonDirection.LEFT
         ? dataLayerColumnCount + mouseOffsetChangeXAmount
         : dataLayerColumnCount - mouseOffsetChangeXAmount;
+
     const interactionLayerRowCount = getRowCountFromData(
       interactionCapturedData,
     );
     const interactionLayerColumnCount = getColumnCountFromData(
       interactionCapturedData,
     );
+    const updatedRowCountDifference =
+      updatedRowCount - interactionLayerRowCount;
+    const updatedColumnCountDifference =
+      updatedColumnCount - interactionLayerColumnCount;
+
     const minimumCount = interactionLayer.getMinimumCount();
 
     if (buttonDirection) {
-      const isRowSizeModifiable = !(
-        buttonDirection === ButtonDirection.LEFT ||
-        buttonDirection === ButtonDirection.RIGHT
-      );
-      const isColumnSizeModifiable = !(
-        buttonDirection === ButtonDirection.TOP ||
-        buttonDirection === ButtonDirection.BOTTOM
-      );
+      const isRowSizeModifiable =
+        !(
+          buttonDirection === ButtonDirection.LEFT ||
+          buttonDirection === ButtonDirection.RIGHT
+        ) && updatedRowCountDifference % this.resizeUnit === 0;
+      const isColumnSizeModifiable =
+        !(
+          buttonDirection === ButtonDirection.TOP ||
+          buttonDirection === ButtonDirection.BOTTOM
+        ) && updatedColumnCountDifference % this.resizeUnit === 0;
       if (isRowSizeModifiable) {
         if (updatedRowCount > interactionLayerRowCount) {
           this.extendInteractionGridBy(buttonDirection, {
