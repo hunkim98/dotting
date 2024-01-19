@@ -822,4 +822,104 @@ describe("test for extension interaction", () => {
     });
     expect(afterExtendDrawEvents.length).toBe(0);
   });
+
+  it("extends canvas grid with its resize unit changed to 4", () => {
+    const resizeUnit = 4;
+    editor.setResizeUnit(resizeUnit);
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX:
+          canvasElement.width / 2 -
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength,
+      }),
+    );
+    expect(editor.getColumnCount()).toBe(columnCount); // it should not be changed
+    expect(editor.getRowCount()).toBe(rowCount); // it should not be changed
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX:
+          canvasElement.width / 2 -
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength * resizeUnit,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength * resizeUnit,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength * resizeUnit,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength * resizeUnit,
+      }),
+    );
+    expect(editor.getColumnCount()).toBe(columnCount - resizeUnit);
+    expect(editor.getRowCount()).toBe(rowCount - resizeUnit);
+  });
 });
