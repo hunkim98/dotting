@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import React from "react";
 
-import Dotting, { DottingProps } from "./Dotting";
+import Dotting, { DottingProps } from "../components/Dotting";
 
 describe("Dotting Component", () => {
   let props: DottingProps;
