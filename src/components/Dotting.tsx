@@ -450,6 +450,15 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
   }, [editor, props.resizeUnit]);
 
   useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    if (props.isDrawingEnabled) {
+      editor.setIsDrawingEnabled(props.isDrawingEnabled);
+    }
+  }, [editor, props.isDrawingEnabled]);
+
+  useEffect(() => {
     if (
       !gridCanvas ||
       !interactionCanvas ||
