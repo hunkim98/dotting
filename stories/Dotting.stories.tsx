@@ -147,6 +147,11 @@ const DottingComponentArgTypes: KeysEnum<
       "Wheter to initially auto scale the canvas to fit the grids inside the canvas",
     disable: false,
   }),
+  resizeUnit: generateComponentControl<DottingProps["resizeUnit"]>({
+    defaultValue: 1,
+    description: "The unit of the resize",
+    disable: false,
+  }),
 };
 
 export default {
@@ -191,6 +196,7 @@ export const Dotting = (args: DottingProps) => {
       minScale={args.minScale}
       maxScale={args.maxScale}
       initAutoScale={args.initAutoScale}
+      resizeUnit={args.resizeUnit}
     />
   );
 };

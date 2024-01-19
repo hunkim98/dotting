@@ -52,6 +52,7 @@ export interface DottingProps {
   minScale?: number;
   maxScale?: number;
   initAutoScale?: boolean;
+  resizeUnit?: number;
   // children?: React.ReactNode;
   // initIndicatorData?: Array<PixelModifyItem>;
   // initBrushColor?: string;
@@ -438,6 +439,15 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       editor.setBackgroundColor(props.backgroundColor);
     }
   }, [editor, props.backgroundColor]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    if (props.resizeUnit) {
+      editor.setResizeUnit(props.resizeUnit);
+    }
+  }, [editor, props.resizeUnit]);
 
   useEffect(() => {
     if (
