@@ -2517,7 +2517,7 @@ export default class Editor extends EventDispatcher {
       this.mouseMode = MouseMode.DRAWING;
     }
 
-    if (this.mouseMode === MouseMode.DRAWING) {
+    if (this.mouseMode === MouseMode.DRAWING && this.isDrawingEnabled) {
       // we only need to care about select tool when mouse mode is set to drawing
       if (this.brushTool === BrushTool.SELECT) {
         // brush tool select also means mouse is drawng
@@ -2691,7 +2691,6 @@ export default class Editor extends EventDispatcher {
   }
 
   onMouseMove(evt: TouchyEvent) {
-    evt.preventDefault();
     const mouseCartCoord = getMouseCartCoord(
       evt,
       this.element,
@@ -2706,6 +2705,9 @@ export default class Editor extends EventDispatcher {
     this.styleMouseCursor(mouseCartCoord);
 
     if (this.mouseMode === MouseMode.NULL) {
+      if (!this.isDrawingEnabled) {
+        return;
+      }
       if (this.brushTool === BrushTool.SELECT) {
         const selectedArea = this.interactionLayer.getSelectedArea();
         if (selectedArea) {
@@ -2777,6 +2779,9 @@ export default class Editor extends EventDispatcher {
       this.handlePinchZoom(evt);
     } else if (this.mouseMode == MouseMode.DRAWING) {
       // rowKeyOrderMap is a sorted map of rowKeys
+      if (!this.isDrawingEnabled) {
+        return;
+      }
       const rowIndices = Array.from(this.dataLayer.getRowKeyOrderMap().keys());
       // columnKeyOrderMap is a sorted map of columnKeys
       const columnIndices = Array.from(
@@ -2892,6 +2897,9 @@ export default class Editor extends EventDispatcher {
         }
       } else {
         // other tools: draw, erase, paint bucket
+        if (!this.isDrawingEnabled) {
+          return;
+        }
         if (pixelIndex) {
           this.drawPixelInInteractionLayer(
             pixelIndex.rowIndex,
@@ -3319,6 +3327,7 @@ export default class Editor extends EventDispatcher {
 
   onMouseUp(evt: TouchyEvent) {
     let shouldUpdateCapturedImage = false;
+
     if (this.brushTool === BrushTool.SELECT) {
       this.relaySelectingAreaToSelectedArea();
       this.relayMovingSelectedAreaToSelectedArea();
