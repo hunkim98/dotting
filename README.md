@@ -61,7 +61,7 @@ const Clear = () => {
 
 <br/>
 
-## Props
+## Component Props
 
 When creating a `Dotting` component there are multiple props prepared for easily customizing the canvas. Especially, you can set the brush you would like to use through the `brushTool` prop. The `width` and `height` props should be initialized with your own values.
 
@@ -107,7 +107,7 @@ There are some types that you should take notice of when using hooks or setting 
 
 <br/>
 
-## Reminder!
+## Don't forget setting the width and height!
 
 To use the canvas component, you should first use the `<Dotting/>` component. You must set the `width` and `height` to use it.
 
@@ -117,9 +117,9 @@ To use the canvas component, you should first use the `<Dotting/>` component. Yo
 
 <br/>
 
-## Hooks
+## Want to manipulate the canvas? Use hooks!
 
-To manipulate the pixel grids programatically, you can use hooks. The provided hooks are `useBrush`, `useData`, `useDotting`, `useGrids`, `useHandlers`. Below is an example using the `useDotting` hook for clearing the pixels when button is clicked
+To manipulate the pixel grids programatically, you can use hooks. The provided hooks are `useBrush`, `useData`, `useDotting`, `useGrids`, `useHandlers`. For using the hooks, you must create a ref object with React's `useRef` and input the resulting ref object as a prop in the `Dotting` component and also pass it as a parameter to the hooks. Below is an example using the `useDotting` hook for clearing the pixels when button is clicked
 
 ```tsx
 import { Dotting, DottingRef, useDotting } from "dotting";
