@@ -61,7 +61,53 @@ const Clear = () => {
 
 <br/>
 
-## Components
+## Props
+
+When creating a `Dotting` component there are multiple props prepared for easily customizing the canvas. Especially, you can set the brush you would like to use through the `brushTool` prop. The `width` and `height` props should be initialized with your own values.
+
+If you would like to use the hooks for further customizing the component, you must use the `ref` prop ans assign a `refObject` created with `useRef<DottingRef>`. An example of how to use hooks by setting a `refObject` is shown below.
+
+| Name                    | Description                                                                                                                                                                 | type                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| **width\***             | The width of the canvas. When you assign a string to width, it should be a valid CSS length value such as 100%.                                                             | `string` or `number`  |
+| **height\***            | The height of the canvas. When you assign a string to height, it should be a valid CSS length value such as 100%.                                                           | `string` or `number`  |
+| style                   | The style object for the canvas                                                                                                                                             | `React.CSSProperties` |
+| gridStrokeColor         | The stroke color of the grid                                                                                                                                                | `string`              |
+| gridStrokeWidth         | The stroke width of the grid                                                                                                                                                | `number`              |
+| isGridVisible           | If set to true the grid lines will be visible                                                                                                                               | `boolean`             |
+| backgroundColor         | The background color of the canvas.                                                                                                                                         | `string`              |
+| initLayers              | The initial layers that you want to draw on the canvas. If nothing is passed, there will be 1 default layer, and its id will be 'layer1'                                    | `LayerProps[]`        |
+| isPanZoomable           | If set to true the canvas will be pan and zoomable                                                                                                                          | `boolean`             |
+| isGridFixed             | If set to true the grid will not be extendable                                                                                                                              | `boolean`             |
+| brushTool               | The brush tool is for changing the brush tool                                                                                                                               | `BrushTool`           |
+| brushColor              | The brush color for drawing the grid. You can make a `useState` for tracking brushColor You can also use `useBrush` hook to change the brush color with `changeBrushColor`. | `string`              |
+| indicatorData           | The indicator data that you want to draw on the canvas                                                                                                                      | `PixelModifyItem[]`   |
+| isInteractionApplicable | If set to true the interaction will be applicable. If set to false the interaction will be disabled                                                                         | `boolean`             |
+| isDrawingEnabled        | If set to true the drawing will be enabled. If set to false the drawing will be disabled                                                                                    | `boolean`             |
+| gridSquareLength        | The length of the grid square. The default is 20.                                                                                                                           | `number`              |
+| defaultPixelColor       | The default pixel color.                                                                                                                                                    | `string`              |
+| minScale                | The minimum scale of the canvas.color.                                                                                                                                      | `number`              |
+| maxScale                | The maximum scale of the canvas.color.                                                                                                                                      | `number`              |
+| initAutoScale           | Wheter to initially auto scale the canvas to fit the grids inside the canvas                                                                                                | `boolean`             |
+| resizeUnit              | The unit of reszie amount during extension                                                                                                                                  | `number`              |
+| **ref**                 | This is a ref object that must be used if you plan to use hooks for manipulating the canvas through code                                                                    | `Ref<DottingRef>`     |
+
+<br/>
+
+## Basic Types
+
+There are some types that you should take notice of when using hooks or setting props for Dotting. In this section, I only cover the types that are related to `Dotting` props. For further details on specific types used in hooks, please check the [documentation](https://hunkim98.github.io/dotting/?path=/story/hooks-setup--page)
+
+| Name              | Description                                                                                                                                                                                                                                                                                                            | type                                                                                                                               |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `LayerProps`      | This contains the necessary props for creating a layer                                                                                                                                                                                                                                                                 | `{ id: string; data: Array<Array<PixelModifyItem>>;}`                                                                              |
+| `PixelModifyItem` | This is an item that contains the information for one pixel square. In a default canvas, the top left pixel square's rowIndex and columnIndex are both 0. The pixel square just below it has a rowIndex of 1 and a columnIndex of 0, white the pixel square just next to it has a rowIndex of 0 and a columnIndex of 1 | `{ rowIndex: number; columnIndex: number; color: string;}`                                                                         |
+| `BrushTool`       | This is an ` enum` containing all the tools usable in the canvas. Currently we support `Pen (Dot) Tool`, `Eraser Tool`,`Paint Tool`, `Select Tool`                                                                                                                                                                     | `BrushTool.DOT`, `BrushTool.ERASER`, `BrushTool.PAINT_BUCKET`,`BrushTool.SELECT`, `BrushTool.NONE`                                 |
+| `DottingRef`      | This contains all the callbacks for manipulating the canvas through programming. You are free to use the callbacks directly from the ref ojbect or you can use hooks for convenience                                                                                                                                   | [Check the file](https://github.com/hunkim98/dotting/blob/e917863158c8106c2bca805925d11d40c76a9608/src/components/Dotting.tsx#L60) |
+
+<br/>
+
+## Reminder!
 
 To use the canvas component, you should first use the `<Dotting/>` component. You must set the `width` and `height` to use it.
 
@@ -75,11 +121,11 @@ To use the canvas component, you should first use the `<Dotting/>` component. Yo
 
 To manipulate the pixel grids programatically, you can use hooks. The provided hooks are `useBrush`, `useData`, `useDotting`, `useGrids`, `useHandlers`. Below is an example using the `useDotting` hook for clearing the pixels when button is clicked
 
-```jsx
+```tsx
 import { Dotting, DottingRef, useDotting } from "dotting";
 
 export const Component = () => {
-  const ref = useRef < DottingRef > null;
+  const ref = useRef<DottingRef>(null);
   const { clear } = useDotting(ref);
   return (
     <div>
