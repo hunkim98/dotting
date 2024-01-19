@@ -7,6 +7,7 @@ import {
   MouseMode,
   ButtonDirection,
   CurrentDeviceUserId,
+  GridMinimumScale,
 } from "./config";
 import DataLayer from "./DataLayer";
 import GridLayer from "./GridLayer";
@@ -1177,6 +1178,12 @@ export default class Editor extends EventDispatcher {
         correctedOffset.y = maxYPosition;
       }
       this.panZoom.offset = correctedOffset;
+    }
+
+    if (this.panZoom.scale < GridMinimumScale) {
+      this.gridLayer.setIsGridVisible(false);
+    } else {
+      this.gridLayer.setIsGridVisible(true);
     }
 
     // relay updated information to layers
