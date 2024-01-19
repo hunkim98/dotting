@@ -2540,7 +2540,10 @@ export default class Editor extends EventDispatcher {
             this.interactionLayer.setCapturedBaseExtendingSelectedAreaPixels(
               coloredPixels,
             );
-            this.dataLayer.erasePixels(coloredPixels);
+            this.dataLayer.erasePixels(
+              coloredPixels,
+              this.dataLayer.getCurrentLayer().getId(),
+            );
             this.dataLayer.render();
             this.interactionLayer.render();
 
@@ -2563,7 +2566,10 @@ export default class Editor extends EventDispatcher {
             "",
           );
 
-          this.dataLayer.erasePixels(coloredPixels);
+          this.dataLayer.erasePixels(
+            coloredPixels,
+            this.dataLayer.getCurrentLayer().getId(),
+          );
           this.interactionLayer.setSelectedAreaPixels(coloredPixels);
           this.interactionLayer.setMovingSelectedPixels(coloredPixels);
           this.interactionLayer.setMovingSelectedArea(previousSelectedArea);

@@ -71,4 +71,4 @@ export const DefaultBackgroundColor = "#999999";
 
 export const DefaultPixelColor = "#ffffff";
 
-export const GridMinimumScale = 0.3;
+export const GridMinimumScale = 0.2;

@@ -1,6 +1,6 @@
 import React, { BaseSyntheticEvent, useRef, useState } from "react";
 
-import { useBrush } from "../../src";
+import { BrushTool, useBrush } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useLayers from "../../src/hooks/useLayers";
 import { CreateEmptySquareData } from "../utils/dataCreator";
@@ -24,6 +24,7 @@ const Layers = () => {
   const draggingItemIndex = useRef<number | null>(null);
   const draggingOverItemIndex = useRef<number | null>(null);
   const [createdLayerCount, setCreatedLayerCount] = useState(3);
+  const [brushTool, setBrushTool] = useState<BrushTool>(BrushTool.DOT);
 
   const onDragStart = (e: BaseSyntheticEvent, index: number, id: string) => {
     draggingItemIndex.current = index;
@@ -175,6 +176,7 @@ const Layers = () => {
           ref={ref}
           width={"100%"}
           height={500}
+          brushTool={brushTool}
           initLayers={[
             {
               id: "layer1",
@@ -190,6 +192,23 @@ const Layers = () => {
             },
           ]}
         />
+        <select
+          style={{
+            marginLeft: 15,
+            marginTop: 10,
+          }}
+          value={brushTool}
+          onChange={e => {
+            setBrushTool(e.target.value as BrushTool);
+          }}
+        >
+          <option value={BrushTool.DOT}>{BrushTool.DOT}</option>
+          <option value={BrushTool.ERASER}>{BrushTool.ERASER}</option>
+          <option value={BrushTool.PAINT_BUCKET}>
+            {BrushTool.PAINT_BUCKET}
+          </option>
+          <option value={BrushTool.SELECT}>{BrushTool.SELECT}</option>
+        </select>
         <div>
           {[
             "#FF0000",
