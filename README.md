@@ -90,6 +90,10 @@ If you would like to use the hooks for further customizing the component, you mu
 | maxScale                | The maximum scale of the canvas.color.                                                                                                                                      | `number`              |
 | initAutoScale           | Wheter to initially auto scale the canvas to fit the grids inside the canvas                                                                                                | `boolean`             |
 | resizeUnit              | The unit of reszie amount during extension                                                                                                                                  | `number`              |
+| maxColumnCount          | The max column count of the canvas. It is undefined by default. The value should be at least 3                                                                              | `number`              |
+| minColumnCount          | The max column count of the canvas. It is 2 by default. The value should be at least 2                                                                                      | `number`              |
+| maxRowCount             | The max row count of the canvas. It is undefined by default. The value should be at least 3                                                                                 | `number`              |
+| minRowCount             | The min column count of the canvas. It is 2 by default. The value should be at least 2                                                                                      | `number`              |
 | **ref**                 | This is a ref object that must be used if you plan to use hooks for manipulating the canvas through code                                                                    | `Ref<DottingRef>`     |
 
 <br/>
