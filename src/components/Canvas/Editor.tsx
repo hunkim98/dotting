@@ -8,6 +8,7 @@ import {
   ButtonDirection,
   CurrentDeviceUserId,
   GridMinimumScale,
+  MinColumnOrRowCount,
 } from "./config";
 import DataLayer from "./DataLayer";
 import GridLayer from "./GridLayer";
@@ -147,6 +148,11 @@ export default class Editor extends EventDispatcher {
   private element: HTMLCanvasElement;
 
   private resizeUnit = 1; // this is default set to 1
+
+  private maxColumnCount: number | null = null;
+  private maxRowCount: number | null = null;
+  private minColumnCount = MinColumnOrRowCount;
+  private minRowCount = MinColumnOrRowCount;
 
   constructor({
     gridCanvas,
@@ -518,6 +524,33 @@ export default class Editor extends EventDispatcher {
 
   setResizeUnit(resizeUnit: number) {
     this.resizeUnit = resizeUnit;
+  }
+
+  setMaxColumnCount(maxColumnCount: number) {
+    if (
+      maxColumnCount > MinColumnOrRowCount &&
+      maxColumnCount > this.minColumnCount
+    ) {
+      this.maxColumnCount = maxColumnCount;
+    }
+  }
+
+  setMaxRowCount(maxRowCount: number) {
+    if (maxRowCount > MinColumnOrRowCount && maxRowCount > this.minRowCount) {
+      this.maxRowCount = maxRowCount;
+    }
+  }
+
+  setMinColumnCount(minColumnCount: number) {
+    if (minColumnCount >= MinColumnOrRowCount) {
+      this.minColumnCount = minColumnCount;
+    }
+  }
+
+  setMinRowCount(minRowCount: number) {
+    if (minRowCount >= MinColumnOrRowCount) {
+      this.minRowCount = minRowCount;
+    }
   }
 
   changeBrushColor(color: string) {
@@ -1280,8 +1313,6 @@ export default class Editor extends EventDispatcher {
     const updatedColumnCountDifference =
       updatedColumnCount - interactionLayerColumnCount;
 
-    const minimumCount = interactionLayer.getMinimumCount();
-
     if (buttonDirection) {
       const isRowSizeModifiable =
         !(
@@ -1300,7 +1331,7 @@ export default class Editor extends EventDispatcher {
             y: updatedRowCount - interactionLayerRowCount,
           });
         } else {
-          if (updatedRowCount >= minimumCount) {
+          if (updatedRowCount >= this.minRowCount) {
             this.shortenInteractionGridBy(buttonDirection, {
               x: 0,
               y: interactionLayerRowCount - updatedRowCount,
@@ -1308,7 +1339,7 @@ export default class Editor extends EventDispatcher {
           } else {
             this.shortenInteractionGridBy(buttonDirection, {
               x: 0,
-              y: interactionLayerRowCount - minimumCount,
+              y: interactionLayerRowCount - this.minRowCount,
             });
           }
         }
@@ -1320,14 +1351,14 @@ export default class Editor extends EventDispatcher {
             y: 0,
           });
         } else {
-          if (updatedColumnCount >= minimumCount) {
+          if (updatedColumnCount >= this.minColumnCount) {
             this.shortenInteractionGridBy(buttonDirection, {
               x: interactionLayerColumnCount - updatedColumnCount,
               y: 0,
             });
           } else {
             this.shortenInteractionGridBy(buttonDirection, {
-              x: interactionLayerColumnCount - minimumCount,
+              x: interactionLayerColumnCount - this.minColumnCount,
               y: 0,
             });
           }

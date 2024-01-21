@@ -53,6 +53,10 @@ export interface DottingProps {
   maxScale?: number;
   initAutoScale?: boolean;
   resizeUnit?: number;
+  maxColumnCount?: number; // must be >= 2
+  minColumnCount?: number; // must be >= 2
+  maxRowCount?: number; // must be >= 2
+  minRowCount?: number; // must be >= 2
   // children?: React.ReactNode;
   // initIndicatorData?: Array<PixelModifyItem>;
   // initBrushColor?: string;
@@ -457,6 +461,30 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       editor.setIsDrawingEnabled(props.isDrawingEnabled);
     }
   }, [editor, props.isDrawingEnabled]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    if (props.maxColumnCount) {
+      editor.setMaxColumnCount(props.maxColumnCount);
+    }
+    if (props.minColumnCount) {
+      editor.setMinColumnCount(props.minColumnCount);
+    }
+    if (props.maxRowCount) {
+      editor.setMaxRowCount(props.maxRowCount);
+    }
+    if (props.minRowCount) {
+      editor.setMinRowCount(props.minRowCount);
+    }
+  }, [
+    editor,
+    props.maxColumnCount,
+    props.minColumnCount,
+    props.maxRowCount,
+    props.minRowCount,
+  ]);
 
   useEffect(() => {
     if (
