@@ -10,6 +10,7 @@ import {
   DefaultMaxScale,
   DefaultMinScale,
   DefaultPixelColor,
+  MinColumnOrRowCount,
 } from "../src/components/Canvas/config";
 import { BrushTool } from "../src/components/Canvas/types";
 import DottingComponent, { DottingProps } from "../src/components/Dotting";
@@ -152,6 +153,26 @@ const DottingComponentArgTypes: KeysEnum<
     description: "The unit of the resize",
     disable: false,
   }),
+  maxColumnCount: generateComponentControl<DottingProps["maxColumnCount"]>({
+    defaultValue: undefined,
+    description: `The maximum column count of the canvas. Must be greater than ${MinColumnOrRowCount}`,
+    disable: false,
+  }),
+  maxRowCount: generateComponentControl<DottingProps["maxRowCount"]>({
+    defaultValue: undefined,
+    description: `The maximum row count of the canvas. Must be greater than ${MinColumnOrRowCount}`,
+    disable: false,
+  }),
+  minColumnCount: generateComponentControl<DottingProps["minColumnCount"]>({
+    defaultValue: MinColumnOrRowCount,
+    description: `The minimum column count of the canvas. Must be greater or equal to ${MinColumnOrRowCount}`,
+    disable: false,
+  }),
+  minRowCount: generateComponentControl<DottingProps["minRowCount"]>({
+    defaultValue: MinColumnOrRowCount,
+    description: `The minimum row count of the canvas. Must be greater or equal to ${MinColumnOrRowCount}`,
+    disable: false,
+  }),
 };
 
 export default {
@@ -197,6 +218,10 @@ export const Dotting = (args: DottingProps) => {
       maxScale={args.maxScale}
       initAutoScale={args.initAutoScale}
       resizeUnit={args.resizeUnit}
+      maxColumnCount={args.maxColumnCount}
+      maxRowCount={args.maxRowCount}
+      minColumnCount={args.minColumnCount}
+      minRowCount={args.minRowCount}
     />
   );
 };
