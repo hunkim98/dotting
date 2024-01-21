@@ -10,6 +10,7 @@ import {
   CurrentDeviceUserId,
   DefaultBackgroundColor,
   DefaultPixelColor,
+  MinColumnOrRowCount,
 } from "./config";
 import {
   BRUSH_PATTERN_ELEMENT,
@@ -107,8 +108,6 @@ export default class InteractionLayer extends BaseLayer {
   } | null = null;
 
   private gridSquareLength: number = DefaultGridSquareLength;
-
-  private minimumCount = 2;
 
   constructor({
     columnCount,
@@ -294,10 +293,6 @@ export default class InteractionLayer extends BaseLayer {
 
   getIndicatorPixels() {
     return this.indicatorPixels;
-  }
-
-  getMinimumCount() {
-    return this.minimumCount;
   }
 
   detectSelectedAreaExtendDirection(coord: Coord): ButtonDirection | null {
@@ -1137,7 +1132,7 @@ export default class InteractionLayer extends BaseLayer {
       direction === ButtonDirection.TOP ||
       direction === ButtonDirection.BOTTOM
     ) {
-      if (rowCount <= this.minimumCount) {
+      if (rowCount <= MinColumnOrRowCount) {
         return false;
       }
       const swipedRowIndex =
@@ -1153,7 +1148,7 @@ export default class InteractionLayer extends BaseLayer {
       direction === ButtonDirection.LEFT ||
       direction === ButtonDirection.RIGHT
     ) {
-      if (columnCount <= this.minimumCount) {
+      if (columnCount <= MinColumnOrRowCount) {
         return false;
       }
       const swipedColumnIndex =

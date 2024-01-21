@@ -72,3 +72,5 @@ export const DefaultBackgroundColor = "#999999";
 export const DefaultPixelColor = "#ffffff";
 
 export const GridMinimumScale = 0.2;
+
+export const MinColumnOrRowCount = 2; // the grid size should be at least 2x2
