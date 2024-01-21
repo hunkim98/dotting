@@ -130,4 +130,82 @@ describe("test for drawing interaction", () => {
     ];
     expect(pixels).toEqual(answer);
   });
+
+  it("test if drawing is blocked when isDrawingEnabled is false", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    editor.setIsDrawingEnabled(false);
+
+    editor.setDefaultPixelColor("#FF0000");
+
+    // select (0,0) to (moveTo.x, moveTo.y)
+    const moveTo = { x: 5, y: 5 };
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength / 2,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength / 2,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength / 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength / 2 +
+          gridSquareLength * moveTo.x,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength / 2 +
+          gridSquareLength * moveTo.y,
+      }),
+    );
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (gridSquareLength * columnCount) / 2 +
+          gridSquareLength / 2 +
+          gridSquareLength * moveTo.x,
+        offsetY:
+          canvasElement.height / 2 -
+          (gridSquareLength * rowCount) / 2 +
+          gridSquareLength / 2 +
+          gridSquareLength * moveTo.y,
+      }),
+    );
+
+    const data = editor.getLayers()[0].data;
+    const pixels: { x: number; y: number }[] = [];
+    data.forEach((colElement, row) => {
+      colElement.forEach((pixel, col) => {
+        if (pixel.color != "") pixels.push({ x: row, y: col });
+      });
+    });
+    expect(pixels.length).toEqual(0);
+  });
 });
