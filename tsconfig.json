@@ -12,7 +12,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*", "stories/**/*", "worker.d.ts"],
+  "include": ["src/**/*", "stories/**/*", "worker.d.ts", "test.types.d.ts"],
   "exclude": [
     "node_modules",
     "build",

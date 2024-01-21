@@ -1326,9 +1326,13 @@ export default class Editor extends EventDispatcher {
         ) && updatedColumnCountDifference % this.resizeUnit === 0;
       if (isRowSizeModifiable) {
         if (updatedRowCount > interactionLayerRowCount) {
+          let validUpdatedRowCount = updatedRowCount;
+          if (this.maxRowCount && updatedRowCount > this.maxRowCount) {
+            validUpdatedRowCount = this.maxRowCount;
+          }
           this.extendInteractionGridBy(buttonDirection, {
             x: 0,
-            y: updatedRowCount - interactionLayerRowCount,
+            y: validUpdatedRowCount - interactionLayerRowCount,
           });
         } else {
           if (updatedRowCount >= this.minRowCount) {
@@ -1346,8 +1350,12 @@ export default class Editor extends EventDispatcher {
       }
       if (isColumnSizeModifiable) {
         if (updatedColumnCount > interactionLayerColumnCount) {
+          let validUpdatedColumnCount = updatedColumnCount;
+          if (this.maxColumnCount && updatedColumnCount > this.maxColumnCount) {
+            validUpdatedColumnCount = this.maxColumnCount;
+          }
           this.extendInteractionGridBy(buttonDirection, {
-            x: updatedColumnCount - interactionLayerColumnCount,
+            x: validUpdatedColumnCount - interactionLayerColumnCount,
             y: 0,
           });
         } else {

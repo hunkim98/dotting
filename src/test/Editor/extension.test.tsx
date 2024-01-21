@@ -922,4 +922,124 @@ describe("test for extension interaction", () => {
     expect(editor.getColumnCount()).toBe(columnCount - resizeUnit);
     expect(editor.getRowCount()).toBe(rowCount - resizeUnit);
   });
+
+  it("restricts extending row or column to a set max size", () => {
+    const rowCount = editor.getRowCount();
+    const columnCount = editor.getColumnCount();
+    const maxRowCountDelta = 1;
+    const maxColumnCountDelta = 1;
+    const maxRowCount = rowCount + maxRowCountDelta;
+    const maxColumnCount = columnCount + maxColumnCountDelta;
+    editor.setMaxRowCount(maxRowCount);
+    editor.setMaxColumnCount(maxColumnCount);
+    const gridSquareLength = editor.getGridSquareLength();
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX:
+          canvasElement.width / 2 +
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 +
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength * maxColumnCountDelta * 2,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength * maxRowCountDelta * 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 +
+          (scale * gridSquareLength * columnCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength * maxColumnCountDelta * 2,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength * maxRowCountDelta * 2,
+      }),
+    );
+
+    // the editor should not have been extended by more than the max row count delta
+    expect(editor.getColumnCount()).toBe(maxColumnCount);
+    expect(editor.getRowCount()).toBe(maxRowCount);
+  });
+
+  it("restricts shortening row or column to a set size", () => {
+    const rowCount = editor.getRowCount();
+    const columnCount = editor.getColumnCount();
+    const minRowCountDelta = 1;
+    const minColumnCountDelta = 1;
+    const minRowCount = rowCount - minRowCountDelta;
+    const minColumnCount = columnCount - minColumnCountDelta;
+    editor.setMinRowCount(minRowCount);
+    editor.setMinColumnCount(minColumnCount);
+    const gridSquareLength = editor.getGridSquareLength();
+
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousedown", {
+        offsetX:
+          canvasElement.width / 2 -
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mousemove", {
+        offsetX:
+          canvasElement.width / 2 -
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength * minColumnCountDelta * 2,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength * minRowCountDelta * 2,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      new FakeMouseEvent("mouseup", {
+        offsetX:
+          canvasElement.width / 2 -
+          (scale * gridSquareLength * columnCount) / 2 -
+          (scale * DefaultButtonHeight) / 4 +
+          scale * gridSquareLength * minColumnCountDelta * 2,
+        offsetY:
+          canvasElement.height / 2 +
+          (scale * gridSquareLength * rowCount) / 2 +
+          (scale * DefaultButtonHeight) / 4 -
+          scale * gridSquareLength * minRowCountDelta * 2,
+      }),
+    );
+
+    // the editor should not have been extended by more than the max row count delta
+    expect(editor.getColumnCount()).toBe(minColumnCount);
+    expect(editor.getRowCount()).toBe(minRowCount);
+  });
 });
