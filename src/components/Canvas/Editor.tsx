@@ -609,6 +609,10 @@ export default class Editor extends EventDispatcher {
   }
 
   styleMouseCursor = (mouseCoord: Coord) => {
+    if (this.brushTool === BrushTool.NONE) {
+      this.element.style.cursor = "grab";
+      return;
+    }
     let hoveredButton: ButtonDirection = this.detectButtonClicked(mouseCoord);
     if (this.mouseMode === MouseMode.EXTENDING) {
       hoveredButton = this.extensionPoint.direction;
@@ -2555,6 +2559,10 @@ export default class Editor extends EventDispatcher {
     if (this.brushTool === BrushTool.SELECT) {
       this.mouseMode = MouseMode.DRAWING;
     }
+    if (this.brushTool === BrushTool.NONE) {
+      this.element.style.cursor = "grabbing";
+      this.mouseMode = MouseMode.PANNING;
+    }
 
     if (this.mouseMode === MouseMode.DRAWING && this.isDrawingEnabled) {
       // we only need to care about select tool when mouse mode is set to drawing
@@ -2744,7 +2752,7 @@ export default class Editor extends EventDispatcher {
     this.styleMouseCursor(mouseCartCoord);
 
     if (this.mouseMode === MouseMode.NULL) {
-      if (!this.isDrawingEnabled) {
+      if (!this.isDrawingEnabled || this.brushTool === BrushTool.NONE) {
         return;
       }
       if (this.brushTool === BrushTool.SELECT) {

@@ -1,12 +1,12 @@
 import React, { useRef } from "react";
 
-import { useBrush, useDotting } from "../../src";
+import { BrushTool, useBrush, useDotting } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 
 const CustomExample = () => {
   const ref = useRef<DottingRef>(null);
   const { undo, redo } = useDotting(ref);
-  const { changeBrushColor } = useBrush(ref);
+  const { changeBrushColor, brushTool, changeBrushTool } = useBrush(ref);
   return (
     <div
       style={{
@@ -77,6 +77,25 @@ const CustomExample = () => {
             }}
           />
         ))}
+      </div>
+      <div>
+        <select
+          style={{
+            marginLeft: 15,
+          }}
+          value={brushTool}
+          onChange={e => {
+            changeBrushTool(e.target.value as BrushTool);
+          }}
+        >
+          <option value={BrushTool.NONE}>{BrushTool.NONE}</option>
+          <option value={BrushTool.DOT}>{BrushTool.DOT}</option>
+          <option value={BrushTool.ERASER}>{BrushTool.ERASER}</option>
+          <option value={BrushTool.PAINT_BUCKET}>
+            {BrushTool.PAINT_BUCKET}
+          </option>
+          <option value={BrushTool.SELECT}>{BrushTool.SELECT}</option>
+        </select>
       </div>
       <div
         style={{
