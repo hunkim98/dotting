@@ -609,8 +609,12 @@ export default class Editor extends EventDispatcher {
   }
 
   styleMouseCursor = (mouseCoord: Coord) => {
+    if (this.mouseMode === MouseMode.PANNING) {
+      this.element.style.cursor = "grabbing";
+      return;
+    }
     if (this.brushTool === BrushTool.NONE) {
-      this.element.style.cursor = "grab";
+      this.element.style.cursor = `grab`;
       return;
     }
     let hoveredButton: ButtonDirection = this.detectButtonClicked(mouseCoord);
@@ -2559,7 +2563,7 @@ export default class Editor extends EventDispatcher {
     if (this.brushTool === BrushTool.SELECT) {
       this.mouseMode = MouseMode.DRAWING;
     }
-    if (this.brushTool === BrushTool.NONE) {
+    if (this.brushTool === BrushTool.NONE || evt.button === 1) {
       this.element.style.cursor = "grabbing";
       this.mouseMode = MouseMode.PANNING;
     }
@@ -3398,6 +3402,7 @@ export default class Editor extends EventDispatcher {
         this.gridLayer.render();
       }
     }
+
     this.onInteractionEnded(evt, shouldUpdateCapturedImage);
   }
 
