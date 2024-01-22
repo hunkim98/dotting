@@ -75,6 +75,7 @@
     "microbundle": "^0.15.1",
     "node-sass": "^8.0.0",
     "react": "^18.2.0",
+    "react-docgen-typescript-plugin": "^1.0.5",
     "react-dom": "^18.2.0",
     "rollup": "^2.56.3",
     "rollup-plugin-peer-deps-external": "^2.2.4",
