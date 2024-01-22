@@ -3022,6 +3022,7 @@ export default class Editor extends EventDispatcher {
           ),
         );
         this.dataLayer.render();
+        this.dataLayer.updateCapturedImageBitmap();
       }
     } else if (e.code === "Escape") {
       this.interactionLayer.setExtendingSelectedArea(null);
