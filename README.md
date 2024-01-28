@@ -65,7 +65,7 @@ const Clear = () => {
 
 When creating a `Dotting` component there are multiple props prepared for easily customizing the canvas. Especially, you can set the brush you would like to use through the `brushTool` prop. The `width` and `height` props should be initialized with your own values.
 
-If you would like to use the hooks for further customizing the component, you must use the `ref` prop ans assign a `refObject` created with `useRef<DottingRef>`. An example of how to use hooks by setting a `refObject` is shown below.
+If you would like to use the hooks for further customizing the component, you must use the `ref` prop and assign a `refObject` created with `useRef<DottingRef>`. An example of how to use hooks by setting a `refObject` is shown below.
 
 | Name                    | Description                                                                                                                                                                 | type                  |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
