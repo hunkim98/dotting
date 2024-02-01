@@ -17,7 +17,7 @@ const CustomExample = () => {
         position: "relative",
       }}
     >
-      <Dotting ref={ref} width={"100%"} height={300} maxRowCount={12} />
+      <Dotting ref={ref} width={"100%"} height={300} />
       {/* <button
         onClick={() => {
           setLayerIds([...layerIds, "layer" + layerIds.length]);
