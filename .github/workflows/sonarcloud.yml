@@ -23,10 +23,10 @@
 # or reach out to our community forum if you need some help (https://community.sonarsource.com/c/help/sc/9)
 name: SonarCloud analysis
 on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
+  workflow_run:
+    workflows: ["Coverage"]
+    types:
+      - completed
   workflow_dispatch:
 permissions:
   pull-requests: read # allows SonarCloud to decorate PRs with analysis results
@@ -40,11 +40,16 @@ jobs:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
 
-      - name: Install dependencies
-        run: yarn
+      # - name: Install dependencies
+      #   run: yarn
 
-      - name: Test and coverage
-        run: yarn jest --coverage
+      # - name: Test and coverage
+      #   run: yarn jest --coverage
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage
 
       - name: Analyze with SonarCloud
         # You can pin the exact commit or the version.
