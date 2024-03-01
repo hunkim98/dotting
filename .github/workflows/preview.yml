@@ -74,8 +74,10 @@ jobs:
           # umbrella-dir: docs/pr-preview
           token: ${{ secrets.GITHUB_TOKEN }}
           action: deploy # This prevents netlify from auto deleting url
+
         env:
           pr: ${{ steps.pr.outputs.number }}
+          targetdir: pr-preview/pr-${{ steps.pr.outputs.number }}
 
       # - name: Post PR comment
       #   uses: actions/github-script@v5
