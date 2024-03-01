@@ -2,7 +2,7 @@ import { Indices } from "../../utils/types";
 import { isValidIndicesRange } from "../../utils/validation";
 
 describe("test for validation", () => {
-  let indices: Indices = {
+  const indices: Indices = {
     topRowIndex: 0,
     bottomRowIndex: 10,
     leftColumnIndex: 0,
