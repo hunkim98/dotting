@@ -45,10 +45,13 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               artifact_id: matchArtifact.id,
-              archive_format: 'txt',
+              archive_format: 'zip',
             });
             let fs = require('fs');
-            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/pr-number.txt`, Buffer.from(download.data));
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/pr-number.zip`, Buffer.from(download.data));
+
+      - name: Unzip PR number artifact
+        run: unzip $GITHUB_WORKSPACE/pr-number.zip -d $GITHUB_WORKSPACE
 
       - name: Read PR number
         id: pr
