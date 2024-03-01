@@ -57,12 +57,12 @@ jobs:
         id: pr
         run: echo "::set-output name=number::$(cat pr_number.txt)"
 
+      - name: Set PR Number as pr=$pr
+        run: echo "pr=${{ steps.pr.outputs.number }}" >> $GITHUB_ENV
+
       - name: Use PR Number
         run: |
           echo "The PR number is ${{ steps.pr.outputs.number }}"
-
-      - name: Set PR Number as pr=$pr
-        run: echo "pr=${{ steps.pr.outputs.number }}" >> $GITHUB_ENV
 
       - name: Deploy preview
         id: deploy-preview
@@ -74,7 +74,8 @@ jobs:
           # umbrella-dir: docs/pr-preview
           token: ${{ secrets.GITHUB_TOKEN }}
           action: deploy # This prevents netlify from auto deleting url
-
+        env:
+          pr: ${{ steps.pr.outputs.number }}
 
       # - name: Post PR comment
       #   uses: actions/github-script@v5
