@@ -26,3 +26,13 @@ jobs:
         with:
           name: coverage-report
           path: coverage/lcov.info
+
+      - name: Save PR number to file
+        if: github.event_name == 'pull_request'
+        run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
+
+      - name: Upload PR number
+        uses: actions/upload-artifact@v2
+        with:
+          name: pr-number
+          path: pr_number.txt
