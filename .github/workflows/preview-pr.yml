@@ -96,7 +96,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: "${{ steps.pr.outputs.number }}",
-                body: `Preview URL: ${url}`
+                body: "Preview URL: ${{ steps.deploy-preview.outputs.deployment-url }}"
               });
             } else {
               core.setFailed('No preview URL found');
