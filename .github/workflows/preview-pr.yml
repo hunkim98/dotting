@@ -16,7 +16,7 @@ on:
       - completed
 
 permissions:
-  pull-requests: write
+  pull-requests: read
 
 concurrency: preview-${{ github.ref }}
 
