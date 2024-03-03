@@ -15,6 +15,9 @@ on:
     types:
       - completed
 
+permissions:
+  pull-requests: write
+
 concurrency: preview-${{ github.ref }}
 
 jobs:
@@ -78,6 +81,10 @@ jobs:
         env:
           pr: ${{ steps.pr.outputs.number }}
           targetdir: pr-preview/pr-${{ steps.pr.outputs.number }}
+
+      - name: Echo preview URL
+        run: |
+          echo "Preview URL:  ${{ steps.deploy-preview.outputs.deployment-url }}"
 
       - name: Post PR comment
         uses: actions/github-script@v5
