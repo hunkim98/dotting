@@ -15,6 +15,9 @@ on:
     types:
       - completed
 
+permissions:
+  pull-requests: write
+
 concurrency: preview-${{ github.ref }}
 
 jobs:
