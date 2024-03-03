@@ -1,6 +1,6 @@
 name: Coverage
 on:
-  pull_request:
+  pull_request: # only activates for pull requests
     branches: ["main"]
 jobs:
   coverage:

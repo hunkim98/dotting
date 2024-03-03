@@ -1,0 +1,27 @@
+# .github/workflows/preview.yml
+name: Delete PR Preview
+
+on:
+  pull_request:
+    types:
+      - closed
+
+concurrency: preview-${{ github.ref }}
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Remove preview
+        id: remove-preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./storybook-static/
+          preview-branch: preview
+          custom-url: dotting-preview.netlify.app
+          # umbrella-dir: docs/pr-preview
+          token: ${{ secrets.GITHUB_TOKEN }}
+          action: remove # since this occurs when PR is closed, we want to remove the preview
