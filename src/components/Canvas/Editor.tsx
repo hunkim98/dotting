@@ -526,6 +526,10 @@ export default class Editor extends EventDispatcher {
     this.resizeUnit = resizeUnit;
   }
 
+  setZoomSensitivity(zoomSensitivity: number) {
+    this.zoomSensitivity = zoomSensitivity;
+  }
+
   setMaxColumnCount(maxColumnCount: number) {
     if (
       maxColumnCount > MinColumnOrRowCount &&
@@ -2643,7 +2647,10 @@ export default class Editor extends EventDispatcher {
 
           // move the pixels to interaction layer
         }
-      } else if (this.brushTool === BrushTool.DOT || this.brushTool === BrushTool.PAINT_BUCKET) {
+      } else if (
+        this.brushTool === BrushTool.DOT ||
+        this.brushTool === BrushTool.PAINT_BUCKET
+      ) {
         if (pixelIndex) {
           this.drawPixelInInteractionLayer(
             pixelIndex.rowIndex,
