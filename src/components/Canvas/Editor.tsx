@@ -109,6 +109,7 @@ export default class Editor extends EventDispatcher {
   private topRowIndex: number;
   private leftColumnIndex: number;
   private lastRenderAllCall: number | null = null;
+  private initialIsGridVisible: boolean;
 
   private panZoom: PanZoom = {
     scale: 1,
@@ -482,7 +483,11 @@ export default class Editor extends EventDispatcher {
   }
 
   setIsGridVisible(isGridVisible: boolean) {
-    this.gridLayer.setIsGridVisible(isGridVisible);
+    const initialValue = isGridVisible === undefined || isGridVisible;
+    if (this.initialIsGridVisible === undefined) {
+      this.initialIsGridVisible = initialValue;
+    }
+    this.gridLayer.setIsGridVisible(initialValue);
     this.renderGridLayer();
   }
   // grid related functions ⬆
@@ -1227,10 +1232,12 @@ export default class Editor extends EventDispatcher {
       this.panZoom.offset = correctedOffset;
     }
 
-    if (this.panZoom.scale < GridMinimumScale) {
-      this.gridLayer.setIsGridVisible(false);
-    } else {
-      this.gridLayer.setIsGridVisible(true);
+    if (this.initialIsGridVisible !== undefined && this.initialIsGridVisible) {
+      if (this.panZoom.scale < GridMinimumScale) {
+        this.gridLayer.setIsGridVisible(false);
+      } else {
+        this.gridLayer.setIsGridVisible(true);
+      }
     }
 
     // relay updated information to layers
@@ -2643,7 +2650,10 @@ export default class Editor extends EventDispatcher {
 
           // move the pixels to interaction layer
         }
-      } else if (this.brushTool === BrushTool.DOT || this.brushTool === BrushTool.PAINT_BUCKET) {
+      } else if (
+        this.brushTool === BrushTool.DOT ||
+        this.brushTool === BrushTool.PAINT_BUCKET
+      ) {
         if (pixelIndex) {
           this.drawPixelInInteractionLayer(
             pixelIndex.rowIndex,

@@ -19,7 +19,7 @@ import {
 export default class GridLayer extends BaseLayer {
   private columnCount: number;
   private rowCount: number;
-  private isGridVisible = true;
+  private isGridVisible;
   private isGridFixed = false;
   private gridStrokeColor: string;
   private gridStrokeWidth: number;
@@ -109,6 +109,7 @@ export default class GridLayer extends BaseLayer {
   }
 
   setIsGridVisible(isGridVisible: boolean) {
+    console.log(99999, isGridVisible);
     if (isGridVisible !== undefined) {
       this.isGridVisible = isGridVisible;
     }
