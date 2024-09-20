@@ -173,6 +173,11 @@ const DottingComponentArgTypes: KeysEnum<
     description: `The minimum row count of the canvas. Must be greater or equal to ${MinColumnOrRowCount}`,
     disable: false,
   }),
+  zoomSensitivity: generateComponentControl<DottingProps["zoomSensitivity"]>({
+    defaultValue: 200,
+    description: "The zoom sensitivity of the canvas",
+    disable: false,
+  }),
 };
 
 export default {
