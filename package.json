@@ -1,6 +1,6 @@
 {
   "name": "dotting",
-  "version": "2.1.9",
+  "version": "2.1.10",
   "main": "build/index.js",
   "module": "build/index.esm.js",
   "files": [
