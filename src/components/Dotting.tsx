@@ -53,6 +53,7 @@ export interface DottingProps {
   maxScale?: number;
   initAutoScale?: boolean;
   resizeUnit?: number;
+  zoomSensitivity?: number;
   maxColumnCount?: number; // must be >= 2
   minColumnCount?: number; // must be >= 2
   maxRowCount?: number; // must be >= 2
@@ -452,6 +453,15 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       editor.setResizeUnit(props.resizeUnit);
     }
   }, [editor, props.resizeUnit]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    if (props.zoomSensitivity) {
+      editor.setZoomSensitivity(props.zoomSensitivity);
+    }
+  }, [editor, props.zoomSensitivity]);
 
   useEffect(() => {
     if (!editor) {

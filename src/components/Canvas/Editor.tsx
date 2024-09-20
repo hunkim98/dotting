@@ -531,6 +531,10 @@ export default class Editor extends EventDispatcher {
     this.resizeUnit = resizeUnit;
   }
 
+  setZoomSensitivity(zoomSensitivity: number) {
+    this.zoomSensitivity = zoomSensitivity;
+  }
+
   setMaxColumnCount(maxColumnCount: number) {
     if (
       maxColumnCount > MinColumnOrRowCount &&
