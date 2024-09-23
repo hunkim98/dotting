@@ -131,9 +131,11 @@ export default class Editor extends EventDispatcher {
   };
   private isPanZoomable = true;
   private isAltPressed = false;
+  private isShiftPressed = false;
   private mouseMode: MouseMode = MouseMode.NULL;
   private brushTool: BrushTool = BrushTool.DOT;
 
+  private originalBrushTool: BrushTool | null = null;
   private mouseDownWorldPos: Coord | null = null;
   private mouseDownPanZoom: PanZoom | null = null;
   private mouseMoveWorldPos: Coord = { x: 0, y: 0 };
@@ -2769,6 +2771,67 @@ export default class Editor extends EventDispatcher {
 
     this.styleMouseCursor(mouseCartCoord);
 
+    // just show hover pixel, and show hovered button
+    const rowIndices = Array.from(this.dataLayer.getRowKeyOrderMap().keys());
+    // columnKeyOrderMap is a sorted map of columnKeys
+    const columnIndices = Array.from(
+      this.dataLayer.getColumnKeyOrderMap().keys(),
+    );
+    const hoveredPixel = this.interactionLayer.getHoveredPixel();
+
+    const pixelIndex = getPixelIndexFromMouseCartCoord(
+      mouseCartCoord,
+      rowIndices,
+      columnIndices,
+      this.gridSquareLength,
+    );
+
+    if (pixelIndex) {
+      if (
+        // We should also consider when the hovered pixel is null
+        !hoveredPixel ||
+        hoveredPixel.rowIndex !== pixelIndex.rowIndex ||
+        hoveredPixel.columnIndex !== pixelIndex.columnIndex
+      ) {
+        this.interactionLayer.setHoveredPixel({
+          rowIndex: pixelIndex.rowIndex,
+          columnIndex: pixelIndex.columnIndex,
+          color:
+            this.brushTool !== BrushTool.ERASER ? this.brushColor : "white",
+        });
+        this.emitHoverPixelChangeEvent({
+          indices: pixelIndex,
+        });
+        this.renderInteractionLayer();
+      }
+    } else {
+      this.emitHoverPixelChangeEvent({
+        indices: null,
+      });
+      this.interactionLayer.setHoveredPixel(null);
+      this.renderInteractionLayer();
+    }
+
+    if (
+      this.mouseMode === MouseMode.DRAWING &&
+      this.brushTool === BrushTool.LINE
+    ) {
+      const mouseCartCoord = getMouseCartCoord(
+        evt,
+        this.element,
+        this.panZoom,
+        this.dpr,
+      );
+      // // Get preview line points without actually drawing
+      const previewLine = this.interactionLayer.getLinePoints(
+        this.mouseDownWorldPos,
+        mouseCartCoord,
+        this.dataLayer.getData(),
+      );
+      this.interactionLayer.setPreviewLine(previewLine);
+      this.renderInteractionLayer();
+    }
+
     if (this.mouseMode === MouseMode.NULL) {
       if (!this.isDrawingEnabled || this.brushTool === BrushTool.NONE) {
         return;
@@ -2780,45 +2843,6 @@ export default class Editor extends EventDispatcher {
           this.gridLayer.renderSelection(selectedArea);
         }
         return;
-      }
-      // just show hover pixel, and show hovered button
-      const rowIndices = Array.from(this.dataLayer.getRowKeyOrderMap().keys());
-      // columnKeyOrderMap is a sorted map of columnKeys
-      const columnIndices = Array.from(
-        this.dataLayer.getColumnKeyOrderMap().keys(),
-      );
-      const hoveredPixel = this.interactionLayer.getHoveredPixel();
-
-      const pixelIndex = getPixelIndexFromMouseCartCoord(
-        mouseCartCoord,
-        rowIndices,
-        columnIndices,
-        this.gridSquareLength,
-      );
-      if (pixelIndex) {
-        if (
-          // We should also consider when the hovered pixel is null
-          !hoveredPixel ||
-          hoveredPixel.rowIndex !== pixelIndex.rowIndex ||
-          hoveredPixel.columnIndex !== pixelIndex.columnIndex
-        ) {
-          this.interactionLayer.setHoveredPixel({
-            rowIndex: pixelIndex.rowIndex,
-            columnIndex: pixelIndex.columnIndex,
-            color:
-              this.brushTool !== BrushTool.ERASER ? this.brushColor : "white",
-          });
-          this.emitHoverPixelChangeEvent({
-            indices: pixelIndex,
-          });
-          this.renderInteractionLayer();
-        }
-      } else {
-        this.emitHoverPixelChangeEvent({
-          indices: null,
-        });
-        this.interactionLayer.setHoveredPixel(null);
-        this.renderInteractionLayer();
       }
 
       const buttonDirection = this.detectButtonClicked(mouseCartCoord);
@@ -3007,6 +3031,12 @@ export default class Editor extends EventDispatcher {
       this.undo();
     } else if (e.code === "KeyY" && (e.ctrlKey || e.metaKey)) {
       this.redo();
+    } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+      if (!this.isShiftPressed && this.brushTool === BrushTool.DOT) {
+        this.isShiftPressed = true;
+        this.originalBrushTool = this.brushTool;
+        this.setBrushTool(BrushTool.LINE);
+      }
     } else if (e.code === "Backspace" || e.code === "Delete") {
       if (this.interactionLayer.getSelectedArea()) {
         if (this.interactionLayer.getSelectedAreaPixels().length === 0) return;
@@ -3080,6 +3110,14 @@ export default class Editor extends EventDispatcher {
       }
 
       this.isAltPressed = false;
+    } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
+      if (this.isShiftPressed && this.brushTool === BrushTool.LINE) {
+        this.isShiftPressed = false;
+        if (this.originalBrushTool) {
+          this.setBrushTool(this.originalBrushTool);
+          this.originalBrushTool = null;
+        }
+      }
     }
   }
 
@@ -3416,6 +3454,44 @@ export default class Editor extends EventDispatcher {
         this.interactionLayer.setSelectedAreaPixels(null);
         this.gridLayer.render();
       }
+    }
+
+    if (
+      this.mouseMode === MouseMode.DRAWING &&
+      this.brushTool === BrushTool.LINE
+    ) {
+      const mouseCartCoord = getMouseCartCoord(
+        evt,
+        this.element,
+        this.panZoom,
+        this.dpr,
+      );
+
+      this.interactionLayer.drawLine(
+        this.mouseDownWorldPos,
+        mouseCartCoord,
+        this.brushColor,
+        this.dataLayer.getData(),
+      );
+
+      const isDataModified = this.relayInteractionDataToDataLayer();
+      if (isDataModified) {
+        this.dataLayer.updateCapturedImageBitmap();
+        this.emitDataChangeEvent({
+          isLocalChange: true,
+          data: this.dataLayer.getData(),
+          layerId: this.dataLayer.getCurrentLayer().getId(),
+          delta: {
+            modifiedPixels: this.interactionLayer.getAllStrokePixels(),
+            addedOrDeletedColumns: [],
+            addedOrDeletedRows: [],
+          },
+        });
+      }
+
+      this.mouseDownWorldPos = null;
+      this.interactionLayer.setPreviewLine(null);
+      this.renderAll();
     }
 
     this.onInteractionEnded(evt, shouldUpdateCapturedImage);
