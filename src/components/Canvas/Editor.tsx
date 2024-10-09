@@ -131,7 +131,6 @@ export default class Editor extends EventDispatcher {
   };
   private isPanZoomable = true;
   private isAltPressed = false;
-  private isShiftPressed = false;
   private mouseMode: MouseMode = MouseMode.NULL;
   private brushTool: BrushTool = BrushTool.DOT;
 
@@ -3031,12 +3030,6 @@ export default class Editor extends EventDispatcher {
       this.undo();
     } else if (e.code === "KeyY" && (e.ctrlKey || e.metaKey)) {
       this.redo();
-    } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
-      if (!this.isShiftPressed && this.brushTool === BrushTool.DOT) {
-        this.isShiftPressed = true;
-        this.originalBrushTool = this.brushTool;
-        this.setBrushTool(BrushTool.LINE);
-      }
     } else if (e.code === "Backspace" || e.code === "Delete") {
       if (this.interactionLayer.getSelectedArea()) {
         if (this.interactionLayer.getSelectedAreaPixels().length === 0) return;
@@ -3110,14 +3103,6 @@ export default class Editor extends EventDispatcher {
       }
 
       this.isAltPressed = false;
-    } else if (e.code === "ShiftLeft" || e.code === "ShiftRight") {
-      if (this.isShiftPressed && this.brushTool === BrushTool.LINE) {
-        this.isShiftPressed = false;
-        if (this.originalBrushTool) {
-          this.setBrushTool(this.originalBrushTool);
-          this.originalBrushTool = null;
-        }
-      }
     }
   }
 
