@@ -29,8 +29,10 @@ import {
   deleteRowOfData,
   extractColoredPixelsFromColumn,
   extractColoredPixelsFromRow,
+  getAllGridIndicesSorted,
   getColumnCountFromData,
   getGridIndicesFromData,
+  getInBetweenPixelIndicesfromCoords,
   getRowCountFromData,
 } from "../../utils/data";
 import {
@@ -38,7 +40,10 @@ import {
   getScreenPoint,
   lerpRanges,
 } from "../../utils/math";
-import { getOverlappingPixelIndicesForModifiedPixels } from "../../utils/position";
+import {
+  getOverlappingPixelIndicesForModifiedPixels,
+  getPixelIndexFromMouseCartCoord,
+} from "../../utils/position";
 import { drawRect } from "../../utils/shapes";
 
 export default class InteractionLayer extends BaseLayer {
@@ -107,6 +112,8 @@ export default class InteractionLayer extends BaseLayer {
     color: string;
   } | null = null;
 
+  private previewLine: Array<{ rowIndex: number; columnIndex: number }> | null =
+    null;
   private gridSquareLength: number = DefaultGridSquareLength;
 
   constructor({
@@ -137,6 +144,12 @@ export default class InteractionLayer extends BaseLayer {
 
   getBrushPattern() {
     return this.brushPattern;
+  }
+
+  setPreviewLine(
+    points: Array<{ rowIndex: number; columnIndex: number }> | null,
+  ) {
+    this.previewLine = points;
   }
 
   setBrushPattern(pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) {
@@ -225,6 +238,10 @@ export default class InteractionLayer extends BaseLayer {
     this.capturedData = null;
     this.capturedDataOriginalIndices = null;
     this.deleteStrokePixelRecord(CurrentDeviceUserId);
+  }
+
+  getPreviewLine() {
+    return this.previewLine;
   }
 
   getHoveredPixel() {
@@ -1676,6 +1693,98 @@ export default class InteractionLayer extends BaseLayer {
     ctx.restore();
   }
 
+  getLinePoints(
+    startPoint: Coord,
+    endPoint: Coord,
+    currentData: DottingData,
+  ): Array<{ rowIndex: number; columnIndex: number }> {
+    const { rowIndices, columnIndices } = getAllGridIndicesSorted(currentData);
+
+    const startIndex = getPixelIndexFromMouseCartCoord(
+      startPoint,
+      rowIndices,
+      columnIndices,
+      this.gridSquareLength,
+    );
+
+    const endIndex = getPixelIndexFromMouseCartCoord(
+      endPoint,
+      rowIndices,
+      columnIndices,
+      this.gridSquareLength,
+    );
+
+    if (!startIndex || !endIndex) {
+      return [];
+    }
+
+    const linePoints =
+      getInBetweenPixelIndicesfromCoords(
+        startPoint,
+        endPoint,
+        this.gridSquareLength,
+        currentData,
+      ) || [];
+
+    // Ensure the end point is included
+    if (
+      linePoints.length > 0 &&
+      (linePoints[linePoints.length - 1].rowIndex !== endIndex.rowIndex ||
+        linePoints[linePoints.length - 1].columnIndex !== endIndex.columnIndex)
+    ) {
+      linePoints.push(endIndex);
+    }
+
+    return linePoints;
+  }
+
+  drawLine(
+    startPoint: Coord,
+    endPoint: Coord,
+    color: string,
+    currentData: DottingData,
+  ) {
+    if (!currentData) return;
+
+    const linePoints = this.getLinePoints(startPoint, endPoint, currentData);
+
+    for (const point of linePoints) {
+      const previousColor =
+        currentData.get(point.rowIndex)?.get(point.columnIndex)?.color || "";
+      this.addToStrokePixelRecords(CurrentDeviceUserId, {
+        rowIndex: point.rowIndex,
+        columnIndex: point.columnIndex,
+        color: color,
+        previousColor: previousColor,
+      });
+    }
+  }
+
+  renderPreviewLine(correctedLeftTopScreenPoint: Coord, squareLength: number) {
+    if (!this.previewLine) return;
+
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = this.hoveredPixel ? this.hoveredPixel.color : "#FF0000";
+
+    for (const point of this.previewLine) {
+      const relativeRowIndex = this.rowKeyOrderMap.get(point.rowIndex);
+      const relativeColumnIndex = this.columnKeyOrderMap.get(point.columnIndex);
+      if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
+        continue;
+      }
+      ctx.fillRect(
+        relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+        relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+        squareLength,
+        squareLength,
+      );
+    }
+
+    ctx.restore();
+  }
+
   /**
    * Interaction Layer render will be called when:
    * 1. The canvas is resized
@@ -1708,6 +1817,7 @@ export default class InteractionLayer extends BaseLayer {
     this.renderIndicatorPixels(correctedLeftTopScreenPoint, squareLength);
     //draw indicator pixels on top of the canvas
     this.renderHoveredPixel(correctedLeftTopScreenPoint, squareLength);
+    this.renderPreviewLine(correctedLeftTopScreenPoint, squareLength);
     this.renderMovingSelectedPixels(correctedLeftTopScreenPoint, squareLength);
     this.renderExtendingSelectedPixels(
       correctedLeftTopScreenPoint,

@@ -54,6 +54,7 @@ export enum BrushTool {
   PAINT_BUCKET = "PAINT_BUCKET",
   SELECT = "SELECT",
   NONE = "NONE",
+  LINE = "LINE",
 }
 
 export interface CanvasDelta {
