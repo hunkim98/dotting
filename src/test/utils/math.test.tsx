@@ -1,4 +1,4 @@
-import { getBressenhamIndices } from "../../utils/math";
+import { getBresenhamLineIndices } from "../../utils/math";
 
 describe("test for math utils", () => {
   it("test bresseham line algorithm", () => {
@@ -200,7 +200,7 @@ describe("test for math utils", () => {
 
     for (let i = 0; i < answers.length; i++) {
       const { x1, y1, x2, y2 } = testcases[i];
-      expect(getBressenhamIndices(x1, y1, x2, y2)).toStrictEqual(answers[i]);
+      expect(getBresenhamLineIndices(x1, y1, x2, y2)).toStrictEqual(answers[i]);
     }
   });
 });

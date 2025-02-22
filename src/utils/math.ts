@@ -110,7 +110,7 @@ export function lerpRanges(
   return range2Start + (range2End - range2Start) * ratio;
 }
 
-export function getBressenhamIndices(
+export function getBresenhamLineIndices(
   x1: number,
   y1: number,
   x2: number,
@@ -163,4 +163,72 @@ export function getBressenhamIndices(
   }
 
   return missingPoints;
+}
+
+export function getBresenhamEllipseIndices(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  filled: boolean
+): Index[] {
+  const points: Index[] = [];
+
+  let a = Math.abs(x2 - x1);
+  const b = Math.abs(y2 - y1)
+  let b1 = b & 1;
+  let dx = 4 * (1 - a) * b * b;
+  let dy = 4 * (b1 + 1) * a * a;
+  let err = dx + dy + b1 * a * a;
+  let e2 = 0;
+
+  if (x1 > x2) { 
+    x1 = x2; 
+    x2 += a; 
+  }
+  if (y1 > y2) {
+    y1 = y2;
+  }
+  y1 += (b + 1) >> 1; 
+  y2 = y1 - b1;
+  a = 8 * a * a; 
+  b1 = 8 * b * b;
+
+  do {
+    if (filled) {
+      for (let row = y2; row <= y1; row++) {
+        points.push({ columnIndex: x1, rowIndex: row });
+        points.push({ columnIndex: x2, rowIndex: row });
+      }
+    } else {
+      points.push({ columnIndex: x2, rowIndex: y1 });
+      points.push({ columnIndex: x1, rowIndex: y1 });
+      points.push({ columnIndex: x1, rowIndex: y2 });
+      points.push({ columnIndex: x2, rowIndex: y2 });
+    }
+    e2 = 2 * err;
+    if (e2 <= dy) { 
+      y1++; 
+      y2--; 
+      err += dy += a; 
+    }
+    if (e2 >= dx || 2 * err > dy) { 
+      x1++; 
+      x2--; 
+      err += dx += b1; 
+    }
+  } while (x1 <= x2);
+
+  while (y1 - y2 <= b) {
+    points.push({ columnIndex: x1 - 1, rowIndex: y1 });
+    points.push({ columnIndex: x2 + 1, rowIndex: y1++ });
+    points.push({ columnIndex: x1 - 1, rowIndex: y2 });
+    points.push({ columnIndex: x2 + 1, rowIndex: y2-- });
+  }
+
+  return points.filter((value, index, self) =>
+    index === self.findIndex((t) => (
+      t.columnIndex === value.columnIndex && t.rowIndex === value.rowIndex
+    ))
+  );
 }
