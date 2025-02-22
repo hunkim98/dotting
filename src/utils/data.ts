@@ -4,8 +4,9 @@ import {
   InvalidDataIndicesError,
   InvalidSquareDataError,
 } from "./error";
-import { getBressenhamIndices } from "./math";
+import { getBresenhamEllipseIndices, getBresenhamLineIndices } from "./math";
 import { getPixelIndexFromMouseCartCoord } from "./position";
+import { Index } from "./types";
 import {
   DottingData,
   GridIndices,
@@ -229,7 +230,6 @@ export const getInBetweenPixelIndicesfromCoords = (
     Math.abs(currentCoord.x - previousCoord.x) >= gridSquareLength ||
     Math.abs(currentCoord.y - previousCoord.y) >= gridSquareLength
   ) {
-    const gridIndices = getGridIndicesFromData(data);
     const { rowIndices, columnIndices } = getAllGridIndicesSorted(data);
     const pixelIndex = getPixelIndexFromMouseCartCoord(
       currentCoord,
@@ -249,7 +249,7 @@ export const getInBetweenPixelIndicesfromCoords = (
       Math.abs(pixelIndex.columnIndex - previousIndex.columnIndex) >= 1 ||
       Math.abs(pixelIndex.rowIndex - previousIndex.rowIndex) >= 1
     ) {
-      const missingIndices = getBressenhamIndices(
+      const missingIndices = getBresenhamLineIndices(
         previousIndex.rowIndex,
         previousIndex.columnIndex,
         pixelIndex.rowIndex,
@@ -258,6 +258,111 @@ export const getInBetweenPixelIndicesfromCoords = (
 
       if (missingIndices.length > 0) {
         return missingIndices;
+      }
+    }
+  }
+};
+
+export const getRectanglePixelIndicesfromCoords = (
+  previousCoord: Coord,
+  currentCoord: Coord,
+  gridSquareLength: number,
+  data: DottingData,
+  filled: boolean,
+) => {
+  if (!previousCoord || !currentCoord) return [];
+  if (
+    Math.abs(currentCoord.x - previousCoord.x) >= gridSquareLength ||
+    Math.abs(currentCoord.y - previousCoord.y) >= gridSquareLength
+  ) {
+    const { rowIndices, columnIndices } = getAllGridIndicesSorted(data);
+    const pixelIndex = getPixelIndexFromMouseCartCoord(
+      currentCoord,
+      rowIndices,
+      columnIndices,
+      gridSquareLength,
+    );
+    const previousIndex = getPixelIndexFromMouseCartCoord(
+      previousCoord,
+      rowIndices,
+      columnIndices,
+      gridSquareLength,
+    );
+    if (!previousIndex || !pixelIndex) return;
+
+    const points: Index[] = [];
+
+    if (
+      Math.abs(pixelIndex.columnIndex - previousIndex.columnIndex) >= 1 ||
+      Math.abs(pixelIndex.rowIndex - previousIndex.rowIndex) >= 1
+    ) {
+      const [startRow, endRow] = previousIndex.rowIndex < pixelIndex.rowIndex
+        ? [previousIndex.rowIndex, pixelIndex.rowIndex]
+        : [pixelIndex.rowIndex, previousIndex.rowIndex];
+      const [startColumn, endColumn] = previousIndex.columnIndex < pixelIndex.columnIndex
+        ? [previousIndex.columnIndex, pixelIndex.columnIndex]
+        : [pixelIndex.columnIndex, previousIndex.columnIndex];
+      for (let row = startRow; row <= endRow; row++) {
+        for (let column = startColumn; column <= endColumn; column++) {
+          if (
+            filled ||
+            row === previousIndex.rowIndex || column === previousIndex.columnIndex ||
+            row === pixelIndex.rowIndex || column === pixelIndex.columnIndex
+          ) {
+            points.push({
+              rowIndex: row,
+              columnIndex: column,
+            });
+          }
+        }
+      }
+    }
+
+    return points;
+  }
+};
+
+export const getEllipsePixelIndicesfromCoords = (
+  previousCoord: Coord,
+  currentCoord: Coord,
+  gridSquareLength: number,
+  data: DottingData,
+  filled: boolean,
+) => {
+  if (!previousCoord || !currentCoord) return [];
+  if (
+    Math.abs(currentCoord.x - previousCoord.x) >= gridSquareLength ||
+    Math.abs(currentCoord.y - previousCoord.y) >= gridSquareLength
+  ) {
+    const { rowIndices, columnIndices } = getAllGridIndicesSorted(data);
+    const pixelIndex = getPixelIndexFromMouseCartCoord(
+      currentCoord,
+      rowIndices,
+      columnIndices,
+      gridSquareLength,
+    );
+    const previousIndex = getPixelIndexFromMouseCartCoord(
+      previousCoord,
+      rowIndices,
+      columnIndices,
+      gridSquareLength,
+    );
+    if (!previousIndex || !pixelIndex) return;
+
+    if (
+      Math.abs(pixelIndex.columnIndex - previousIndex.columnIndex) >= 1 ||
+      Math.abs(pixelIndex.rowIndex - previousIndex.rowIndex) >= 1
+    ) {
+      const indices = getBresenhamEllipseIndices(
+        previousIndex.columnIndex, 
+        previousIndex.rowIndex, 
+        pixelIndex.columnIndex, 
+        pixelIndex.rowIndex, 
+        filled
+      );
+
+      if (indices.length > 0) {
+        return indices;
       }
     }
   }

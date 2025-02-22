@@ -30,9 +30,11 @@ import {
   extractColoredPixelsFromColumn,
   extractColoredPixelsFromRow,
   getAllGridIndicesSorted,
+  getEllipsePixelIndicesfromCoords,
   getColumnCountFromData,
   getGridIndicesFromData,
   getInBetweenPixelIndicesfromCoords,
+  getRectanglePixelIndicesfromCoords,
   getRowCountFromData,
 } from "../../utils/data";
 import {
@@ -45,6 +47,7 @@ import {
   getPixelIndexFromMouseCartCoord,
 } from "../../utils/position";
 import { drawRect } from "../../utils/shapes";
+import { Index } from "../../utils/types";
 
 export default class InteractionLayer extends BaseLayer {
   // We make this a map to allow for multiple users to interact with the canvas
@@ -112,7 +115,7 @@ export default class InteractionLayer extends BaseLayer {
     color: string;
   } | null = null;
 
-  private previewLine: Array<{ rowIndex: number; columnIndex: number }> | null =
+  private previewPoints: Array<{ rowIndex: number; columnIndex: number }> | null =
     null;
   private gridSquareLength: number = DefaultGridSquareLength;
 
@@ -146,10 +149,10 @@ export default class InteractionLayer extends BaseLayer {
     return this.brushPattern;
   }
 
-  setPreviewLine(
+  setPreviewPoints(
     points: Array<{ rowIndex: number; columnIndex: number }> | null,
   ) {
-    this.previewLine = points;
+    this.previewPoints = points;
   }
 
   setBrushPattern(pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) {
@@ -240,8 +243,8 @@ export default class InteractionLayer extends BaseLayer {
     this.deleteStrokePixelRecord(CurrentDeviceUserId);
   }
 
-  getPreviewLine() {
-    return this.previewLine;
+  getPreviewPoints() {
+    return this.previewPoints;
   }
 
   getHoveredPixel() {
@@ -1633,7 +1636,7 @@ export default class InteractionLayer extends BaseLayer {
   }
 
   renderHoveredPixel(correctedLeftTopScreenPoint: Coord, squareLength: number) {
-    if (this.hoveredPixel === null) {
+    if (this.hoveredPixel === null || this.previewPoints || this.selectingArea) {
       return;
     }
     const ctx = this.ctx;
@@ -1738,6 +1741,36 @@ export default class InteractionLayer extends BaseLayer {
     return linePoints;
   }
 
+  getRectanglePoints(
+    startPoint: Coord,
+    endPoint: Coord,
+    currentData: DottingData,
+    filled: boolean
+  ): Array<{ rowIndex: number; columnIndex: number }> {
+    return getRectanglePixelIndicesfromCoords(
+      startPoint,
+      endPoint,
+      this.gridSquareLength,
+      currentData,
+      filled,
+    )
+  }
+
+  getEllipsePoints(
+    startPoint: Coord,
+    endPoint: Coord,
+    currentData: DottingData,
+    filled: boolean
+  ): Array<{ rowIndex: number; columnIndex: number }> {
+    return getEllipsePixelIndicesfromCoords(
+      startPoint,
+      endPoint,
+      this.gridSquareLength,
+      currentData,
+      filled,
+    )
+  }
+
   drawLine(
     startPoint: Coord,
     endPoint: Coord,
@@ -1746,9 +1779,47 @@ export default class InteractionLayer extends BaseLayer {
   ) {
     if (!currentData) return;
 
-    const linePoints = this.getLinePoints(startPoint, endPoint, currentData);
+    this.drawPoints(
+      this.getLinePoints(startPoint, endPoint, currentData),
+      color,
+      currentData
+    );
+  }
 
-    for (const point of linePoints) {
+  drawRectangle(
+    startPoint: Coord,
+    endPoint: Coord,
+    color: string,
+    currentData: DottingData,
+    filled: boolean
+  ) {
+    if (!currentData) return;
+
+    this.drawPoints(
+      this.getRectanglePoints(startPoint, endPoint, currentData, filled),
+      color,
+      currentData
+    );
+  }
+
+  drawEllipse(
+    startPoint: Coord,
+    endPoint: Coord,
+    color: string,
+    currentData: DottingData,
+    filled: boolean
+  ) {
+    if (!currentData) return;
+
+    this.drawPoints(
+      this.getEllipsePoints(startPoint, endPoint, currentData, filled),
+      color,
+      currentData
+    );
+  }
+
+  protected drawPoints(points: Index[], color, currentData: DottingData,) {
+    for (const point of points) {
       const previousColor =
         currentData.get(point.rowIndex)?.get(point.columnIndex)?.color || "";
       this.addToStrokePixelRecords(CurrentDeviceUserId, {
@@ -1760,15 +1831,15 @@ export default class InteractionLayer extends BaseLayer {
     }
   }
 
-  renderPreviewLine(correctedLeftTopScreenPoint: Coord, squareLength: number) {
-    if (!this.previewLine) return;
+  renderPreviewPoints(correctedLeftTopScreenPoint: Coord, squareLength: number) {
+    if (!this.previewPoints) return;
 
     const ctx = this.ctx;
     ctx.save();
     ctx.globalAlpha = 0.5;
     ctx.fillStyle = this.hoveredPixel ? this.hoveredPixel.color : "#FF0000";
 
-    for (const point of this.previewLine) {
+    for (const point of this.previewPoints) {
       const relativeRowIndex = this.rowKeyOrderMap.get(point.rowIndex);
       const relativeColumnIndex = this.columnKeyOrderMap.get(point.columnIndex);
       if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
@@ -1817,7 +1888,7 @@ export default class InteractionLayer extends BaseLayer {
     this.renderIndicatorPixels(correctedLeftTopScreenPoint, squareLength);
     //draw indicator pixels on top of the canvas
     this.renderHoveredPixel(correctedLeftTopScreenPoint, squareLength);
-    this.renderPreviewLine(correctedLeftTopScreenPoint, squareLength);
+    this.renderPreviewPoints(correctedLeftTopScreenPoint, squareLength);
     this.renderMovingSelectedPixels(correctedLeftTopScreenPoint, squareLength);
     this.renderExtendingSelectedPixels(
       correctedLeftTopScreenPoint,

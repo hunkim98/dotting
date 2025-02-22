@@ -55,6 +55,10 @@ export enum BrushTool {
   SELECT = "SELECT",
   NONE = "NONE",
   LINE = "LINE",
+  RECTANGLE = "RECTANGLE",
+  RECTANGLE_FILLED = "RECTANGLE_FILLED",
+  ELLIPSE = "ELLIPSE",
+  ELLIPSE_FILLED = "ELLIPSE_FILLED",
 }
 
 export interface CanvasDelta {

@@ -2821,13 +2821,55 @@ export default class Editor extends EventDispatcher {
         this.panZoom,
         this.dpr,
       );
-      // // Get preview line points without actually drawing
-      const previewLine = this.interactionLayer.getLinePoints(
+      // Get preview line points without actually drawing
+      const previewPoints = this.interactionLayer.getLinePoints(
         this.mouseDownWorldPos,
         mouseCartCoord,
         this.dataLayer.getData(),
       );
-      this.interactionLayer.setPreviewLine(previewLine);
+      this.interactionLayer.setPreviewPoints(previewPoints);
+      this.renderInteractionLayer();
+    }
+
+    if (
+      this.mouseMode === MouseMode.DRAWING &&
+      [BrushTool.RECTANGLE, BrushTool.RECTANGLE_FILLED].includes(this.brushTool)
+    ) {
+      const mouseCartCoord = getMouseCartCoord(
+        evt,
+        this.element,
+        this.panZoom,
+        this.dpr,
+      );
+      // Get preview rectangle points without actually drawing
+      const previewPoints = this.interactionLayer.getRectanglePoints(
+        this.mouseDownWorldPos,
+        mouseCartCoord,
+        this.dataLayer.getData(),
+        this.brushTool === BrushTool.RECTANGLE_FILLED,
+      );
+      this.interactionLayer.setPreviewPoints(previewPoints);
+      this.renderInteractionLayer();
+    }
+
+    if (
+      this.mouseMode === MouseMode.DRAWING &&
+      [BrushTool.ELLIPSE, BrushTool.ELLIPSE_FILLED].includes(this.brushTool)
+    ) {
+      const mouseCartCoord = getMouseCartCoord(
+        evt,
+        this.element,
+        this.panZoom,
+        this.dpr,
+      );
+      // Get preview ellipse points without actually drawing
+      const previewPoints = this.interactionLayer.getEllipsePoints(
+        this.mouseDownWorldPos,
+        mouseCartCoord,
+        this.dataLayer.getData(),
+        this.brushTool === BrushTool.ELLIPSE_FILLED,
+      );
+      this.interactionLayer.setPreviewPoints(previewPoints);
       this.renderInteractionLayer();
     }
 
@@ -3443,7 +3485,13 @@ export default class Editor extends EventDispatcher {
 
     if (
       this.mouseMode === MouseMode.DRAWING &&
-      this.brushTool === BrushTool.LINE
+      [
+        BrushTool.LINE,
+        BrushTool.RECTANGLE,
+        BrushTool.RECTANGLE_FILLED,
+        BrushTool.ELLIPSE,
+        BrushTool.ELLIPSE_FILLED
+      ].includes(this.brushTool)
     ) {
       const mouseCartCoord = getMouseCartCoord(
         evt,
@@ -3452,12 +3500,36 @@ export default class Editor extends EventDispatcher {
         this.dpr,
       );
 
-      this.interactionLayer.drawLine(
-        this.mouseDownWorldPos,
-        mouseCartCoord,
-        this.brushColor,
-        this.dataLayer.getData(),
-      );
+      switch (this.brushTool) {
+        case BrushTool.LINE:
+          this.interactionLayer.drawLine(
+            this.mouseDownWorldPos,
+            mouseCartCoord,
+            this.brushColor,
+            this.dataLayer.getData(),
+          );
+          break;
+        case BrushTool.RECTANGLE:
+        case BrushTool.RECTANGLE_FILLED:
+          this.interactionLayer.drawRectangle(
+            this.mouseDownWorldPos,
+            mouseCartCoord,
+            this.brushColor,
+            this.dataLayer.getData(),
+            this.brushTool === BrushTool.RECTANGLE_FILLED,
+          );
+          break;
+        case BrushTool.ELLIPSE:
+        case BrushTool.ELLIPSE_FILLED:
+          this.interactionLayer.drawEllipse(
+            this.mouseDownWorldPos,
+            mouseCartCoord,
+            this.brushColor,
+            this.dataLayer.getData(),
+            this.brushTool === BrushTool.ELLIPSE_FILLED,
+          );
+          break;
+      }
 
       const isDataModified = this.relayInteractionDataToDataLayer();
       if (isDataModified) {
@@ -3475,7 +3547,7 @@ export default class Editor extends EventDispatcher {
       }
 
       this.mouseDownWorldPos = null;
-      this.interactionLayer.setPreviewLine(null);
+      this.interactionLayer.setPreviewPoints(null);
       this.renderAll();
     }
 
@@ -3521,8 +3593,6 @@ export default class Editor extends EventDispatcher {
     const allColumnKeys = getColumnKeysFromData(data);
     const { rowKeyOrderMap } = createRowKeyOrderMapfromData(data);
     const { columnKeyOrderMap } = createColumnKeyOrderMapfromData(data);
-    const { topRowIndex, bottomRowIndex, leftColumnIndex, rightColumnIndex } =
-      getGridIndicesFromData(data);
     if (options.type === "png") {
       const imageCanvas = document.createElement("canvas");
       imageCanvas.width = columnCount * this.gridSquareLength;

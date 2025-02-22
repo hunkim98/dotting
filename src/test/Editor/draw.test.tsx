@@ -45,7 +45,7 @@ describe("test for drawing interaction", () => {
     jest.clearAllMocks();
   });
 
-  it("test if bressenhamindces work when mouse is moved along the canvas", () => {
+  it("test if bresenhamindces work when mouse is moved along the canvas", () => {
     const columnCount = editor.getColumnCount();
     const rowCount = editor.getRowCount();
     const gridSquareLength = editor.getGridSquareLength();
