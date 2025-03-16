@@ -1,5 +1,15 @@
 import React, { KeyboardEvent } from "react";
 
+import { BaseBrush } from "./Brush/BaseBrush";
+import { DotBrush } from "./Brush/DotBrush";
+import { FilledEllipseBrush } from "./Brush/EllipseBrush/FilledEllipseBrush";
+import { OutlineEllipseBrush } from "./Brush/EllipseBrush/OutlineEllipseBrush";
+import { EraserBrush } from "./Brush/EraserBrush";
+import { LineBrush } from "./Brush/LineBrush";
+import { PaintBucketBrush } from "./Brush/PaintBucketBrush";
+import { FilledRectangleBrush } from "./Brush/RectangleBrush/FilledRectangleBrush";
+import { OutlineRectangleBrush } from "./Brush/RectangleBrush/OutlineRectangleBrush";
+import { RectangleSelectBrush } from "./Brush/SelectBrush/RectangleSelectBrush";
 import {
   DefaultGridSquareLength,
   DefaultMaxScale,
@@ -133,6 +143,7 @@ export default class Editor extends EventDispatcher {
   private isAltPressed = false;
   private mouseMode: MouseMode = MouseMode.NULL;
   private brushTool: BrushTool = BrushTool.DOT;
+  private brush: BaseBrush | null = null;
 
   private originalBrushTool: BrushTool | null = null;
   private mouseDownWorldPos: Coord | null = null;
@@ -516,6 +527,41 @@ export default class Editor extends EventDispatcher {
     if (this.brushTool !== BrushTool.SELECT) {
       this.interactionLayer.setSelectedArea(null);
       this.interactionLayer.setSelectingArea(null);
+    }
+    switch (tool) {
+      case BrushTool.DOT:
+        this.brush = new DotBrush(this.interactionLayer);
+        break;
+      case BrushTool.ERASER:
+        this.brush = new EraserBrush(this.interactionLayer);
+        break;
+      case BrushTool.SELECT:
+        this.brush = new RectangleSelectBrush(this.interactionLayer);
+        break;
+      case BrushTool.PAINT_BUCKET:
+        this.brush = new PaintBucketBrush(this.interactionLayer);
+        break;
+      case BrushTool.ELLIPSE:
+        this.brush = new OutlineEllipseBrush(this.interactionLayer);
+        break;
+      case BrushTool.RECTANGLE:
+        this.brush = new OutlineRectangleBrush(this.interactionLayer);
+        break;
+      case BrushTool.ELLIPSE_FILLED:
+        this.brush = new FilledEllipseBrush(this.interactionLayer);
+        break;
+      case BrushTool.RECTANGLE_FILLED:
+        this.brush = new FilledRectangleBrush(this.interactionLayer);
+        break;
+      case BrushTool.LINE:
+        this.brush = new LineBrush(this.interactionLayer);
+        break;
+      case BrushTool.NONE:
+        this.brush = null;
+        break;
+      default:
+        this.brush = new DotBrush(this.interactionLayer);
+        break;
     }
     this.emitBrushChangeEvent({
       brushColor: this.brushColor,
@@ -2815,62 +2861,42 @@ export default class Editor extends EventDispatcher {
       this.mouseMode === MouseMode.DRAWING &&
       this.brushTool === BrushTool.LINE
     ) {
-      const mouseCartCoord = getMouseCartCoord(
-        evt,
-        this.element,
-        this.panZoom,
-        this.dpr,
-      );
-      // Get preview line points without actually drawing
-      const previewPoints = this.interactionLayer.getLinePoints(
+      this.brush.onMouseMove(
         this.mouseDownWorldPos,
         mouseCartCoord,
         this.dataLayer.getData(),
+        this.gridSquareLength,
+        false,
+        this.getBrushPattern(),
       );
-      this.interactionLayer.setPreviewPoints(previewPoints);
-      this.renderInteractionLayer();
     }
 
     if (
       this.mouseMode === MouseMode.DRAWING &&
       [BrushTool.RECTANGLE, BrushTool.RECTANGLE_FILLED].includes(this.brushTool)
     ) {
-      const mouseCartCoord = getMouseCartCoord(
-        evt,
-        this.element,
-        this.panZoom,
-        this.dpr,
-      );
-      // Get preview rectangle points without actually drawing
-      const previewPoints = this.interactionLayer.getRectanglePoints(
+      this.brush.onMouseMove(
         this.mouseDownWorldPos,
         mouseCartCoord,
         this.dataLayer.getData(),
-        this.brushTool === BrushTool.RECTANGLE_FILLED,
+        this.gridSquareLength,
+        false,
+        this.getBrushPattern(),
       );
-      this.interactionLayer.setPreviewPoints(previewPoints);
-      this.renderInteractionLayer();
     }
 
     if (
       this.mouseMode === MouseMode.DRAWING &&
       [BrushTool.ELLIPSE, BrushTool.ELLIPSE_FILLED].includes(this.brushTool)
     ) {
-      const mouseCartCoord = getMouseCartCoord(
-        evt,
-        this.element,
-        this.panZoom,
-        this.dpr,
-      );
-      // Get preview ellipse points without actually drawing
-      const previewPoints = this.interactionLayer.getEllipsePoints(
+      this.brush.onMouseMove(
         this.mouseDownWorldPos,
         mouseCartCoord,
         this.dataLayer.getData(),
-        this.brushTool === BrushTool.ELLIPSE_FILLED,
+        this.gridSquareLength,
+        false,
+        this.getBrushPattern(),
       );
-      this.interactionLayer.setPreviewPoints(previewPoints);
-      this.renderInteractionLayer();
     }
 
     if (this.mouseMode === MouseMode.NULL) {
@@ -3490,7 +3516,7 @@ export default class Editor extends EventDispatcher {
         BrushTool.RECTANGLE,
         BrushTool.RECTANGLE_FILLED,
         BrushTool.ELLIPSE,
-        BrushTool.ELLIPSE_FILLED
+        BrushTool.ELLIPSE_FILLED,
       ].includes(this.brushTool)
     ) {
       const mouseCartCoord = getMouseCartCoord(

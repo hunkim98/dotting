@@ -115,8 +115,10 @@ export default class InteractionLayer extends BaseLayer {
     color: string;
   } | null = null;
 
-  private previewPoints: Array<{ rowIndex: number; columnIndex: number }> | null =
-    null;
+  private previewPoints: Array<{
+    rowIndex: number;
+    columnIndex: number;
+  }> | null = null;
   private gridSquareLength: number = DefaultGridSquareLength;
 
   constructor({
@@ -1636,7 +1638,11 @@ export default class InteractionLayer extends BaseLayer {
   }
 
   renderHoveredPixel(correctedLeftTopScreenPoint: Coord, squareLength: number) {
-    if (this.hoveredPixel === null || this.previewPoints || this.selectingArea) {
+    if (
+      this.hoveredPixel === null ||
+      this.previewPoints ||
+      this.selectingArea
+    ) {
       return;
     }
     const ctx = this.ctx;
@@ -1745,7 +1751,7 @@ export default class InteractionLayer extends BaseLayer {
     startPoint: Coord,
     endPoint: Coord,
     currentData: DottingData,
-    filled: boolean
+    filled: boolean,
   ): Array<{ rowIndex: number; columnIndex: number }> {
     return getRectanglePixelIndicesfromCoords(
       startPoint,
@@ -1753,14 +1759,14 @@ export default class InteractionLayer extends BaseLayer {
       this.gridSquareLength,
       currentData,
       filled,
-    )
+    );
   }
 
   getEllipsePoints(
     startPoint: Coord,
     endPoint: Coord,
     currentData: DottingData,
-    filled: boolean
+    filled: boolean,
   ): Array<{ rowIndex: number; columnIndex: number }> {
     return getEllipsePixelIndicesfromCoords(
       startPoint,
@@ -1768,7 +1774,7 @@ export default class InteractionLayer extends BaseLayer {
       this.gridSquareLength,
       currentData,
       filled,
-    )
+    );
   }
 
   drawLine(
@@ -1782,7 +1788,7 @@ export default class InteractionLayer extends BaseLayer {
     this.drawPoints(
       this.getLinePoints(startPoint, endPoint, currentData),
       color,
-      currentData
+      currentData,
     );
   }
 
@@ -1791,14 +1797,14 @@ export default class InteractionLayer extends BaseLayer {
     endPoint: Coord,
     color: string,
     currentData: DottingData,
-    filled: boolean
+    filled: boolean,
   ) {
     if (!currentData) return;
 
     this.drawPoints(
       this.getRectanglePoints(startPoint, endPoint, currentData, filled),
       color,
-      currentData
+      currentData,
     );
   }
 
@@ -1807,18 +1813,24 @@ export default class InteractionLayer extends BaseLayer {
     endPoint: Coord,
     color: string,
     currentData: DottingData,
-    filled: boolean
+    filled: boolean,
   ) {
     if (!currentData) return;
 
     this.drawPoints(
       this.getEllipsePoints(startPoint, endPoint, currentData, filled),
       color,
-      currentData
+      currentData,
     );
   }
 
-  protected drawPoints(points: Index[], color, currentData: DottingData,) {
+  drawPoints(
+    points: Index[],
+    color,
+    currentData: DottingData,
+    userId?: string,
+  ) {
+    const drawerUserId = userId || CurrentDeviceUserId;
     for (const point of points) {
       const previousColor =
         currentData.get(point.rowIndex)?.get(point.columnIndex)?.color || "";
@@ -1831,7 +1843,10 @@ export default class InteractionLayer extends BaseLayer {
     }
   }
 
-  renderPreviewPoints(correctedLeftTopScreenPoint: Coord, squareLength: number) {
+  renderPreviewPoints(
+    correctedLeftTopScreenPoint: Coord,
+    squareLength: number,
+  ) {
     if (!this.previewPoints) return;
 
     const ctx = this.ctx;
