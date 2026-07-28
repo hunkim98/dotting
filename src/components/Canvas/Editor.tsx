@@ -139,7 +139,7 @@ export default class Editor extends EventDispatcher {
   private mouseDownPanZoom: PanZoom | null = null;
   private mouseMoveWorldPos: Coord = { x: 0, y: 0 };
   private previousMouseMoveWorldPos: Coord | null = null;
-  private renderDataLayerTimeout: NodeJS.Timeout | null = null;
+  private renderDataLayerTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // TODO: why do we need this? For games?
   private isDrawingEnabled = true;
