@@ -1,20 +1,24 @@
 name: Coverage
 on:
-  pull_request: # only activates for pull requests
+  pull_request:
     branches: ["main"]
 jobs:
   coverage:
     name: Coverage
     runs-on: ubuntu-latest
     steps:
-      # this moves to the directory of dotting!
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
-          # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "yarn"
+
       - name: Install dependencies
-        run: yarn
+        run: yarn install --frozen-lockfile
 
       - name: Test and coverage
         run: yarn test --coverage
@@ -24,13 +28,3 @@ jobs:
         with:
           name: coverage-report
           path: coverage/lcov.info
-
-      - name: Save PR number to file
-        if: github.event_name == 'pull_request'
-        run: echo "${{ github.event.pull_request.number }}" > pr_number.txt
-
-      - name: Upload PR number
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr-number
-          path: pr_number.txt
