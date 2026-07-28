@@ -73,7 +73,6 @@
     "jest-canvas-mock": "^2.5.2",
     "jest-environment-jsdom": "^29.5.0",
     "microbundle": "^0.15.1",
-    "node-sass": "^8.0.0",
     "react": "^18.2.0",
     "react-docgen-typescript-plugin": "^1.0.5",
     "react-dom": "^18.2.0",
@@ -81,6 +80,7 @@
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-postcss": "^4.0.2",
     "rollup-plugin-typescript2": "^0.34.1",
+    "sass": "^1.102.0",
     "sass-loader": "^10.1.1",
     "ts-jest": "^29.0.5",
     "typescript": "^4.9.5"
