@@ -19,7 +19,7 @@ export function removeEvent(
 
 const touch = {
   mouseup: "touchend",
-  mouseout: "touchend",
+  mouseout: "touchcancel",
   mousedown: "touchstart",
   mousemove: "touchmove",
 };

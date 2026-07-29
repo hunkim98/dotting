@@ -1,104 +1,42 @@
-# .github/workflows/preview.yml
 name: Deploy PR previews
 
-# on:
-#   pull_request:
-#     types:
-#       - opened
-#       - reopened
-#       - synchronize
-#       - closed
-
 on:
-  workflow_run:
-    workflows: ["Coverage"]
+  pull_request:
     types:
-      - completed
+      - opened
+      - reopened
+      - synchronize
 
 permissions:
   pull-requests: write
   contents: write
 
-concurrency: preview-${{ github.ref }}
+concurrency: preview-${{ github.event.pull_request.number }}
 
 jobs:
   deploy-preview:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install and Build
-        run: |
-          yarn install
-          yarn run storybook:build
-
-      - name: Download PR number artifact
-        uses: actions/github-script@v6
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          script: |
-            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.payload.workflow_run.id,
-            });
-            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "pr-number"
-            })[0];
-            let download = await github.rest.actions.downloadArtifact({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              artifact_id: matchArtifact.id,
-              archive_format: 'zip',
-            });
-            let fs = require('fs');
-            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/pr-number.zip`, Buffer.from(download.data));
+          node-version: "20"
+          cache: "yarn"
 
-      - name: Unzip PR number artifact
-        run: unzip $GITHUB_WORKSPACE/pr-number.zip -d $GITHUB_WORKSPACE
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
-      - name: Read PR number
-        id: pr
-        run: echo "::set-output name=number::$(cat pr_number.txt)"
-
-      - name: Set PR Number as pr=$pr
-        run: echo "pr=${{ steps.pr.outputs.number }}" >> $GITHUB_ENV
-
-      - name: Use PR Number
-        run: |
-          echo "The PR number is ${{ steps.pr.outputs.number }}"
+      - name: Build Storybook
+        run: yarn run storybook:build
 
       - name: Deploy preview
-        id: deploy-preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: ./storybook-static/
           preview-branch: preview
           custom-url: dotting-preview.netlify.app
-          # umbrella-dir: docs/pr-preview
           token: ${{ secrets.GITHUB_TOKEN }}
-          action: deploy # This prevents netlify from auto deleting url
-
-        env:
-          pr: ${{ steps.pr.outputs.number }}
-          targetdir: pr-preview/pr-${{ steps.pr.outputs.number }}
-
-      - name: Echo preview URL
-        run: |
-          echo "Preview URL:  ${{ steps.deploy-preview.outputs.deployment-url }}"
-
-      - name: Post PR comment
-        uses: actions/github-script@v5
-        with:
-          script: |
-            const url = "${{ steps.deploy-preview.outputs.deployment-url }}";
-            if (url) {
-              github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: "${{ steps.pr.outputs.number }}",
-                body: "Preview URL: ${{ steps.deploy-preview.outputs.deployment-url }}"
-              });
-            } else {
-              core.setFailed('No preview URL found');
-            }
+          action: deploy

@@ -10,13 +10,15 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "strict": false,
+    "ignoreDeprecations": "6.0",
+    "types": ["jest"],
     "skipLibCheck": true /* Skip type checking all .d.ts files. */
   },
   "include": ["src/**/*", "stories/**/*", "worker.d.ts", "test.types.d.ts"],
   "exclude": [
     "node_modules",
     "build",
-    // "src/**/*.stories.tsx",
-    "src/**/*.test.tsx"
+    // "src/**/*.stories.tsx"
   ]
 }

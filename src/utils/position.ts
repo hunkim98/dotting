@@ -14,24 +14,23 @@ export const getPointFromTouchyEvent = (
   let offsetY;
   if (window.TouchEvent && evt instanceof TouchEvent) {
     //this is for tablet or mobile
-    let isCanvasTouchIncluded = false;
-    let firstCanvasTouchIndex = 0;
-    for (let i = 0; i < evt.touches.length; i++) {
-      const target = evt.touches.item(i)!.target;
+    const touchList =
+      evt.type === "touchend" || evt.type === "touchcancel"
+        ? evt.changedTouches
+        : evt.touches;
+
+    let canvasTouch: Touch | null = null;
+    for (let i = 0; i < touchList.length; i++) {
+      const target = touchList.item(i)!.target;
       if (target instanceof HTMLCanvasElement) {
-        isCanvasTouchIncluded = true;
-        firstCanvasTouchIndex = i;
+        canvasTouch = touchList.item(i);
         break;
       }
     }
-    if (isCanvasTouchIncluded) {
-      return getPointFromTouch(
-        evt.touches[firstCanvasTouchIndex],
-        element,
-        panZoom,
-      );
-    } else {
-      return getPointFromTouch(evt.touches[0], element, panZoom);
+
+    const touch = canvasTouch ?? touchList[0];
+    if (touch) {
+      return getPointFromTouch(touch, element, panZoom);
     }
   } else {
     //this is for PC
