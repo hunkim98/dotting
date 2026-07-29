@@ -58,6 +58,12 @@ jobs:
 
           Bumps version to **v${{ steps.bump.outputs.version }}** (${{ inputs.bump }}).
 
-          Merging this PR will automatically publish to npm and create a GitHub release.
+          Merging this PR will automatically create a GitHub release and git tag.
+
+          After merging, publish to npm locally:
+          ```
+          git pull
+          yarn publish
+          ```
           EOF
           )"
