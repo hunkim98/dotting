@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -45,23 +45,11 @@ jobs:
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Create version bump PR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit and push version bump
         run: |
-          BRANCH="release/v${{ steps.bump.outputs.version }}"
-          git checkout -b "$BRANCH"
           git add package.json
           git commit -m "chore: bump version to v${{ steps.bump.outputs.version }}"
-          git push origin "$BRANCH"
-          gh pr create \
-            --base main \
-            --head "$BRANCH" \
-            --title "chore: bump version to v${{ steps.bump.outputs.version }}" \
-            --body "Automated version bump to v${{ steps.bump.outputs.version }}"
-          gh pr merge "$BRANCH" --squash --admin
-          git checkout main
-          git pull origin main
+          git push
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
@@ -77,7 +65,7 @@ jobs:
 
       - name: Create Git tag and GitHub Release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git tag "v${{ steps.bump.outputs.version }}"
           git push origin "v${{ steps.bump.outputs.version }}"
