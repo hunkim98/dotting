@@ -1,10 +1,14 @@
-name: Coverage
+name: Coverage & SonarCloud
+
 on:
+  push:
+    branches: [main]
   pull_request:
-    branches: ["main"]
+    branches: [main]
+
 jobs:
   coverage:
-    name: Coverage
+    name: Coverage & SonarCloud
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,3 +32,8 @@ jobs:
         with:
           name: coverage-report
           path: coverage/lcov.info
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
