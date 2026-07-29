@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
       id-token: write
     steps:
       - name: Checkout
@@ -44,11 +45,23 @@ jobs:
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Commit version bump
+      - name: Create version bump PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          BRANCH="release/v${{ steps.bump.outputs.version }}"
+          git checkout -b "$BRANCH"
           git add package.json
           git commit -m "chore: bump version to v${{ steps.bump.outputs.version }}"
-          git push
+          git push origin "$BRANCH"
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore: bump version to v${{ steps.bump.outputs.version }}" \
+            --body "Automated version bump to v${{ steps.bump.outputs.version }}"
+          gh pr merge "$BRANCH" --squash --admin
+          git checkout main
+          git pull origin main
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
