@@ -3555,6 +3555,24 @@ export default class Editor extends EventDispatcher {
   }
 
   onMouseOut(evt: TouchyEvent) {
+    // On touch devices, touchcancel (mapped to mouseout) can fire instead of
+    // or before touchend. If we're in the middle of drawing a shape, delegate
+    // to onMouseUp so the shape is committed before state is reset.
+    if (
+      window.TouchEvent &&
+      evt instanceof TouchEvent &&
+      this.mouseMode === MouseMode.DRAWING &&
+      [
+        BrushTool.LINE,
+        BrushTool.RECTANGLE,
+        BrushTool.RECTANGLE_FILLED,
+        BrushTool.ELLIPSE,
+        BrushTool.ELLIPSE_FILLED,
+      ].includes(this.brushTool)
+    ) {
+      this.onMouseUp(evt);
+      return;
+    }
     this.onInteractionEnded(evt, false);
   }
 
