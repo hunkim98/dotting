@@ -2555,8 +2555,7 @@ export default class Editor extends EventDispatcher {
 
       const currentPixel = data.get(rowIndex)?.get(columnIndex);
       if (
-        !currentPixel ||
-        currentPixel.color !== initialColor ||
+        currentPixel?.color !== initialColor ||
         normalizeAlpha(currentPixel.alpha) !== normalizeAlpha(initialAlpha)
       ) {
         continue;

@@ -594,6 +594,57 @@ export default class DataLayer extends BaseLayer {
     return { swipedPixels, validColumnIndices, validRowIndices };
   }
 
+  private drawVisiblePixelLayers(
+    ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+    visibleLayers: Array<DottingDataLayer>,
+    rowIndex: number,
+    columnIndex: number,
+    x: number,
+    y: number,
+    pixelSize: number,
+  ) {
+    for (const layer of visibleLayers) {
+      const pixel = layer.getData().get(rowIndex)?.get(columnIndex);
+      if (!pixel?.color) continue;
+
+      ctx.fillStyle = pixel.color;
+      ctx.globalAlpha = normalizeAlpha(pixel.alpha);
+      ctx.fillRect(x, y, pixelSize, pixelSize);
+    }
+  }
+
+  private drawVisiblePixels(
+    ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+    rowKeys: Array<number>,
+    columnKeys: Array<number>,
+    pixelSize: number,
+    origin: Coord,
+  ) {
+    const visibleLayers = this.layers
+      .filter(layer => layer.getIsVisible())
+      .reverse();
+
+    for (const rowIndex of rowKeys) {
+      const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
+      if (relativeRowIndex === undefined) continue;
+
+      for (const columnIndex of columnKeys) {
+        const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
+        if (relativeColumnIndex === undefined) continue;
+
+        this.drawVisiblePixelLayers(
+          ctx,
+          visibleLayers,
+          rowIndex,
+          columnIndex,
+          relativeColumnIndex * pixelSize + origin.x,
+          relativeRowIndex * pixelSize + origin.y,
+          pixelSize,
+        );
+      }
+    }
+  }
+
   updateCapturedImageBitmap() {
     // leftTopPoint is a cartesian coordinate
     const capturedPanZoomValue = {
@@ -644,40 +695,14 @@ export default class DataLayer extends BaseLayer {
       fakeCtx.restore();
     }
 
-    const visibleLayers = this.layers
-      .filter(layer => layer.getIsVisible())
-      .reverse();
     fakeCtx.save();
-    for (const i of allRowKeys) {
-      for (const j of allColumnKeys) {
-        const rowIndex = i;
-        const columnIndex = j;
-        const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
-        const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
-        if (
-          relativeRowIndex === undefined ||
-          relativeColumnIndex === undefined
-        ) {
-          continue;
-        }
-        for (const layer of visibleLayers) {
-          const pixel = layer
-            .getData()
-            .get(rowIndex)
-            ?.get(columnIndex);
-          if (!pixel?.color) continue;
-
-          fakeCtx.fillStyle = pixel.color;
-          fakeCtx.globalAlpha = normalizeAlpha(pixel.alpha);
-          fakeCtx.fillRect(
-            relativeColumnIndex * squareLength * this.dpr,
-            relativeRowIndex * squareLength * this.dpr,
-            squareLength * this.dpr,
-            squareLength * this.dpr,
-          );
-        }
-      }
-    }
+    this.drawVisiblePixels(
+      fakeCtx,
+      allRowKeys,
+      allColumnKeys,
+      squareLength * this.dpr,
+      { x: 0, y: 0 },
+    );
     fakeCtx.restore();
     this.capturedImageBitmapScale = capturedPanZoomValue.scale;
     this.capturedImageBitmap = canvas.transferToImageBitmap();
@@ -717,40 +742,14 @@ export default class DataLayer extends BaseLayer {
       ctx.restore();
     }
 
-    const visibleLayers = this.layers
-      .filter(layer => layer.getIsVisible())
-      .reverse();
     ctx.save();
-    for (const i of allRowKeys) {
-      for (const j of allColumnKeys) {
-        const rowIndex = i;
-        const columnIndex = j;
-        const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
-        const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
-        if (
-          relativeRowIndex === undefined ||
-          relativeColumnIndex === undefined
-        ) {
-          continue;
-        }
-        for (const layer of visibleLayers) {
-          const pixel = layer
-            .getData()
-            .get(rowIndex)
-            ?.get(columnIndex);
-          if (!pixel?.color) continue;
-
-          ctx.fillStyle = pixel.color;
-          ctx.globalAlpha = normalizeAlpha(pixel.alpha);
-          ctx.fillRect(
-            relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-            relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-            squareLength,
-            squareLength,
-          );
-        }
-      }
-    }
+    this.drawVisiblePixels(
+      ctx,
+      allRowKeys,
+      allColumnKeys,
+      squareLength,
+      correctedLeftTopScreenPoint,
+    );
     ctx.restore();
     return {
       rowKeys: allRowKeys,
