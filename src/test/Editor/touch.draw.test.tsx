@@ -44,7 +44,7 @@ function createFakeTouchEvent(
   return event;
 }
 
-describe("touch events for shape tools", () => {
+describe("touch events for drawing tools", () => {
   let editor: Editor;
   let canvasElement: HTMLCanvasElement;
   let startOffset: { x: number; y: number };
@@ -108,24 +108,26 @@ describe("touch events for shape tools", () => {
   const makeTouchEntry = (
     offset: { x: number; y: number },
     target: HTMLCanvasElement,
+    identifier = 0,
   ): Partial<Touch> => ({
     clientX: offset.x,
     clientY: offset.y,
     pageX: offset.x,
     pageY: offset.y,
     target,
-    identifier: 0,
+    identifier,
   });
 
   /**
-   * Simulate a full touch interaction: touchstart → touchmove → touchend.
-   * touchend has an empty `touches` and the released finger in `changedTouches`,
-   * matching real browser behavior.
+   * Simulate a full touch interaction. Both touchend and touchcancel have an
+   * empty `touches` list and put the released finger in `changedTouches`,
+   * matching the browser API.
    */
   function simulateTouchDraw(
     element: HTMLCanvasElement,
     start: { x: number; y: number },
     end: { x: number; y: number },
+    endEventType: "touchend" | "touchcancel" = "touchend",
   ) {
     fireEvent(
       element,
@@ -143,70 +145,164 @@ describe("touch events for shape tools", () => {
       }),
     );
 
-    // touchend: touches is EMPTY, released finger is in changedTouches
+    // The completed/cancelled touch is only available in changedTouches.
     fireEvent(
       element,
-      createFakeTouchEvent("touchend", {
+      createFakeTouchEvent(endEventType, {
         touches: [],
         changedTouches: [makeTouchEntry(end, element)],
       }),
     );
   }
 
+  const getPaintedPixels = () =>
+    editor
+      .getLayersAsArray()[0]
+      .data.reduce((allPixels, row) => allPixels.concat(row), [])
+      .filter(pixel => pixel.color !== "");
+
   it("LINE tool commits pixels to data layer via touch", () => {
     editor.setBrushTool(BrushTool.LINE);
+    editor.setBrushAlpha(0.4);
     editor.setDefaultPixelColor("#FF0000");
 
     simulateTouchDraw(canvasElement, startOffset, endOffset);
 
-    const data = editor.getLayersAsArray()[0].data;
-    const pixels: { rowIndex: number; columnIndex: number }[] = [];
-    data.forEach((row, rowIndex) => {
-      row.forEach((pixel, colIndex) => {
-        if (pixel.color !== "") {
-          pixels.push({ rowIndex, columnIndex: colIndex });
-        }
-      });
-    });
+    const pixels = getPaintedPixels();
 
     expect(pixels.length).toBeGreaterThan(0);
+    expect(pixels.every(pixel => pixel.alpha === 0.4)).toBe(true);
   });
 
   it("RECTANGLE tool commits pixels to data layer via touch", () => {
     editor.setBrushTool(BrushTool.RECTANGLE);
+    editor.setBrushAlpha(0.5);
     editor.setDefaultPixelColor("#00FF00");
 
     simulateTouchDraw(canvasElement, startOffset, endOffset);
 
-    const data = editor.getLayersAsArray()[0].data;
-    const pixels: { rowIndex: number; columnIndex: number }[] = [];
-    data.forEach((row, rowIndex) => {
-      row.forEach((pixel, colIndex) => {
-        if (pixel.color !== "") {
-          pixels.push({ rowIndex, columnIndex: colIndex });
-        }
-      });
-    });
+    const pixels = getPaintedPixels();
 
     expect(pixels.length).toBeGreaterThan(0);
+    expect(pixels.every(pixel => pixel.alpha === 0.5)).toBe(true);
   });
 
   it("ELLIPSE tool commits pixels to data layer via touch", () => {
     editor.setBrushTool(BrushTool.ELLIPSE);
+    editor.setBrushAlpha(0.6);
     editor.setDefaultPixelColor("#0000FF");
 
     simulateTouchDraw(canvasElement, startOffset, endOffset);
 
-    const data = editor.getLayersAsArray()[0].data;
-    const pixels: { rowIndex: number; columnIndex: number }[] = [];
-    data.forEach((row, rowIndex) => {
-      row.forEach((pixel, colIndex) => {
-        if (pixel.color !== "") {
-          pixels.push({ rowIndex, columnIndex: colIndex });
-        }
-      });
-    });
+    const pixels = getPaintedPixels();
 
     expect(pixels.length).toBeGreaterThan(0);
+    expect(pixels.every(pixel => pixel.alpha === 0.6)).toBe(true);
+  });
+
+  it("DOT tool applies brush and pattern alpha throughout a touch stroke", () => {
+    editor.setBrushTool(BrushTool.DOT);
+    editor.setBrushColor("#336699");
+    editor.setBrushAlpha(0.8);
+    editor.setBrushPattern([[0.5]]);
+
+    simulateTouchDraw(canvasElement, startOffset, endOffset);
+
+    const pixels = getPaintedPixels();
+    expect(pixels.length).toBeGreaterThan(1);
+    expect(pixels.every(pixel => pixel.color === "#336699")).toBe(true);
+    expect(pixels.every(pixel => pixel.alpha === 0.4)).toBe(true);
+  });
+
+  it("PAINT_BUCKET applies alpha when activated by touch", () => {
+    editor.setBrushTool(BrushTool.PAINT_BUCKET);
+    editor.setBrushColor("#663399");
+    editor.setBrushAlpha(0.25);
+
+    simulateTouchDraw(canvasElement, startOffset, startOffset);
+
+    const pixels = getPaintedPixels();
+    expect(pixels).toHaveLength(editor.getRowCount() * editor.getColumnCount());
+    expect(pixels.every(pixel => pixel.color === "#663399")).toBe(true);
+    expect(pixels.every(pixel => pixel.alpha === 0.25)).toBe(true);
+  });
+
+  it.each([
+    ["LINE", BrushTool.LINE],
+    ["RECTANGLE", BrushTool.RECTANGLE],
+    ["RECTANGLE_FILLED", BrushTool.RECTANGLE_FILLED],
+    ["ELLIPSE", BrushTool.ELLIPSE],
+    ["ELLIPSE_FILLED", BrushTool.ELLIPSE_FILLED],
+  ])("%s commits alpha pixels when a touch is cancelled", (_, brushTool) => {
+    editor.setBrushTool(brushTool);
+    editor.setBrushColor("#123456");
+    editor.setBrushAlpha(0.35);
+
+    simulateTouchDraw(canvasElement, startOffset, endOffset, "touchcancel");
+
+    const pixels = getPaintedPixels();
+    expect(pixels.length).toBeGreaterThan(0);
+    expect(pixels.every(pixel => pixel.color === "#123456")).toBe(true);
+    expect(pixels.every(pixel => pixel.alpha === 0.35)).toBe(true);
+  });
+
+  it("preserves single-touch panning", () => {
+    editor.setBrushTool(BrushTool.NONE);
+    const previousOffset = editor.getPanZoom().offset;
+
+    simulateTouchDraw(canvasElement, startOffset, endOffset);
+
+    const nextOffset = editor.getPanZoom().offset;
+    expect(nextOffset.x - previousOffset.x).toBeCloseTo(
+      endOffset.x - startOffset.x,
+    );
+    expect(nextOffset.y - previousOffset.y).toBeCloseTo(
+      endOffset.y - startOffset.y,
+    );
+  });
+
+  it("preserves two-touch pinch zooming", () => {
+    editor.setBrushTool(BrushTool.NONE);
+    const initialScale = editor.getPanZoom().scale;
+    const initialTouches = [
+      makeTouchEntry({ x: startOffset.x - 40, y: startOffset.y }, canvasElement),
+      makeTouchEntry(
+        { x: startOffset.x + 40, y: startOffset.y },
+        canvasElement,
+        1,
+      ),
+    ];
+    const expandedTouches = [
+      makeTouchEntry({ x: startOffset.x - 80, y: startOffset.y }, canvasElement),
+      makeTouchEntry(
+        { x: startOffset.x + 80, y: startOffset.y },
+        canvasElement,
+        1,
+      ),
+    ];
+
+    fireEvent(
+      canvasElement,
+      createFakeTouchEvent("touchstart", {
+        touches: initialTouches,
+        changedTouches: initialTouches,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      createFakeTouchEvent("touchmove", {
+        touches: initialTouches,
+        changedTouches: initialTouches,
+      }),
+    );
+    fireEvent(
+      canvasElement,
+      createFakeTouchEvent("touchmove", {
+        touches: expandedTouches,
+        changedTouches: expandedTouches,
+      }),
+    );
+
+    expect(editor.getPanZoom().scale).toBeGreaterThan(initialScale);
   });
 });

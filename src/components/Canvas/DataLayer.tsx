@@ -14,6 +14,11 @@ import {
 } from "./types";
 import { DottingDataLayer } from "../../helpers/DottingDataLayer";
 import {
+  createPixelData,
+  normalizeAlpha,
+  normalizeOptionalAlpha,
+} from "../../utils/alpha";
+import {
   extractColoredPixelsFromColumn,
   extractColoredPixelsFromRow,
   getColumnCountFromData,
@@ -320,18 +325,28 @@ export default class DataLayer extends BaseLayer {
       throw new Error("Layer not found");
     }
     for (const item of data) {
-      const { rowIndex, columnIndex, color } = item;
+      const { rowIndex, columnIndex, color, alpha } = item;
+      const normalizedAlpha = normalizeOptionalAlpha(alpha);
       if (
         layer.getData().get(rowIndex) &&
         layer.getData().get(rowIndex)!.get(columnIndex)
       ) {
+        const previousPixel = layer
+          .getData()
+          .get(rowIndex)!
+          .get(columnIndex)!;
         modifiedPixels.push({
           rowIndex,
           columnIndex,
           color,
-          previousColor: layer.getData().get(rowIndex)!.get(columnIndex)!.color,
+          alpha: normalizedAlpha,
+          previousColor: previousPixel.color,
+          previousAlpha: previousPixel.alpha,
         });
-        layer.getData().get(rowIndex)!.set(columnIndex, { color });
+        layer
+          .getData()
+          .get(rowIndex)!
+          .set(columnIndex, createPixelData(color, normalizedAlpha));
       }
     }
     return modifiedPixels;
@@ -396,16 +411,26 @@ export default class DataLayer extends BaseLayer {
     }
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
-      const previousColor = layer
+      const alpha = normalizeOptionalAlpha(change.alpha);
+      const previousPixel = layer
         .getData()
         .get(change.rowIndex)!
-        .get(change.columnIndex)!.color;
+        .get(change.columnIndex)!;
       const color = change.color;
       layer
         .getData()
         .get(change.rowIndex)!
-        .set(change.columnIndex, { color: change.color });
-      dataForAction.push({ ...change, color, previousColor });
+        .set(
+          change.columnIndex,
+          createPixelData(change.color, alpha),
+        );
+      dataForAction.push({
+        ...change,
+        color,
+        alpha,
+        previousColor: previousPixel.color,
+        previousAlpha: previousPixel.alpha,
+      });
     }
     return {
       dataForAction,
@@ -429,16 +454,22 @@ export default class DataLayer extends BaseLayer {
     }
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
-      const previousColor = layer
+      const previousPixel = layer
         .getData()
         .get(change.rowIndex)!
-        .get(change.columnIndex)!.color;
+        .get(change.columnIndex)!;
       const color = "";
       layer
         .getData()
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: "" });
-      dataForAction.push({ ...change, color, previousColor });
+      dataForAction.push({
+        ...change,
+        color,
+        alpha: undefined,
+        previousColor: previousPixel.color,
+        previousAlpha: previousPixel.alpha,
+      });
     }
     return { dataForAction };
   }
@@ -563,6 +594,57 @@ export default class DataLayer extends BaseLayer {
     return { swipedPixels, validColumnIndices, validRowIndices };
   }
 
+  private drawVisiblePixelLayers(
+    ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+    visibleLayers: Array<DottingDataLayer>,
+    rowIndex: number,
+    columnIndex: number,
+    x: number,
+    y: number,
+    pixelSize: number,
+  ) {
+    for (const layer of visibleLayers) {
+      const pixel = layer.getData().get(rowIndex)?.get(columnIndex);
+      if (!pixel?.color) continue;
+
+      ctx.fillStyle = pixel.color;
+      ctx.globalAlpha = normalizeAlpha(pixel.alpha);
+      ctx.fillRect(x, y, pixelSize, pixelSize);
+    }
+  }
+
+  private drawVisiblePixels(
+    ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D,
+    rowKeys: Array<number>,
+    columnKeys: Array<number>,
+    pixelSize: number,
+    origin: Coord,
+  ) {
+    const visibleLayers = this.layers
+      .filter(layer => layer.getIsVisible())
+      .reverse();
+
+    for (const rowIndex of rowKeys) {
+      const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
+      if (relativeRowIndex === undefined) continue;
+
+      for (const columnIndex of columnKeys) {
+        const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
+        if (relativeColumnIndex === undefined) continue;
+
+        this.drawVisiblePixelLayers(
+          ctx,
+          visibleLayers,
+          rowIndex,
+          columnIndex,
+          relativeColumnIndex * pixelSize + origin.x,
+          relativeRowIndex * pixelSize + origin.y,
+          pixelSize,
+        );
+      }
+    }
+  }
+
   updateCapturedImageBitmap() {
     // leftTopPoint is a cartesian coordinate
     const capturedPanZoomValue = {
@@ -614,48 +696,13 @@ export default class DataLayer extends BaseLayer {
     }
 
     fakeCtx.save();
-    for (const i of allRowKeys) {
-      for (const j of allColumnKeys) {
-        const rowIndex = i;
-        const columnIndex = j;
-        const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
-        const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
-        if (
-          relativeRowIndex === undefined ||
-          relativeColumnIndex === undefined
-        ) {
-          continue;
-        }
-        const color = this.layers
-          .slice()
-          .reverse()
-          .reduce((acc, layer) => {
-            if (layer.getIsVisible() === false) {
-              return acc;
-            }
-            const layerColor = layer
-              .getData()
-              .get(rowIndex)
-              ?.get(columnIndex)?.color;
-            if (layerColor) {
-              return layerColor;
-            }
-            return acc;
-          }, "");
-
-        if (!color) {
-          continue;
-        }
-        fakeCtx.fillStyle = color;
-
-        fakeCtx.fillRect(
-          relativeColumnIndex * squareLength * this.dpr,
-          relativeRowIndex * squareLength * this.dpr,
-          squareLength * this.dpr,
-          squareLength * this.dpr,
-        );
-      }
-    }
+    this.drawVisiblePixels(
+      fakeCtx,
+      allRowKeys,
+      allColumnKeys,
+      squareLength * this.dpr,
+      { x: 0, y: 0 },
+    );
     fakeCtx.restore();
     this.capturedImageBitmapScale = capturedPanZoomValue.scale;
     this.capturedImageBitmap = canvas.transferToImageBitmap();
@@ -696,48 +743,13 @@ export default class DataLayer extends BaseLayer {
     }
 
     ctx.save();
-    for (const i of allRowKeys) {
-      for (const j of allColumnKeys) {
-        const rowIndex = i;
-        const columnIndex = j;
-        const relativeRowIndex = this.rowKeyOrderMap.get(rowIndex);
-        const relativeColumnIndex = this.columnKeyOrderMap.get(columnIndex);
-        if (
-          relativeRowIndex === undefined ||
-          relativeColumnIndex === undefined
-        ) {
-          continue;
-        }
-        const color = this.layers
-          .slice()
-          .reverse()
-          .reduce((acc, layer) => {
-            if (layer.getIsVisible() === false) {
-              return acc;
-            }
-            const layerColor = layer
-              .getData()
-              .get(rowIndex)
-              ?.get(columnIndex)?.color;
-            if (layerColor) {
-              return layerColor;
-            }
-            return acc;
-          }, "");
-
-        if (!color) {
-          continue;
-        }
-        ctx.fillStyle = color;
-
-        ctx.fillRect(
-          relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-          relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-          squareLength,
-          squareLength,
-        );
-      }
-    }
+    this.drawVisiblePixels(
+      ctx,
+      allRowKeys,
+      allColumnKeys,
+      squareLength,
+      correctedLeftTopScreenPoint,
+    );
     ctx.restore();
     return {
       rowKeys: allRowKeys,

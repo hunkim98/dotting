@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 
-import { BRUSH_PATTERN_ELEMENT } from "../../src";
+import { BrushPattern } from "../../src";
 import Dotting, { DottingRef } from "../../src/components/Dotting";
 import useBrush from "../../src/hooks/useBrush";
 
@@ -15,11 +15,14 @@ const ChangeBrushPattern = () => {
     [],
   );
   const [selectedPatternIndex, setSelectedPatternIndex] = useState<number>(0);
-  const patterns: Array<Array<Array<BRUSH_PATTERN_ELEMENT>>> = useMemo<
-    Array<Array<Array<BRUSH_PATTERN_ELEMENT>>>
-  >(() => {
+  const patterns: Array<BrushPattern> = useMemo<Array<BrushPattern>>(() => {
     return [
       [[1]],
+      [
+        [0, 0.35, 0],
+        [0.35, 1, 0.35],
+        [0, 0.35, 0],
+      ],
       [
         [0, 1, 0],
         [1, 1, 1],

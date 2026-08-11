@@ -15,7 +15,9 @@ export class PixelChangeRecords {
     string,
     {
       color: string;
+      alpha?: number;
       previousColor: string;
+      previousAlpha?: number;
     }
   >;
 
@@ -32,7 +34,9 @@ export class PixelChangeRecords {
           mostRecentRawChange.rowIndex === pixel.rowIndex &&
           mostRecentRawChange.columnIndex === pixel.columnIndex &&
           mostRecentRawChange.color === pixel.color &&
-          mostRecentRawChange.previousColor === pixel.previousColor
+          mostRecentRawChange.alpha === pixel.alpha &&
+          mostRecentRawChange.previousColor === pixel.previousColor &&
+          mostRecentRawChange.previousAlpha === pixel.previousAlpha
         )
       ) {
         this.rawChanges.push(pixel);
@@ -41,19 +45,32 @@ export class PixelChangeRecords {
       this.rawChanges.push(pixel);
     }
 
-    const { rowIndex, columnIndex, color, previousColor } = pixel;
+    const {
+      rowIndex,
+      columnIndex,
+      color,
+      alpha,
+      previousColor,
+      previousAlpha,
+    } = pixel;
     const pixelId = generatePixelId(rowIndex, columnIndex);
     if (!this.effectiveChangesMap.has(pixelId)) {
       this.effectiveChangesMap.set(pixelId, {
         color,
+        alpha,
         previousColor,
+        previousAlpha,
       });
     } else {
       const originalPreviousColor =
         this.effectiveChangesMap.get(pixelId).previousColor;
+      const originalPreviousAlpha =
+        this.effectiveChangesMap.get(pixelId).previousAlpha;
       this.effectiveChangesMap.set(pixelId, {
         color,
+        alpha,
         previousColor: originalPreviousColor,
+        previousAlpha: originalPreviousAlpha,
       });
     }
   }
@@ -82,7 +99,9 @@ export class PixelChangeRecords {
         rowIndex: rowIndex,
         columnIndex: columnIndex,
         color: item.color,
+        alpha: item.alpha,
         previousColor: item.previousColor,
+        previousAlpha: item.previousAlpha,
       });
     });
     return result;

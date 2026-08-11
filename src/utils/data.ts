@@ -83,7 +83,7 @@ export const extractColoredPixelsFromRow = (
     const [key, pixel] = columnData;
     if (pixel.color) {
       pixelModifyItems.push({
-        color: pixel.color,
+        ...pixel,
         rowIndex: rowIndex,
         columnIndex: key,
       });
@@ -102,9 +102,9 @@ export const extractColoredPixelsFromColumn = (
     const row = rowData[1];
     if (row.get(columnIndex)!.color) {
       pixelModifyItems.push({
+        ...row.get(columnIndex)!,
         rowIndex: rowIndex,
         columnIndex: columnIndex,
-        color: row.get(columnIndex)!.color,
       });
     }
   });

@@ -1,4 +1,5 @@
 import { DottingData, PixelModifyItem } from "../components/Canvas/types";
+import { createPixelData } from "../utils/alpha";
 import {
   getColumnCountFromData,
   getGridIndicesFromData,
@@ -35,7 +36,10 @@ export class DottingDataLayer extends Observable<DottingData> {
       for (let j = 0; j < data[i].length; j++) {
         this.data
           .get(topRowIndex + i)!
-          .set(leftColumnIndex + j, { color: data[i][j].color });
+          .set(
+            leftColumnIndex + j,
+            createPixelData(data[i][j].color, data[i][j].alpha),
+          );
       }
     }
     this.rowKeys = new Set(this.data.keys());
@@ -126,7 +130,10 @@ export class DottingDataLayer extends Observable<DottingData> {
         previousPixels.push({
           rowIndex: i,
           columnIndex: j,
-          color: this.data.get(i)!.get(j)!.color,
+          ...createPixelData(
+            this.data.get(i)!.get(j)!.color,
+            this.data.get(i)!.get(j)!.alpha,
+          ),
         });
         newPixels.push({
           rowIndex: i,
@@ -178,7 +185,7 @@ export class DottingDataLayer extends Observable<DottingData> {
         rowData.push({
           rowIndex,
           columnIndex,
-          color: column.color,
+          ...createPixelData(column.color, column.alpha),
         });
       });
       data.push(rowData);

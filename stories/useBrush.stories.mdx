@@ -9,6 +9,7 @@ import Repo from "./assets/repo.svg";
 import StackAlt from "./assets/stackalt.svg";
 import Dotting from "../src/components/Dotting";
 import {
+  ChangeBrushAlpha,
   ChangeBrushColor,
   ChangeBrushTool,
   ChangeBrushPattern,
@@ -206,7 +207,7 @@ td input:focus {
 
 # `useBrush`
 
-With `useBrush`, you can change the brush color and mode.
+With `useBrush`, you can change the brush color, alpha, pattern, and mode.
 
 #### Features provided by `useBrush`
 
@@ -229,6 +230,11 @@ With `useBrush`, you can change the brush color and mode.
       <td>`string`</td>
     </tr>
     <tr>
+      <td>`changeBrushAlpha(alpha: number)`</td>
+      <td>Changes the alpha applied to newly painted pixels. Values are clamped between `0` (transparent) and `1` (opaque).</td>
+      <td>`number`</td>
+    </tr>
+    <tr>
       <td>`changeBrushTool(brushTool: BrushTool)`</td>
       <td>Allows you to change the brush mode to `DOT`, `ERASER`, `PAINT_BUCKET`, `SELECT`, or `NONE`</td>
       <td>
@@ -245,14 +251,14 @@ With `useBrush`, you can change the brush color and mode.
       </td>
     </tr>
     <tr>
-      <td>`changeBrushPattern(brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>>)`</td>
-      <td>Allows you to change the brush pattern (the parameter should be a square array)</td>
+      <td>`changeBrushPattern(brushPattern: BrushPattern)`</td>
+      <td>Allows you to change the brush pattern. Each value is an alpha multiplier from `0` (empty) to `1` (fully opaque), and the parameter should be a square array.</td>
       <td>
-        `Array<Array<BRUSH_PATTERN_ELEMENT>>`
+        `Array<Array<number>>`
         ```ts
         export enum BRUSH_PATTERN_ELEMENT {
           EMPTY = 0,
-          FILLED = 1,
+          FILL = 1,
         }
         ```
       </td>
@@ -269,9 +275,14 @@ With `useBrush`, you can change the brush color and mode.
       <td>
       </td>
     </tr>
+    <tr>
+      <td>`brushAlpha`</td>
+      <td>The current brush alpha as a number from `0` to `1`.</td>
+      <td></td>
+    </tr>
      <tr>
       <td>`brushPattern`</td>
-      <td>Allows you to know the current brush pattern. Variable type is `Array<Array<BRUSH_PATTERN_ELEMENT>>`</td>
+      <td>Allows you to know the current brush pattern. Variable type is `BrushPattern` (`Array<Array<number>>`).</td>
       <td>
       </td>
     </tr>
@@ -292,9 +303,15 @@ With `changeBrushTool` method, you can change the brush tool.
 
 <ChangeBrushTool />
 
-#### 3. Change Brush Pattern Example `changeBrushPattern(brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>>)`
+#### 3. Change Brush Alpha Example `changeBrushAlpha(alpha: number)`
 
-With `changeBrushPattern` method, you can change the brush tool.
+Use `changeBrushAlpha` to expose an opacity slider or another alpha control in your editor.
+
+<ChangeBrushAlpha />
+
+#### 4. Change Brush Pattern Example `changeBrushPattern(brushPattern: BrushPattern)`
+
+With `changeBrushPattern`, you can use binary patterns or fractional alpha values for soft-edged brushes.
 
 <ChangeBrushPattern />
 

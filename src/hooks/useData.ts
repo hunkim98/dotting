@@ -35,7 +35,7 @@ const useData = (ref: MutableRefObject<DottingRef | null>) => {
             row.push({
               rowIndex: i,
               columnIndex: j,
-              color: pixel.color,
+              ...pixel,
             });
           }
         }

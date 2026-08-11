@@ -19,6 +19,8 @@ export type PanZoom = {
 
 export type PixelData = {
   color: string;
+  /** Alpha multiplier from 0 (transparent) to 1 (opaque). Defaults to 1. */
+  alpha?: number;
 };
 
 export interface ImageDownloadOptions {
@@ -28,14 +30,14 @@ export interface ImageDownloadOptions {
 
 export type DottingData = Map<number, Map<number, PixelData>>;
 
-export interface PixelModifyItem {
+export interface PixelModifyItem extends PixelData {
   rowIndex: number;
   columnIndex: number;
-  color: string;
 }
 
 export interface ColorChangeItem extends PixelModifyItem {
   previousColor: string;
+  previousAlpha?: number;
 }
 
 export enum CanvasEvents {
@@ -106,8 +108,9 @@ export type CanvasStrokeEndHandler = (params: CanvasStrokeEndParams) => void;
 
 export type CanvasBrushChangeParams = {
   brushColor: string;
+  brushAlpha: number;
   brushTool: BrushTool;
-  brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>>;
+  brushPattern: BrushPattern;
 };
 
 export type CanvasBrushChangeHandler = (
@@ -153,14 +156,21 @@ export type GridIndices = {
 export type SelectAreaRange = {
   startWorldPos: Coord;
   endWorldPos: Coord;
-  startPixelIndex: Omit<PixelModifyItem, "color">;
-  endPixelIndex: Omit<PixelModifyItem, "color">;
+  startPixelIndex: Pick<PixelModifyItem, "rowIndex" | "columnIndex">;
+  endPixelIndex: Pick<PixelModifyItem, "rowIndex" | "columnIndex">;
 };
 
 export enum BRUSH_PATTERN_ELEMENT {
   FILL = 1,
   EMPTY = 0,
 }
+
+/**
+ * Each brush pattern value is coverage between 0 (empty) and 1 (fully
+ * covered), multiplied by the current brush alpha. The BRUSH_PATTERN_ELEMENT
+ * enum remains available for binary patterns.
+ */
+export type BrushPattern = Array<Array<number>>;
 
 export interface LayerProps {
   id: string;
