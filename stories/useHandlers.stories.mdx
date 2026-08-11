@@ -524,7 +524,9 @@ The parameter you should pass to the listener is defiend as below
 ```ts
 export type CanvasBrushChangeParams = {
   brushColor: string;
+  brushAlpha: number;
   brushTool: BrushTool;
+  brushPattern: BrushPattern;
 };
 
 export type CanvasBrushChangeHandler = (

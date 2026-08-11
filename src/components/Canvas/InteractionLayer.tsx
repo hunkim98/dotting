@@ -14,6 +14,7 @@ import {
 } from "./config";
 import {
   BRUSH_PATTERN_ELEMENT,
+  BrushPattern,
   ColorChangeItem,
   Coord,
   DottingData,
@@ -22,6 +23,7 @@ import {
   SelectAreaRange,
 } from "./types";
 import { PixelChangeRecords } from "../../helpers/PixelChangeRecords";
+import { compactAlpha, normalizeAlpha } from "../../utils/alpha";
 import {
   addColumnToData,
   addRowToData,
@@ -79,9 +81,10 @@ export default class InteractionLayer extends BaseLayer {
     "startPixelIndex" | "endPixelIndex"
   > | null = null;
 
-  private brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>> = [
+  private brushPattern: BrushPattern = [
     [BRUSH_PATTERN_ELEMENT.FILL],
   ];
+  private brushAlpha = 1;
 
   private selectedArea: SelectAreaRange | null = null;
 
@@ -155,8 +158,12 @@ export default class InteractionLayer extends BaseLayer {
     this.previewPoints = points;
   }
 
-  setBrushPattern(pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) {
+  setBrushPattern(pattern: BrushPattern) {
     this.brushPattern = pattern;
+  }
+
+  setBrushAlpha(alpha: number) {
+    this.brushAlpha = normalizeAlpha(alpha);
   }
 
   setGridSquareLength(length: number) {
@@ -1288,6 +1295,7 @@ export default class InteractionLayer extends BaseLayer {
         continue;
       }
       ctx.fillStyle = item.color;
+      ctx.globalAlpha = normalizeAlpha(item.alpha);
       ctx.fillRect(
         relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
         relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
@@ -1302,6 +1310,7 @@ export default class InteractionLayer extends BaseLayer {
         continue;
       }
       ctx.fillStyle = item.color;
+      ctx.globalAlpha = normalizeAlpha(item.alpha);
       ctx.fillRect(
         relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
         relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
@@ -1377,6 +1386,7 @@ export default class InteractionLayer extends BaseLayer {
       // this is the color of the pixel before the user started moving the selected pixels
       const color = item.previousColor;
       ctx.fillStyle = color;
+      ctx.globalAlpha = normalizeAlpha(item.previousAlpha);
       const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
       const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
       if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
@@ -1407,6 +1417,7 @@ export default class InteractionLayer extends BaseLayer {
     for (const item of this.extendingSelectedPixels) {
       const color = item.previousColor;
       ctx.fillStyle = color;
+      ctx.globalAlpha = normalizeAlpha(item.previousAlpha);
       const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
       const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
       if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
@@ -1612,7 +1623,7 @@ export default class InteractionLayer extends BaseLayer {
     ctx.save();
     for (const item of this.indicatorPixels) {
       ctx.fillStyle = item.color;
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = normalizeAlpha(item.alpha) * 0.5;
       const relativeRowIndex = this.rowKeyOrderMap.get(item.rowIndex);
       const relativeColumnIndex = this.columnKeyOrderMap.get(item.columnIndex);
       if (relativeRowIndex === undefined || relativeColumnIndex === undefined) {
@@ -1651,11 +1662,11 @@ export default class InteractionLayer extends BaseLayer {
     const brushPatternCenterRowIndex = Math.floor(brushPatternHeight / 2);
     const brushPatternCenterColumnIndex = Math.floor(brushPatternWidth / 2);
     ctx.save();
-    ctx.globalAlpha = 0.5;
     for (let i = 0; i < brushPatternHeight; i++) {
       for (let j = 0; j < brushPatternWidth; j++) {
         const brushPatternItem = this.brushPattern[i][j];
-        if (brushPatternItem === 0) {
+        const brushAlpha = normalizeAlpha(brushPatternItem);
+        if (brushAlpha === 0) {
           continue;
         }
         const relativeRowIndex = this.rowKeyOrderMap.get(
@@ -1671,6 +1682,7 @@ export default class InteractionLayer extends BaseLayer {
           continue;
         }
         ctx.fillStyle = this.hoveredPixel.color;
+        ctx.globalAlpha = brushAlpha * this.brushAlpha * 0.5;
         ctx.fillRect(
           relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
           relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
@@ -1775,6 +1787,7 @@ export default class InteractionLayer extends BaseLayer {
     startPoint: Coord,
     endPoint: Coord,
     color: string,
+    alpha: number,
     currentData: DottingData,
   ) {
     if (!currentData) return;
@@ -1782,6 +1795,7 @@ export default class InteractionLayer extends BaseLayer {
     this.drawPoints(
       this.getLinePoints(startPoint, endPoint, currentData),
       color,
+      alpha,
       currentData
     );
   }
@@ -1790,6 +1804,7 @@ export default class InteractionLayer extends BaseLayer {
     startPoint: Coord,
     endPoint: Coord,
     color: string,
+    alpha: number,
     currentData: DottingData,
     filled: boolean
   ) {
@@ -1798,6 +1813,7 @@ export default class InteractionLayer extends BaseLayer {
     this.drawPoints(
       this.getRectanglePoints(startPoint, endPoint, currentData, filled),
       color,
+      alpha,
       currentData
     );
   }
@@ -1806,6 +1822,7 @@ export default class InteractionLayer extends BaseLayer {
     startPoint: Coord,
     endPoint: Coord,
     color: string,
+    alpha: number,
     currentData: DottingData,
     filled: boolean
   ) {
@@ -1814,19 +1831,28 @@ export default class InteractionLayer extends BaseLayer {
     this.drawPoints(
       this.getEllipsePoints(startPoint, endPoint, currentData, filled),
       color,
+      alpha,
       currentData
     );
   }
 
-  protected drawPoints(points: Index[], color, currentData: DottingData,) {
+  protected drawPoints(
+    points: Index[],
+    color: string,
+    alpha: number,
+    currentData: DottingData,
+  ) {
     for (const point of points) {
-      const previousColor =
-        currentData.get(point.rowIndex)?.get(point.columnIndex)?.color || "";
+      const previousPixel = currentData
+        .get(point.rowIndex)
+        ?.get(point.columnIndex);
       this.addToStrokePixelRecords(CurrentDeviceUserId, {
         rowIndex: point.rowIndex,
         columnIndex: point.columnIndex,
-        color: color,
-        previousColor: previousColor,
+        color,
+        alpha: compactAlpha(alpha),
+        previousColor: previousPixel?.color || "",
+        previousAlpha: previousPixel?.alpha,
       });
     }
   }
@@ -1836,7 +1862,7 @@ export default class InteractionLayer extends BaseLayer {
 
     const ctx = this.ctx;
     ctx.save();
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = this.brushAlpha * 0.5;
     ctx.fillStyle = this.hoveredPixel ? this.hoveredPixel.color : "#FF0000";
 
     for (const point of this.previewPoints) {

@@ -1,6 +1,7 @@
 import { fireEvent } from "@testing-library/react";
 
 import Editor from "../../components/Canvas/Editor";
+import { BrushTool } from "../../components/Canvas/types";
 import { FakeMouseEvent } from "../../utils/testUtils";
 
 describe("test for drawing interaction", () => {
@@ -207,5 +208,66 @@ describe("test for drawing interaction", () => {
       });
     });
     expect(pixels.length).toEqual(0);
+  });
+
+  it("stores brush alpha separately from color", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    const pixelCenter = {
+      offsetX:
+        canvasElement.width / 2 -
+        (gridSquareLength * columnCount) / 2 +
+        gridSquareLength / 2,
+      offsetY:
+        canvasElement.height / 2 -
+        (gridSquareLength * rowCount) / 2 +
+        gridSquareLength / 2,
+    };
+
+    editor.setBrushColor("#336699");
+    editor.setBrushAlpha(0.5);
+    editor.setBrushPattern([[0.5]]);
+    fireEvent(canvasElement, new FakeMouseEvent("mousedown", pixelCenter));
+    fireEvent(canvasElement, new FakeMouseEvent("mouseup", pixelCenter));
+
+    const paintedPixel = editor.getLayers()[0].data.get(0)?.get(0);
+    expect(paintedPixel?.color).toBe("#336699");
+    expect(paintedPixel?.alpha).toBe(0.25);
+
+    editor.undo();
+    expect(editor.getLayers()[0].data.get(0)?.get(0)).toEqual({ color: "" });
+
+    editor.redo();
+    expect(editor.getLayers()[0].data.get(0)?.get(0)).toEqual({
+      color: "#336699",
+      alpha: 0.25,
+    });
+  });
+
+  it("applies brush alpha with the paint bucket", () => {
+    const columnCount = editor.getColumnCount();
+    const rowCount = editor.getRowCount();
+    const gridSquareLength = editor.getGridSquareLength();
+    const pixelCenter = {
+      offsetX:
+        canvasElement.width / 2 -
+        (gridSquareLength * columnCount) / 2 +
+        gridSquareLength / 2,
+      offsetY:
+        canvasElement.height / 2 -
+        (gridSquareLength * rowCount) / 2 +
+        gridSquareLength / 2,
+    };
+
+    editor.setBrushTool(BrushTool.PAINT_BUCKET);
+    editor.setBrushAlpha(0.3);
+    fireEvent(canvasElement, new FakeMouseEvent("mousedown", pixelCenter));
+    fireEvent(canvasElement, new FakeMouseEvent("mouseup", pixelCenter));
+
+    const pixels = editor
+      .getLayersAsArray()[0]
+      .data.reduce((allPixels, row) => allPixels.concat(row), []);
+    expect(pixels.every(pixel => pixel.alpha === 0.3)).toBe(true);
   });
 });

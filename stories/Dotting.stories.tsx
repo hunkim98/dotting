@@ -100,6 +100,11 @@ const DottingComponentArgTypes: KeysEnum<
       You can also use `useBrush` hook to change the brush color later.",
     disable: false,
   }),
+  brushAlpha: generateComponentControl<DottingProps["brushAlpha"]>({
+    defaultValue: 1,
+    description: "The alpha applied to newly painted pixels, from 0 to 1.",
+    disable: false,
+  }),
   indicatorData: generateComponentControl<DottingProps["indicatorData"]>({
     description: "The indicator data that you want to draw on the canvas.",
     disable: true,
@@ -213,6 +218,7 @@ export const Dotting = (args: DottingProps) => {
       isPanZoomable={args.isPanZoomable}
       isGridFixed={args.isGridFixed}
       brushColor={args.brushColor}
+      brushAlpha={args.brushAlpha}
       brushTool={args.brushTool}
       indicatorData={[]}
       isInteractionApplicable={args.isInteractionApplicable}

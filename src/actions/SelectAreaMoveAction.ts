@@ -31,7 +31,9 @@ export class SelectAreaMoveAction extends Action {
       this.data.map(item => ({
         ...item,
         previousColor: item.color,
+        previousAlpha: item.alpha,
         color: item.previousColor,
+        alpha: item.previousAlpha,
       })),
       this.newSelectedArea,
       this.previousSelectedArea,

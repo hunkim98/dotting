@@ -3,6 +3,7 @@ import { MutableRefObject, useCallback, useEffect, useState } from "react";
 import useHandlers from "./useHandlers";
 import {
   BRUSH_PATTERN_ELEMENT,
+  BrushPattern,
   BrushTool,
   CanvasBrushChangeParams,
 } from "../components/Canvas/types";
@@ -11,20 +12,23 @@ import { DottingRef } from "../components/Dotting";
 const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
   const [brushTool, setBrushTool] = useState<BrushTool>(BrushTool.DOT);
   const [brushColor, setBrushColor] = useState<string>("");
-  const [brushPattern, setBrushPattern] = useState<
-    Array<Array<BRUSH_PATTERN_ELEMENT>>
-  >([[BRUSH_PATTERN_ELEMENT.FILL]]);
+  const [brushAlpha, setBrushAlpha] = useState(1);
+  const [brushPattern, setBrushPattern] = useState<BrushPattern>([
+    [BRUSH_PATTERN_ELEMENT.FILL],
+  ]);
   const { addBrushChangeListener, removeBrushChangeListener } =
     useHandlers(ref);
 
   useEffect(() => {
     const listener = ({
       brushColor,
+      brushAlpha,
       brushTool,
       brushPattern,
     }: CanvasBrushChangeParams) => {
       setBrushTool(brushTool);
       setBrushColor(brushColor);
+      setBrushAlpha(brushAlpha);
       setBrushPattern(brushPattern);
     };
     addBrushChangeListener(listener);
@@ -40,8 +44,15 @@ const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
   );
 
   const changeBrushPattern = useCallback(
-    (brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) => {
+    (brushPattern: BrushPattern) => {
       ref.current?.changeBrushPattern(brushPattern);
+    },
+    [ref],
+  );
+
+  const changeBrushAlpha = useCallback(
+    (brushAlpha: number) => {
+      ref.current?.changeBrushAlpha(brushAlpha);
     },
     [ref],
   );
@@ -55,10 +66,12 @@ const useBrush = (ref: MutableRefObject<DottingRef | null>) => {
 
   return {
     changeBrushColor,
+    changeBrushAlpha,
     changeBrushTool,
     changeBrushPattern,
     brushTool,
     brushColor,
+    brushAlpha,
     brushPattern,
   };
 };

@@ -563,14 +563,13 @@ export const getOverlappingPixelIndicesForModifiedPixels = (
         j += gridSquareLength
       ) {
         const pixelIndex = {
+          ...item,
           rowIndex: Math.round(
             originPixelIndex.rowIndex + Math.floor(j / gridSquareLength),
           ),
           columnIndex: Math.round(
             originPixelIndex.columnIndex + Math.floor(i / gridSquareLength),
           ),
-          color: item.color,
-          previousColor: item.previousColor,
         };
         // console.log(originPixelIndex, "originPixelIndex");
         // console.log(

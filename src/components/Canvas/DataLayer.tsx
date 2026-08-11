@@ -14,6 +14,11 @@ import {
 } from "./types";
 import { DottingDataLayer } from "../../helpers/DottingDataLayer";
 import {
+  createPixelData,
+  normalizeAlpha,
+  normalizeOptionalAlpha,
+} from "../../utils/alpha";
+import {
   extractColoredPixelsFromColumn,
   extractColoredPixelsFromRow,
   getColumnCountFromData,
@@ -320,18 +325,28 @@ export default class DataLayer extends BaseLayer {
       throw new Error("Layer not found");
     }
     for (const item of data) {
-      const { rowIndex, columnIndex, color } = item;
+      const { rowIndex, columnIndex, color, alpha } = item;
+      const normalizedAlpha = normalizeOptionalAlpha(alpha);
       if (
         layer.getData().get(rowIndex) &&
         layer.getData().get(rowIndex)!.get(columnIndex)
       ) {
+        const previousPixel = layer
+          .getData()
+          .get(rowIndex)!
+          .get(columnIndex)!;
         modifiedPixels.push({
           rowIndex,
           columnIndex,
           color,
-          previousColor: layer.getData().get(rowIndex)!.get(columnIndex)!.color,
+          alpha: normalizedAlpha,
+          previousColor: previousPixel.color,
+          previousAlpha: previousPixel.alpha,
         });
-        layer.getData().get(rowIndex)!.set(columnIndex, { color });
+        layer
+          .getData()
+          .get(rowIndex)!
+          .set(columnIndex, createPixelData(color, normalizedAlpha));
       }
     }
     return modifiedPixels;
@@ -396,16 +411,26 @@ export default class DataLayer extends BaseLayer {
     }
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
-      const previousColor = layer
+      const alpha = normalizeOptionalAlpha(change.alpha);
+      const previousPixel = layer
         .getData()
         .get(change.rowIndex)!
-        .get(change.columnIndex)!.color;
+        .get(change.columnIndex)!;
       const color = change.color;
       layer
         .getData()
         .get(change.rowIndex)!
-        .set(change.columnIndex, { color: change.color });
-      dataForAction.push({ ...change, color, previousColor });
+        .set(
+          change.columnIndex,
+          createPixelData(change.color, alpha),
+        );
+      dataForAction.push({
+        ...change,
+        color,
+        alpha,
+        previousColor: previousPixel.color,
+        previousAlpha: previousPixel.alpha,
+      });
     }
     return {
       dataForAction,
@@ -429,16 +454,22 @@ export default class DataLayer extends BaseLayer {
     }
     const dataForAction: Array<ColorChangeItem> = [];
     for (const change of data) {
-      const previousColor = layer
+      const previousPixel = layer
         .getData()
         .get(change.rowIndex)!
-        .get(change.columnIndex)!.color;
+        .get(change.columnIndex)!;
       const color = "";
       layer
         .getData()
         .get(change.rowIndex)!
         .set(change.columnIndex, { color: "" });
-      dataForAction.push({ ...change, color, previousColor });
+      dataForAction.push({
+        ...change,
+        color,
+        alpha: undefined,
+        previousColor: previousPixel.color,
+        previousAlpha: previousPixel.alpha,
+      });
     }
     return { dataForAction };
   }
@@ -613,6 +644,9 @@ export default class DataLayer extends BaseLayer {
       fakeCtx.restore();
     }
 
+    const visibleLayers = this.layers
+      .filter(layer => layer.getIsVisible())
+      .reverse();
     fakeCtx.save();
     for (const i of allRowKeys) {
       for (const j of allColumnKeys) {
@@ -626,34 +660,22 @@ export default class DataLayer extends BaseLayer {
         ) {
           continue;
         }
-        const color = this.layers
-          .slice()
-          .reverse()
-          .reduce((acc, layer) => {
-            if (layer.getIsVisible() === false) {
-              return acc;
-            }
-            const layerColor = layer
-              .getData()
-              .get(rowIndex)
-              ?.get(columnIndex)?.color;
-            if (layerColor) {
-              return layerColor;
-            }
-            return acc;
-          }, "");
+        for (const layer of visibleLayers) {
+          const pixel = layer
+            .getData()
+            .get(rowIndex)
+            ?.get(columnIndex);
+          if (!pixel?.color) continue;
 
-        if (!color) {
-          continue;
+          fakeCtx.fillStyle = pixel.color;
+          fakeCtx.globalAlpha = normalizeAlpha(pixel.alpha);
+          fakeCtx.fillRect(
+            relativeColumnIndex * squareLength * this.dpr,
+            relativeRowIndex * squareLength * this.dpr,
+            squareLength * this.dpr,
+            squareLength * this.dpr,
+          );
         }
-        fakeCtx.fillStyle = color;
-
-        fakeCtx.fillRect(
-          relativeColumnIndex * squareLength * this.dpr,
-          relativeRowIndex * squareLength * this.dpr,
-          squareLength * this.dpr,
-          squareLength * this.dpr,
-        );
       }
     }
     fakeCtx.restore();
@@ -695,6 +717,9 @@ export default class DataLayer extends BaseLayer {
       ctx.restore();
     }
 
+    const visibleLayers = this.layers
+      .filter(layer => layer.getIsVisible())
+      .reverse();
     ctx.save();
     for (const i of allRowKeys) {
       for (const j of allColumnKeys) {
@@ -708,34 +733,22 @@ export default class DataLayer extends BaseLayer {
         ) {
           continue;
         }
-        const color = this.layers
-          .slice()
-          .reverse()
-          .reduce((acc, layer) => {
-            if (layer.getIsVisible() === false) {
-              return acc;
-            }
-            const layerColor = layer
-              .getData()
-              .get(rowIndex)
-              ?.get(columnIndex)?.color;
-            if (layerColor) {
-              return layerColor;
-            }
-            return acc;
-          }, "");
+        for (const layer of visibleLayers) {
+          const pixel = layer
+            .getData()
+            .get(rowIndex)
+            ?.get(columnIndex);
+          if (!pixel?.color) continue;
 
-        if (!color) {
-          continue;
+          ctx.fillStyle = pixel.color;
+          ctx.globalAlpha = normalizeAlpha(pixel.alpha);
+          ctx.fillRect(
+            relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
+            relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
+            squareLength,
+            squareLength,
+          );
         }
-        ctx.fillStyle = color;
-
-        ctx.fillRect(
-          relativeColumnIndex * squareLength + correctedLeftTopScreenPoint.x,
-          relativeRowIndex * squareLength + correctedLeftTopScreenPoint.y,
-          squareLength,
-          squareLength,
-        );
       }
     }
     ctx.restore();

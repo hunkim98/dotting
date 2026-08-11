@@ -15,7 +15,7 @@ import GridLayer from "./GridLayer";
 import InteractionLayer from "./InteractionLayer";
 import {
   AddGridIndicesParams,
-  BRUSH_PATTERN_ELEMENT,
+  BrushPattern,
   BrushTool,
   CanvasBrushChangeParams,
   CanvasDataChangeParams,
@@ -45,6 +45,11 @@ import {
 } from "../../actions/LayerCreateDeleteAction";
 import { LayerReorderAction } from "../../actions/LayerReorderAction";
 import { SelectAreaMoveAction } from "../../actions/SelectAreaMoveAction";
+import {
+  compactAlpha,
+  createPixelData,
+  normalizeAlpha,
+} from "../../utils/alpha";
 import {
   createColumnKeyOrderMapfromData,
   createRowKeyOrderMapfromData,
@@ -120,6 +125,7 @@ export default class Editor extends EventDispatcher {
   };
   private dpr = 1;
   private brushColor = "#FF0000";
+  private brushAlpha = 1;
   private gridSquareLength: number = DefaultGridSquareLength;
   private maxHistoryCount = 100;
   private undoHistory: Array<Action> = [];
@@ -321,6 +327,7 @@ export default class Editor extends EventDispatcher {
   emitCurrentBrushTool() {
     this.emitBrushChangeEvent({
       brushColor: this.brushColor,
+      brushAlpha: this.brushAlpha,
       brushTool: this.brushTool,
       brushPattern: this.interactionLayer.getBrushPattern(),
     });
@@ -399,10 +406,11 @@ export default class Editor extends EventDispatcher {
     this.emit(CanvasEvents.LAYER_CHANGE, params);
   }
 
-  setBrushPattern(pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) {
+  setBrushPattern(pattern: BrushPattern) {
     this.interactionLayer.setBrushPattern(pattern);
     this.emitBrushChangeEvent({
       brushColor: this.brushColor,
+      brushAlpha: this.brushAlpha,
       brushTool: this.brushTool,
       brushPattern: this.interactionLayer.getBrushPattern(),
     });
@@ -519,6 +527,7 @@ export default class Editor extends EventDispatcher {
     }
     this.emitBrushChangeEvent({
       brushColor: this.brushColor,
+      brushAlpha: this.brushAlpha,
       brushTool: this.brushTool,
       brushPattern: this.interactionLayer.getBrushPattern(),
     });
@@ -567,6 +576,7 @@ export default class Editor extends EventDispatcher {
     this.brushColor = color;
     this.emitBrushChangeEvent({
       brushColor: this.brushColor,
+      brushAlpha: this.brushAlpha,
       brushTool: this.brushTool,
       brushPattern: this.interactionLayer.getBrushPattern(),
     });
@@ -586,8 +596,28 @@ export default class Editor extends EventDispatcher {
     }
   }
 
+  changeBrushAlpha(alpha: number) {
+    this.setBrushAlpha(alpha);
+    this.emitBrushChangeEvent({
+      brushColor: this.brushColor,
+      brushAlpha: this.brushAlpha,
+      brushTool: this.brushTool,
+      brushPattern: this.interactionLayer.getBrushPattern(),
+    });
+  }
+
+  setBrushAlpha(alpha: number) {
+    this.brushAlpha = normalizeAlpha(alpha);
+    this.interactionLayer.setBrushAlpha(this.brushAlpha);
+    this.renderInteractionLayer();
+  }
+
   getBrushColor() {
     return this.brushColor;
+  }
+
+  getBrushAlpha() {
+    return this.brushAlpha;
   }
 
   getBrushPattern() {
@@ -1045,7 +1075,10 @@ export default class Editor extends EventDispatcher {
       for (let j = 0; j < data[i].length; j++) {
         newData
           .get(topRowIndex + i)
-          .set(leftColumnIndex + j, { color: data[i][j].color });
+          .set(
+            leftColumnIndex + j,
+            createPixelData(data[i][j].color, data[i][j].alpha),
+          );
       }
     }
     if (layerId === undefined) {
@@ -1452,7 +1485,9 @@ export default class Editor extends EventDispatcher {
       modifiedPixels.map(pixel => ({
         ...pixel,
         color: pixel.previousColor,
+        alpha: pixel.previousAlpha,
         previousColor: pixel.color,
+        previousAlpha: pixel.alpha,
       })),
     );
     this.emitDataChangeEvent({
@@ -1794,7 +1829,7 @@ export default class Editor extends EventDispatcher {
   private drawPixelInInteractionLayer(
     rowIndex: number,
     columnIndex: number,
-    brushPattern: Array<Array<BRUSH_PATTERN_ELEMENT>>,
+    brushPattern: BrushPattern,
   ) {
     const interactionLayer = this.interactionLayer;
     const data = this.dataLayer.getData();
@@ -1806,17 +1841,18 @@ export default class Editor extends EventDispatcher {
       for (let i = 0; i < brushPattern.length; i++) {
         for (let j = 0; j < brushPattern[i].length; j++) {
           const brushPatternItem = brushPattern[i][j];
-          if (brushPatternItem === 0) {
+          if (normalizeAlpha(brushPatternItem) === 0) {
             continue;
           }
-          const previousColor = data
+          const previousPixel = data
             .get(rowIndex + i - brushPatternCenterRowIndex)
-            ?.get(columnIndex + j - brushPatternCenterColumnIndex)?.color;
+            ?.get(columnIndex + j - brushPatternCenterColumnIndex);
           interactionLayer.addToErasedPixelRecords(CurrentDeviceUserId, {
             rowIndex: rowIndex + i - brushPatternCenterRowIndex,
             columnIndex: columnIndex + j - brushPatternCenterColumnIndex,
             color: "",
-            previousColor,
+            previousColor: previousPixel?.color,
+            previousAlpha: previousPixel?.alpha,
           });
         }
       }
@@ -1824,9 +1860,11 @@ export default class Editor extends EventDispatcher {
       for (let i = 0; i < brushPattern.length; i++) {
         for (let j = 0; j < brushPattern[i].length; j++) {
           const brushPatternItem = brushPattern[i][j];
-          if (brushPatternItem === 0) {
+          const patternAlpha = normalizeAlpha(brushPatternItem);
+          if (patternAlpha === 0) {
             continue;
           }
+          const effectiveAlpha = patternAlpha * this.brushAlpha;
           const {
             topRowIndex,
             leftColumnIndex,
@@ -1844,27 +1882,35 @@ export default class Editor extends EventDispatcher {
           ) {
             continue;
           }
-          const previousColor = data
+          const previousPixel = data
             .get(rowIndexToColor)
-            ?.get(columnIndexToColor)?.color;
+            ?.get(columnIndexToColor);
           interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
             rowIndex: rowIndexToColor,
             columnIndex: columnIndexToColor,
             color: this.brushColor,
-            previousColor,
+            alpha: compactAlpha(effectiveAlpha),
+            previousColor: previousPixel?.color,
+            previousAlpha: previousPixel?.alpha,
           });
         }
       }
     } else if (this.brushTool === BrushTool.PAINT_BUCKET) {
       const gridIndices = getGridIndicesFromData(data);
-      const initialSelectedColor = data.get(rowIndex)?.get(columnIndex)?.color;
-      if (initialSelectedColor === this.brushColor) {
+      const initialSelectedPixel = data.get(rowIndex)?.get(columnIndex);
+      if (!initialSelectedPixel) return;
+      if (
+        initialSelectedPixel.color === this.brushColor &&
+        normalizeAlpha(initialSelectedPixel.alpha) === this.brushAlpha
+      ) {
         return;
       }
-      this.colorPixelsArea(initialSelectedColor, gridIndices, {
-        rowIndex,
-        columnIndex,
-      });
+      this.colorPixelsArea(
+        initialSelectedPixel.color,
+        initialSelectedPixel.alpha,
+        gridIndices,
+        { rowIndex, columnIndex },
+      );
     }
     this.renderInteractionLayer();
   }
@@ -2442,6 +2488,7 @@ export default class Editor extends EventDispatcher {
             rowIndex: item.rowIndex,
             columnIndex: item.columnIndex,
             color: item.previousColor,
+            alpha: item.previousAlpha,
           };
         }),
         totalAddedRowIndices,
@@ -2487,6 +2534,7 @@ export default class Editor extends EventDispatcher {
   // this will be only used by the current device user
   private colorPixelsArea(
     initialColor: string,
+    initialAlpha: number | undefined,
     gridIndices: Indices,
     currentIndices: { rowIndex: number; columnIndex: number },
   ): void {
@@ -2506,18 +2554,26 @@ export default class Editor extends EventDispatcher {
       }
 
       const currentPixel = data.get(rowIndex)?.get(columnIndex);
-      if (!currentPixel || currentPixel?.color !== initialColor) {
+      if (
+        !currentPixel ||
+        currentPixel.color !== initialColor ||
+        normalizeAlpha(currentPixel.alpha) !== normalizeAlpha(initialAlpha)
+      ) {
         continue;
       }
       const color = this.brushColor;
-      const previousColor = data.get(rowIndex)!.get(columnIndex)!.color;
-      data.get(rowIndex).get(columnIndex)!.color = color;
+      const alpha = compactAlpha(this.brushAlpha);
+      const previousColor = currentPixel.color;
+      const previousAlpha = currentPixel.alpha;
+      data.get(rowIndex)!.set(columnIndex, createPixelData(color, alpha));
       // paint same color region is recorded in stroked pixels
       interactionLayer.addToStrokePixelRecords(CurrentDeviceUserId, {
         rowIndex,
         columnIndex,
         color,
+        alpha,
         previousColor,
+        previousAlpha,
       });
       [
         { rowIndex: rowIndex - 1, columnIndex },
@@ -2736,12 +2792,13 @@ export default class Editor extends EventDispatcher {
     for (const index of includedPixelsIndices) {
       const rowIndex = index.rowIndex;
       const columnIndex = index.columnIndex;
-      const color = data.get(rowIndex).get(columnIndex)?.color;
-      if (color) {
+      const pixel = data.get(rowIndex).get(columnIndex);
+      if (pixel?.color) {
         selectedAreaPixels.push({
           rowIndex,
           columnIndex,
-          previousColor: color,
+          previousColor: pixel.color,
+          previousAlpha: pixel.alpha,
           color: newColor,
         });
       }
@@ -3092,6 +3149,7 @@ export default class Editor extends EventDispatcher {
               ...dataForAction.map(pixel => ({
                 ...pixel,
                 color: "",
+                alpha: undefined,
               })),
               ...dataForAction,
             ],
@@ -3181,12 +3239,13 @@ export default class Editor extends EventDispatcher {
         for (const index of region.includedPixelsIndices) {
           const rowIndex = index.rowIndex;
           const columnIndex = index.columnIndex;
-          const color = pixelData.get(rowIndex).get(columnIndex)?.color;
-          if (color) {
+          const pixel = pixelData.get(rowIndex).get(columnIndex);
+          if (pixel?.color) {
             regionPixelItems.push({
               rowIndex,
               columnIndex,
-              previousColor: color,
+              previousColor: pixel.color,
+              previousAlpha: pixel.alpha,
               color: "",
             });
           }
@@ -3230,13 +3289,15 @@ export default class Editor extends EventDispatcher {
           item.columnIndex >= leftColumnIndex,
       )
       .map(item => {
-        const previousColor = data
+        const previousPixel = data
           .get(item.rowIndex)
-          .get(item.columnIndex)?.color;
+          .get(item.columnIndex);
         return {
           ...item,
           color: item.previousColor,
-          previousColor,
+          alpha: item.previousAlpha,
+          previousColor: previousPixel?.color,
+          previousAlpha: previousPixel?.alpha,
         };
       });
     const { dataForAction } = this.dataLayer.colorPixels(
@@ -3338,13 +3399,18 @@ export default class Editor extends EventDispatcher {
           item.rowIndex >= topRowIndex &&
           item.columnIndex >= leftColumnIndex,
       )
-      .map(filteredItem => ({
-        ...filteredItem,
-        color: filteredItem.previousColor,
-        previousColor:
-          data.get(filteredItem.rowIndex).get(filteredItem.columnIndex)
-            ?.color || "",
-      }));
+      .map(filteredItem => {
+        const previousPixel = data
+          .get(filteredItem.rowIndex)
+          .get(filteredItem.columnIndex);
+        return {
+          ...filteredItem,
+          color: filteredItem.previousColor,
+          alpha: filteredItem.previousAlpha,
+          previousColor: previousPixel?.color || "",
+          previousAlpha: previousPixel?.alpha,
+        };
+      });
     // ⬇️ this part is for recording the action
     const { dataForAction } = this.dataLayer.colorPixels(
       filteredFinalSelectedAreaPixels,
@@ -3506,6 +3572,7 @@ export default class Editor extends EventDispatcher {
             this.mouseDownWorldPos,
             mouseCartCoord,
             this.brushColor,
+            this.brushAlpha,
             this.dataLayer.getData(),
           );
           break;
@@ -3515,6 +3582,7 @@ export default class Editor extends EventDispatcher {
             this.mouseDownWorldPos,
             mouseCartCoord,
             this.brushColor,
+            this.brushAlpha,
             this.dataLayer.getData(),
             this.brushTool === BrushTool.RECTANGLE_FILLED,
           );
@@ -3525,6 +3593,7 @@ export default class Editor extends EventDispatcher {
             this.mouseDownWorldPos,
             mouseCartCoord,
             this.brushColor,
+            this.brushAlpha,
             this.dataLayer.getData(),
             this.brushTool === BrushTool.ELLIPSE_FILLED,
           );
@@ -3605,6 +3674,10 @@ export default class Editor extends EventDispatcher {
 
   downloadImage(options: ImageDownloadOptions) {
     const data = this.dataLayer.getData();
+    const visibleLayers = this.dataLayer
+      .getLayers()
+      .filter(layer => layer.getIsVisible())
+      .reverse();
     const columnCount = this.getColumnCount();
     const rowCount = this.getRowCount();
     const allRowKeys = getRowKeysFromData(data);
@@ -3622,14 +3695,17 @@ export default class Editor extends EventDispatcher {
           const columnIndex = j;
           const relativeRowIndex = rowKeyOrderMap.get(rowIndex);
           const relativeColumnIndex = columnKeyOrderMap.get(columnIndex);
-          const pixel = data.get(rowIndex)!.get(columnIndex);
-          if (pixel && pixel.color) {
+          for (const layer of visibleLayers) {
+            const pixel = layer.getData().get(rowIndex)?.get(columnIndex);
+            if (!pixel?.color || normalizeAlpha(pixel.alpha) === 0) continue;
+
             const pixelCoord = {
               x: relativeColumnIndex * this.gridSquareLength,
               y: relativeRowIndex * this.gridSquareLength,
             };
             imageContext.save();
             imageContext.fillStyle = pixel.color;
+            imageContext.globalAlpha = normalizeAlpha(pixel.alpha);
             imageContext.fillRect(
               pixelCoord.x,
               pixelCoord.y,
@@ -3686,8 +3762,10 @@ export default class Editor extends EventDispatcher {
         const rowKey = allRowKeys[i];
         for (let j = 0; j < allColumnKeys.length; j++) {
           const columnKey = allColumnKeys[j];
-          const color = data.get(rowKey)?.get(columnKey)?.color;
-          if (color) {
+          for (const layer of visibleLayers) {
+            const pixel = layer.getData().get(rowKey)?.get(columnKey);
+            if (!pixel?.color || normalizeAlpha(pixel.alpha) === 0) continue;
+
             validTopRowIndex = Math.min(validTopRowIndex, rowKey);
             validBottomRowIndex = Math.max(validBottomRowIndex, rowKey);
             validLeftColumnIndex = Math.min(validLeftColumnIndex, columnKey);
@@ -3695,7 +3773,8 @@ export default class Editor extends EventDispatcher {
             validPixelModifyItems.push({
               rowIndex: i,
               columnIndex: j,
-              color: color,
+              color: pixel.color,
+              alpha: pixel.alpha,
             });
           }
         }
@@ -3714,7 +3793,8 @@ export default class Editor extends EventDispatcher {
         throw new NoDataToMakeSvgError();
       }
       for (let i = 0; i < validPixelModifyItems.length; i++) {
-        const { rowIndex, columnIndex, color } = validPixelModifyItems[i];
+        const { rowIndex, columnIndex, color, alpha } =
+          validPixelModifyItems[i];
         const svgRect = document.createElementNS(
           "http://www.w3.org/2000/svg",
           "rect",
@@ -3732,6 +3812,9 @@ export default class Editor extends EventDispatcher {
         svgRect.setAttribute("width", `${this.gridSquareLength}`);
         svgRect.setAttribute("height", `${this.gridSquareLength}`);
         svgRect.setAttribute("fill", `${color}`);
+        if (alpha !== undefined) {
+          svgRect.setAttribute("fill-opacity", `${normalizeAlpha(alpha)}`);
+        }
         svgDom.appendChild(svgRect);
       }
       const svgString = new XMLSerializer().serializeToString(svgDom);

@@ -55,6 +55,20 @@ describe("test set data", () => {
     expect(editor.getColumnCount()).toBe(15);
   });
 
+  it("preserves alpha in externally supplied pixel data", () => {
+    const data = CreateEmptySquareData(2);
+    data[0][0] = {
+      rowIndex: 0,
+      columnIndex: 0,
+      color: "#336699",
+      alpha: 0.35,
+    };
+
+    editor.setData(data);
+
+    expect(editor.getLayersAsArray()[0].data[0][0]).toEqual(data[0][0]);
+  });
+
   it("set data when there are multiple layers", () => {
     const newLayers = [
       {

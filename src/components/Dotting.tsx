@@ -12,7 +12,7 @@ import { DefaultBackgroundColor } from "./Canvas/config";
 import Editor from "./Canvas/Editor";
 import {
   AddGridIndicesParams,
-  BRUSH_PATTERN_ELEMENT,
+  BrushPattern,
   BrushTool,
   CanvasBrushChangeHandler,
   CanvasDataChangeHandler,
@@ -44,6 +44,8 @@ export interface DottingProps {
   isGridFixed?: boolean;
   brushTool?: BrushTool;
   brushColor?: string;
+  /** Alpha multiplier for newly painted pixels, from 0 to 1. */
+  brushAlpha?: number;
   indicatorData?: Array<PixelModifyItem>;
   isInteractionApplicable?: boolean;
   isDrawingEnabled?: boolean;
@@ -89,8 +91,9 @@ export interface DottingRef {
 
   // for useBrush
   changeBrushColor: (color: string) => void;
+  changeBrushAlpha: (alpha: number) => void;
   changeBrushTool: (tool: BrushTool) => void;
-  changeBrushPattern: (pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) => void;
+  changeBrushPattern: (pattern: BrushPattern) => void;
   // for useLayers
   addLayer: (
     layerId: string,
@@ -431,10 +434,13 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     if (props.brushColor) {
       editor.setBrushColor(props.brushColor);
     }
+    if (props.brushAlpha !== undefined) {
+      editor.setBrushAlpha(props.brushAlpha);
+    }
     if (props.brushTool) {
       editor.setBrushTool(props.brushTool);
     }
-  }, [editor, props.brushColor, props.brushTool]);
+  }, [editor, props.brushAlpha, props.brushColor, props.brushTool]);
 
   useEffect(() => {
     if (!editor) {
@@ -777,8 +783,15 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
     [editor],
   );
 
+  const changeBrushAlpha = useCallback(
+    (alpha: number) => {
+      editor?.changeBrushAlpha(alpha);
+    },
+    [editor],
+  );
+
   const changeBrushPattern = useCallback(
-    (pattern: Array<Array<BRUSH_PATTERN_ELEMENT>>) => {
+    (pattern: BrushPattern) => {
       editor?.setBrushPattern(pattern);
     },
     [editor],
@@ -1002,6 +1015,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       deleteGridIndices,
       // for useBrush
       changeBrushColor,
+      changeBrushAlpha,
       changeBrushTool,
       changeBrushPattern,
       // for useLayer,
@@ -1058,6 +1072,7 @@ const Dotting = forwardRef<DottingRef, DottingProps>(function Dotting(
       deleteGridIndices,
       // for useBrush
       changeBrushColor,
+      changeBrushAlpha,
       changeBrushTool,
       changeBrushPattern,
       // for useLayer,
