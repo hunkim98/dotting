@@ -1153,7 +1153,7 @@ export default class Editor extends EventDispatcher {
     if (this.lastRenderAllCall) {
       cancelAnimationFrame(this.lastRenderAllCall);
     }
-    this.lastRenderAllCall = requestAnimationFrame(this.renderAll);
+    this.lastRenderAllCall = requestAnimationFrame(() => this.renderAll());
   }
 
   convertWorldPosToCanvasOffset(worldPos: Coord): Coord {
